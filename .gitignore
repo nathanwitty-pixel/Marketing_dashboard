@@ -1,0 +1,13 @@
+# ── SECRETS — NEVER COMMIT THESE ──────────────────────────────
+google_credentials.json
+google_token.json
+
+# ── Python ────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+
+# ── OS junk ───────────────────────────────────────────────────
+Thumbs.db
+.DS_Store
+desktop.ini

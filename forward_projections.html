@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forward Projections</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .section { width: 100%; max-width: 960px; }
+
+    /* ── Header ───────────────────────────────────────────── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .section-header .pill {
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+    }
+
+    .section-header h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: 0.02em;
+    }
+
+    .date-line {
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-bottom: 1.5rem;
+      padding-left: 0.1rem;
+    }
+
+    .date-line span {
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    /* ── KPI cards ────────────────────────────────────────── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: #1e2130;
+      border: 1px solid #2d3148;
+      border-radius: 14px;
+      padding: 1.4rem 1.6rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+
+    .card.cyan::before   { background: linear-gradient(90deg, #06b6d4, #3b82f6); }
+    .card.indigo::before { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+    .card.orange::before { background: linear-gradient(90deg, #f97316, #eab308); }
+    .card.rose::before   { background: linear-gradient(90deg, #f43f5e, #ef4444); }
+    .card.amber::before  { background: linear-gradient(90deg, #f59e0b, #eab308); }
+
+    .card-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-bottom: 0.6rem;
+      line-height: 1.4;
+    }
+
+    .card-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #f8fafc;
+      line-height: 1.1;
+      margin-bottom: 0.4rem;
+    }
+
+    .card-value.cyan   { color: #22d3ee; }
+    .card-value.indigo { color: #818cf8; }
+    .card-value.orange { color: #fb923c; }
+    .card-value.rose   { color: #fb7185; }
+
+    .card-sub {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #64748b;
+      margin-bottom: 0.4rem;
+    }
+
+    .card-interpretation {
+      font-size: 0.75rem;
+      color: #475569;
+      line-height: 1.5;
+    }
+
+    /* ── Table ────────────────────────────────────────────── */
+    .table-wrap {
+      background: #1e2130;
+      border: 1px solid #2d3148;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .table-title {
+      padding: 1rem 1.5rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      border-bottom: 1px solid #2d3148;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      background: #161824;
+      padding: 0.75rem 1.5rem;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    tbody tr {
+      border-top: 1px solid #2d3148;
+      transition: background 0.15s;
+    }
+
+    tbody tr:hover { background: #252840; }
+
+    tbody td {
+      padding: 0.95rem 1.5rem;
+      font-size: 0.88rem;
+      vertical-align: middle;
+    }
+
+    td.type   { font-weight: 700; color: #e2e8f0; }
+    td.value  { font-weight: 800; font-size: 1rem; white-space: nowrap; }
+    td.basis  { color: #94a3b8; font-size: 0.82rem; line-height: 1.5; }
+
+    td.value.cyan   { color: #22d3ee; }
+    td.value.indigo { color: #818cf8; }
+    td.value.orange { color: #fb923c; }
+    td.value.rose   { color: #fb7185; }
+    td.value.amber  { color: #fbbf24; }
+    .card-value.amber { color: #fbbf24; }
+
+    .tbl-sub {
+      font-size: 0.75rem;
+      color: #475569;
+      font-weight: 500;
+      margin-top: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="section">
+
+  <!-- Header -->
+  <div class="section-header">
+    <span class="pill">Forecast</span>
+    <h2>Forward Projections</h2>
+  </div>
+  <div class="date-line" id="date-line">Loading...</div>
+
+  <!-- KPI Cards -->
+  <div class="card-grid">
+
+    <div class="card cyan">
+      <div class="card-label">Standard Projection<br/><span style="font-size:0.65rem;color:#475569;">% of Total Target</span></div>
+      <div class="card-value cyan" id="kpi-standard"></div>
+      <div class="card-sub" id="kpi-standard-sub"></div>
+      <div class="card-interpretation">Based on maintaining the current sales velocity and product mix.</div>
+    </div>
+
+    <div class="card indigo">
+      <div class="card-label">Forecasted Projection<br/><span style="font-size:0.65rem;color:#475569;">% of Total Target</span></div>
+      <div class="card-value indigo" id="kpi-forecasted"></div>
+      <div class="card-sub" id="kpi-forecasted-sub"></div>
+      <div class="card-interpretation">Based on maintaining the current sales velocity and product mix with corporate in mind.</div>
+    </div>
+
+    <div class="card orange">
+      <div class="card-label">Bare Minimum<br/>(Bags to be Sold)</div>
+      <div class="card-value orange" id="kpi-bare"></div>
+      <div class="card-interpretation">We are needed to achieve at least this in a week's time.</div>
+    </div>
+
+    <div class="card amber">
+      <div class="card-label">Bare Minimum<br/>(Growth %)</div>
+      <div class="card-value amber" id="kpi-bare-growth"></div>
+      <div class="card-interpretation">Bare minimum as a % of the total monthly target.</div>
+    </div>
+
+    <div class="card rose">
+      <div class="card-label">Declined By</div>
+      <div class="card-value rose" id="kpi-declined"></div>
+      <div class="card-sub" id="kpi-declined-sub"></div>
+      <div class="card-interpretation">The bags we missed out on that week.</div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- PROJ_DATA_START -->
+<script>
+const PROJ = {
+  currentDay:               9,
+  daysInMonth:              31,
+  velocityFactor:           "3.44x",
+  totalTarget:              "23,232",
+  totalSales:               "4,457",
+  standardProjection:       "66.08%",
+  forecastedProjection:     "67.83%",
+  corporateBags:            "118",
+  bareMinimum:              "6,400",
+  bareMinimumGrowthPct:     "27.55%",
+  declinedBy:               "-4,550",
+  weeklySalesTotal:         "1,850"
+};
+</script>
+<!-- PROJ_DATA_END -->
+
+<script>
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const today  = new Date();
+  const mon    = months[today.getMonth()];
+
+  // Date line
+  document.getElementById('date-line').innerHTML =
+    `As of <span>day ${PROJ.currentDay}</span> of ${mon} &mdash; projecting over <span>${PROJ.daysInMonth} days</span> at <span>${PROJ.velocityFactor}</span> current pace`;
+
+  function set(id, val) {
+    const el = document.getElementById(id);
+    if (el) {
+      // preserve child .tbl-sub if present
+      const sub = el.querySelector('.tbl-sub');
+      el.textContent = val || '—';
+      if (sub) el.appendChild(sub);
+    }
+  }
+
+  function sub(id, val) {
+    const el = document.getElementById(id);
+    if (el && val) el.textContent = val;
+  }
+
+  // Standard
+  set('kpi-standard', PROJ.standardProjection);
+  sub('kpi-standard-sub', `at ${PROJ.velocityFactor} of current pace`);
+
+  // Forecasted
+  set('kpi-forecasted', PROJ.forecastedProjection);
+  if (PROJ.corporateBags && PROJ.corporateBags !== "0")
+    sub('kpi-forecasted-sub', `incl. ${PROJ.corporateBags} corporate bags`);
+
+  // Bare Minimum
+  set('kpi-bare', PROJ.bareMinimum);
+
+  // Bare Minimum Growth %
+  set('kpi-bare-growth', PROJ.bareMinimumGrowthPct);
+
+  // Declined By
+  set('kpi-declined', PROJ.declinedBy || '—');
+  if (PROJ.weeklySalesTotal && PROJ.bareMinimum)
+    sub('kpi-declined-sub', `${PROJ.weeklySalesTotal} sold vs ${PROJ.bareMinimum} target`);
+
+</script>
+
+</body>
+</html>

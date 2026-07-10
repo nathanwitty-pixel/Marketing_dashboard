@@ -1,0 +1,760 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Products Analytics</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117; color: #e2e8f0;
+      min-height: 100vh; display: flex;
+      align-items: center; justify-content: center; padding: 2rem;
+    }
+    .section { width: 100%; max-width: 1500px; }
+
+    /* Header */
+    .section-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+    .section-header .pill {
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      color: #fff; font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 0.3rem 0.75rem; border-radius: 999px;
+    }
+    .section-header h2 { font-size: 1.4rem; font-weight: 700; color: #f8fafc; letter-spacing: 0.02em; }
+
+    /* Tags */
+    .product-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.75rem; }
+    .product-tag {
+      background: #0d2a1f; border: 1px solid #10b981; color: #34d399;
+      font-size: 0.72rem; font-weight: 600; padding: 0.28rem 0.7rem;
+      border-radius: 999px; letter-spacing: 0.04em;
+    }
+
+    /* Cards */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .card {
+      background: #1e2130; border: 1px solid #2d3148; border-radius: 14px;
+      padding: 1.2rem 1.4rem; position: relative; overflow: hidden;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.35); border-color: rgba(16,185,129,0.25); }
+    @keyframes card-in { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+    .card-reveal { animation: card-in 0.55s cubic-bezier(0.16,1,0.3,1) both; animation-delay: var(--reveal-delay,0ms); }
+    .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+    .card.emerald::before { background: linear-gradient(90deg,#10b981,#06b6d4); }
+    .card.blue::before    { background: linear-gradient(90deg,#3b82f6,#6366f1); }
+    .card.green::before   { background: linear-gradient(90deg,#22c55e,#10b981); }
+    .card.red::before     { background: linear-gradient(90deg,#ef4444,#f97316); }
+    .card.amber::before   { background: linear-gradient(90deg,#f59e0b,#eab308); }
+    .card.cyan::before    { background: linear-gradient(90deg,#06b6d4,#3b82f6); }
+    .card.violet::before  { background: linear-gradient(90deg,#7c3aed,#6366f1); }
+    .card.orange::before  { background: linear-gradient(90deg,#f97316,#eab308); }
+    .card-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #94a3b8; margin-bottom: 0.5rem; }
+    .card-value { font-size: 2rem; font-weight: 800; color: #f8fafc; line-height: 1.1; margin-bottom: 0.4rem; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+    .card-value.emerald { color: #34d399; }
+    .card-value.amber   { color: #facc15; }
+    .card-value.red     { color: #f87171; }
+    .card-value.cyan    { color: #22d3ee; }
+    .card-value.violet  { color: #a78bfa; }
+    .card-value.orange  { color: #fb923c; }
+    .card-value.green   { color: #4ade80; }
+    .card-interpretation { font-size: 0.75rem; color: #64748b; line-height: 1.5; }
+
+    /* Table wrap */
+    .table-wrap { background: #1e2130; border: 1px solid #2d3148; border-radius: 14px; overflow-x: auto; margin-bottom: 1.5rem; }
+    .table-title {
+      padding: 0.9rem 1.5rem; font-size: 0.78rem; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase; color: #94a3b8;
+      border-bottom: 1px solid #2d3148; display: flex; align-items: center; gap: 0.6rem;
+    }
+    .count-badge {
+      background: #10b981; color: #022c22; font-size: 0.63rem;
+      font-weight: 800; padding: 0.12rem 0.45rem; border-radius: 999px; letter-spacing: 0.04em;
+    }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      padding: 0.65rem 1.5rem; border-bottom: 1px solid #2d3148; background: #13151f;
+      align-items: center;
+    }
+    .filter-bar label { font-size: 0.68rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+    .filter-bar select {
+      background: #1e2130; border: 1px solid #2d3148; color: #e2e8f0;
+      padding: 0.3rem 0.65rem; border-radius: 6px; font-size: 0.78rem; cursor: pointer;
+      outline: none;
+    }
+    .filter-bar select:focus { border-color: #10b981; }
+    .filter-bar .reset-btn {
+      background: none; border: 1px solid #374151; color: #94a3b8;
+      padding: 0.3rem 0.65rem; border-radius: 6px; font-size: 0.74rem;
+      cursor: pointer; margin-left: auto;
+    }
+    .filter-bar .reset-btn:hover { border-color: #6b7280; color: #e2e8f0; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      background: #161824; padding: 0.7rem 0.9rem; text-align: left;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: #64748b; white-space: nowrap;
+    }
+    thead th.right { text-align: right; }
+    thead th.sortable { cursor: pointer; user-select: none; }
+    thead th.sortable:hover { color: #94a3b8; }
+    thead th .sort-icon { display: inline-block; margin-left: 3px; opacity: 0.35; font-size: 0.65rem; }
+    thead th.sort-asc .sort-icon, thead th.sort-desc .sort-icon { opacity: 1; }
+    tbody tr { border-top: 1px solid #2d3148; transition: background 0.15s; }
+    tbody tr:hover { background: #252840; }
+    tbody tr.total-row { background: #161824; border-top: 2px solid #374151; }
+    tbody tr.total-row td { font-weight: 800; color: #f8fafc; font-size: 0.88rem; letter-spacing: 0.04em; }
+    tbody td { padding: 0.75rem 0.9rem; font-size: 0.85rem; vertical-align: middle; }
+
+    td.col-colour    { font-weight: 700; color: #e2e8f0; white-space: nowrap; }
+    td.col-category  { color: #94a3b8; white-space: nowrap; }
+    td.col-product   { font-weight: 600; color: #e2e8f0; }
+    td.col-bagtype   { color: #64748b; font-size: 0.8rem; white-space: nowrap; }
+    td.empty-msg     { text-align: center; color: #475569; padding: 2rem 1rem; font-size: 0.88rem; }
+
+    td.col-m-kenya-s   { font-weight: 800; font-size: 0.9rem; color: #4ade80; text-align: right; }
+    td.col-m-outside-s { font-weight: 800; font-size: 0.9rem; color: #facc15; text-align: right; }
+    td.col-m-post-ke   { font-weight: 800; font-size: 0.9rem; color: #22d3ee; text-align: right; }
+    td.col-m-post-out  { font-weight: 800; font-size: 0.9rem; color: #a78bfa; text-align: right; }
+    td.col-w-sales     { font-weight: 800; font-size: 0.9rem; color: #34d399; text-align: right; }
+    td.col-w-post-ke   { font-weight: 800; font-size: 0.9rem; color: #22d3ee; text-align: right; }
+    td.col-w-post-out  { font-weight: 800; font-size: 0.9rem; color: #facc15; text-align: right; }
+    td.col-skenya      { font-weight: 800; font-size: 0.9rem; color: #22d3ee; text-align: right; }
+    td.col-soutside    { font-weight: 800; font-size: 0.9rem; color: #a78bfa; text-align: right; }
+    td.col-srestock    { font-weight: 800; font-size: 0.9rem; color: #fb923c; text-align: right; }
+
+    /* Sub-headers */
+    .sub-header {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-bottom: 1.25rem; margin-top: 1rem;
+      padding-top: 1.5rem; border-top: 1px solid #2d3148;
+    }
+    .sub-header .sub-pill {
+      color: #fff; font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.6rem; border-radius: 999px;
+    }
+    .sub-header h3 { font-size: 1.1rem; font-weight: 700; color: #cbd5e1; letter-spacing: 0.02em; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="section">
+
+  <div class="section-header">
+    <span class="pill">New</span>
+    <h2>New Products Analytics</h2>
+  </div>
+
+  <div class="product-tags" id="product-tags">
+    <span class="product-tag" style="border-color:#2d3148;color:#64748b;">Loading...</span>
+  </div>
+
+  <!-- Top KPI Cards -->
+  <div class="card-grid">
+    <div class="card emerald">
+      <div class="card-label">New Products</div>
+      <div class="card-value emerald" id="kpi-count"></div>
+      <div class="card-interpretation">Products launched as new this month.</div>
+    </div>
+    <div class="card blue">
+      <div class="card-label">Monthly Target</div>
+      <div class="card-value" id="kpi-target"></div>
+      <div class="card-interpretation">Total bags targeted for new products.</div>
+    </div>
+    <div class="card green">
+      <div class="card-label">Monthly Sales</div>
+      <div class="card-value" id="kpi-sales"></div>
+      <div class="card-interpretation">Bags of new products sold so far.</div>
+    </div>
+    <div class="card red">
+      <div class="card-label">Deficit</div>
+      <div class="card-value red" id="kpi-deficit"></div>
+      <div class="card-interpretation">Bags still needed to meet target.</div>
+    </div>
+    <div class="card amber">
+      <div class="card-label">Sales % Achieved</div>
+      <div class="card-value amber" id="kpi-pct"></div>
+      <div class="card-interpretation">Percentage of new products target achieved.</div>
+    </div>
+  </div>
+
+  <!-- WEEKLY -->
+  <div class="sub-header">
+    <span class="sub-pill" style="background:linear-gradient(135deg,#10b981,#06b6d4);">Weekly</span>
+    <h3>Weekly Sales vs Marketing Posts</h3>
+  </div>
+
+  <div class="card-grid">
+    <div class="card green">
+      <div class="card-label">Weekly Sales Total</div>
+      <div class="card-value" id="kpi-weekly"></div>
+      <div class="card-interpretation">New-product bags sold this week.</div>
+    </div>
+    <div class="card cyan">
+      <div class="card-label">Weekly Kenya Posts</div>
+      <div class="card-value cyan" id="kpi-wpost-kenya"></div>
+      <div class="card-interpretation">Weekly marketing posts targeting Kenya.</div>
+    </div>
+    <div class="card amber">
+      <div class="card-label">Weekly Outside Posts</div>
+      <div class="card-value amber" id="kpi-wpost-outside"></div>
+      <div class="card-interpretation">Weekly marketing posts outside Kenya.</div>
+    </div>
+    <div class="card cyan">
+      <div class="card-label">Kenya Stock</div>
+      <div class="card-value cyan" id="kpi-w-skenya"></div>
+      <div class="card-interpretation">Total Kenya stock for new products.</div>
+    </div>
+    <div class="card violet">
+      <div class="card-label">Outside Stock</div>
+      <div class="card-value violet" id="kpi-w-soutside"></div>
+      <div class="card-interpretation">Total outside-Kenya stock for new products.</div>
+    </div>
+    <div class="card orange">
+      <div class="card-label">Restock</div>
+      <div class="card-value orange" id="kpi-w-srestock"></div>
+      <div class="card-interpretation">Total restock safety net for new products.</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-title">
+      Weekly &mdash; Sales vs Posts (per Colour)
+      <span class="count-badge" id="weekly-row-count">0</span>
+    </div>
+    <div class="filter-bar">
+      <label>Colour</label>
+      <select id="w-f-colour"><option value="">All</option></select>
+      <label>Category</label>
+      <select id="w-f-category"><option value="">All</option></select>
+      <label>Product</label>
+      <select id="w-f-product"><option value="">All</option></select>
+      <label>Bag Type</label>
+      <select id="w-f-bagtype"><option value="">All</option></select>
+      <button class="reset-btn" id="w-reset">Reset Filters</button>
+    </div>
+    <table id="weekly-table">
+      <thead>
+        <tr>
+          <th>Colour</th>
+          <th>Category</th>
+          <th>Product Name</th>
+          <th>Bag Type</th>
+          <th class="right sortable" data-col="weeklySales"  style="color:#34d399;">Weekly Sales <span class="sort-icon">⇅</span></th>
+          <th class="right sortable" data-col="wpostKenya"   style="color:#22d3ee;">Kenya Posts <span class="sort-icon">⇅</span></th>
+          <th class="right sortable" data-col="wpostOutside" style="color:#facc15;">Outside Posts <span class="sort-icon">⇅</span></th>
+          <th class="right sortable" data-col="sKenya"       style="color:#22d3ee;">Kenya Stock <span class="sort-icon">⇅</span></th>
+          <th class="right sortable" data-col="sOutside"     style="color:#a78bfa;">Outside Stock <span class="sort-icon">⇅</span></th>
+          <th class="right sortable" data-col="sRestock"     style="color:#fb923c;">Restock <span class="sort-icon">⇅</span></th>
+        </tr>
+      </thead>
+      <tbody id="weekly-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- MONTHLY -->
+  <div class="sub-header">
+    <span class="sub-pill" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);">Monthly</span>
+    <h3>Monthly Sales vs Marketing Posts</h3>
+  </div>
+
+  <div class="card-grid">
+    <div class="card green">
+      <div class="card-label">Monthly Kenya Sales</div>
+      <div class="card-value green" id="kpi-monthly-kenya"></div>
+      <div class="card-interpretation">New-product bags sold in Kenya this month.</div>
+    </div>
+    <div class="card amber">
+      <div class="card-label">Monthly Outside Kenya</div>
+      <div class="card-value amber" id="kpi-monthly-outside"></div>
+      <div class="card-interpretation">New-product bags sold outside Kenya this month.</div>
+    </div>
+    <div class="card cyan">
+      <div class="card-label">Monthly Kenya Posts</div>
+      <div class="card-value cyan" id="kpi-mpost-kenya"></div>
+      <div class="card-interpretation">Monthly marketing posts targeting Kenya.</div>
+    </div>
+    <div class="card violet">
+      <div class="card-label">Monthly Outside Posts</div>
+      <div class="card-value violet" id="kpi-mpost-outside"></div>
+      <div class="card-interpretation">Monthly marketing posts outside Kenya.</div>
+    </div>
+    <div class="card cyan">
+      <div class="card-label">Kenya Stock</div>
+      <div class="card-value cyan" id="kpi-m-skenya"></div>
+      <div class="card-interpretation">Total Kenya stock for new products.</div>
+    </div>
+    <div class="card violet">
+      <div class="card-label">Outside Stock</div>
+      <div class="card-value violet" id="kpi-m-soutside"></div>
+      <div class="card-interpretation">Total outside-Kenya stock for new products.</div>
+    </div>
+    <div class="card orange">
+      <div class="card-label">Restock</div>
+      <div class="card-value orange" id="kpi-m-srestock"></div>
+      <div class="card-interpretation">Total restock safety net for new products.</div>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card" style="padding:1.2rem 1.4rem;">
+      <div class="card-label">Monthly Sales by Location</div>
+      <div style="position:relative;height:220px"><canvas id="chart-location-donut"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
+      <div class="card-label">Top 10 Products by Monthly Sales</div>
+      <div style="position:relative;height:280px"><canvas id="chart-top-products"></canvas></div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-title">
+      Monthly &mdash; Sales vs Posts (per Colour)
+      <span class="count-badge" id="monthly-row-count">0</span>
+    </div>
+    <div class="filter-bar" id="m-filter-bar">
+      <label>Colour</label>
+      <select id="m-f-colour"><option value="">All</option></select>
+      <label>Category</label>
+      <select id="m-f-category"><option value="">All</option></select>
+      <label>Product</label>
+      <select id="m-f-product"><option value="">All</option></select>
+      <label>Bag Type</label>
+      <select id="m-f-bagtype"><option value="">All</option></select>
+      <button class="reset-btn" id="m-reset">Reset Filters</button>
+    </div>
+    <table id="monthly-table">
+      <thead>
+        <tr>
+          <th>Colour</th>
+          <th>Category</th>
+          <th>Product Name</th>
+          <th>Bag Type</th>
+          <th class="right sortable" data-col="kenyaSales"   style="color:#4ade80;">Kenya Sales <span class="sort-icon">⇅</span></th>
+          <th class="right sortable" data-col="outsideKenya" style="color:#facc15;">Outside Kenya <span class="sort-icon">⇅</span></th>
+          <th class="right sortable" data-col="mpostKenya"   style="color:#22d3ee;">Kenya Posts <span class="sort-icon">⇅</span></th>
+          <th class="right sortable" data-col="mpostOutside" style="color:#a78bfa;">Outside Posts <span class="sort-icon">⇅</span></th>
+          <th class="right sortable" data-col="sKenya"       style="color:#22d3ee;">Kenya Stock <span class="sort-icon">⇅</span></th>
+          <th class="right sortable" data-col="sOutside"     style="color:#a78bfa;">Outside Stock <span class="sort-icon">⇅</span></th>
+          <th class="right sortable" data-col="sRestock"     style="color:#fb923c;">Restock <span class="sort-icon">⇅</span></th>
+        </tr>
+      </thead>
+      <tbody id="monthly-tbody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- NEW_PROD_DATA_START -->
+<script>
+const NP = {
+  productCount:    7,
+  totalTarget:     "930",
+  totalSales:      "96",
+  totalDeficit:    "834",
+  salesPct:        "10.32%",
+  monthlyKenya:    "96",
+  monthlyOutside:  "0",
+  mpostKenya:      "50",
+  mpostOutside:    "2",
+  mSKenya:         "521",
+  mSOutside:       "13",
+  mSRestock:       "57",
+  weeklyTotal:     "43",
+  wpostKenya:      "70",
+  wpostOutside:    "2",
+  wSKenya:         "521",
+  wSOutside:       "13",
+  wSRestock:       "57",
+  productNames:    ["AMORA", "IMANI", "LAMORA", "LOOP BP", "NALA", "TAJI", "ZULA"],
+  monthlyCombined: [{"colour": "Black", "category": "SLING", "productName": "AMORA BLACK", "bagType": "AMORA", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 4, "mpostOutside": 0, "sKenya": 12, "sOutside": 0, "sRestock": 3}, {"colour": "Red", "category": "SLING", "productName": "AMORA RED", "bagType": "AMORA", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 16, "sOutside": 0, "sRestock": 0}, {"colour": "Pink", "category": "SLING", "productName": "AMORA PINK", "bagType": "AMORA", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 1, "sOutside": 0, "sRestock": 0}, {"colour": "Blue", "category": "SLING", "productName": "AMORA BLUE", "bagType": "AMORA", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 7, "sOutside": 0, "sRestock": 0}, {"colour": "Green", "category": "SLING", "productName": "AMORA GREEN", "bagType": "AMORA", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 2, "sOutside": 0, "sRestock": 0}, {"colour": "Brown", "category": "SLING", "productName": "AMORA MUSTARD", "bagType": "AMORA", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Red", "category": "SLING", "productName": "AMORA MAROON", "bagType": "AMORA", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 16, "sOutside": 0, "sRestock": 0}, {"colour": "Purple", "category": "SLING", "productName": "AMORA PURPLE", "bagType": "AMORA", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 2, "sOutside": 0, "sRestock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "IMANI BLACK 018", "bagType": "IMANI", "kenyaSales": 2, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 22, "sOutside": 3, "sRestock": 3}, {"colour": "Red", "category": "HANDBAG", "productName": "IMANI MAROON 018", "bagType": "IMANI", "kenyaSales": 1, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 20, "sOutside": 1, "sRestock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "IMANI DARK BROWN 018", "bagType": "IMANI", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 1, "sKenya": 9, "sOutside": 1, "sRestock": 2}, {"colour": "Brown", "category": "HANDBAG", "productName": "IMANI SPICE", "bagType": "IMANI", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 1, "sKenya": 9, "sOutside": 1, "sRestock": 2}, {"colour": "Grey", "category": "HANDBAG", "productName": "IMANI GREY", "bagType": "IMANI", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Beige", "category": "HANDBAG", "productName": "IMANI BEIGE", "bagType": "IMANI", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 30, "sOutside": 1, "sRestock": 7}, {"colour": "Red", "category": "HANDBAG", "productName": "IMANI RED", "bagType": "IMANI", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 20, "sOutside": 1, "sRestock": 0}, {"colour": "Beige", "category": "HANDBAG", "productName": "IMANI BEIGE 018", "bagType": "IMANI", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 30, "sOutside": 1, "sRestock": 7}, {"colour": "Green", "category": "HANDBAG", "productName": "IMANI GREEN TT", "bagType": "IMANI", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 17, "sOutside": 0, "sRestock": 3}, {"colour": "Black", "category": "SLING", "productName": "LAMORA BLACK", "bagType": "LAMORA", "kenyaSales": 17, "outsideKenya": 0, "mpostKenya": 6, "mpostOutside": 0, "sKenya": 40, "sOutside": 0, "sRestock": 0}, {"colour": "Blue", "category": "SLING", "productName": "LAMORA SKYE BLUE", "bagType": "LAMORA", "kenyaSales": 5, "outsideKenya": 0, "mpostKenya": 9, "mpostOutside": 0, "sKenya": 23, "sOutside": 0, "sRestock": 3}, {"colour": "Brown", "category": "SLING", "productName": "LAMORA BROWN", "bagType": "LAMORA", "kenyaSales": 9, "outsideKenya": 0, "mpostKenya": 6, "mpostOutside": 0, "sKenya": 22, "sOutside": 0, "sRestock": 1}, {"colour": "Red", "category": "SLING", "productName": "LAMORA RED", "bagType": "LAMORA", "kenyaSales": 7, "outsideKenya": 0, "mpostKenya": 6, "mpostOutside": 0, "sKenya": 23, "sOutside": 0, "sRestock": 5}, {"colour": "Black", "category": "BACKPACK", "productName": "LOOP BP CN BLACK", "bagType": "LOOP BP", "kenyaSales": 12, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 17, "sOutside": 4, "sRestock": 0}, {"colour": "Brown", "category": "BACKPACK", "productName": "LOOP BP SPICE", "bagType": "LOOP BP", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 5, "sOutside": 0, "sRestock": 0}, {"colour": "Brown", "category": "BACKPACK", "productName": "LOOP BP CRACKED", "bagType": "LOOP BP", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 5, "sOutside": 0, "sRestock": 0}, {"colour": "Beige", "category": "BACKPACK", "productName": "LOOP BP BEIGE", "bagType": "LOOP BP", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Red", "category": "BACKPACK", "productName": "LOOP BP MAROON", "bagType": "LOOP BP", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 10, "sOutside": 0, "sRestock": 0}, {"colour": "Green", "category": "BACKPACK", "productName": "LOOP BP GREEN", "bagType": "LOOP BP", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Grey", "category": "BACKPACK", "productName": "LOOP BP CN GREY", "bagType": "LOOP BP", "kenyaSales": 4, "outsideKenya": 0, "mpostKenya": 5, "mpostOutside": 0, "sKenya": 8, "sOutside": 0, "sRestock": 0}, {"colour": "Red", "category": "BACKPACK", "productName": "LOOP BP RED", "bagType": "LOOP BP", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 10, "sOutside": 0, "sRestock": 0}, {"colour": "Brown", "category": "BACKPACK", "productName": "LOOP BP DARK BROWN", "bagType": "LOOP BP", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 5, "sOutside": 0, "sRestock": 0}, {"colour": "Brown", "category": "BACKPACK", "productName": "LOOP BP CN DARK BROWN", "bagType": "LOOP BP", "kenyaSales": 2, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 5, "sOutside": 0, "sRestock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "NALA BLACK", "bagType": "NALA", "kenyaSales": 1, "outsideKenya": 0, "mpostKenya": 2, "mpostOutside": 0, "sKenya": 18, "sOutside": 0, "sRestock": 2}, {"colour": "Blue", "category": "HANDBAG", "productName": "NALA BLUE", "bagType": "NALA", "kenyaSales": 1, "outsideKenya": 0, "mpostKenya": 1, "mpostOutside": 0, "sKenya": 17, "sOutside": 0, "sRestock": 10}, {"colour": "Red", "category": "HANDBAG", "productName": "NALA RED", "bagType": "NALA", "kenyaSales": 4, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 9, "sOutside": 0, "sRestock": 1}, {"colour": "Green", "category": "HANDBAG", "productName": "NALA GREEN", "bagType": "NALA", "kenyaSales": 1, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 12, "sOutside": 0, "sRestock": 4}, {"colour": "Black", "category": "TRAVEL", "productName": "TAJI BLACK", "bagType": "TAJI", "kenyaSales": 7, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 6, "sOutside": 0, "sRestock": 4}, {"colour": "Red", "category": "TRAVEL", "productName": "TAJI MAROON 018", "bagType": "TAJI", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 13, "sOutside": 0, "sRestock": 0}, {"colour": "Brown", "category": "TRAVEL", "productName": "TAJI DARK BROWN", "bagType": "TAJI", "kenyaSales": 2, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 3, "sOutside": 0, "sRestock": 0}, {"colour": "Beige", "category": "TRAVEL", "productName": "TAJI BEIGE", "bagType": "TAJI", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Brown", "category": "TRAVEL", "productName": "TAJI BROWN", "bagType": "TAJI", "kenyaSales": 3, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 3, "sOutside": 0, "sRestock": 0}, {"colour": "Green", "category": "TRAVEL", "productName": "TAJI GREEN", "bagType": "TAJI", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 2, "sOutside": 0, "sRestock": 0}, {"colour": "Red", "category": "TRAVEL", "productName": "TAJI RED", "bagType": "TAJI", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 13, "sOutside": 0, "sRestock": 0}, {"colour": "Blue", "category": "TRAVEL", "productName": "TAJI BLUE", "bagType": "TAJI", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Grey", "category": "TRAVEL", "productName": "TAJI GREY", "bagType": "TAJI", "kenyaSales": 5, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 6, "sOutside": 0, "sRestock": 0}, {"colour": "Black", "category": "MAN BAG", "productName": "ZULA CN BLACK", "bagType": "ZULA", "kenyaSales": 4, "outsideKenya": 0, "mpostKenya": 3, "mpostOutside": 0, "sKenya": 6, "sOutside": 0, "sRestock": 0}, {"colour": "Grey", "category": "MAN BAG", "productName": "ZULA CN GREY", "bagType": "ZULA", "kenyaSales": 7, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 13, "sOutside": 0, "sRestock": 0}, {"colour": "Brown", "category": "MAN BAG", "productName": "ZULA ANTELOPE BROWN", "bagType": "ZULA", "kenyaSales": 2, "outsideKenya": 0, "mpostKenya": 4, "mpostOutside": 0, "sKenya": 7, "sOutside": 0, "sRestock": 0}, {"colour": "Beige", "category": "MAN BAG", "productName": "ZULA NUDE", "bagType": "ZULA", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Green", "category": "MAN BAG", "productName": "ZULA GREEN", "bagType": "ZULA", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Red", "category": "MAN BAG", "productName": "ZULA RED", "bagType": "ZULA", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Blue", "category": "MAN BAG", "productName": "ZULA BLUE", "bagType": "ZULA", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 0, "mpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Brown", "category": "MAN BAG", "productName": "ZULA YELLOW DOTTED", "bagType": "ZULA", "kenyaSales": 0, "outsideKenya": 0, "mpostKenya": 4, "mpostOutside": 0, "sKenya": 7, "sOutside": 0, "sRestock": 0}],
+  weeklyCombined:  [{"colour": "Black", "category": "SLING", "productName": "AMORA BLACK", "bagType": "AMORA", "weeklySales": 0, "wpostKenya": 8, "wpostOutside": 0, "sKenya": 12, "sOutside": 0, "sRestock": 3}, {"colour": "Red", "category": "SLING", "productName": "AMORA RED", "bagType": "AMORA", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 16, "sOutside": 0, "sRestock": 0}, {"colour": "Pink", "category": "SLING", "productName": "AMORA PINK", "bagType": "AMORA", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 1, "sOutside": 0, "sRestock": 0}, {"colour": "Blue", "category": "SLING", "productName": "AMORA BLUE", "bagType": "AMORA", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 7, "sOutside": 0, "sRestock": 0}, {"colour": "Green", "category": "SLING", "productName": "AMORA GREEN", "bagType": "AMORA", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 2, "sOutside": 0, "sRestock": 0}, {"colour": "Brown", "category": "SLING", "productName": "AMORA MUSTARD", "bagType": "AMORA", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Red", "category": "SLING", "productName": "AMORA MAROON", "bagType": "AMORA", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 16, "sOutside": 0, "sRestock": 0}, {"colour": "Purple", "category": "SLING", "productName": "AMORA PURPLE", "bagType": "AMORA", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 2, "sOutside": 0, "sRestock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "IMANI BLACK 018", "bagType": "IMANI", "weeklySales": 1, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 22, "sOutside": 3, "sRestock": 3}, {"colour": "Red", "category": "HANDBAG", "productName": "IMANI MAROON 018", "bagType": "IMANI", "weeklySales": 1, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 20, "sOutside": 1, "sRestock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "IMANI DARK BROWN 018", "bagType": "IMANI", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 1, "sKenya": 9, "sOutside": 1, "sRestock": 2}, {"colour": "Brown", "category": "HANDBAG", "productName": "IMANI SPICE", "bagType": "IMANI", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 1, "sKenya": 9, "sOutside": 1, "sRestock": 2}, {"colour": "Grey", "category": "HANDBAG", "productName": "IMANI GREY", "bagType": "IMANI", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Beige", "category": "HANDBAG", "productName": "IMANI BEIGE", "bagType": "IMANI", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 30, "sOutside": 1, "sRestock": 7}, {"colour": "Red", "category": "HANDBAG", "productName": "IMANI RED", "bagType": "IMANI", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 20, "sOutside": 1, "sRestock": 0}, {"colour": "Beige", "category": "HANDBAG", "productName": "IMANI BEIGE 018", "bagType": "IMANI", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 30, "sOutside": 1, "sRestock": 7}, {"colour": "Green", "category": "HANDBAG", "productName": "IMANI GREEN TT", "bagType": "IMANI", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 17, "sOutside": 0, "sRestock": 3}, {"colour": "Black", "category": "SLING", "productName": "LAMORA BLACK", "bagType": "LAMORA", "weeklySales": 10, "wpostKenya": 6, "wpostOutside": 0, "sKenya": 40, "sOutside": 0, "sRestock": 0}, {"colour": "Blue", "category": "SLING", "productName": "LAMORA SKYE BLUE", "bagType": "LAMORA", "weeklySales": 1, "wpostKenya": 9, "wpostOutside": 0, "sKenya": 23, "sOutside": 0, "sRestock": 3}, {"colour": "Brown", "category": "SLING", "productName": "LAMORA BROWN", "bagType": "LAMORA", "weeklySales": 6, "wpostKenya": 6, "wpostOutside": 0, "sKenya": 22, "sOutside": 0, "sRestock": 1}, {"colour": "Red", "category": "SLING", "productName": "LAMORA RED", "bagType": "LAMORA", "weeklySales": 2, "wpostKenya": 6, "wpostOutside": 0, "sKenya": 23, "sOutside": 0, "sRestock": 5}, {"colour": "Black", "category": "BACKPACK", "productName": "LOOP BP CN BLACK", "bagType": "LOOP BP", "weeklySales": 2, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 17, "sOutside": 4, "sRestock": 0}, {"colour": "Brown", "category": "BACKPACK", "productName": "LOOP BP SPICE", "bagType": "LOOP BP", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 5, "sOutside": 0, "sRestock": 0}, {"colour": "Brown", "category": "BACKPACK", "productName": "LOOP BP CRACKED", "bagType": "LOOP BP", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 5, "sOutside": 0, "sRestock": 0}, {"colour": "Beige", "category": "BACKPACK", "productName": "LOOP BP BEIGE", "bagType": "LOOP BP", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Red", "category": "BACKPACK", "productName": "LOOP BP MAROON", "bagType": "LOOP BP", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 10, "sOutside": 0, "sRestock": 0}, {"colour": "Green", "category": "BACKPACK", "productName": "LOOP BP GREEN", "bagType": "LOOP BP", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Grey", "category": "BACKPACK", "productName": "LOOP BP CN GREY", "bagType": "LOOP BP", "weeklySales": 2, "wpostKenya": 7, "wpostOutside": 0, "sKenya": 8, "sOutside": 0, "sRestock": 0}, {"colour": "Red", "category": "BACKPACK", "productName": "LOOP BP RED", "bagType": "LOOP BP", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 10, "sOutside": 0, "sRestock": 0}, {"colour": "Brown", "category": "BACKPACK", "productName": "LOOP BP DARK BROWN", "bagType": "LOOP BP", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 5, "sOutside": 0, "sRestock": 0}, {"colour": "Brown", "category": "BACKPACK", "productName": "LOOP BP CN DARK BROWN", "bagType": "LOOP BP", "weeklySales": 1, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 5, "sOutside": 0, "sRestock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "NALA BLACK", "bagType": "NALA", "weeklySales": 0, "wpostKenya": 6, "wpostOutside": 0, "sKenya": 18, "sOutside": 0, "sRestock": 2}, {"colour": "Blue", "category": "HANDBAG", "productName": "NALA BLUE", "bagType": "NALA", "weeklySales": 1, "wpostKenya": 2, "wpostOutside": 0, "sKenya": 17, "sOutside": 0, "sRestock": 10}, {"colour": "Red", "category": "HANDBAG", "productName": "NALA RED", "bagType": "NALA", "weeklySales": 1, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 9, "sOutside": 0, "sRestock": 1}, {"colour": "Green", "category": "HANDBAG", "productName": "NALA GREEN", "bagType": "NALA", "weeklySales": 1, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 12, "sOutside": 0, "sRestock": 4}, {"colour": "Black", "category": "TRAVEL", "productName": "TAJI BLACK", "bagType": "TAJI", "weeklySales": 5, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 6, "sOutside": 0, "sRestock": 4}, {"colour": "Red", "category": "TRAVEL", "productName": "TAJI MAROON 018", "bagType": "TAJI", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 13, "sOutside": 0, "sRestock": 0}, {"colour": "Brown", "category": "TRAVEL", "productName": "TAJI DARK BROWN", "bagType": "TAJI", "weeklySales": 1, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 3, "sOutside": 0, "sRestock": 0}, {"colour": "Beige", "category": "TRAVEL", "productName": "TAJI BEIGE", "bagType": "TAJI", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Brown", "category": "TRAVEL", "productName": "TAJI BROWN", "bagType": "TAJI", "weeklySales": 1, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 3, "sOutside": 0, "sRestock": 0}, {"colour": "Green", "category": "TRAVEL", "productName": "TAJI GREEN", "bagType": "TAJI", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 2, "sOutside": 0, "sRestock": 0}, {"colour": "Red", "category": "TRAVEL", "productName": "TAJI RED", "bagType": "TAJI", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 13, "sOutside": 0, "sRestock": 0}, {"colour": "Blue", "category": "TRAVEL", "productName": "TAJI BLUE", "bagType": "TAJI", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Grey", "category": "TRAVEL", "productName": "TAJI GREY", "bagType": "TAJI", "weeklySales": 3, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 6, "sOutside": 0, "sRestock": 0}, {"colour": "Black", "category": "MAN BAG", "productName": "ZULA CN BLACK", "bagType": "ZULA", "weeklySales": 0, "wpostKenya": 8, "wpostOutside": 0, "sKenya": 6, "sOutside": 0, "sRestock": 0}, {"colour": "Grey", "category": "MAN BAG", "productName": "ZULA CN GREY", "bagType": "ZULA", "weeklySales": 3, "wpostKenya": 2, "wpostOutside": 0, "sKenya": 13, "sOutside": 0, "sRestock": 0}, {"colour": "Brown", "category": "MAN BAG", "productName": "ZULA ANTELOPE BROWN", "bagType": "ZULA", "weeklySales": 1, "wpostKenya": 5, "wpostOutside": 0, "sKenya": 7, "sOutside": 0, "sRestock": 0}, {"colour": "Beige", "category": "MAN BAG", "productName": "ZULA NUDE", "bagType": "ZULA", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Green", "category": "MAN BAG", "productName": "ZULA GREEN", "bagType": "ZULA", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Red", "category": "MAN BAG", "productName": "ZULA RED", "bagType": "ZULA", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Blue", "category": "MAN BAG", "productName": "ZULA BLUE", "bagType": "ZULA", "weeklySales": 0, "wpostKenya": 0, "wpostOutside": 0, "sKenya": 0, "sOutside": 0, "sRestock": 0}, {"colour": "Brown", "category": "MAN BAG", "productName": "ZULA YELLOW DOTTED", "bagType": "ZULA", "weeklySales": 0, "wpostKenya": 5, "wpostOutside": 0, "sKenya": 7, "sOutside": 0, "sRestock": 0}]
+};
+</script>
+<!-- NEW_PROD_DATA_END -->
+
+<script>
+/* ── Helpers ──────────────────────────────────────────────── */
+function set(id, val) { var e = document.getElementById(id); if (e) e.textContent = val; }
+function fmt(n) { return Number(n).toLocaleString(); }
+
+function uniqueVals(rows, key) {
+  var seen = {}, out = [];
+  rows.forEach(function(r) { var v = r[key] || ''; if (v && !seen[v]) { seen[v] = 1; out.push(v); } });
+  return out.sort();
+}
+
+function populateSel(id, vals, placeholder) {
+  var s = document.getElementById(id);
+  if (!s) return;
+  s.innerHTML = '<option value="">' + placeholder + '</option>';
+  vals.forEach(function(v) { var o = document.createElement('option'); o.value = v; o.textContent = v; s.appendChild(o); });
+}
+
+function applyFilters(rows, f) {
+  return rows.filter(function(r) {
+    if (f.colour      && r.colour      !== f.colour)      return false;
+    if (f.category    && r.category    !== f.category)    return false;
+    if (f.productName && r.productName !== f.productName) return false;
+    if (f.bagType     && r.bagType     !== f.bagType)     return false;
+    return true;
+  });
+}
+
+function sortRows(rows, col, dir) {
+  if (!col) return rows;
+  return rows.slice().sort(function(a, b) {
+    var av = +(a[col] || 0), bv = +(b[col] || 0);
+    return dir === 'asc' ? av - bv : bv - av;
+  });
+}
+
+function initSort(tableId, state, renderFn) {
+  var tbl = document.getElementById(tableId);
+  if (!tbl) return;
+  tbl.querySelectorAll('thead th[data-col]').forEach(function(th) {
+    th.addEventListener('click', function() {
+      var col = th.getAttribute('data-col');
+      if (state.col === col) { state.dir = state.dir === 'asc' ? 'desc' : 'asc'; }
+      else { state.col = col; state.dir = 'asc'; }
+      tbl.querySelectorAll('thead th[data-col]').forEach(function(t) {
+        t.classList.remove('sort-asc', 'sort-desc');
+        t.querySelector('.sort-icon').textContent = '⇅';
+      });
+      th.classList.add('sort-' + state.dir);
+      th.querySelector('.sort-icon').textContent = state.dir === 'asc' ? '▲' : '▼';
+      renderFn();
+    });
+  });
+}
+
+/* ── KPIs ─────────────────────────────────────────────────── */
+set('kpi-count',         NP.productCount);
+set('kpi-target',        NP.totalTarget);
+set('kpi-sales',         NP.totalSales);
+set('kpi-deficit',       NP.totalDeficit);
+set('kpi-pct',           NP.salesPct);
+set('kpi-monthly-kenya',  NP.monthlyKenya);
+set('kpi-monthly-outside',NP.monthlyOutside);
+set('kpi-mpost-kenya',    NP.mpostKenya);
+set('kpi-mpost-outside',  NP.mpostOutside);
+set('kpi-m-skenya',       NP.mSKenya);
+set('kpi-m-soutside',     NP.mSOutside);
+set('kpi-m-srestock',     NP.mSRestock);
+set('kpi-weekly',         NP.weeklyTotal);
+set('kpi-wpost-kenya',    NP.wpostKenya);
+set('kpi-wpost-outside',  NP.wpostOutside);
+set('kpi-w-skenya',       NP.wSKenya);
+set('kpi-w-soutside',     NP.wSOutside);
+set('kpi-w-srestock',     NP.wSRestock);
+
+/* ── Product tags ─────────────────────────────────────────── */
+(function() {
+  var wrap = document.getElementById('product-tags');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  var names = NP.productNames || [];
+  if (!names.length) {
+    var s = document.createElement('span'); s.className = 'product-tag';
+    s.style.borderColor = '#2d3148'; s.style.color = '#64748b';
+    s.textContent = 'No new products found'; wrap.appendChild(s); return;
+  }
+  names.forEach(function(n) {
+    var s = document.createElement('span'); s.className = 'product-tag'; s.textContent = n; wrap.appendChild(s);
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   MONTHLY
+   ═══════════════════════════════════════════════════════════ */
+var mState = { col: null, dir: 'asc', filters: { colour: '', category: '', productName: '', bagType: '' } };
+
+function renderMonthly() {
+  var filtered = applyFilters(NP.monthlyCombined || [], mState.filters);
+  var rows     = sortRows(filtered, mState.col, mState.dir);
+  var tbody    = document.getElementById('monthly-tbody');
+  var badge    = document.getElementById('monthly-row-count');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  if (badge) badge.textContent = rows.length;
+
+  /* Totals */
+  var gKS = 0, gOS = 0, gPK = 0, gPO = 0, gSK = 0, gSO = 0, gSR = 0;
+  rows.forEach(function(r) {
+    gKS += (r.kenyaSales   || 0); gOS += (r.outsideKenya || 0);
+    gPK += (r.mpostKenya   || 0); gPO += (r.mpostOutside || 0);
+    gSK += (r.sKenya || 0); gSO += (r.sOutside || 0); gSR += (r.sRestock || 0);
+  });
+
+  /* Totals row at top */
+  var ttr = document.createElement('tr'); ttr.className = 'total-row';
+  [['TOTALS',''], ['',''], ['',''], ['',''],
+   [fmt(gKS),'right'], [fmt(gOS),'right'], [fmt(gPK),'right'], [fmt(gPO),'right'],
+   [fmt(gSK),'right'], [fmt(gSO),'right'], [fmt(gSR),'right']
+  ].forEach(function(pair) {
+    var c = document.createElement('td'); c.textContent = pair[0];
+    if (pair[1] === 'right') c.style.textAlign = 'right'; ttr.appendChild(c);
+  });
+  tbody.appendChild(ttr);
+
+  if (!rows.length) {
+    var tr = document.createElement('tr');
+    var td = document.createElement('td');
+    td.colSpan = 11; td.className = 'empty-msg';
+    td.textContent = 'No data matches the current filters.';
+    tr.appendChild(td); tbody.appendChild(tr);
+  } else {
+    rows.forEach(function(r) { tbody.appendChild(buildMRow(r)); });
+  }
+}
+
+function buildMRow(r) {
+  var tr = document.createElement('tr');
+  function c(cls, v) { var td = document.createElement('td'); td.className = cls; td.textContent = v; tr.appendChild(td); }
+  c('col-colour',      r.colour       || '—');
+  c('col-category',    r.category     || '—');
+  c('col-product',     r.productName  || '—');
+  c('col-bagtype',     r.bagType      || '—');
+  c('col-m-kenya-s',   fmt(r.kenyaSales   || 0));
+  c('col-m-outside-s', fmt(r.outsideKenya || 0));
+  c('col-m-post-ke',   fmt(r.mpostKenya   || 0));
+  c('col-m-post-out',  fmt(r.mpostOutside || 0));
+  c('col-skenya',      fmt(r.sKenya   || 0));
+  c('col-soutside',    fmt(r.sOutside || 0));
+  c('col-srestock',    fmt(r.sRestock || 0));
+  return tr;
+}
+
+/* Populate monthly filters */
+var mData = NP.monthlyCombined || [];
+populateSel('m-f-colour',   uniqueVals(mData, 'colour'),      'All Colours');
+populateSel('m-f-category', uniqueVals(mData, 'category'),   'All Categories');
+populateSel('m-f-product',  uniqueVals(mData, 'productName'), 'All Products');
+populateSel('m-f-bagtype',  uniqueVals(mData, 'bagType'),     'All Bag Types');
+
+[['m-f-colour','colour'],['m-f-category','category'],['m-f-product','productName'],['m-f-bagtype','bagType']].forEach(function(pair) {
+  var el = document.getElementById(pair[0]);
+  if (el) el.addEventListener('change', function() { mState.filters[pair[1]] = this.value; renderMonthly(); });
+});
+
+document.getElementById('m-reset').addEventListener('click', function() {
+  mState.filters = { colour:'', category:'', productName:'', bagType:'' };
+  ['m-f-colour','m-f-category','m-f-product','m-f-bagtype'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  renderMonthly();
+});
+
+initSort('monthly-table', mState, renderMonthly);
+renderMonthly();
+
+/* ═══════════════════════════════════════════════════════════
+   WEEKLY
+   ═══════════════════════════════════════════════════════════ */
+var wState = { col: null, dir: 'asc', filters: { colour: '', category: '', productName: '', bagType: '' } };
+
+function renderWeekly() {
+  var filtered = applyFilters(NP.weeklyCombined || [], wState.filters);
+  var rows     = sortRows(filtered, wState.col, wState.dir);
+  var tbody    = document.getElementById('weekly-tbody');
+  var badge    = document.getElementById('weekly-row-count');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  if (badge) badge.textContent = rows.length;
+
+  /* Totals (computed from filtered set) */
+  var gS = 0, gPK = 0, gPO = 0, gSK = 0, gSO = 0, gSR = 0;
+  rows.forEach(function(r) {
+    gS  += (r.weeklySales  || 0); gPK += (r.wpostKenya   || 0); gPO += (r.wpostOutside || 0);
+    gSK += (r.sKenya || 0); gSO += (r.sOutside || 0); gSR += (r.sRestock || 0);
+  });
+
+  /* Totals row at TOP */
+  var ttr = document.createElement('tr'); ttr.className = 'total-row';
+  [['TOTALS',''], ['',''], ['',''], ['',''],
+   [fmt(gS),'right'], [fmt(gPK),'right'], [fmt(gPO),'right'],
+   [fmt(gSK),'right'], [fmt(gSO),'right'], [fmt(gSR),'right']
+  ].forEach(function(pair) {
+    var c = document.createElement('td'); c.textContent = pair[0];
+    if (pair[1] === 'right') c.style.textAlign = 'right'; ttr.appendChild(c);
+  });
+  tbody.appendChild(ttr);
+
+  if (!rows.length) {
+    var tr = document.createElement('tr');
+    var td = document.createElement('td');
+    td.colSpan = 10; td.className = 'empty-msg';
+    td.textContent = 'No data matches the current filters.';
+    tr.appendChild(td); tbody.appendChild(tr);
+  } else {
+    rows.forEach(function(r) { tbody.appendChild(buildWRow(r)); });
+  }
+}
+
+function buildWRow(r) {
+  var tr = document.createElement('tr');
+  function c(cls, v) { var td = document.createElement('td'); td.className = cls; td.textContent = v; tr.appendChild(td); }
+  c('col-colour',     r.colour       || '—');
+  c('col-category',   r.category     || '—');
+  c('col-product',    r.productName  || '—');
+  c('col-bagtype',    r.bagType      || '—');
+  c('col-w-sales',    fmt(r.weeklySales  || 0));
+  c('col-w-post-ke',  fmt(r.wpostKenya   || 0));
+  c('col-w-post-out', fmt(r.wpostOutside || 0));
+  c('col-skenya',     fmt(r.sKenya   || 0));
+  c('col-soutside',   fmt(r.sOutside || 0));
+  c('col-srestock',   fmt(r.sRestock || 0));
+  return tr;
+}
+
+/* Populate weekly filters */
+var wData = NP.weeklyCombined || [];
+populateSel('w-f-colour',   uniqueVals(wData, 'colour'),      'All Colours');
+populateSel('w-f-category', uniqueVals(wData, 'category'),   'All Categories');
+populateSel('w-f-product',  uniqueVals(wData, 'productName'), 'All Products');
+populateSel('w-f-bagtype',  uniqueVals(wData, 'bagType'),     'All Bag Types');
+
+[['w-f-colour','colour'],['w-f-category','category'],['w-f-product','productName'],['w-f-bagtype','bagType']].forEach(function(pair) {
+  var el = document.getElementById(pair[0]);
+  if (el) el.addEventListener('change', function() { wState.filters[pair[1]] = this.value; renderWeekly(); });
+});
+
+document.getElementById('w-reset').addEventListener('click', function() {
+  wState.filters = { colour:'', category:'', productName:'', bagType:'' };
+  ['w-f-colour','w-f-category','w-f-product','w-f-bagtype'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  renderWeekly();
+});
+
+initSort('weekly-table', wState, renderWeekly);
+renderWeekly();
+</script>
+
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+  var C = {
+    green:'#10b981', greenDim:'rgba(16,185,129,0.15)',
+    amber:'#f59e0b', amberDim:'rgba(245,158,11,0.15)',
+    cyan:'#06b6d4',  cyanDim:'rgba(6,182,212,0.15)',
+    purple:'#a78bfa',purpleDim:'rgba(167,139,250,0.15)',
+    red:'#ef4444',   redDim:'rgba(239,68,68,0.15)',
+    border:'#2d3148', text:'#94a3b8', surface:'#1e2130'
+  };
+
+  Chart.defaults.color = C.text;
+  Chart.defaults.borderColor = C.border;
+  Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+
+  var ttDefaults = {
+    backgroundColor: C.surface,
+    borderColor: C.border,
+    borderWidth: 1,
+    titleColor: '#f8fafc',
+    bodyColor: C.text,
+    padding: 10,
+    cornerRadius: 6
+  };
+
+  function parseNum(s) { return parseInt(String(s).replace(/[^0-9]/g,'')) || 0; }
+
+  // ── Chart A: Sales by Location Donut ──────────────────────
+  if (window._chartLocationDonut) window._chartLocationDonut.destroy();
+  window._chartLocationDonut = new Chart(
+    document.getElementById('chart-location-donut'),
+    {
+      type: 'doughnut',
+      data: {
+        labels: ['Kenya Sales', 'Outside Sales', 'Restock'],
+        datasets: [{
+          data: [parseNum(NP.mSKenya), parseNum(NP.mSOutside), parseNum(NP.mSRestock)],
+          backgroundColor: [C.greenDim, C.cyanDim, C.amberDim],
+          borderColor:     [C.green,    C.cyan,    C.amber],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        cutout: '68%',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: C.text, padding: 16, boxWidth: 12 }
+          },
+          tooltip: Object.assign({}, ttDefaults)
+        }
+      }
+    }
+  );
+
+  // ── Chart B: Top 10 Products Bar ──────────────────────────
+  var sorted = (NP.monthlyCombined || [])
+    .map(function(r) {
+      return {
+        name:  r.productName || r.colour || r.bagType || '—',
+        sales: (r.sKenya || 0) + (r.sOutside || 0) + (r.sRestock || 0)
+      };
+    })
+    .sort(function(a, b) { return b.sales - a.sales; })
+    .slice(0, 10);
+
+  if (window._chartTopProducts) window._chartTopProducts.destroy();
+  window._chartTopProducts = new Chart(
+    document.getElementById('chart-top-products'),
+    {
+      type: 'bar',
+      data: {
+        labels: sorted.map(function(r) { return r.name; }),
+        datasets: [{
+          label: 'Monthly Sales',
+          data:  sorted.map(function(r) { return r.sales; }),
+          backgroundColor: C.cyanDim,
+          borderColor:     C.cyan,
+          borderWidth: 2,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: Object.assign({}, ttDefaults)
+        },
+        scales: {
+          x: {
+            grid:  { color: C.border },
+            ticks: { color: C.text }
+          },
+          y: {
+            grid:  { display: false },
+            ticks: { color: C.text }
+          }
+        }
+      }
+    }
+  );
+});
+</script>
+
+<script>
+  document.querySelectorAll('.card').forEach(function(el, i) {
+    el.classList.add('card-reveal');
+    el.style.setProperty('--reveal-delay', (i * 40) + 'ms');
+  });
+</script>
+
+</body>
+</html>

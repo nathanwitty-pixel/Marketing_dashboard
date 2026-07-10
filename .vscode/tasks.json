@@ -1,0 +1,55 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run Current Performance",
+      "type": "shell",
+      "command": "python",
+      "args": ["${workspaceFolder}\\current_performance.py"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Run Forward Projections",
+      "type": "shell",
+      "command": "python",
+      "args": ["${workspaceFolder}\\forward_projections.py"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "shared", "clear": false }
+    },
+    {
+      "label": "Run New Products",
+      "type": "shell",
+      "command": "python",
+      "args": ["${workspaceFolder}\\new_products.py"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "shared", "clear": false }
+    },
+    {
+      "label": "Run Offer Type Analysis",
+      "type": "shell",
+      "command": "python",
+      "args": ["${workspaceFolder}\\offer_type_analysis.py"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "shared", "clear": false }
+    },
+    {
+      "label": "Run Posting Analysis",
+      "type": "shell",
+      "command": "python",
+      "args": ["${workspaceFolder}\\POSTING (SALES YIELDS FROM ACCURATE POSTING).py"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "shared", "clear": false }
+    },
+    {
+      "label": "Run All Dashboard Scripts",
+      "dependsOrder": "sequence",
+      "dependsOn": ["Run Current Performance", "Run Forward Projections", "Run New Products", "Run Offer Type Analysis", "Run Posting Analysis"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": { "reveal": "always", "panel": "shared" }
+    }
+  ]
+}

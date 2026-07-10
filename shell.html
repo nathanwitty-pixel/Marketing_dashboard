@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Denri Africa · Marketing Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sidebar-w: 216px;
+      --header-h: 52px;
+      --bg-app:     #07090f;
+      --bg-sidebar: #0b0d16;
+      --bg-content: #0f1117;
+      --border:     #1a1e2e;
+      --text-hi:    #f1f5f9;
+      --text-mid:   #94a3b8;
+      --text-lo:    #3d4a5c;
+      --accent:     #10b981;
+      --accent-dim: rgba(16,185,129,0.12);
+    }
+
+    html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { background: var(--bg-app); color: var(--text-hi); display: flex; flex-direction: column; }
+
+    /* ── Top bar ───────────────────────────────────────────── */
+    .topbar {
+      height: var(--header-h);
+      background: var(--bg-sidebar);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 1rem 0 0;
+      flex-shrink: 0;
+      gap: 0;
+    }
+
+    .topbar-brand {
+      width: var(--sidebar-w);
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0 1rem;
+      flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      height: 100%;
+    }
+    .brand-mark {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.62rem; font-weight: 800; color: #fff;
+      letter-spacing: 0.04em; flex-shrink: 0;
+    }
+    .brand-name { font-size: 0.8rem; font-weight: 700; color: var(--text-hi); line-height: 1.2; }
+    .brand-sub  { font-size: 0.6rem; color: var(--text-lo); letter-spacing: 0.05em; margin-top: 1px; }
+
+    .topbar-mid {
+      flex: 1;
+      padding: 0 1.25rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-mid);
+    }
+
+    .topbar-right { display: flex; align-items: center; gap: 0.5rem; }
+
+    .dot-live {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 6px rgba(16,185,129,0.55);
+    }
+    .dot-live.stale { background: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,0.5); }
+
+    .topbar-time {
+      font-size: 0.68rem; color: var(--text-lo);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .btn-ref {
+      display: flex; align-items: center; gap: 0.35rem;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--text-mid); font-size: 0.71rem;
+      padding: 0.3rem 0.7rem; border-radius: 6px;
+      cursor: pointer; transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-ref:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-ref svg { transition: transform 0.35s; }
+    .btn-ref.spinning svg { animation: spin 0.6s linear infinite; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Export dropdown ───────────────────────────────────── */
+    .export-wrap { position: relative; }
+    .export-menu {
+      position: absolute; top: calc(100% + 6px); right: 0;
+      background: var(--bg-sidebar); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.3rem; min-width: 168px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+      display: none; z-index: 50;
+    }
+    .export-menu.open { display: block; }
+    .export-item {
+      display: flex; align-items: center; gap: 0.55rem;
+      width: 100%; padding: 0.45rem 0.6rem;
+      background: transparent; border: none; border-radius: 5px;
+      color: var(--text-mid); font-size: 0.73rem; text-align: left;
+      cursor: pointer; transition: background 0.12s, color 0.12s;
+    }
+    .export-item:hover { background: rgba(255,255,255,0.05); color: var(--text-hi); }
+    .export-item .fmt {
+      font-size: 0.55rem; font-weight: 800; letter-spacing: 0.05em;
+      padding: 0.12rem 0.35rem; border-radius: 4px; flex-shrink: 0;
+      min-width: 34px; text-align: center;
+    }
+    .fmt-pdf   { background: rgba(239,68,68,0.18);  color: #fca5a5; }
+    .fmt-doc   { background: rgba(59,130,246,0.18); color: #93c5fd; }
+    .fmt-xls   { background: rgba(16,185,129,0.18); color: #6ee7b7; }
+
+    /* ── App body ──────────────────────────────────────────── */
+    .app-body { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Sidebar ───────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      overflow-y: auto; flex-shrink: 0;
+      padding: 0.5rem 0 1.5rem;
+      scrollbar-width: thin; scrollbar-color: #1e2235 transparent;
+    }
+
+    .nav-section {
+      font-size: 0.56rem; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--text-lo);
+      padding: 0.9rem 1.1rem 0.3rem;
+    }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 0.55rem;
+      padding: 0.5rem 1.1rem;
+      font-size: 0.76rem; font-weight: 500;
+      color: var(--text-mid);
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      user-select: none; line-height: 1.3;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.03); color: var(--text-hi); }
+    .nav-item.active { background: var(--accent-dim); border-left-color: var(--accent); color: #34d399; }
+    .nav-item.active svg { color: #34d399; }
+    .nav-icon { flex-shrink: 0; opacity: 0.6; }
+    .nav-item.active .nav-icon { opacity: 1; }
+
+    .nav-divider { height: 1px; background: var(--border); margin: 0.5rem 1.1rem; }
+
+    /* ── Content + iframe ──────────────────────────────────── */
+    .content { flex: 1; overflow: hidden; position: relative; background: var(--bg-content); }
+    #dash-frame { width: 100%; height: 100%; border: none; display: block; }
+
+    .overlay {
+      position: absolute; inset: 0;
+      background: var(--bg-content);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 1rem; opacity: 0; pointer-events: none;
+      transition: opacity 0.18s;
+    }
+    .overlay.show { opacity: 1; pointer-events: all; }
+    .spinner {
+      width: 28px; height: 28px;
+      border: 2px solid #1e2235; border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.65s linear infinite;
+    }
+    .overlay-text { font-size: 0.74rem; color: #3d4a5c; }
+  </style>
+</head>
+<body>
+
+<!-- ── Top bar ───────────────────────────────────────────── -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="brand-mark">DA</div>
+    <div>
+      <div class="brand-name">Denri Africa</div>
+      <div class="brand-sub">Marketing Analytics</div>
+    </div>
+  </div>
+  <div class="topbar-mid" id="page-title">Current Performance</div>
+  <div class="topbar-right">
+    <div class="dot-live" id="status-dot"></div>
+    <span class="topbar-time" id="clock"></span>
+    <div class="export-wrap">
+      <button class="btn-ref" id="btn-export" onclick="toggleExportMenu(event)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Export
+      </button>
+      <div class="export-menu" id="export-menu">
+        <button class="export-item" onclick="exportPDF()"><span class="fmt fmt-pdf">PDF</span> PDF — full colour</button>
+        <button class="export-item" onclick="exportWord()"><span class="fmt fmt-doc">DOC</span> Word — colour on white</button>
+        <button class="export-item" onclick="exportExcel()"><span class="fmt fmt-xls">XLS</span> Excel workbook</button>
+      </div>
+    </div>
+    <button class="btn-ref" id="btn-ref" onclick="reloadFrame()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <polyline points="23 4 23 10 17 10"></polyline>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+      </svg>
+      Refresh
+    </button>
+  </div>
+</div>
+
+<!-- ── App body ──────────────────────────────────────────── -->
+<div class="app-body">
+
+  <aside class="sidebar">
+
+    <div class="nav-section">Performance</div>
+
+    <div class="nav-item active"
+         data-src="current_performance.html"
+         data-title="Current Performance"
+         onclick="navigate(this)">
+      <svg class="nav-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+      </svg>
+      Current Performance
+    </div>
+
+
+    <div class="nav-divider"></div>
+    <div class="nav-section">Products</div>
+
+    <div class="nav-item"
+         data-src="new_products.html"
+         data-title="New Products Analytics"
+         onclick="navigate(this)">
+      <svg class="nav-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+      </svg>
+      New Products
+    </div>
+
+    <div class="nav-item"
+         data-src="offer_type_analysis.html"
+         data-title="Offer Type Analysis"
+         onclick="navigate(this)">
+      <svg class="nav-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+        <line x1="7" y1="7" x2="7.01" y2="7"></line>
+      </svg>
+      Offer Type Analysis
+    </div>
+
+    <div class="nav-divider"></div>
+    <div class="nav-section">Marketing</div>
+
+    <div class="nav-item"
+         data-src="POSTING (SALES YIELDS FROM ACCURATE POSTING).html"
+         data-title="Posting – Sales Yields from Accurate Posting"
+         onclick="navigate(this)">
+      <svg class="nav-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      Posting Yields
+    </div>
+
+    <div class="nav-item"
+         data-src="shops_efficiency.html"
+         data-title="Shops Efficiency Tracking"
+         onclick="navigate(this)">
+      <svg class="nav-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l1-5h16l1 5"></path>
+        <path d="M4 9v11a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"></path>
+        <path d="M9 21v-6h6v6"></path>
+      </svg>
+      Shops Efficiency
+    </div>
+
+    <div class="nav-divider"></div>
+    <div class="nav-section">Intelligence</div>
+
+    <div class="nav-item"
+         data-src="insights.html"
+         data-title="Dashboard Insights"
+         onclick="navigate(this)">
+      <svg class="nav-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      Insights
+    </div>
+
+  </aside>
+
+  <main class="content">
+    <iframe id="dash-frame" src="current_performance.html"></iframe>
+    <div class="overlay" id="overlay">
+      <div class="spinner"></div>
+      <div class="overlay-text" id="overlay-text">Loading…</div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  var frame   = document.getElementById('dash-frame');
+  var overlay = document.getElementById('overlay');
+  var titleEl = document.getElementById('page-title');
+  var clockEl = document.getElementById('clock');
+  var btnRef  = document.getElementById('btn-ref');
+
+  // Append a cache-busting timestamp so the browser never serves a stale iframe
+  function bust(file) {
+    return file + '?_ts=' + Date.now();
+  }
+
+  function navigate(el) {
+    document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+    el.classList.add('active');
+    var title = el.dataset.title;
+    titleEl.textContent = title;
+    document.getElementById('overlay-text').textContent = 'Loading ' + title + '…';
+    overlay.classList.add('show');
+    frame.src = bust(el.dataset.src);
+  }
+
+  frame.addEventListener('load', function() {
+    overlay.classList.remove('show');
+  });
+
+  var SCRIPT_MAP = {
+    'current_performance.html':                             'current_performance.html',
+    'new_products.html':                                    'new_products.html',
+    'offer_type_analysis.html':                             'offer_type_analysis.html',
+    'POSTING (SALES YIELDS FROM ACCURATE POSTING).html':   'POSTING (SALES YIELDS FROM ACCURATE POSTING).html',
+    'forward_projections.html':                             'forward_projections.html',
+    'shops_efficiency.html':                                'shops_efficiency.html',
+    'insights.html':                                        'insights.html',
+  };
+
+  function reloadFrame() {
+    overlay.classList.add('show');
+    btnRef.classList.add('spinning');
+
+    var filename = decodeURIComponent(frame.src.split('/').pop().split('?')[0]);
+    var hasDashboard = Object.prototype.hasOwnProperty.call(SCRIPT_MAP, filename);
+
+    if (hasDashboard) {
+      document.getElementById('overlay-text').textContent = 'Refreshing data…';
+      fetch('/api/refresh?dashboard=' + encodeURIComponent(filename) + '&_ts=' + Date.now())
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          document.getElementById('overlay-text').textContent = 'Loading…';
+          if (data.ok) {
+            frame.src = 'about:blank';
+            setTimeout(function() { frame.src = bust(filename); }, 80);
+          } else {
+            overlay.classList.remove('show');
+            btnRef.classList.remove('spinning');
+            alert('Refresh failed:\n' + (data.error || 'unknown error'));
+          }
+        })
+        .catch(function() {
+          frame.src = 'about:blank';
+          setTimeout(function() { frame.src = bust(filename); }, 80);
+        });
+    } else {
+      frame.src = 'about:blank';
+      setTimeout(function() { frame.src = bust(filename); }, 80);
+    }
+  }
+
+  frame.addEventListener('load', function() {
+    overlay.classList.remove('show');
+    btnRef.classList.remove('spinning');
+  });
+
+  // Clock
+  function tick() {
+    var now = new Date();
+    var h = now.getHours().toString().padStart(2,'0');
+    var m = now.getMinutes().toString().padStart(2,'0');
+    clockEl.textContent = h + ':' + m;
+  }
+  tick();
+  setInterval(tick, 30000);
+
+  /* ── Export (PDF / Word / Excel) ─────────────────────────── */
+
+  var exportMenu = document.getElementById('export-menu');
+
+  function toggleExportMenu(e) {
+    e.stopPropagation();
+    exportMenu.classList.toggle('open');
+  }
+  document.addEventListener('click', function() {
+    exportMenu.classList.remove('open');
+  });
+
+  function exportFileName(ext) {
+    var page = titleEl.textContent.replace(/[^\w]+/g, '_').replace(/^_+|_+$/g, '');
+    var d = new Date();
+    var stamp = d.getFullYear() + '-' +
+                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                String(d.getDate()).padStart(2, '0');
+    return 'Denri_' + page + '_' + stamp + '.' + ext;
+  }
+
+  function downloadBlob(content, mime, filename) {
+    var blob = new Blob([content], { type: mime });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(a.href); }, 5000);
+  }
+
+  /* ── Colour helpers for the Word (paper) export ──────────── */
+
+  function parseRGB(s) {
+    var m = String(s).match(/rgba?\(([\d.]+)[, ]+([\d.]+)[, ]+([\d.]+)(?:[,/ ]+([\d.]+))?\)/);
+    if (!m) return null;
+    return { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : +m[4] };
+  }
+
+  function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    var mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+    var h = 0, s = 0, l = (mx + mn) / 2, d = mx - mn;
+    if (d) {
+      s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+      switch (mx) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        default: h = (r - g) / d + 4;
+      }
+      h *= 60;
+    }
+    return [Math.round(h), Math.round(s * 100), Math.round(l * 100)];
+  }
+
+  function hslCss(h, s, l, a) {
+    return 'hsla(' + h + ',' + s + '%,' + l + '%,' + (a === undefined ? 1 : a) + ')';
+  }
+
+  // Convert one on-screen colour to its paper (white background) version.
+  // kind: 'text' | 'bg' | 'border'
+  function paperColor(cssColor, kind) {
+    var c = parseRGB(cssColor);
+    if (!c || c.a < 0.05) return null;
+    var hsl = rgbToHsl(c.r, c.g, c.b), h = hsl[0], s = hsl[1], l = hsl[2];
+
+    if (kind === 'bg') {
+      if (s < 30) return l < 60 ? '#ffffff' : null;   // dark surface → white
+      if (c.a < 0.6) return null;                     // coloured tint → keep
+      if (l < 45) return hslCss(h, s, 92);            // solid dark chroma → pale tint
+      return null;
+    }
+    if (kind === 'border') {
+      if (s < 30) return l < 70 ? '#d1d5db' : null;   // dark border → light grey
+      return hslCss(h, Math.min(s, 60), 70, c.a);
+    }
+    // text: neutrals invert (light grey → dark grey); colours keep their
+    // hue but darken enough to read on white
+    if (s < 20) return hslCss(0, 0, Math.max(10, Math.min(45, 100 - l)));
+    return hslCss(h, s, Math.min(l, 40));
+  }
+
+  // Walk source + clone in lockstep and inline paper-adjusted colours.
+  function colorizeForPaper(srcDoc, clone) {
+    var src = srcDoc.querySelectorAll('*');
+    var dst = clone.querySelectorAll('*');
+    var n = Math.min(src.length, dst.length);
+    var view = srcDoc.defaultView;
+
+    for (var i = 0; i < n; i++) {
+      var cs = view.getComputedStyle(src[i]);
+      if (cs.display === 'none') continue;
+
+      var hasGradient = cs.backgroundImage && cs.backgroundImage !== 'none';
+      if (hasGradient) {
+        // Word can't render CSS gradients — flatten to the gradient's
+        // first colour and keep the original (usually white) text
+        var gm = cs.backgroundImage.match(/rgba?\([^)]+\)|#[0-9a-fA-F]{3,8}/);
+        if (gm) {
+          dst[i].style.setProperty('background-image', 'none', 'important');
+          dst[i].style.setProperty('background-color', gm[0], 'important');
+        }
+      } else {
+        var t = paperColor(cs.color, 'text');
+        if (t) dst[i].style.setProperty('color', t, 'important');
+      }
+
+      var bg = paperColor(cs.backgroundColor, 'bg');
+      if (bg) dst[i].style.setProperty('background-color', bg, 'important');
+
+      if (parseFloat(cs.borderTopWidth) > 0) {
+        var bc = paperColor(cs.borderTopColor, 'border');
+        if (bc) dst[i].style.setProperty('border-color', bc, 'important');
+      }
+    }
+  }
+
+  // Clone the live dashboard, snapshot charts to images, strip scripts.
+  // mode: 'dark' keeps the on-screen theme; 'paper' converts to white
+  // background with readable full-colour accents.
+  function buildExportDoc(mode) {
+    var doc = frame.contentDocument;
+    if (!doc || !doc.body) { alert('Dashboard not loaded yet.'); return null; }
+
+    var clone = doc.documentElement.cloneNode(true);
+
+    // Colour walk must happen while source and clone have identical
+    // element lists — before canvas swaps and script removal
+    if (mode === 'paper') colorizeForPaper(doc, clone);
+
+    var srcCanvases   = doc.querySelectorAll('canvas');
+    var cloneCanvases = clone.querySelectorAll('canvas');
+    srcCanvases.forEach(function(cv, i) {
+      if (!cloneCanvases[i]) return;
+      try {
+        var backing = document.createElement('canvas');
+        backing.width  = cv.width;
+        backing.height = cv.height;
+        var ctx = backing.getContext('2d');
+        ctx.fillStyle = '#1e2130';   // charts stay on their dark tile — full colour
+        ctx.fillRect(0, 0, backing.width, backing.height);
+        ctx.drawImage(cv, 0, 0);
+        var img = document.createElement('img');
+        img.src = backing.toDataURL('image/png');
+        img.style.maxWidth = '100%';
+        cloneCanvases[i].parentNode.replaceChild(img, cloneCanvases[i]);
+      } catch (err) { /* tainted/empty canvas — skip */ }
+    });
+
+    clone.querySelectorAll('script').forEach(function(s) { s.remove(); });
+
+    var style = document.createElement('style');
+    var common =
+      '.card-reveal,.s1-reveal{animation:none!important;opacity:1!important;transform:none!important}' +
+      '.filter-bar,select,input,button{display:none!important}' +
+      'body{display:block!important;min-height:auto!important}';
+    if (mode === 'paper') {
+      style.textContent = common +
+        'body{background:#ffffff!important;padding:24px!important}' +
+        '*{text-shadow:none!important;box-shadow:none!important}';
+    } else {
+      // exact on-screen colours — force browsers to print backgrounds
+      style.textContent = common +
+        '*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}' +
+        '@page{margin:8mm}';
+    }
+    (clone.querySelector('head') || clone).appendChild(style);
+
+    return '<!DOCTYPE html>\n' + clone.outerHTML;
+  }
+
+  function exportPDF() {
+    var html = buildExportDoc('dark');   // full colour, exactly as on screen
+    if (!html) return;
+    var w = window.open('', '_blank');
+    if (!w) { alert('Pop-up blocked — allow pop-ups to export PDF.'); return; }
+    w.document.write(html);
+    w.document.close();
+    setTimeout(function() {
+      w.focus();
+      w.print();   // user picks "Save as PDF" in the dialog
+    }, 400);
+  }
+
+  function exportWord() {
+    var html = buildExportDoc('paper');  // white paper, colour accents kept
+    if (!html) return;
+    downloadBlob(html, 'application/msword', exportFileName('doc'));
+  }
+
+  /* Excel: KPI cards become a "KPIs" sheet; every table gets its own sheet */
+
+  function xmlEsc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function xlCell(text) {
+    var t = String(text).trim();
+    var num = t.replace(/,/g, '');
+    if (/^-?\d+(\.\d+)?$/.test(num) && num !== '') {
+      return '<Cell><Data ss:Type="Number">' + num + '</Data></Cell>';
+    }
+    return '<Cell><Data ss:Type="String">' + xmlEsc(t) + '</Data></Cell>';
+  }
+
+  function xlSheetName(raw, used, fallback) {
+    var name = String(raw || fallback).replace(/[\[\]:*?\/\\]/g, ' ')
+                 .replace(/\s+/g, ' ').trim().slice(0, 31) || fallback;
+    var base = name, n = 2;
+    while (used.indexOf(name) !== -1) {
+      name = (base.slice(0, 28) + ' ' + n++);
+    }
+    used.push(name);
+    return name;
+  }
+
+  function exportExcel() {
+    var doc = frame.contentDocument;
+    if (!doc || !doc.body) { alert('Dashboard not loaded yet.'); return; }
+
+    var used = [];
+    var sheets = '';
+
+    // ── Sheet 1: KPI cards (label / value / note) ──
+    var kpiRows = '';
+    doc.querySelectorAll('.card, .kpi').forEach(function(card) {
+      var label = card.querySelector('.card-label, .kpi-label');
+      var value = card.querySelector('.card-value, .kpi-value');
+      if (!label || !value) return;
+      var note = card.querySelector('.card-interpretation, .kpi-sub, .card-sub');
+      kpiRows += '<Row>' + xlCell(label.textContent) + xlCell(value.textContent) +
+                 xlCell(note ? note.textContent : '') + '</Row>';
+    });
+    if (kpiRows) {
+      sheets += '<Worksheet ss:Name="' + xmlEsc(xlSheetName('KPIs', used, 'KPIs')) + '"><Table>' +
+                '<Row>' + xlCell('Metric') + xlCell('Value') + xlCell('Notes') + '</Row>' +
+                kpiRows + '</Table></Worksheet>';
+    }
+
+    // ── One sheet per table ──
+    doc.querySelectorAll('table').forEach(function(tbl, idx) {
+      var rows = '';
+      tbl.querySelectorAll('tr').forEach(function(tr) {
+        var cells = tr.querySelectorAll('th, td');
+        if (!cells.length) return;
+        var r = '<Row>';
+        cells.forEach(function(c) { r += xlCell(c.textContent); });
+        rows += r + '</Row>';
+      });
+      if (!rows) return;
+
+      var wrap  = tbl.closest('.table-wrap');
+      var title = wrap ? wrap.querySelector('.table-title') : null;
+      var name  = xlSheetName(title ? title.textContent : '', used, 'Table ' + (idx + 1));
+      sheets += '<Worksheet ss:Name="' + xmlEsc(name) + '"><Table>' + rows + '</Table></Worksheet>';
+    });
+
+    if (!sheets) { alert('Nothing found to export on this page.'); return; }
+
+    var workbook =
+      '<?xml version="1.0"?>' +
+      '<?mso-application progid="Excel.Sheet"?>' +
+      '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" ' +
+      'xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">' +
+      sheets + '</Workbook>';
+
+    downloadBlob(workbook, 'application/vnd.ms-excel', exportFileName('xls'));
+  }
+</script>
+
+</body>
+</html>

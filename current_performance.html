@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      gap: 3rem;
+    }
+
+    /* ── Section wrapper ──────────────────────────────────── */
+    .section {
+      width: 100%;
+      max-width: 960px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-header .pill {
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+    }
+
+    .pill-live     { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+    .pill-forecast { background: linear-gradient(135deg, #0ea5e9, #6366f1); }
+
+    .section-header h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: 0.02em;
+    }
+
+    .date-line {
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-bottom: 1.5rem;
+      padding-left: 0.1rem;
+    }
+    .date-line span { color: #94a3b8; font-weight: 600; }
+
+    /* ── Card grid ────────────────────────────────────────── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: #1e2130;
+      border: 1px solid #2d3148;
+      border-radius: 14px;
+      padding: 1.2rem 1.4rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  box-shadow 0.2s ease,
+                  border-color 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+      border-color: rgba(16,185,129,0.25);
+    }
+
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .card-reveal {
+      animation: card-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation-delay: var(--reveal-delay, 0ms);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+
+    /* Current Performance colours */
+    .card.red::before    { background: linear-gradient(90deg, #ef4444, #f97316); }
+    .card.amber::before  { background: linear-gradient(90deg, #f59e0b, #eab308); }
+    .card.blue::before   { background: linear-gradient(90deg, #3b82f6, #6366f1); }
+    .card.purple::before { background: linear-gradient(90deg, #8b5cf6, #6366f1); }
+    .card.green::before  { background: linear-gradient(90deg, #10b981, #06b6d4); }
+    .card.rose::before   { background: linear-gradient(90deg, #f43f5e, #ef4444); }
+
+    /* Forward Projections colours */
+    .card.cyan::before   { background: linear-gradient(90deg, #06b6d4, #3b82f6); }
+    .card.indigo::before { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+    .card.orange::before { background: linear-gradient(90deg, #f97316, #eab308); }
+
+    .card-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-bottom: 0.6rem;
+      line-height: 1.4;
+    }
+
+    .card-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #f8fafc;
+      line-height: 1.1;
+      margin-bottom: 0.5rem;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
+    }
+
+    .card-value.pct    { color: #facc15; }
+    .card-value.cyan   { color: #22d3ee; }
+    .card-value.indigo { color: #818cf8; }
+    .card-value.orange { color: #fb923c; }
+    .card-value.rose   { color: #fb7185; }
+    .card-value.amber  { color: #fbbf24; }
+
+    .card-interpretation {
+      font-size: 0.78rem;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .card-sub {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-top: 0.25rem;
+      margin-bottom: 0.35rem;
+      min-height: 1.1rem;
+    }
+
+    /* ── Summary table ────────────────────────────────────── */
+    .table-wrap {
+      background: #1e2130;
+      border: 1px solid #2d3148;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .table-title {
+      padding: 1rem 1.5rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      border-bottom: 1px solid #2d3148;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      background: #161824;
+      padding: 0.75rem 1.5rem;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    tbody tr {
+      border-top: 1px solid #2d3148;
+      transition: background 0.15s;
+    }
+
+    tbody tr:hover { background: #252840; }
+
+    tbody td {
+      padding: 0.95rem 1.5rem;
+      font-size: 0.88rem;
+      vertical-align: middle;
+    }
+
+    td.metric { font-weight: 700; color: #e2e8f0; }
+    td.type   { font-weight: 700; color: #e2e8f0; }
+
+    td.value  { font-weight: 800; font-size: 1rem; color: #f8fafc; white-space: nowrap; }
+    td.basis  { color: #94a3b8; font-size: 0.82rem; line-height: 1.5; }
+    td.interp { color: #94a3b8; font-size: 0.82rem; line-height: 1.5; }
+
+    td.value.yellow { color: #facc15; }
+    td.value.red    { color: #f87171; }
+    td.value.blue   { color: #60a5fa; }
+    td.value.rose   { color: #fb7185; }
+    td.value.cyan   { color: #22d3ee; }
+    td.value.indigo { color: #818cf8; }
+    td.value.orange { color: #fb923c; }
+    td.value.amber  { color: #fbbf24; }
+
+    .tbl-sub {
+      font-size: 0.75rem;
+      color: #475569;
+      font-weight: 500;
+      margin-top: 0.2rem;
+      min-height: 1rem;
+    }
+
+    /* ── Section divider ──────────────────────────────────── */
+    .section-divider {
+      display: flex; align-items: center; gap: 1rem;
+      margin: 2.5rem 0 1.5rem;
+    }
+    .section-divider .div-line { flex: 1; height: 1px; background: #2d3148; }
+    .section-divider .div-label {
+      font-size: 0.58rem; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: #475569; white-space: nowrap;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION 1 — Current Performance                           -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section">
+
+  <div class="section-header">
+    <span class="pill pill-live">Live</span>
+    <h2>Current Performance</h2>
+  </div>
+
+  <div class="card-grid">
+
+    <div class="card blue">
+      <div class="card-label">Sales</div>
+      <div class="card-value" id="kpi-sales"></div>
+      <div class="card-interpretation">Absolute number of bags sold so far.</div>
+    </div>
+
+    <div class="card amber">
+      <div class="card-label">Sales % Achieved</div>
+      <div class="card-value pct" id="kpi-pct"></div>
+      <div class="card-interpretation">Percentage of the overall target already achieved.</div>
+    </div>
+
+    <div class="card amber">
+      <div class="card-label">Growth % Towards The Achieved Monthly Sales</div>
+      <div class="card-value pct" id="kpi-weekly-pct"></div>
+      <div class="card-interpretation">Previous sales total as a % of this week's sales total.</div>
+    </div>
+
+    <div class="card purple">
+      <div class="card-label">Previous Sales % Achieved</div>
+      <div class="card-value pct" id="kpi-prev-pct"></div>
+      <div class="card-sub" id="prev-bags-card"></div>
+      <div class="card-interpretation">Sales % achieved in the previous period (bags sold).</div>
+    </div>
+
+    <div class="card blue">
+      <div class="card-label">Weekly Sales</div>
+      <div class="card-value" id="kpi-weekly-sales"></div>
+      <div class="card-sub" id="weekly-carryover-sub"></div>
+      <div class="card-interpretation">Total bags sold this week (Sun–Sat).</div>
+    </div>
+
+    <div class="card green">
+      <div class="card-label">WoW Sales %</div>
+      <div class="card-value pct" id="kpi-wow-pct"></div>
+      <div class="card-sub" id="wow-bags-card"></div>
+      <div class="card-interpretation">Week-over-week change in sales % (bags sold).</div>
+    </div>
+
+    <div class="card purple">
+      <div class="card-label">Weekly vs Last Month</div>
+      <div class="card-value pct" id="kpi-mom-weekly"></div>
+      <div class="card-sub" id="mom-weekly-sub"></div>
+      <div class="card-interpretation">Current weekly sales vs the final weekly figure of last month.</div>
+    </div>
+
+    <div class="card rose">
+      <div class="card-label">Declined By</div>
+      <div class="card-value rose" id="kpi-declined"></div>
+      <div class="card-sub" id="kpi-declined-sub"></div>
+      <div class="card-interpretation">Bags missed vs the weekly bare minimum target.</div>
+    </div>
+
+    <div class="card red">
+      <div class="card-label">Remaining Target</div>
+      <div class="card-value" id="kpi-remaining"></div>
+      <div class="card-interpretation">Bags still required to meet the full target.</div>
+    </div>
+
+  </div>
+
+  <div class="card-grid">
+    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
+      <div class="card-label">Sales vs Monthly Target</div>
+      <div style="position:relative;height:240px"><canvas id="chart-progress-donut"></canvas></div>
+    </div>
+  </div>
+
+</div><!-- /.section -->
+
+<div class="section-divider">
+  <div class="div-line"></div>
+  <span class="div-label">Forward Projections</span>
+  <div class="div-line"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION 2 — Forward Projections                           -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section">
+
+  <div class="section-header">
+    <span class="pill pill-forecast">Forecast</span>
+    <h2>Forward Projections</h2>
+  </div>
+  <div class="date-line" id="date-line">Loading...</div>
+
+  <div class="card-grid">
+
+    <div class="card cyan">
+      <div class="card-label">Standard Projection<br/><span style="font-size:0.65rem;color:#475569;">% of Total Target</span></div>
+      <div class="card-value cyan" id="kpi-standard"></div>
+      <div class="card-sub" id="kpi-standard-sub"></div>
+      <div class="card-interpretation">Based on maintaining the current sales velocity and product mix.</div>
+    </div>
+
+    <div class="card indigo">
+      <div class="card-label">Forecasted Projection<br/><span style="font-size:0.65rem;color:#475569;">% of Total Target</span></div>
+      <div class="card-value indigo" id="kpi-forecasted"></div>
+      <div class="card-sub" id="kpi-forecasted-sub"></div>
+      <div class="card-interpretation">Based on maintaining the current sales velocity and product mix with corporate in mind.</div>
+    </div>
+
+    <div class="card orange">
+      <div class="card-label">Bare Minimum<br/>(Bags to be Sold)</div>
+      <div class="card-value orange" id="kpi-bare"></div>
+      <div class="card-interpretation">We are needed to achieve at least this in a week's time.</div>
+    </div>
+
+    <div class="card amber">
+      <div class="card-label">Bare Minimum<br/>(Growth %)</div>
+      <div class="card-value amber" id="kpi-bare-growth"></div>
+      <div class="card-interpretation">Bare minimum as a % of the total monthly target.</div>
+    </div>
+
+  </div>
+
+  <div class="card-grid">
+    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
+      <div class="card-label">Projection vs 100% Target</div>
+      <div style="position:relative;height:200px"><canvas id="chart-proj-bar"></canvas></div>
+    </div>
+  </div>
+
+</div><!-- /.section -->
+
+<!-- PERF_DATA_START -->
+<script>
+const PERF = {
+  remainingTarget:    "18,775",
+  salesPctAchieved:   "19.18%",
+  sales:              "4,457",
+  previousSalesPct:   "11.22%",
+  previousSalesBags:  "2,445",
+  wowSalesPct:        "32.16%",
+  wowSalesBags:       "-595",
+  weeklySalesTotal:   "1,850",
+  weeklySalesPct:     "7.96%",
+  weeklyThisMonth:    "1,850",
+  weeklyCarryover:    "",
+  carryoverMonth:     "",
+  carryoverDate:      "",
+  prevMonthWeekly:    "",
+  prevMonthLabel:     "",
+  momWeeklyBags:      "",
+  momWeeklyPct:       "",
+  bareMinimum:        "",
+  declinedBy:         ""
+};
+</script>
+<!-- PERF_DATA_END -->
+
+<!-- PROJ_DATA_START -->
+<script>
+const PROJ = {
+  currentDay:               9,
+  daysInMonth:              31,
+  velocityFactor:           "3.44x",
+  totalTarget:              "23,232",
+  totalSales:               "4,457",
+  standardProjection:       "66.08%",
+  forecastedProjection:     "67.83%",
+  corporateBags:            "118",
+  bareMinimum:              "6,400",
+  bareMinimumGrowthPct:     "27.55%",
+  declinedBy:               "-4,550",
+  weeklySalesTotal:         "1,850"
+};
+</script>
+<!-- PROJ_DATA_END -->
+
+<script>
+  /* ── Helpers ─────────────────────────────────────────────── */
+  function setText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  function setSub(id, val) {
+    const el = document.getElementById(id);
+    if (el && val) el.textContent = val;
+  }
+
+  function setBags(cardId, tblId, val) {
+    if (!val) return;
+    const label = val + ' bags';
+    setText(cardId, label);
+    setText(tblId, label);
+  }
+
+  /* ── Section 1: Current Performance ─────────────────────── */
+  setText('kpi-remaining',    PERF.remainingTarget);
+  setText('kpi-pct',          PERF.salesPctAchieved);
+  setText('kpi-sales',        PERF.sales);
+  setText('kpi-prev-pct',     PERF.previousSalesPct);
+  setText('kpi-wow-pct',      PERF.wowSalesPct);
+  setText('kpi-weekly-sales', PERF.weeklySalesTotal);
+  setText('kpi-weekly-pct',   PERF.weeklySalesPct);
+
+  // Month-boundary carryover: when the Sun–Sat week straddles a month
+  // change, show how the week's total splits between the two months
+  if (PERF.weeklyCarryover) {
+    setText('weekly-carryover-sub',
+      PERF.weeklyThisMonth + ' this month · ' +
+      PERF.weeklyCarryover + ' from ' + PERF.carryoverMonth);
+  }
+
+  // Month-over-month weekly KPI: needs one month change to have data
+  if (PERF.prevMonthWeekly) {
+    setText('kpi-mom-weekly', PERF.momWeeklyPct);
+    setText('mom-weekly-sub',
+      PERF.weeklySalesTotal + ' now vs ' + PERF.prevMonthWeekly +
+      ' end of ' + PERF.prevMonthLabel + ' (' + PERF.momWeeklyBags + ' bags)');
+    document.getElementById('kpi-mom-weekly').style.color =
+      PERF.momWeeklyPct.charAt(0) === '+' ? '#34d399' : '#f87171';
+  } else {
+    setText('kpi-mom-weekly', '—');
+    setText('mom-weekly-sub', 'Available after the first month change');
+  }
+
+  setBags('prev-bags-card', 'prev-bags-card', PERF.previousSalesBags);
+  setBags('wow-bags-card',  'wow-bags-card',  PERF.wowSalesBags);
+
+  setText('kpi-declined', PROJ.declinedBy || '—');
+  if (PROJ.declinedBy && PROJ.bareMinimum)
+    setSub('kpi-declined-sub', PROJ.weeklySalesTotal + ' sold vs ' + PROJ.bareMinimum + ' target');
+
+  /* ── Section 2: Forward Projections ─────────────────────── */
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const today  = new Date();
+  document.getElementById('date-line').innerHTML =
+    'As of <span>day ' + PROJ.currentDay + '</span> of ' + months[today.getMonth()] +
+    ' &mdash; projecting over <span>' + PROJ.daysInMonth + ' days</span> at <span>' + PROJ.velocityFactor + '</span> current pace';
+
+  setText('kpi-standard', PROJ.standardProjection);
+  setSub('kpi-standard-sub', 'at ' + PROJ.velocityFactor + ' of current pace');
+
+  setText('kpi-forecasted', PROJ.forecastedProjection);
+  if (PROJ.corporateBags && PROJ.corporateBags !== "0")
+    setSub('kpi-forecasted-sub', 'incl. ' + PROJ.corporateBags + ' corporate bags');
+
+  setText('kpi-bare',        PROJ.bareMinimum);
+  setText('kpi-bare-growth', PROJ.bareMinimumGrowthPct);
+</script>
+
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+  var C = {
+    green:'#10b981', greenDim:'rgba(16,185,129,0.15)',
+    amber:'#f59e0b', amberDim:'rgba(245,158,11,0.15)',
+    cyan:'#06b6d4',  cyanDim:'rgba(6,182,212,0.15)',
+    purple:'#a78bfa',purpleDim:'rgba(167,139,250,0.15)',
+    red:'#ef4444',   redDim:'rgba(239,68,68,0.15)',
+    border:'#2d3148', text:'#94a3b8', surface:'#1e2130'
+  };
+
+  Chart.defaults.color = C.text;
+  Chart.defaults.borderColor = C.border;
+  Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+
+  var ttDefaults = {
+    backgroundColor: C.surface,
+    borderColor: C.border,
+    borderWidth: 1,
+    titleColor: '#f8fafc',
+    bodyColor: C.text,
+    padding: 10,
+    cornerRadius: 6
+  };
+
+  function parseNum(s) { return parseInt(String(s).replace(/[^0-9]/g,'')) || 0; }
+  function parsePct(s) { return parseFloat(String(s).replace('%','')) || 0; }
+
+  // ── Chart A: Sales Progress Donut ──────────────────────────
+  var salesVal     = parseNum(PERF.sales);
+  var remainingVal = parseNum(PERF.remainingTarget);
+  var pctLabel     = PERF.salesPctAchieved;
+
+  var centerLabelPlugin = {
+    id: 'centerLabelPerf',
+    afterDraw: function(chart) {
+      if (chart.config.type !== 'doughnut') return;
+      var ca = chart.chartArea;
+      var cx = ca.left + (ca.right - ca.left) / 2;
+      var cy = ca.top  + (ca.bottom - ca.top) / 2;
+      var ctx = chart.ctx;
+      ctx.save();
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle    = '#ffffff';
+      ctx.font         = 'bold 1.4rem "Segoe UI", system-ui, sans-serif';
+      ctx.fillText(pctLabel, cx, cy);
+      ctx.restore();
+    }
+  };
+
+  if (window._chartProgressDonut) window._chartProgressDonut.destroy();
+  window._chartProgressDonut = new Chart(
+    document.getElementById('chart-progress-donut'),
+    {
+      type: 'doughnut',
+      data: {
+        labels: ['Sold', 'Remaining'],
+        datasets: [{
+          data: [salesVal, remainingVal],
+          backgroundColor: [C.greenDim, 'rgba(45,49,72,0.5)'],
+          borderColor:     [C.green,    C.border],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        cutout: '70%',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: C.text, padding: 16, boxWidth: 12 }
+          },
+          tooltip: Object.assign({}, ttDefaults)
+        }
+      },
+      plugins: [centerLabelPlugin]
+    }
+  );
+
+  // ── Chart B: Projections vs Target Bar ─────────────────────
+  var refLine = {
+    id: 'refLine',
+    afterDraw: function(chart) {
+      var x    = chart.scales.x;
+      var ctx  = chart.ctx;
+      var xPos = x.getPixelForValue(100);
+      ctx.save();
+      ctx.beginPath();
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = 'rgba(248,250,252,0.2)';
+      ctx.lineWidth   = 1;
+      ctx.moveTo(xPos, chart.chartArea.top);
+      ctx.lineTo(xPos, chart.chartArea.bottom);
+      ctx.stroke();
+      ctx.restore();
+    }
+  };
+
+  if (window._chartProjBar) window._chartProjBar.destroy();
+  window._chartProjBar = new Chart(
+    document.getElementById('chart-proj-bar'),
+    {
+      type: 'bar',
+      data: {
+        labels: ['Standard Projection', 'Forecasted Projection', 'Bare Minimum %', 'Target'],
+        datasets: [{
+          data: [
+            parsePct(PROJ.standardProjection),
+            parsePct(PROJ.forecastedProjection),
+            parsePct(PROJ.bareMinimumGrowthPct),
+            100
+          ],
+          backgroundColor: [C.cyanDim,  C.purpleDim, C.amberDim, C.greenDim],
+          borderColor:     [C.cyan,     C.purple,    C.amber,    C.green],
+          borderWidth: 2,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: Object.assign({}, ttDefaults, {
+            callbacks: {
+              label: function(ctx) { return ' ' + ctx.parsed.x.toFixed(2) + '%'; }
+            }
+          })
+        },
+        scales: {
+          x: {
+            grid:  { color: C.border },
+            ticks: { color: C.text, callback: function(v) { return v + '%'; } }
+          },
+          y: {
+            grid:  { display: false },
+            ticks: { color: C.text }
+          }
+        }
+      },
+      plugins: [refLine]
+    }
+  );
+});
+</script>
+
+<script>
+  document.querySelectorAll('.card').forEach(function(el, i) {
+    el.classList.add('card-reveal');
+    el.style.setProperty('--reveal-delay', (i * 40) + 'ms');
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem \"$env:USERPROFILE\\\\.vscode\\\\extensions\\\\anthropic.claude-code-2.1.168-win32-x64\" -Recurse -Filter \"claude.exe\" -ErrorAction SilentlyContinue | Select-Object FullName; Get-ChildItem \"$env:USERPROFILE\\\\.vscode\\\\extensions\\\\anthropic.claude-code-2.1.168-win32-x64\" -Recurse -Filter \"claude.cmd\" -ErrorAction SilentlyContinue | Select-Object FullName)"
+    ]
+  }
+}
