@@ -28,7 +28,7 @@ SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 
 # ── MANUAL INPUTS — fill these in yourself ────────────────────
 
-corporate_bags = 118+230     # Bags from corporate orders (Forecasted Projection)
+corporate_bags = 118     # Bags from corporate orders (Forecasted Projection)
 bare_minimum   = 6400     # Minimum bags you need to sell this week
 
 
