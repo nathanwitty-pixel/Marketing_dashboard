@@ -156,24 +156,24 @@ def fetch_new_products_data():
         bag_type = str(row[2]).strip()   # col C
         if not bag_type or bag_type.upper() in ("SUM TOTAL", "TOTAL", "GRAND TOTAL"):
             continue
-        if bag_type.upper() in names_upper:
-            colour       = str(row[0]).strip()
-            product_name = str(row[1]).strip()
-            if "total" in product_name.lower():   # skip subtotal/grand-total rows
-                continue
-            ms_base.append({
-                "colour":       colour,
-                "category":     category_lookup.get(bag_type.upper(), ''),
-                "productName":  product_name,
-                "bagType":      bag_type,
-                "kenyaSales":   safe_int(row[23]) if len(row) > 23 else 0,
-                "outsideKenya": safe_int(row[26]) if len(row) > 26 else 0,
-                "mpostKenya":   0,
-                "mpostOutside": 0,
-                "sKenya":       0,
-                "sOutside":     0,
-                "sRestock":     0
-            })
+        # Build rows for EVERY product; the new-products subset is derived later.
+        colour       = str(row[0]).strip()
+        product_name = str(row[1]).strip()
+        if "total" in product_name.lower():   # skip subtotal/grand-total rows
+            continue
+        ms_base.append({
+            "colour":       colour,
+            "category":     category_lookup.get(bag_type.upper(), ''),
+            "productName":  product_name,
+            "bagType":      bag_type,
+            "kenyaSales":   safe_int(row[23]) if len(row) > 23 else 0,
+            "outsideKenya": safe_int(row[26]) if len(row) > 26 else 0,
+            "mpostKenya":   0,
+            "mpostOutside": 0,
+            "sKenya":       0,
+            "sOutside":     0,
+            "sRestock":     0
+        })
 
     # ── MONTHLY_MARKETING_POST ────────────────────────────────
     # colour-level lookup to merge into monthly rows
@@ -190,13 +190,12 @@ def fetch_new_products_data():
         bag_type = str(row[3]).strip()
         if not bag_type or bag_type.upper() in ("SUM TOTAL", "TOTAL", "GRAND TOTAL"):
             continue
-        if bag_type.upper() in names_upper:
-            colour = str(row[0]).strip()
-            key    = (bag_type.upper(), colour.upper())
-            if key not in mpost_lookup:
-                mpost_lookup[key] = {"kenya": 0, "outsideKenya": 0}
-            mpost_lookup[key]["kenya"]        += safe_int(row[4]) if len(row) > 4 else 0
-            mpost_lookup[key]["outsideKenya"] += safe_int(row[7]) if len(row) > 7 else 0
+        colour = str(row[0]).strip()
+        key    = (bag_type.upper(), colour.upper())
+        if key not in mpost_lookup:
+            mpost_lookup[key] = {"kenya": 0, "outsideKenya": 0}
+        mpost_lookup[key]["kenya"]        += safe_int(row[4]) if len(row) > 4 else 0
+        mpost_lookup[key]["outsideKenya"] += safe_int(row[7]) if len(row) > 7 else 0
 
     # ── STOCK_LEVELS ──────────────────────────────────────────
     # per-colour lookup shared by both monthly and weekly merges
@@ -214,17 +213,16 @@ def fetch_new_products_data():
         bag_type = str(row[3]).strip()
         if not bag_type or bag_type.upper() in ("SUM TOTAL", "TOTAL", "GRAND TOTAL"):
             continue
-        if bag_type.upper() in names_upper:
-            colour  = str(row[0]).strip()
-            s_kenya = safe_int(row[24]) if len(row) > 24 else 0
-            s_out   = safe_int(row[25]) if len(row) > 25 else 0
-            s_rst   = safe_int(row[26]) if len(row) > 26 else 0
-            key     = (bag_type.upper(), colour.upper())
-            if key not in stock_lookup:
-                stock_lookup[key] = {"sKenya": 0, "sOutside": 0, "sRestock": 0}
-            stock_lookup[key]["sKenya"]   += s_kenya
-            stock_lookup[key]["sOutside"] += s_out
-            stock_lookup[key]["sRestock"] += s_rst
+        colour  = str(row[0]).strip()
+        s_kenya = safe_int(row[24]) if len(row) > 24 else 0
+        s_out   = safe_int(row[25]) if len(row) > 25 else 0
+        s_rst   = safe_int(row[26]) if len(row) > 26 else 0
+        key     = (bag_type.upper(), colour.upper())
+        if key not in stock_lookup:
+            stock_lookup[key] = {"sKenya": 0, "sOutside": 0, "sRestock": 0}
+        stock_lookup[key]["sKenya"]   += s_kenya
+        stock_lookup[key]["sOutside"] += s_out
+        stock_lookup[key]["sRestock"] += s_rst
 
     # Merge posts + stock into each monthly colour-level row
     for r in ms_base:
@@ -253,13 +251,12 @@ def fetch_new_products_data():
         bag_type = str(row[3]).strip()
         if not bag_type or bag_type.upper() in ("SUM TOTAL", "TOTAL", "GRAND TOTAL"):
             continue
-        if bag_type.upper() in names_upper:
-            colour = str(row[0]).strip()
-            key    = (bag_type.upper(), colour.upper())
-            if key not in wpost_lookup:
-                wpost_lookup[key] = {"kenya": 0, "outsideKenya": 0}
-            wpost_lookup[key]["kenya"]        += safe_int(row[4]) if len(row) > 4 else 0
-            wpost_lookup[key]["outsideKenya"] += safe_int(row[7]) if len(row) > 7 else 0
+        colour = str(row[0]).strip()
+        key    = (bag_type.upper(), colour.upper())
+        if key not in wpost_lookup:
+            wpost_lookup[key] = {"kenya": 0, "outsideKenya": 0}
+        wpost_lookup[key]["kenya"]        += safe_int(row[4]) if len(row) > 4 else 0
+        wpost_lookup[key]["outsideKenya"] += safe_int(row[7]) if len(row) > 7 else 0
 
     # ── WEEKLY_SALES ──────────────────────────────────────────
     # col A (idx  0) = COLOUR
@@ -279,31 +276,43 @@ def fetch_new_products_data():
         bag_type = str(row[3]).strip()
         if not bag_type or bag_type.upper() in ("SUM TOTAL", "TOTAL", "GRAND TOTAL"):
             continue
-        if bag_type.upper() in names_upper:
-            colour  = str(row[0]).strip()
-            lk      = (bag_type.upper(), colour.upper())
-            post    = wpost_lookup.get(lk, {"kenya": 0, "outsideKenya": 0})
-            stk     = stock_lookup.get(lk, {"sKenya": 0, "sOutside": 0, "sRestock": 0})
-            weekly_combined.append({
-                "colour":       colour,
-                "category":     str(row[1]).strip(),
-                "productName":  str(row[2]).strip(),
-                "bagType":      bag_type,
-                "weeklySales":  safe_int(row[23]) if len(row) > 23 else 0,
-                "wpostKenya":   post["kenya"],
-                "wpostOutside": post["outsideKenya"],
-                "sKenya":       stk["sKenya"],
-                "sOutside":     stk["sOutside"],
-                "sRestock":     stk["sRestock"]
-            })
+        product_name = str(row[2]).strip()
+        if "total" in product_name.lower():
+            continue
+        colour  = str(row[0]).strip()
+        lk      = (bag_type.upper(), colour.upper())
+        post    = wpost_lookup.get(lk, {"kenya": 0, "outsideKenya": 0})
+        stk     = stock_lookup.get(lk, {"sKenya": 0, "sOutside": 0, "sRestock": 0})
+        weekly_combined.append({
+            "colour":       colour,
+            "category":     str(row[1]).strip(),
+            "productName":  product_name,
+            "bagType":      bag_type,
+            "weeklySales":  safe_int(row[23]) if len(row) > 23 else 0,
+            "wpostKenya":   post["kenya"],
+            "wpostOutside": post["outsideKenya"],
+            "sKenya":       stk["sKenya"],
+            "sOutside":     stk["sOutside"],
+            "sRestock":     stk["sRestock"]
+        })
 
-    return new_product_names, total_target, total_sales, total_deficit, monthly_combined, weekly_combined, product_targets
+    # Full catalogue (every product) vs. the new-products subset used by cards/charts
+    all_monthly_combined = ms_base
+    all_weekly_combined  = weekly_combined
+    monthly_combined = [r for r in ms_base         if r["bagType"].upper() in names_upper]
+    weekly_combined  = [r for r in weekly_combined if r["bagType"].upper() in names_upper]
+
+    return (new_product_names, total_target, total_sales, total_deficit,
+            monthly_combined, weekly_combined, product_targets,
+            all_monthly_combined, all_weekly_combined)
 
 
 # ── RUN ───────────────────────────────────────────────────────
 
 print("Fetching data from Google Sheets...")
-new_product_names, total_target, total_sales, total_deficit, monthly_combined, weekly_combined, product_targets = fetch_new_products_data()
+(new_product_names, total_target, total_sales, total_deficit,
+ monthly_combined, weekly_combined, product_targets,
+ all_monthly_combined, all_weekly_combined) = fetch_new_products_data()
 
 product_count    = len(new_product_names)
 sales_pct        = (total_sales / total_target * 100) if total_target else 0
@@ -433,6 +442,8 @@ inline_script = (
     f'  productNames:    {json.dumps(new_product_names, ensure_ascii=False)},\n'
     f'  monthlyCombined: {json.dumps(monthly_combined, ensure_ascii=False)},\n'
     f'  weeklyCombined:  {json.dumps(weekly_combined, ensure_ascii=False)},\n'
+    f'  allMonthlyCombined: {json.dumps(all_monthly_combined, ensure_ascii=False)},\n'
+    f'  allWeeklyCombined:  {json.dumps(all_weekly_combined, ensure_ascii=False)},\n'
     f'  weeklyPostsHistory: {json.dumps(np_weekly_history)}\n'
     "};\n"
     "</script>\n"

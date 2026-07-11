@@ -120,7 +120,7 @@
     /* Split grid */
     .split-grid {
       display: grid;
-      grid-template-columns: repeat(3, auto);
+      grid-template-columns: repeat(2, auto);
       gap: 1.5rem;
       align-items: start;
       justify-content: start;
@@ -277,29 +277,10 @@
       <div class="card-value violet" id="kpi-power"></div>
       <div class="card-interpretation">Total power deal products available.</div>
     </div>
-    <div class="card emerald">
-      <div class="card-label">Stock Entries</div>
-      <div class="card-value emerald" id="kpi-stock-rows"></div>
-      <div class="card-interpretation">Individual colour / product rows for offer items.</div>
-    </div>
     <div class="card cyan">
       <div class="card-label">Total Kenya Stock</div>
       <div class="card-value cyan" id="kpi-kenya-stock"></div>
       <div class="card-interpretation">Total Kenya stock available across all offer products.</div>
-    </div>
-  </div>
-
-  <div class="card-grid">
-    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div class="card-label">Total Stock by Region</div>
-      <div style="position:relative;height:200px"><canvas id="chart-regional-stock"></canvas></div>
-    </div>
-  </div>
-
-  <div class="card-grid">
-    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div class="card-label">Offer Types by Region</div>
-      <div style="position:relative;height:200px"><canvas id="chart-offer-types"></canvas></div>
     </div>
   </div>
 
@@ -324,45 +305,7 @@
       </div>
     </div>
 
-    <!-- Column 2: Kenya Stock -->
-    <div>
-      <div class="sub-header">
-        <span class="pill pill-stock">Stock</span>
-        <h3>Kenya Stock for Offer Products</h3>
-      </div>
-
-      <!-- Filters -->
-      <div class="filter-bar">
-        <select id="sf-colour">  <option value="">All Colours</option>  </select>
-        <select id="sf-category"><option value="">All Categories</option></select>
-        <select id="sf-product"> <option value="">All Products</option> </select>
-        <select id="sf-bagtype"> <option value="">All Bag Types</option></select>
-        <button id="sf-reset">Reset</button>
-      </div>
-
-      <div class="table-wrap">
-        <div class="table-title">
-          Stock Levels &mdash; Kenya
-          <span class="count-badge" id="stock-count">0</span>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Colour</th>
-              <th>Category</th>
-              <th>Product Name</th>
-              <th>Bag Type</th>
-              <th id="stock-sort-th" data-col="kenyaStock" style="text-align:right;color:#22d3ee;">
-                Kenya Stock<span class="sort-icon"> ⇅</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody id="stock-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Column 3: Power Deals -->
+    <!-- Column 2: Power Deals -->
     <div>
       <div class="sub-header">
         <span class="pill pill-power">Power</span>
@@ -380,6 +323,39 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- ── Offer Sales vs Stock Guidance (per bag) ─────────────── -->
+  <div class="card-grid">
+    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.6rem;margin-bottom:0.5rem">
+        <div class="card-label" style="margin-bottom:0">Offer Sales vs Stock Guidance</div>
+        <div style="display:flex;align-items:center;gap:0.9rem;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:0.4rem">
+            <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Type</span>
+            <select id="og-type" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
+              <option value="combos">Combos</option>
+              <option value="power">Power Deals</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.4rem">
+            <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Price</span>
+            <select id="og-sort" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
+              <option value="asc">Cheapest first</option>
+              <option value="desc">Most expensive first</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.4rem">
+            <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Product</span>
+            <select id="og-product" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none;max-width:240px">
+              <option value="">All</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <p id="og-intro" style="font-size:0.75rem;color:#64748b;margin:0 0 0.6rem"></p>
+      <div id="offer-guidance"></div>
+    </div>
   </div>
 
   <!-- ── UGANDA ──────────────────────────────────────────────── -->
@@ -637,13 +613,13 @@ const OA = {
   powerDealCount:      10,
   offerCount:          31,
   stockRowCount:       278,
-  totalKenyaStock:     "4,709",
+  totalKenyaStock:     "4,719",
   juneComboHeaders:    ["JULY COMBOS", "PRICE", "WK 1", "WK 2", "COMBO"],
-  juneCombos:          [["ELYSE / AMAYA + ZIPPED/ LUNCHSET/ NIZANA /MOON", "3,699", "108", "96", "48"], ["ANTITHEFT+MAN BAG/NIZANA", "3,299", "48", "52", "26"], ["PRIME + MAN BAG / NIZANA/ MOON", "3,499", "22", "44", "22"], ["SAFIRI + STANDARD/ ANTITHEFT", "4,999", "30", "44", "22"], ["JUMBO +MEGA", "4,799", "20", "34", "17"], ["SARAI + PIONEER/CODE 3", "5,299", "22", "34", "17"], ["BONITA + MANBAG", "4,099", "24", "26", "13"], ["LOLA +MINI ZURI/TRECENTO", "3,699", "22", "26", "13"], ["JUMBO + FABELA/ LIAM + MAN BAG / MINI UMBRA", "5,599", "12", "30", "10"], ["BABY BAG +LIAM", "5,399", "12", "14", "7"], ["TOTAL", "", "320", "400", "195"]],
+  juneCombos:          [["ELYSE / AMAYA + ZIPPED/ LUNCHSET/ NIZANA /MOON", "3,699", "108", "98", "49"], ["ANTITHEFT+MAN BAG/NIZANA", "3,299", "48", "54", "27"], ["PRIME + MAN BAG / NIZANA/ MOON", "3,499", "22", "44", "22"], ["SAFIRI + STANDARD/ ANTITHEFT", "4,999", "30", "44", "22"], ["JUMBO +MEGA", "4,799", "20", "34", "17"], ["SARAI + PIONEER/CODE 3", "5,299", "22", "34", "17"], ["BONITA + MANBAG", "4,099", "24", "26", "13"], ["LOLA +MINI ZURI/TRECENTO", "3,699", "22", "26", "13"], ["JUMBO + FABELA/ LIAM + MAN BAG / MINI UMBRA", "5,599", "12", "30", "10"], ["BABY BAG +LIAM", "5,399", "12", "14", "7"], ["TOTAL", "", "320", "404", "197"]],
   powerDealHeaders:    ["POWER DEALS", "PRICE", "WK 1", "wk 2"],
-  powerDeals:          [["JUMBO", "2600", "145", "117"], ["FABELA", "2000", "71", "90"], ["BIG MAN BAG", "1700", "74", "78"], ["MONAH BP", "1600", "36", "45"], ["ARIA SLING", "1200", "48", "44"], ["CLAIRE HANDBAG", "2700", "41", "38"], ["ZANE MAN", "1200", "30", "31"], ["PIONEER", "2200", "53", "25"], ["CATHY HANDBAG", "1600", "29", "24"], ["MINI MAYA", "1200", "21", "19"], ["TOTAL", "", "548", "511"]],
+  powerDeals:          [["JUMBO", "2600", "145", "121"], ["FABELA", "2000", "71", "93"], ["BIG MAN BAG", "1700", "74", "79"], ["MONAH BP", "1600", "36", "47"], ["ARIA SLING", "1200", "48", "45"], ["CLAIRE HANDBAG", "2700", "41", "39"], ["ZANE MAN", "1200", "30", "33"], ["CATHY HANDBAG", "1600", "29", "25"], ["PIONEER", "2200", "53", "25"], ["MINI MAYA", "1200", "21", "20"], ["TOTAL", "", "548", "527"]],
   offerProducts:       [{"bagType": "AMAYA", "category": "HANDBAG"}, {"bagType": "ANTITHEFT", "category": "BACKPACK"}, {"bagType": "ARIA SLING", "category": "SLING"}, {"bagType": "BABY BAG", "category": "BABY BAG"}, {"bagType": "BIG MAN BAG", "category": "MAN BAG"}, {"bagType": "BONITA", "category": "TRAVEL"}, {"bagType": "CATHY HANDBAG", "category": "HANDBAG"}, {"bagType": "CLAIRE HANDBAG", "category": "HANDBAG"}, {"bagType": "CODE 3", "category": "BACKPACK"}, {"bagType": "ELYSE", "category": "HANDBAG"}, {"bagType": "FABELA", "category": "TRAVEL"}, {"bagType": "JUMBO", "category": "TRAVEL"}, {"bagType": "LIAM", "category": "TRAVEL"}, {"bagType": "LOLA", "category": "HANDBAG"}, {"bagType": "LUNCHSET", "category": "LUNCH BAG"}, {"bagType": "MAN BAG", "category": "MAN BAG"}, {"bagType": "MEGA", "category": "BACKPACK"}, {"bagType": "MINI MAYA", "category": "HANDBAG"}, {"bagType": "MINI UMBRA", "category": "CHEST BAG"}, {"bagType": "MINI ZURI", "category": "HANDBAG"}, {"bagType": "MONAH BP", "category": "BACKPACK"}, {"bagType": "MOON BAG", "category": "SLING"}, {"bagType": "NIZANA", "category": "SLING"}, {"bagType": "PIONEER", "category": "BACKPACK"}, {"bagType": "PRIME", "category": "BACKPACK"}, {"bagType": "SAFIRI TRAVEL", "category": "TRAVEL"}, {"bagType": "SARAI", "category": "TRAVEL"}, {"bagType": "TRAVEL", "category": "TRAVEL"}, {"bagType": "TRECENTO", "category": "SLING"}, {"bagType": "ZANE MAN", "category": "MAN BAG"}, {"bagType": "ZIPPED LUNCHSET", "category": "LUNCH BAG"}],
-  stockData:           [{"colour": "Black", "category": "HANDBAG", "productName": "AMAYA BLACK TT", "bagType": "AMAYA", "kenyaStock": 44}, {"colour": "Brown", "category": "HANDBAG", "productName": "AMAYA SPICE", "bagType": "AMAYA", "kenyaStock": 23}, {"colour": "Brown", "category": "HANDBAG", "productName": "AMAYA CRACKED", "bagType": "AMAYA", "kenyaStock": 48}, {"colour": "Grey", "category": "HANDBAG", "productName": "AMAYA GREY", "bagType": "AMAYA", "kenyaStock": 27}, {"colour": "Beige", "category": "HANDBAG", "productName": "AMAYA BEIGE", "bagType": "AMAYA", "kenyaStock": 11}, {"colour": "Brown", "category": "HANDBAG", "productName": "AMAYA CHOCO", "bagType": "AMAYA", "kenyaStock": 5}, {"colour": "Brown", "category": "HANDBAG", "productName": "AMAYA DARK BROWN", "bagType": "AMAYA", "kenyaStock": 12}, {"colour": "Red", "category": "HANDBAG", "productName": "AMAYA RED", "bagType": "AMAYA", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "AMAYA CROC BLACK", "bagType": "AMAYA", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "AMAYA WOOVEN BLACK", "bagType": "AMAYA", "kenyaStock": 0}, {"colour": "Red", "category": "HANDBAG", "productName": "AMAYA WOOVEN MAROON", "bagType": "AMAYA", "kenyaStock": 8}, {"colour": "Brown", "category": "HANDBAG", "productName": "AMAYA WOOVEN MUSTARD", "bagType": "AMAYA", "kenyaStock": 0}, {"colour": "Purple", "category": "HANDBAG", "productName": "AMAYA WOOVEN PURPLE", "bagType": "AMAYA", "kenyaStock": 0}, {"colour": "Green", "category": "HANDBAG", "productName": "AMAYA GREEN", "bagType": "AMAYA", "kenyaStock": 0}, {"colour": "Pink", "category": "HANDBAG", "productName": "AMAYA LILAC", "bagType": "AMAYA", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "AMAYA MUSTARD", "bagType": "AMAYA", "kenyaStock": 0}, {"colour": "Black", "category": "BACKPACK", "productName": "ANTITHEFT BLACK", "bagType": "ANTITHEFT", "kenyaStock": 85}, {"colour": "Brown", "category": "BACKPACK", "productName": "ANTITHEFT BROWN", "bagType": "ANTITHEFT", "kenyaStock": 77}, {"colour": "Beige", "category": "BACKPACK", "productName": "ANTITHEFT NUDE", "bagType": "ANTITHEFT", "kenyaStock": 17}, {"colour": "Grey", "category": "BACKPACK", "productName": "ANTITHEFT GREY", "bagType": "ANTITHEFT", "kenyaStock": 82}, {"colour": "Brown", "category": "BACKPACK", "productName": "ANTITHEFT ANTELOPE BROWN", "bagType": "ANTITHEFT", "kenyaStock": 14}, {"colour": "Green", "category": "BACKPACK", "productName": "ANTITHEFT GREEN", "bagType": "ANTITHEFT", "kenyaStock": 67}, {"colour": "Black", "category": "BACKPACK", "productName": "ANTITHEFT CN BLACK", "bagType": "ANTITHEFT", "kenyaStock": 10}, {"colour": "Red", "category": "SLING", "productName": "ARIA SLING RED", "bagType": "ARIA SLING", "kenyaStock": 5}, {"colour": "Beige", "category": "SLING", "productName": "ARIA SLING BEIGE", "bagType": "ARIA SLING", "kenyaStock": 6}, {"colour": "Black", "category": "SLING", "productName": "ARIA SLING BLACK", "bagType": "ARIA SLING", "kenyaStock": 6}, {"colour": "Brown", "category": "SLING", "productName": "ARIA SLING CRACKED", "bagType": "ARIA SLING", "kenyaStock": 3}, {"colour": "Brown", "category": "SLING", "productName": "ARIA SLING SPICE", "bagType": "ARIA SLING", "kenyaStock": 14}, {"colour": "Brown", "category": "SLING", "productName": "ARIA SLING CHOCOLATE", "bagType": "ARIA SLING", "kenyaStock": 0}, {"colour": "Brown", "category": "SLING", "productName": "ARIA SLING YELLOW BROWN", "bagType": "ARIA SLING", "kenyaStock": 0}, {"colour": "Red", "category": "SLING", "productName": "ARIA SLING MAROON", "bagType": "ARIA SLING", "kenyaStock": 0}, {"colour": "Pink", "category": "SLING", "productName": "ARIA SLING CROC PINK", "bagType": "ARIA SLING", "kenyaStock": 0}, {"colour": "Grey", "category": "SLING", "productName": "ARIA SLING GREY", "bagType": "ARIA SLING", "kenyaStock": 15}, {"colour": "Brown", "category": "SLING", "productName": "ARIA SLING DARK BROWN", "bagType": "ARIA SLING", "kenyaStock": 0}, {"colour": "Grey", "category": "BABY BAG", "productName": "BABY BAG GREY", "bagType": "BABY BAG", "kenyaStock": 20}, {"colour": "Black", "category": "BABY BAG", "productName": "BABY BAG BLACK", "bagType": "BABY BAG", "kenyaStock": 31}, {"colour": "Beige", "category": "BABY BAG", "productName": "BABY BAG NUDE", "bagType": "BABY BAG", "kenyaStock": 5}, {"colour": "Brown", "category": "BABY BAG", "productName": "BABY BAG BROWN", "bagType": "BABY BAG", "kenyaStock": 21}, {"colour": "Green", "category": "BABY BAG", "productName": "BABY BAG GREEN", "bagType": "BABY BAG", "kenyaStock": 20}, {"colour": "Red", "category": "BABY BAG", "productName": "BABY BAG RED", "bagType": "BABY BAG", "kenyaStock": 0}, {"colour": "Black", "category": "MAN BAG", "productName": "BIG MAN BAG BLACK", "bagType": "BIG MAN BAG", "kenyaStock": 78}, {"colour": "Brown", "category": "MAN BAG", "productName": "BIG MAN BAG BROWN", "bagType": "BIG MAN BAG", "kenyaStock": 46}, {"colour": "Grey", "category": "MAN BAG", "productName": "BIG MAN BAG GREY", "bagType": "BIG MAN BAG", "kenyaStock": 66}, {"colour": "Beige", "category": "MAN BAG", "productName": "BIG MAN BAG NUDE", "bagType": "BIG MAN BAG", "kenyaStock": 16}, {"colour": "Red", "category": "MAN BAG", "productName": "BIG MAN BAG RED", "bagType": "BIG MAN BAG", "kenyaStock": 0}, {"colour": "Green", "category": "MAN BAG", "productName": "BIG MAN BAG GREEN", "bagType": "BIG MAN BAG", "kenyaStock": 21}, {"colour": "Black", "category": "TRAVEL", "productName": "BONITA BLACK", "bagType": "BONITA", "kenyaStock": 43}, {"colour": "Brown", "category": "TRAVEL", "productName": "BONITA CRACKED", "bagType": "BONITA", "kenyaStock": 42}, {"colour": "Beige", "category": "TRAVEL", "productName": "BONITA BEIGE", "bagType": "BONITA", "kenyaStock": 14}, {"colour": "Brown", "category": "TRAVEL", "productName": "BONITA SPICE", "bagType": "BONITA", "kenyaStock": 17}, {"colour": "Grey", "category": "TRAVEL", "productName": "BONITA GREY", "bagType": "BONITA", "kenyaStock": 31}, {"colour": "Red", "category": "TRAVEL", "productName": "BONITA RED", "bagType": "BONITA", "kenyaStock": 0}, {"colour": "Brown", "category": "TRAVEL", "productName": "BONITA YELLOW BROWN", "bagType": "BONITA", "kenyaStock": 0}, {"colour": "Brown", "category": "TRAVEL", "productName": "BONITA CHOCO", "bagType": "BONITA", "kenyaStock": 4}, {"colour": "Brown", "category": "TRAVEL", "productName": "BONITA D.BROWN", "bagType": "BONITA", "kenyaStock": 4}, {"colour": "Black", "category": "HANDBAG", "productName": "CATHY HANDBAG BLACK", "bagType": "CATHY HANDBAG", "kenyaStock": 49}, {"colour": "Brown", "category": "HANDBAG", "productName": "CATHY HANDBAG SPICE", "bagType": "CATHY HANDBAG", "kenyaStock": 17}, {"colour": "Brown", "category": "HANDBAG", "productName": "CATHY HANDBAG CRACKED", "bagType": "CATHY HANDBAG", "kenyaStock": 28}, {"colour": "Grey", "category": "HANDBAG", "productName": "CATHY HANDBAG GREY", "bagType": "CATHY HANDBAG", "kenyaStock": 11}, {"colour": "Brown", "category": "HANDBAG", "productName": "CATHY HANDBAG DARK BROWN", "bagType": "CATHY HANDBAG", "kenyaStock": 0}, {"colour": "Beige", "category": "HANDBAG", "productName": "CATHY HANDBAG BEIGE", "bagType": "CATHY HANDBAG", "kenyaStock": 2}, {"colour": "Red", "category": "HANDBAG", "productName": "CATHY HANDBAG RED", "bagType": "CATHY HANDBAG", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "CATHY HANDBAG CHOCOLATE", "bagType": "CATHY HANDBAG", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "CLAIRE HANDBAG BLACK", "bagType": "CLAIRE HANDBAG", "kenyaStock": 17}, {"colour": "Brown", "category": "HANDBAG", "productName": "CLAIRE HANDBAG SPICE", "bagType": "CLAIRE HANDBAG", "kenyaStock": 10}, {"colour": "Brown", "category": "HANDBAG", "productName": "CLAIRE HANDBAG CRACKED", "bagType": "CLAIRE HANDBAG", "kenyaStock": 19}, {"colour": "Grey", "category": "HANDBAG", "productName": "CLAIRE HANDBAG GREY", "bagType": "CLAIRE HANDBAG", "kenyaStock": 22}, {"colour": "Red", "category": "HANDBAG", "productName": "CLAIRE HANDBAG WOOVEN MAROON", "bagType": "CLAIRE HANDBAG", "kenyaStock": 6}, {"colour": "Black", "category": "HANDBAG", "productName": "CLAIRE HANDBAG WOOVEN BLACK", "bagType": "CLAIRE HANDBAG", "kenyaStock": 1}, {"colour": "", "category": "HANDBAG", "productName": "CLAIRE HANDBAG WHITE", "bagType": "CLAIRE HANDBAG", "kenyaStock": 0}, {"colour": "", "category": "HANDBAG", "productName": "CLAIRE HANDBAG WHITE", "bagType": "CLAIRE HANDBAG", "kenyaStock": 0}, {"colour": "Beige", "category": "HANDBAG", "productName": "CLAIRE HANDBAG BEIGE", "bagType": "CLAIRE HANDBAG", "kenyaStock": 1}, {"colour": "Brown", "category": "HANDBAG", "productName": "CLAIRE HANDBAG DARK BROWN", "bagType": "CLAIRE HANDBAG", "kenyaStock": 1}, {"colour": "Red", "category": "HANDBAG", "productName": "CLAIRE HANDBAG RED", "bagType": "CLAIRE HANDBAG", "kenyaStock": 5}, {"colour": "Beige", "category": "BACKPACK", "productName": "CODE 3 NUDE", "bagType": "CODE 3", "kenyaStock": 14}, {"colour": "Brown", "category": "BACKPACK", "productName": "CODE 3 BROWN", "bagType": "CODE 3", "kenyaStock": 109}, {"colour": "Black", "category": "BACKPACK", "productName": "CODE 3 BLACK", "bagType": "CODE 3", "kenyaStock": 79}, {"colour": "Grey", "category": "BACKPACK", "productName": "CODE 3 GREY", "bagType": "CODE 3", "kenyaStock": 57}, {"colour": "Brown", "category": "BACKPACK", "productName": "CODE 3 ANTELOPE BROWN", "bagType": "CODE 3", "kenyaStock": 27}, {"colour": "Green", "category": "BACKPACK", "productName": "CODE 3 GREEN", "bagType": "CODE 3", "kenyaStock": 80}, {"colour": "Blue", "category": "BACKPACK", "productName": "CODE 3 BLUE", "bagType": "CODE 3", "kenyaStock": 0}, {"colour": "Red", "category": "BACKPACK", "productName": "CODE 3 CRIMSON", "bagType": "CODE 3", "kenyaStock": 0}, {"colour": "Grey", "category": "HANDBAG", "productName": "ELYSE GREY", "bagType": "ELYSE", "kenyaStock": 23}, {"colour": "Brown", "category": "HANDBAG", "productName": "ELYSE D.BROWN", "bagType": "ELYSE", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "ELYSE SPICE", "bagType": "ELYSE", "kenyaStock": 9}, {"colour": "Brown", "category": "HANDBAG", "productName": "ELYSE CRACKED", "bagType": "ELYSE", "kenyaStock": 37}, {"colour": "Black", "category": "HANDBAG", "productName": "ELYSE BLACK", "bagType": "ELYSE", "kenyaStock": 10}, {"colour": "Red", "category": "HANDBAG", "productName": "ELYSE RED", "bagType": "ELYSE", "kenyaStock": 3}, {"colour": "Beige", "category": "HANDBAG", "productName": "ELYSE BEIGE", "bagType": "ELYSE", "kenyaStock": 16}, {"colour": "Brown", "category": "HANDBAG", "productName": "ELYSE CHOCOLATE", "bagType": "ELYSE", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "ELYSE RED/BLACK", "bagType": "ELYSE", "kenyaStock": 1}, {"colour": "Black", "category": "HANDBAG", "productName": "ELYSE SPICE/BLACK", "bagType": "ELYSE", "kenyaStock": 0}, {"colour": "Red", "category": "HANDBAG", "productName": "ELYSE RED/BEIGE", "bagType": "ELYSE", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "ELYSE BLACK/GREY", "bagType": "ELYSE", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "ELYSE BLACK/CRACKED", "bagType": "ELYSE", "kenyaStock": 0}, {"colour": "Black", "category": "TRAVEL", "productName": "FABELA BLACK", "bagType": "FABELA", "kenyaStock": 51}, {"colour": "Brown", "category": "TRAVEL", "productName": "FABELA BROWN", "bagType": "FABELA", "kenyaStock": 64}, {"colour": "Grey", "category": "TRAVEL", "productName": "FABELA GREY", "bagType": "FABELA", "kenyaStock": 55}, {"colour": "Brown", "category": "TRAVEL", "productName": "FABELA YELLOW DOTTED", "bagType": "FABELA", "kenyaStock": 0}, {"colour": "Green", "category": "TRAVEL", "productName": "FABELA GREEN", "bagType": "FABELA", "kenyaStock": 28}, {"colour": "Beige", "category": "TRAVEL", "productName": "FABELA NUDE", "bagType": "FABELA", "kenyaStock": 5}, {"colour": "Black", "category": "TRAVEL", "productName": "JUMBO BLACK", "bagType": "JUMBO", "kenyaStock": 102}, {"colour": "Brown", "category": "TRAVEL", "productName": "JUMBO BROWN", "bagType": "JUMBO", "kenyaStock": 68}, {"colour": "Green", "category": "TRAVEL", "productName": "JUMBO GREEN", "bagType": "JUMBO", "kenyaStock": 51}, {"colour": "Grey", "category": "TRAVEL", "productName": "JUMBO GREY", "bagType": "JUMBO", "kenyaStock": 47}, {"colour": "Beige", "category": "TRAVEL", "productName": "JUMBO NUDE", "bagType": "JUMBO", "kenyaStock": 16}, {"colour": "Red", "category": "TRAVEL", "productName": "JUMBO CRIMSON", "bagType": "JUMBO", "kenyaStock": 0}, {"colour": "Blue", "category": "TRAVEL", "productName": "JUMBO BLUE", "bagType": "JUMBO", "kenyaStock": 0}, {"colour": "Brown", "category": "TRAVEL", "productName": "JUMBO YELLOW DOTTED", "bagType": "JUMBO", "kenyaStock": 0}, {"colour": "Black", "category": "TRAVEL", "productName": "LIAM BLACK", "bagType": "LIAM", "kenyaStock": 21}, {"colour": "Brown", "category": "TRAVEL", "productName": "LIAM BROWN", "bagType": "LIAM", "kenyaStock": 41}, {"colour": "Beige", "category": "TRAVEL", "productName": "LIAM NUDE", "bagType": "LIAM", "kenyaStock": 9}, {"colour": "Green", "category": "TRAVEL", "productName": "LIAM GREEN", "bagType": "LIAM", "kenyaStock": 28}, {"colour": "Grey", "category": "TRAVEL", "productName": "LIAM GREY", "bagType": "LIAM", "kenyaStock": 38}, {"colour": "Red", "category": "TRAVEL", "productName": "LIAM RED", "bagType": "LIAM", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "LOLA YELLOW BROWN", "bagType": "LOLA", "kenyaStock": 0}, {"colour": "Red", "category": "HANDBAG", "productName": "LOLA RED.PATTERN", "bagType": "LOLA", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "LOLA WOOVEN BLACK", "bagType": "LOLA", "kenyaStock": 0}, {"colour": "Red", "category": "HANDBAG", "productName": "LOLA WOOVEN MAROON", "bagType": "LOLA", "kenyaStock": 3}, {"colour": "Brown", "category": "HANDBAG", "productName": "LOLA WOOVEN MUSTARD", "bagType": "LOLA", "kenyaStock": 0}, {"colour": "Purple", "category": "HANDBAG", "productName": "LOLA WOOVEN PURPLE", "bagType": "LOLA", "kenyaStock": 0}, {"colour": "Grey", "category": "HANDBAG", "productName": "LOLA GREY", "bagType": "LOLA", "kenyaStock": 17}, {"colour": "Brown", "category": "HANDBAG", "productName": "LOLA CHOCO", "bagType": "LOLA", "kenyaStock": 6}, {"colour": "Brown", "category": "HANDBAG", "productName": "LOLA CRACKED", "bagType": "LOLA", "kenyaStock": 4}, {"colour": "Red", "category": "HANDBAG", "productName": "LOLA RED", "bagType": "LOLA", "kenyaStock": 2}, {"colour": "Black", "category": "HANDBAG", "productName": "LOLA BLACK", "bagType": "LOLA", "kenyaStock": 11}, {"colour": "Brown", "category": "HANDBAG", "productName": "LOLA SPICE", "bagType": "LOLA", "kenyaStock": 13}, {"colour": "Beige", "category": "HANDBAG", "productName": "LOLA BEIGE", "bagType": "LOLA", "kenyaStock": 19}, {"colour": "Red", "category": "HANDBAG", "productName": "LOLA MAROON", "bagType": "LOLA", "kenyaStock": 4}, {"colour": "Brown", "category": "HANDBAG", "productName": "LOLA DARK BROWN", "bagType": "LOLA", "kenyaStock": 0}, {"colour": "Black", "category": "LUNCH BAG", "productName": "LUNCHSET BLACK", "bagType": "LUNCHSET", "kenyaStock": 19}, {"colour": "Beige", "category": "LUNCH BAG", "productName": "LUNCHSET NUDE", "bagType": "LUNCHSET", "kenyaStock": 0}, {"colour": "Brown", "category": "LUNCH BAG", "productName": "LUNCHSET BROWN", "bagType": "LUNCHSET", "kenyaStock": 19}, {"colour": "Brown", "category": "LUNCH BAG", "productName": "LUNCHSET YELLOW DOTTED", "bagType": "LUNCHSET", "kenyaStock": 0}, {"colour": "Green", "category": "LUNCH BAG", "productName": "LUNCHSET GREEN", "bagType": "LUNCHSET", "kenyaStock": 19}, {"colour": "Grey", "category": "LUNCH BAG", "productName": "LUNCHSET GREY", "bagType": "LUNCHSET", "kenyaStock": 14}, {"colour": "Black", "category": "MAN BAG", "productName": "MAN BAG BLACK", "bagType": "MAN BAG", "kenyaStock": 43}, {"colour": "Brown", "category": "MAN BAG", "productName": "MAN BAG BROWN", "bagType": "MAN BAG", "kenyaStock": 79}, {"colour": "Beige", "category": "MAN BAG", "productName": "MAN BAG NUDE", "bagType": "MAN BAG", "kenyaStock": 20}, {"colour": "Grey", "category": "MAN BAG", "productName": "MAN BAG GREY", "bagType": "MAN BAG", "kenyaStock": 84}, {"colour": "Green", "category": "MAN BAG", "productName": "MAN BAG GREEN", "bagType": "MAN BAG", "kenyaStock": 46}, {"colour": "Brown", "category": "MAN BAG", "productName": "MAN BAG YELLOW DOTTED", "bagType": "MAN BAG", "kenyaStock": 0}, {"colour": "Red", "category": "MAN BAG", "productName": "MAN BAG RED", "bagType": "MAN BAG", "kenyaStock": 0}, {"colour": "Blue", "category": "MAN BAG", "productName": "MAN BAG BLUE", "bagType": "MAN BAG", "kenyaStock": 0}, {"colour": "Black", "category": "BACKPACK", "productName": "MEGA BLACK", "bagType": "MEGA", "kenyaStock": 25}, {"colour": "Brown", "category": "BACKPACK", "productName": "MEGA BROWN", "bagType": "MEGA", "kenyaStock": 28}, {"colour": "Grey", "category": "BACKPACK", "productName": "MEGA GREY", "bagType": "MEGA", "kenyaStock": 19}, {"colour": "Beige", "category": "BACKPACK", "productName": "MEGA NUDE", "bagType": "MEGA", "kenyaStock": 6}, {"colour": "Green", "category": "BACKPACK", "productName": "MEGA GREEN", "bagType": "MEGA", "kenyaStock": 29}, {"colour": "Brown", "category": "BACKPACK", "productName": "MEGA YELLOW DOTTED", "bagType": "MEGA", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "MINI MAYA WOOVEN MUSTARD", "bagType": "MINI MAYA", "kenyaStock": 0}, {"colour": "Red", "category": "HANDBAG", "productName": "MINI MAYA RED PATTERN", "bagType": "MINI MAYA", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "MINI MAYA WOOVEN BLACK", "bagType": "MINI MAYA", "kenyaStock": 13}, {"colour": "Purple", "category": "HANDBAG", "productName": "MINI MAYA WOOVEN PURPLE", "bagType": "MINI MAYA", "kenyaStock": 0}, {"colour": "Red", "category": "HANDBAG", "productName": "MINI MAYA WOOVEN MAROON", "bagType": "MINI MAYA", "kenyaStock": 16}, {"colour": "Black", "category": "CHEST BAG", "productName": "MINI UMBRA BLACK", "bagType": "MINI UMBRA", "kenyaStock": 32}, {"colour": "Grey", "category": "CHEST BAG", "productName": "MINI UMBRA GREY", "bagType": "MINI UMBRA", "kenyaStock": 30}, {"colour": "Brown", "category": "CHEST BAG", "productName": "MINI UMBRA CRACKED", "bagType": "MINI UMBRA", "kenyaStock": 42}, {"colour": "Brown", "category": "CHEST BAG", "productName": "MINI UMBRA SPICE", "bagType": "MINI UMBRA", "kenyaStock": 12}, {"colour": "Brown", "category": "CHEST BAG", "productName": "MINI UMBRA MANYATTA DARK BROWN", "bagType": "MINI UMBRA", "kenyaStock": 0}, {"colour": "Green", "category": "CHEST BAG", "productName": "MINI UMBRA MANYATTA DARK GREEN", "bagType": "MINI UMBRA", "kenyaStock": 0}, {"colour": "Green", "category": "CHEST BAG", "productName": "MINI UMBRA MANYATTA GREEN", "bagType": "MINI UMBRA", "kenyaStock": 0}, {"colour": "Yellow", "category": "CHEST BAG", "productName": "MINI UMBRA MANYATTA YELLOW", "bagType": "MINI UMBRA", "kenyaStock": 1}, {"colour": "Beige", "category": "CHEST BAG", "productName": "MINI UMBRA BEIGE", "bagType": "MINI UMBRA", "kenyaStock": 6}, {"colour": "Brown", "category": "CHEST BAG", "productName": "MINI UMBRA DARK BROWN", "bagType": "MINI UMBRA", "kenyaStock": 0}, {"colour": "Red", "category": "CHEST BAG", "productName": "MINI UMBRA RED", "bagType": "MINI UMBRA", "kenyaStock": 6}, {"colour": "Brown", "category": "CHEST BAG", "productName": "MINI UMBRA YELLOW BROWN", "bagType": "MINI UMBRA", "kenyaStock": 0}, {"colour": "Brown", "category": "CHEST BAG", "productName": "MINI UMBRA CHOCOLATE", "bagType": "MINI UMBRA", "kenyaStock": 5}, {"colour": "Grey", "category": "HANDBAG", "productName": "MINI ZURI GREY", "bagType": "MINI ZURI", "kenyaStock": 50}, {"colour": "Black", "category": "HANDBAG", "productName": "MINI ZURI WOOVEN BLACK", "bagType": "MINI ZURI", "kenyaStock": 6}, {"colour": "Red", "category": "HANDBAG", "productName": "MINI ZURI WOOVEN MAROON", "bagType": "MINI ZURI", "kenyaStock": 7}, {"colour": "Brown", "category": "HANDBAG", "productName": "MINI ZURI WOOVEN MUSTARD", "bagType": "MINI ZURI", "kenyaStock": 1}, {"colour": "Purple", "category": "HANDBAG", "productName": "MINI ZURI WOOVEN PURPLE", "bagType": "MINI ZURI", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "MINI ZURI BLACK", "bagType": "MINI ZURI", "kenyaStock": 41}, {"colour": "Beige", "category": "HANDBAG", "productName": "MINI ZURI BEIGE", "bagType": "MINI ZURI", "kenyaStock": 21}, {"colour": "Red", "category": "HANDBAG", "productName": "MINI ZURI RED", "bagType": "MINI ZURI", "kenyaStock": 12}, {"colour": "Brown", "category": "HANDBAG", "productName": "MINI ZURI SPICE", "bagType": "MINI ZURI", "kenyaStock": 11}, {"colour": "Brown", "category": "HANDBAG", "productName": "MINI ZURI CRACKED", "bagType": "MINI ZURI", "kenyaStock": 54}, {"colour": "Red", "category": "HANDBAG", "productName": "MINI ZURI MAROON", "bagType": "MINI ZURI", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "MINI ZURI AMBER BROWN", "bagType": "MINI ZURI", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "MINI ZURI YELLOW BROWN", "bagType": "MINI ZURI", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "MINI ZURI CHOCOLATE", "bagType": "MINI ZURI", "kenyaStock": 10}, {"colour": "Red", "category": "HANDBAG", "productName": "MINI ZURI RED P", "bagType": "MINI ZURI", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "MINI ZURI DARK BROWN", "bagType": "MINI ZURI", "kenyaStock": 15}, {"colour": "Black", "category": "BACKPACK", "productName": "MONAH BP BLACK", "bagType": "MONAH BP", "kenyaStock": 27}, {"colour": "Brown", "category": "BACKPACK", "productName": "MONAH BP SPICE", "bagType": "MONAH BP", "kenyaStock": 0}, {"colour": "Brown", "category": "BACKPACK", "productName": "MONAH BP CRACKED", "bagType": "MONAH BP", "kenyaStock": 10}, {"colour": "Grey", "category": "BACKPACK", "productName": "MONAH BP GREY", "bagType": "MONAH BP", "kenyaStock": 1}, {"colour": "Beige", "category": "BACKPACK", "productName": "MONAH BP BEIGE", "bagType": "MONAH BP", "kenyaStock": 18}, {"colour": "Red", "category": "BACKPACK", "productName": "MONAH BP MAROON", "bagType": "MONAH BP", "kenyaStock": 1}, {"colour": "Brown", "category": "BACKPACK", "productName": "MONAH BP CHOCO", "bagType": "MONAH BP", "kenyaStock": 0}, {"colour": "Brown", "category": "BACKPACK", "productName": "MONAH BP DARK BROWN", "bagType": "MONAH BP", "kenyaStock": 0}, {"colour": "Red", "category": "BACKPACK", "productName": "MONAH BP RED", "bagType": "MONAH BP", "kenyaStock": 2}, {"colour": "Brown", "category": "SLING", "productName": "MOON BAG SPICE", "bagType": "MOON BAG", "kenyaStock": 14}, {"colour": "Red", "category": "SLING", "productName": "MOON BAG RED.PATTERN", "bagType": "MOON BAG", "kenyaStock": 0}, {"colour": "Black", "category": "SLING", "productName": "MOON BAG WOOVEN BLACK", "bagType": "MOON BAG", "kenyaStock": 0}, {"colour": "Red", "category": "SLING", "productName": "MOON BAG WOOVEN MAROON", "bagType": "MOON BAG", "kenyaStock": 0}, {"colour": "Brown", "category": "SLING", "productName": "MOON BAG WOOVEN MUSTARD", "bagType": "MOON BAG", "kenyaStock": 0}, {"colour": "Purple", "category": "SLING", "productName": "MOON BAG WOOVEN PURPLE", "bagType": "MOON BAG", "kenyaStock": 0}, {"colour": "Grey", "category": "SLING", "productName": "MOON BAG GREY", "bagType": "MOON BAG", "kenyaStock": 30}, {"colour": "Brown", "category": "SLING", "productName": "MOON BAG CRACKED", "bagType": "MOON BAG", "kenyaStock": 37}, {"colour": "Black", "category": "SLING", "productName": "MOON BAG BLACK", "bagType": "MOON BAG", "kenyaStock": 25}, {"colour": "Beige", "category": "SLING", "productName": "MOON BAG BEIGE", "bagType": "MOON BAG", "kenyaStock": 11}, {"colour": "Red", "category": "SLING", "productName": "MOON BAG RED", "bagType": "MOON BAG", "kenyaStock": 9}, {"colour": "Brown", "category": "SLING", "productName": "MOON BAG YELLOW BROWN", "bagType": "MOON BAG", "kenyaStock": 0}, {"colour": "Brown", "category": "SLING", "productName": "MOON BAG CHOCOLATE BROWN", "bagType": "MOON BAG", "kenyaStock": 8}, {"colour": "Red", "category": "SLING", "productName": "MOON BAG MAROON", "bagType": "MOON BAG", "kenyaStock": 0}, {"colour": "Brown", "category": "SLING", "productName": "MOON BAG AMBER BROWN", "bagType": "MOON BAG", "kenyaStock": 0}, {"colour": "Brown", "category": "SLING", "productName": "MOON BAG DARK BROWN", "bagType": "MOON BAG", "kenyaStock": 17}, {"colour": "Black", "category": "SLING", "productName": "NIZANA BLACK", "bagType": "NIZANA", "kenyaStock": 26}, {"colour": "Red", "category": "SLING", "productName": "NIZANA RED PATTERN", "bagType": "NIZANA", "kenyaStock": 0}, {"colour": "Brown", "category": "SLING", "productName": "NIZANA CRACKED", "bagType": "NIZANA", "kenyaStock": 46}, {"colour": "Brown", "category": "SLING", "productName": "NIZANA SPICE", "bagType": "NIZANA", "kenyaStock": 14}, {"colour": "Grey", "category": "SLING", "productName": "NIZANA GREY", "bagType": "NIZANA", "kenyaStock": 49}, {"colour": "Beige", "category": "SLING", "productName": "NIZANA BEIGE", "bagType": "NIZANA", "kenyaStock": 8}, {"colour": "Brown", "category": "SLING", "productName": "NIZANA CHOCOLATE", "bagType": "NIZANA", "kenyaStock": 4}, {"colour": "Brown", "category": "SLING", "productName": "NIZANA YELLOW BROWN", "bagType": "NIZANA", "kenyaStock": 0}, {"colour": "Red", "category": "SLING", "productName": "NIZANA RED", "bagType": "NIZANA", "kenyaStock": 16}, {"colour": "Brown", "category": "SLING", "productName": "NIZANA DARK BROWN", "bagType": "NIZANA", "kenyaStock": 3}, {"colour": "Black", "category": "BACKPACK", "productName": "PIONEER BLACK", "bagType": "PIONEER", "kenyaStock": 26}, {"colour": "Brown", "category": "BACKPACK", "productName": "PIONEER BROWN", "bagType": "PIONEER", "kenyaStock": 9}, {"colour": "Grey", "category": "BACKPACK", "productName": "PIONEER GREY", "bagType": "PIONEER", "kenyaStock": 7}, {"colour": "Beige", "category": "BACKPACK", "productName": "PIONEER NUDE", "bagType": "PIONEER", "kenyaStock": 15}, {"colour": "Green", "category": "BACKPACK", "productName": "PIONEER GREEN", "bagType": "PIONEER", "kenyaStock": 0}, {"colour": "Brown", "category": "BACKPACK", "productName": "PIONEER YELLOW DOTTED", "bagType": "PIONEER", "kenyaStock": 0}, {"colour": "Black", "category": "BACKPACK", "productName": "PRIME BLACK", "bagType": "PRIME", "kenyaStock": 45}, {"colour": "Brown", "category": "BACKPACK", "productName": "PRIME BROWN", "bagType": "PRIME", "kenyaStock": 47}, {"colour": "Beige", "category": "BACKPACK", "productName": "PRIME NUDE", "bagType": "PRIME", "kenyaStock": 13}, {"colour": "Grey", "category": "BACKPACK", "productName": "PRIME GREY", "bagType": "PRIME", "kenyaStock": 31}, {"colour": "Brown", "category": "BACKPACK", "productName": "PRIME YELLOW DOTTED", "bagType": "PRIME", "kenyaStock": 0}, {"colour": "Green", "category": "BACKPACK", "productName": "PRIME GREEN", "bagType": "PRIME", "kenyaStock": 40}, {"colour": "Red", "category": "BACKPACK", "productName": "PRIME RED", "bagType": "PRIME", "kenyaStock": 0}, {"colour": "Brown", "category": "TRAVEL", "productName": "SAFIRI TRAVEL BROWN", "bagType": "SAFIRI TRAVEL", "kenyaStock": 13}, {"colour": "Black", "category": "TRAVEL", "productName": "SAFIRI TRAVEL BLACK", "bagType": "SAFIRI TRAVEL", "kenyaStock": 29}, {"colour": "Grey", "category": "TRAVEL", "productName": "SAFIRI TRAVEL GREY", "bagType": "SAFIRI TRAVEL", "kenyaStock": 16}, {"colour": "Beige", "category": "TRAVEL", "productName": "SAFIRI TRAVEL NUDE", "bagType": "SAFIRI TRAVEL", "kenyaStock": 6}, {"colour": "Blue", "category": "TRAVEL", "productName": "SAFIRI TRAVEL P .BLUE", "bagType": "SAFIRI TRAVEL", "kenyaStock": 0}, {"colour": "Red", "category": "TRAVEL", "productName": "SAFIRI TRAVEL CRIMSON", "bagType": "SAFIRI TRAVEL", "kenyaStock": 0}, {"colour": "Green", "category": "TRAVEL", "productName": "SAFIRI TRAVEL GREEN", "bagType": "SAFIRI TRAVEL", "kenyaStock": 25}, {"colour": "Beige", "category": "TRAVEL", "productName": "SARAI NUDE", "bagType": "SARAI", "kenyaStock": 12}, {"colour": "Brown", "category": "TRAVEL", "productName": "SARAI YELLOW DOTTED", "bagType": "SARAI", "kenyaStock": 0}, {"colour": "Black", "category": "TRAVEL", "productName": "SARAI BLACK", "bagType": "SARAI", "kenyaStock": 10}, {"colour": "Green", "category": "TRAVEL", "productName": "SARAI GREEN", "bagType": "SARAI", "kenyaStock": 17}, {"colour": "Grey", "category": "TRAVEL", "productName": "SARAI GREY", "bagType": "SARAI", "kenyaStock": 18}, {"colour": "Brown", "category": "TRAVEL", "productName": "SARAI BROWN", "bagType": "SARAI", "kenyaStock": 12}, {"colour": "Grey", "category": "TRAVEL", "productName": "TRAVEL GREY", "bagType": "TRAVEL", "kenyaStock": 64}, {"colour": "Brown", "category": "TRAVEL", "productName": "TRAVEL YELLOW DOTTED", "bagType": "TRAVEL", "kenyaStock": 0}, {"colour": "Beige", "category": "TRAVEL", "productName": "TRAVEL NUDE", "bagType": "TRAVEL", "kenyaStock": 8}, {"colour": "Brown", "category": "TRAVEL", "productName": "TRAVEL BROWN", "bagType": "TRAVEL", "kenyaStock": 101}, {"colour": "Black", "category": "TRAVEL", "productName": "TRAVEL BLACK", "bagType": "TRAVEL", "kenyaStock": 45}, {"colour": "Red", "category": "TRAVEL", "productName": "TRAVEL RED", "bagType": "TRAVEL", "kenyaStock": 0}, {"colour": "Blue", "category": "TRAVEL", "productName": "TRAVEL BLUE", "bagType": "TRAVEL", "kenyaStock": 2}, {"colour": "Green", "category": "TRAVEL", "productName": "TRAVEL GREEN", "bagType": "TRAVEL", "kenyaStock": 35}, {"colour": "Brown", "category": "SLING", "productName": "TRECENTO SPICE", "bagType": "TRECENTO", "kenyaStock": 17}, {"colour": "Grey", "category": "SLING", "productName": "TRECENTO GREY", "bagType": "TRECENTO", "kenyaStock": 25}, {"colour": "Brown", "category": "SLING", "productName": "TRECENTO CRACKED", "bagType": "TRECENTO", "kenyaStock": 67}, {"colour": "Black", "category": "SLING", "productName": "TRECENTO BLACK", "bagType": "TRECENTO", "kenyaStock": 24}, {"colour": "Red", "category": "SLING", "productName": "TRECENTO RED", "bagType": "TRECENTO", "kenyaStock": 10}, {"colour": "Brown", "category": "SLING", "productName": "TRECENTO YELLOW BROWN", "bagType": "TRECENTO", "kenyaStock": 0}, {"colour": "Brown", "category": "SLING", "productName": "TRECENTO CHOCOLATE", "bagType": "TRECENTO", "kenyaStock": 4}, {"colour": "Brown", "category": "SLING", "productName": "TRECENTO DARK BROWN", "bagType": "TRECENTO", "kenyaStock": 17}, {"colour": "Red", "category": "SLING", "productName": "TRECENTO WOOVEN MAROON", "bagType": "TRECENTO", "kenyaStock": 7}, {"colour": "Beige", "category": "SLING", "productName": "TRECENTO BEIGE", "bagType": "TRECENTO", "kenyaStock": 24}, {"colour": "Black", "category": "MAN BAG", "productName": "ZANE MAN BLACK", "bagType": "ZANE MAN", "kenyaStock": 43}, {"colour": "Brown", "category": "MAN BAG", "productName": "ZANE MAN CRACKED", "bagType": "ZANE MAN", "kenyaStock": 38}, {"colour": "Beige", "category": "MAN BAG", "productName": "ZANE MAN BEIGE", "bagType": "ZANE MAN", "kenyaStock": 2}, {"colour": "Brown", "category": "MAN BAG", "productName": "ZANE MAN SPICE", "bagType": "ZANE MAN", "kenyaStock": 16}, {"colour": "Grey", "category": "MAN BAG", "productName": "ZANE MAN GREY", "bagType": "ZANE MAN", "kenyaStock": 17}, {"colour": "Brown", "category": "MAN BAG", "productName": "ZANE MAN CHOCOLATE", "bagType": "ZANE MAN", "kenyaStock": 4}, {"colour": "Red", "category": "MAN BAG", "productName": "ZANE MAN RED", "bagType": "ZANE MAN", "kenyaStock": 0}, {"colour": "Green", "category": "MAN BAG", "productName": "ZANE MAN GREEN", "bagType": "ZANE MAN", "kenyaStock": 0}, {"colour": "Brown", "category": "MAN BAG", "productName": "ZANE MAN DARK BROWN", "bagType": "ZANE MAN", "kenyaStock": 0}, {"colour": "Grey", "category": "LUNCH BAG", "productName": "ZIPPED LUNCHSET GREY", "bagType": "ZIPPED LUNCHSET", "kenyaStock": 19}, {"colour": "Brown", "category": "LUNCH BAG", "productName": "ZIPPED LUNCHSET BROWN", "bagType": "ZIPPED LUNCHSET", "kenyaStock": 18}, {"colour": "Beige", "category": "LUNCH BAG", "productName": "ZIPPED LUNCHSET BEIGE", "bagType": "ZIPPED LUNCHSET", "kenyaStock": 30}, {"colour": "Black", "category": "LUNCH BAG", "productName": "ZIPPED LUNCHSET BLACK", "bagType": "ZIPPED LUNCHSET", "kenyaStock": 22}, {"colour": "Brown", "category": "LUNCH BAG", "productName": "ZIPPED LUNCHSET YELLOW DOTTED", "bagType": "ZIPPED LUNCHSET", "kenyaStock": 0}, {"colour": "Green", "category": "LUNCH BAG", "productName": "ZIPPED LUNCHSET GREEN", "bagType": "ZIPPED LUNCHSET", "kenyaStock": 27}],
+  stockData:           [{"colour": "Black", "category": "HANDBAG", "productName": "AMAYA BLACK TT", "bagType": "AMAYA", "kenyaStock": 44}, {"colour": "Brown", "category": "HANDBAG", "productName": "AMAYA SPICE", "bagType": "AMAYA", "kenyaStock": 23}, {"colour": "Brown", "category": "HANDBAG", "productName": "AMAYA CRACKED", "bagType": "AMAYA", "kenyaStock": 48}, {"colour": "Grey", "category": "HANDBAG", "productName": "AMAYA GREY", "bagType": "AMAYA", "kenyaStock": 27}, {"colour": "Beige", "category": "HANDBAG", "productName": "AMAYA BEIGE", "bagType": "AMAYA", "kenyaStock": 11}, {"colour": "Brown", "category": "HANDBAG", "productName": "AMAYA CHOCO", "bagType": "AMAYA", "kenyaStock": 5}, {"colour": "Brown", "category": "HANDBAG", "productName": "AMAYA DARK BROWN", "bagType": "AMAYA", "kenyaStock": 12}, {"colour": "Red", "category": "HANDBAG", "productName": "AMAYA RED", "bagType": "AMAYA", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "AMAYA CROC BLACK", "bagType": "AMAYA", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "AMAYA WOOVEN BLACK", "bagType": "AMAYA", "kenyaStock": 0}, {"colour": "Red", "category": "HANDBAG", "productName": "AMAYA WOOVEN MAROON", "bagType": "AMAYA", "kenyaStock": 8}, {"colour": "Brown", "category": "HANDBAG", "productName": "AMAYA WOOVEN MUSTARD", "bagType": "AMAYA", "kenyaStock": 0}, {"colour": "Purple", "category": "HANDBAG", "productName": "AMAYA WOOVEN PURPLE", "bagType": "AMAYA", "kenyaStock": 0}, {"colour": "Green", "category": "HANDBAG", "productName": "AMAYA GREEN", "bagType": "AMAYA", "kenyaStock": 0}, {"colour": "Pink", "category": "HANDBAG", "productName": "AMAYA LILAC", "bagType": "AMAYA", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "AMAYA MUSTARD", "bagType": "AMAYA", "kenyaStock": 0}, {"colour": "Black", "category": "BACKPACK", "productName": "ANTITHEFT BLACK", "bagType": "ANTITHEFT", "kenyaStock": 85}, {"colour": "Brown", "category": "BACKPACK", "productName": "ANTITHEFT BROWN", "bagType": "ANTITHEFT", "kenyaStock": 77}, {"colour": "Beige", "category": "BACKPACK", "productName": "ANTITHEFT NUDE", "bagType": "ANTITHEFT", "kenyaStock": 17}, {"colour": "Grey", "category": "BACKPACK", "productName": "ANTITHEFT GREY", "bagType": "ANTITHEFT", "kenyaStock": 82}, {"colour": "Brown", "category": "BACKPACK", "productName": "ANTITHEFT ANTELOPE BROWN", "bagType": "ANTITHEFT", "kenyaStock": 19}, {"colour": "Green", "category": "BACKPACK", "productName": "ANTITHEFT GREEN", "bagType": "ANTITHEFT", "kenyaStock": 67}, {"colour": "Black", "category": "BACKPACK", "productName": "ANTITHEFT CN BLACK", "bagType": "ANTITHEFT", "kenyaStock": 13}, {"colour": "Red", "category": "SLING", "productName": "ARIA SLING RED", "bagType": "ARIA SLING", "kenyaStock": 5}, {"colour": "Beige", "category": "SLING", "productName": "ARIA SLING BEIGE", "bagType": "ARIA SLING", "kenyaStock": 6}, {"colour": "Black", "category": "SLING", "productName": "ARIA SLING BLACK", "bagType": "ARIA SLING", "kenyaStock": 6}, {"colour": "Brown", "category": "SLING", "productName": "ARIA SLING CRACKED", "bagType": "ARIA SLING", "kenyaStock": 3}, {"colour": "Brown", "category": "SLING", "productName": "ARIA SLING SPICE", "bagType": "ARIA SLING", "kenyaStock": 14}, {"colour": "Brown", "category": "SLING", "productName": "ARIA SLING CHOCOLATE", "bagType": "ARIA SLING", "kenyaStock": 0}, {"colour": "Brown", "category": "SLING", "productName": "ARIA SLING YELLOW BROWN", "bagType": "ARIA SLING", "kenyaStock": 0}, {"colour": "Red", "category": "SLING", "productName": "ARIA SLING MAROON", "bagType": "ARIA SLING", "kenyaStock": 0}, {"colour": "Pink", "category": "SLING", "productName": "ARIA SLING CROC PINK", "bagType": "ARIA SLING", "kenyaStock": 0}, {"colour": "Grey", "category": "SLING", "productName": "ARIA SLING GREY", "bagType": "ARIA SLING", "kenyaStock": 15}, {"colour": "Brown", "category": "SLING", "productName": "ARIA SLING DARK BROWN", "bagType": "ARIA SLING", "kenyaStock": 0}, {"colour": "Grey", "category": "BABY BAG", "productName": "BABY BAG GREY", "bagType": "BABY BAG", "kenyaStock": 20}, {"colour": "Black", "category": "BABY BAG", "productName": "BABY BAG BLACK", "bagType": "BABY BAG", "kenyaStock": 31}, {"colour": "Beige", "category": "BABY BAG", "productName": "BABY BAG NUDE", "bagType": "BABY BAG", "kenyaStock": 5}, {"colour": "Brown", "category": "BABY BAG", "productName": "BABY BAG BROWN", "bagType": "BABY BAG", "kenyaStock": 21}, {"colour": "Green", "category": "BABY BAG", "productName": "BABY BAG GREEN", "bagType": "BABY BAG", "kenyaStock": 20}, {"colour": "Red", "category": "BABY BAG", "productName": "BABY BAG RED", "bagType": "BABY BAG", "kenyaStock": 0}, {"colour": "Black", "category": "MAN BAG", "productName": "BIG MAN BAG BLACK", "bagType": "BIG MAN BAG", "kenyaStock": 78}, {"colour": "Brown", "category": "MAN BAG", "productName": "BIG MAN BAG BROWN", "bagType": "BIG MAN BAG", "kenyaStock": 46}, {"colour": "Grey", "category": "MAN BAG", "productName": "BIG MAN BAG GREY", "bagType": "BIG MAN BAG", "kenyaStock": 66}, {"colour": "Beige", "category": "MAN BAG", "productName": "BIG MAN BAG NUDE", "bagType": "BIG MAN BAG", "kenyaStock": 16}, {"colour": "Red", "category": "MAN BAG", "productName": "BIG MAN BAG RED", "bagType": "BIG MAN BAG", "kenyaStock": 0}, {"colour": "Green", "category": "MAN BAG", "productName": "BIG MAN BAG GREEN", "bagType": "BIG MAN BAG", "kenyaStock": 21}, {"colour": "Black", "category": "TRAVEL", "productName": "BONITA BLACK", "bagType": "BONITA", "kenyaStock": 43}, {"colour": "Brown", "category": "TRAVEL", "productName": "BONITA CRACKED", "bagType": "BONITA", "kenyaStock": 42}, {"colour": "Beige", "category": "TRAVEL", "productName": "BONITA BEIGE", "bagType": "BONITA", "kenyaStock": 14}, {"colour": "Brown", "category": "TRAVEL", "productName": "BONITA SPICE", "bagType": "BONITA", "kenyaStock": 17}, {"colour": "Grey", "category": "TRAVEL", "productName": "BONITA GREY", "bagType": "BONITA", "kenyaStock": 31}, {"colour": "Red", "category": "TRAVEL", "productName": "BONITA RED", "bagType": "BONITA", "kenyaStock": 0}, {"colour": "Brown", "category": "TRAVEL", "productName": "BONITA YELLOW BROWN", "bagType": "BONITA", "kenyaStock": 0}, {"colour": "Brown", "category": "TRAVEL", "productName": "BONITA CHOCO", "bagType": "BONITA", "kenyaStock": 4}, {"colour": "Brown", "category": "TRAVEL", "productName": "BONITA D.BROWN", "bagType": "BONITA", "kenyaStock": 4}, {"colour": "Black", "category": "HANDBAG", "productName": "CATHY HANDBAG BLACK", "bagType": "CATHY HANDBAG", "kenyaStock": 49}, {"colour": "Brown", "category": "HANDBAG", "productName": "CATHY HANDBAG SPICE", "bagType": "CATHY HANDBAG", "kenyaStock": 17}, {"colour": "Brown", "category": "HANDBAG", "productName": "CATHY HANDBAG CRACKED", "bagType": "CATHY HANDBAG", "kenyaStock": 28}, {"colour": "Grey", "category": "HANDBAG", "productName": "CATHY HANDBAG GREY", "bagType": "CATHY HANDBAG", "kenyaStock": 11}, {"colour": "Brown", "category": "HANDBAG", "productName": "CATHY HANDBAG DARK BROWN", "bagType": "CATHY HANDBAG", "kenyaStock": 0}, {"colour": "Beige", "category": "HANDBAG", "productName": "CATHY HANDBAG BEIGE", "bagType": "CATHY HANDBAG", "kenyaStock": 2}, {"colour": "Red", "category": "HANDBAG", "productName": "CATHY HANDBAG RED", "bagType": "CATHY HANDBAG", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "CATHY HANDBAG CHOCOLATE", "bagType": "CATHY HANDBAG", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "CLAIRE HANDBAG BLACK", "bagType": "CLAIRE HANDBAG", "kenyaStock": 17}, {"colour": "Brown", "category": "HANDBAG", "productName": "CLAIRE HANDBAG SPICE", "bagType": "CLAIRE HANDBAG", "kenyaStock": 10}, {"colour": "Brown", "category": "HANDBAG", "productName": "CLAIRE HANDBAG CRACKED", "bagType": "CLAIRE HANDBAG", "kenyaStock": 19}, {"colour": "Grey", "category": "HANDBAG", "productName": "CLAIRE HANDBAG GREY", "bagType": "CLAIRE HANDBAG", "kenyaStock": 22}, {"colour": "Red", "category": "HANDBAG", "productName": "CLAIRE HANDBAG WOOVEN MAROON", "bagType": "CLAIRE HANDBAG", "kenyaStock": 6}, {"colour": "Black", "category": "HANDBAG", "productName": "CLAIRE HANDBAG WOOVEN BLACK", "bagType": "CLAIRE HANDBAG", "kenyaStock": 1}, {"colour": "", "category": "HANDBAG", "productName": "CLAIRE HANDBAG WHITE", "bagType": "CLAIRE HANDBAG", "kenyaStock": 0}, {"colour": "", "category": "HANDBAG", "productName": "CLAIRE HANDBAG WHITE", "bagType": "CLAIRE HANDBAG", "kenyaStock": 0}, {"colour": "Beige", "category": "HANDBAG", "productName": "CLAIRE HANDBAG BEIGE", "bagType": "CLAIRE HANDBAG", "kenyaStock": 1}, {"colour": "Brown", "category": "HANDBAG", "productName": "CLAIRE HANDBAG DARK BROWN", "bagType": "CLAIRE HANDBAG", "kenyaStock": 1}, {"colour": "Red", "category": "HANDBAG", "productName": "CLAIRE HANDBAG RED", "bagType": "CLAIRE HANDBAG", "kenyaStock": 5}, {"colour": "Beige", "category": "BACKPACK", "productName": "CODE 3 NUDE", "bagType": "CODE 3", "kenyaStock": 14}, {"colour": "Brown", "category": "BACKPACK", "productName": "CODE 3 BROWN", "bagType": "CODE 3", "kenyaStock": 109}, {"colour": "Black", "category": "BACKPACK", "productName": "CODE 3 BLACK", "bagType": "CODE 3", "kenyaStock": 79}, {"colour": "Grey", "category": "BACKPACK", "productName": "CODE 3 GREY", "bagType": "CODE 3", "kenyaStock": 57}, {"colour": "Brown", "category": "BACKPACK", "productName": "CODE 3 ANTELOPE BROWN", "bagType": "CODE 3", "kenyaStock": 27}, {"colour": "Green", "category": "BACKPACK", "productName": "CODE 3 GREEN", "bagType": "CODE 3", "kenyaStock": 80}, {"colour": "Blue", "category": "BACKPACK", "productName": "CODE 3 BLUE", "bagType": "CODE 3", "kenyaStock": 0}, {"colour": "Red", "category": "BACKPACK", "productName": "CODE 3 CRIMSON", "bagType": "CODE 3", "kenyaStock": 0}, {"colour": "Grey", "category": "HANDBAG", "productName": "ELYSE GREY", "bagType": "ELYSE", "kenyaStock": 23}, {"colour": "Brown", "category": "HANDBAG", "productName": "ELYSE D.BROWN", "bagType": "ELYSE", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "ELYSE SPICE", "bagType": "ELYSE", "kenyaStock": 9}, {"colour": "Brown", "category": "HANDBAG", "productName": "ELYSE CRACKED", "bagType": "ELYSE", "kenyaStock": 37}, {"colour": "Black", "category": "HANDBAG", "productName": "ELYSE BLACK", "bagType": "ELYSE", "kenyaStock": 10}, {"colour": "Red", "category": "HANDBAG", "productName": "ELYSE RED", "bagType": "ELYSE", "kenyaStock": 3}, {"colour": "Beige", "category": "HANDBAG", "productName": "ELYSE BEIGE", "bagType": "ELYSE", "kenyaStock": 16}, {"colour": "Brown", "category": "HANDBAG", "productName": "ELYSE CHOCOLATE", "bagType": "ELYSE", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "ELYSE RED/BLACK", "bagType": "ELYSE", "kenyaStock": 1}, {"colour": "Black", "category": "HANDBAG", "productName": "ELYSE SPICE/BLACK", "bagType": "ELYSE", "kenyaStock": 0}, {"colour": "Red", "category": "HANDBAG", "productName": "ELYSE RED/BEIGE", "bagType": "ELYSE", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "ELYSE BLACK/GREY", "bagType": "ELYSE", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "ELYSE BLACK/CRACKED", "bagType": "ELYSE", "kenyaStock": 0}, {"colour": "Black", "category": "TRAVEL", "productName": "FABELA BLACK", "bagType": "FABELA", "kenyaStock": 51}, {"colour": "Brown", "category": "TRAVEL", "productName": "FABELA BROWN", "bagType": "FABELA", "kenyaStock": 64}, {"colour": "Grey", "category": "TRAVEL", "productName": "FABELA GREY", "bagType": "FABELA", "kenyaStock": 55}, {"colour": "Brown", "category": "TRAVEL", "productName": "FABELA YELLOW DOTTED", "bagType": "FABELA", "kenyaStock": 0}, {"colour": "Green", "category": "TRAVEL", "productName": "FABELA GREEN", "bagType": "FABELA", "kenyaStock": 28}, {"colour": "Beige", "category": "TRAVEL", "productName": "FABELA NUDE", "bagType": "FABELA", "kenyaStock": 5}, {"colour": "Black", "category": "TRAVEL", "productName": "JUMBO BLACK", "bagType": "JUMBO", "kenyaStock": 102}, {"colour": "Brown", "category": "TRAVEL", "productName": "JUMBO BROWN", "bagType": "JUMBO", "kenyaStock": 68}, {"colour": "Green", "category": "TRAVEL", "productName": "JUMBO GREEN", "bagType": "JUMBO", "kenyaStock": 51}, {"colour": "Grey", "category": "TRAVEL", "productName": "JUMBO GREY", "bagType": "JUMBO", "kenyaStock": 47}, {"colour": "Beige", "category": "TRAVEL", "productName": "JUMBO NUDE", "bagType": "JUMBO", "kenyaStock": 16}, {"colour": "Red", "category": "TRAVEL", "productName": "JUMBO CRIMSON", "bagType": "JUMBO", "kenyaStock": 0}, {"colour": "Blue", "category": "TRAVEL", "productName": "JUMBO BLUE", "bagType": "JUMBO", "kenyaStock": 0}, {"colour": "Brown", "category": "TRAVEL", "productName": "JUMBO YELLOW DOTTED", "bagType": "JUMBO", "kenyaStock": 0}, {"colour": "Black", "category": "TRAVEL", "productName": "LIAM BLACK", "bagType": "LIAM", "kenyaStock": 21}, {"colour": "Brown", "category": "TRAVEL", "productName": "LIAM BROWN", "bagType": "LIAM", "kenyaStock": 41}, {"colour": "Beige", "category": "TRAVEL", "productName": "LIAM NUDE", "bagType": "LIAM", "kenyaStock": 9}, {"colour": "Green", "category": "TRAVEL", "productName": "LIAM GREEN", "bagType": "LIAM", "kenyaStock": 28}, {"colour": "Grey", "category": "TRAVEL", "productName": "LIAM GREY", "bagType": "LIAM", "kenyaStock": 38}, {"colour": "Red", "category": "TRAVEL", "productName": "LIAM RED", "bagType": "LIAM", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "LOLA YELLOW BROWN", "bagType": "LOLA", "kenyaStock": 0}, {"colour": "Red", "category": "HANDBAG", "productName": "LOLA RED.PATTERN", "bagType": "LOLA", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "LOLA WOOVEN BLACK", "bagType": "LOLA", "kenyaStock": 0}, {"colour": "Red", "category": "HANDBAG", "productName": "LOLA WOOVEN MAROON", "bagType": "LOLA", "kenyaStock": 3}, {"colour": "Brown", "category": "HANDBAG", "productName": "LOLA WOOVEN MUSTARD", "bagType": "LOLA", "kenyaStock": 0}, {"colour": "Purple", "category": "HANDBAG", "productName": "LOLA WOOVEN PURPLE", "bagType": "LOLA", "kenyaStock": 0}, {"colour": "Grey", "category": "HANDBAG", "productName": "LOLA GREY", "bagType": "LOLA", "kenyaStock": 17}, {"colour": "Brown", "category": "HANDBAG", "productName": "LOLA CHOCO", "bagType": "LOLA", "kenyaStock": 6}, {"colour": "Brown", "category": "HANDBAG", "productName": "LOLA CRACKED", "bagType": "LOLA", "kenyaStock": 4}, {"colour": "Red", "category": "HANDBAG", "productName": "LOLA RED", "bagType": "LOLA", "kenyaStock": 2}, {"colour": "Black", "category": "HANDBAG", "productName": "LOLA BLACK", "bagType": "LOLA", "kenyaStock": 11}, {"colour": "Brown", "category": "HANDBAG", "productName": "LOLA SPICE", "bagType": "LOLA", "kenyaStock": 13}, {"colour": "Beige", "category": "HANDBAG", "productName": "LOLA BEIGE", "bagType": "LOLA", "kenyaStock": 19}, {"colour": "Red", "category": "HANDBAG", "productName": "LOLA MAROON", "bagType": "LOLA", "kenyaStock": 4}, {"colour": "Brown", "category": "HANDBAG", "productName": "LOLA DARK BROWN", "bagType": "LOLA", "kenyaStock": 0}, {"colour": "Black", "category": "LUNCH BAG", "productName": "LUNCHSET BLACK", "bagType": "LUNCHSET", "kenyaStock": 19}, {"colour": "Beige", "category": "LUNCH BAG", "productName": "LUNCHSET NUDE", "bagType": "LUNCHSET", "kenyaStock": 0}, {"colour": "Brown", "category": "LUNCH BAG", "productName": "LUNCHSET BROWN", "bagType": "LUNCHSET", "kenyaStock": 19}, {"colour": "Brown", "category": "LUNCH BAG", "productName": "LUNCHSET YELLOW DOTTED", "bagType": "LUNCHSET", "kenyaStock": 0}, {"colour": "Green", "category": "LUNCH BAG", "productName": "LUNCHSET GREEN", "bagType": "LUNCHSET", "kenyaStock": 19}, {"colour": "Grey", "category": "LUNCH BAG", "productName": "LUNCHSET GREY", "bagType": "LUNCHSET", "kenyaStock": 14}, {"colour": "Black", "category": "MAN BAG", "productName": "MAN BAG BLACK", "bagType": "MAN BAG", "kenyaStock": 43}, {"colour": "Brown", "category": "MAN BAG", "productName": "MAN BAG BROWN", "bagType": "MAN BAG", "kenyaStock": 79}, {"colour": "Beige", "category": "MAN BAG", "productName": "MAN BAG NUDE", "bagType": "MAN BAG", "kenyaStock": 20}, {"colour": "Grey", "category": "MAN BAG", "productName": "MAN BAG GREY", "bagType": "MAN BAG", "kenyaStock": 84}, {"colour": "Green", "category": "MAN BAG", "productName": "MAN BAG GREEN", "bagType": "MAN BAG", "kenyaStock": 46}, {"colour": "Brown", "category": "MAN BAG", "productName": "MAN BAG YELLOW DOTTED", "bagType": "MAN BAG", "kenyaStock": 0}, {"colour": "Red", "category": "MAN BAG", "productName": "MAN BAG RED", "bagType": "MAN BAG", "kenyaStock": 0}, {"colour": "Blue", "category": "MAN BAG", "productName": "MAN BAG BLUE", "bagType": "MAN BAG", "kenyaStock": 0}, {"colour": "Black", "category": "BACKPACK", "productName": "MEGA BLACK", "bagType": "MEGA", "kenyaStock": 25}, {"colour": "Brown", "category": "BACKPACK", "productName": "MEGA BROWN", "bagType": "MEGA", "kenyaStock": 28}, {"colour": "Grey", "category": "BACKPACK", "productName": "MEGA GREY", "bagType": "MEGA", "kenyaStock": 19}, {"colour": "Beige", "category": "BACKPACK", "productName": "MEGA NUDE", "bagType": "MEGA", "kenyaStock": 6}, {"colour": "Green", "category": "BACKPACK", "productName": "MEGA GREEN", "bagType": "MEGA", "kenyaStock": 29}, {"colour": "Brown", "category": "BACKPACK", "productName": "MEGA YELLOW DOTTED", "bagType": "MEGA", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "MINI MAYA WOOVEN MUSTARD", "bagType": "MINI MAYA", "kenyaStock": 0}, {"colour": "Red", "category": "HANDBAG", "productName": "MINI MAYA RED PATTERN", "bagType": "MINI MAYA", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "MINI MAYA WOOVEN BLACK", "bagType": "MINI MAYA", "kenyaStock": 13}, {"colour": "Purple", "category": "HANDBAG", "productName": "MINI MAYA WOOVEN PURPLE", "bagType": "MINI MAYA", "kenyaStock": 0}, {"colour": "Red", "category": "HANDBAG", "productName": "MINI MAYA WOOVEN MAROON", "bagType": "MINI MAYA", "kenyaStock": 16}, {"colour": "Black", "category": "CHEST BAG", "productName": "MINI UMBRA BLACK", "bagType": "MINI UMBRA", "kenyaStock": 32}, {"colour": "Grey", "category": "CHEST BAG", "productName": "MINI UMBRA GREY", "bagType": "MINI UMBRA", "kenyaStock": 30}, {"colour": "Brown", "category": "CHEST BAG", "productName": "MINI UMBRA CRACKED", "bagType": "MINI UMBRA", "kenyaStock": 42}, {"colour": "Brown", "category": "CHEST BAG", "productName": "MINI UMBRA SPICE", "bagType": "MINI UMBRA", "kenyaStock": 12}, {"colour": "Brown", "category": "CHEST BAG", "productName": "MINI UMBRA MANYATTA DARK BROWN", "bagType": "MINI UMBRA", "kenyaStock": 0}, {"colour": "Green", "category": "CHEST BAG", "productName": "MINI UMBRA MANYATTA DARK GREEN", "bagType": "MINI UMBRA", "kenyaStock": 0}, {"colour": "Green", "category": "CHEST BAG", "productName": "MINI UMBRA MANYATTA GREEN", "bagType": "MINI UMBRA", "kenyaStock": 0}, {"colour": "Yellow", "category": "CHEST BAG", "productName": "MINI UMBRA MANYATTA YELLOW", "bagType": "MINI UMBRA", "kenyaStock": 1}, {"colour": "Beige", "category": "CHEST BAG", "productName": "MINI UMBRA BEIGE", "bagType": "MINI UMBRA", "kenyaStock": 6}, {"colour": "Brown", "category": "CHEST BAG", "productName": "MINI UMBRA DARK BROWN", "bagType": "MINI UMBRA", "kenyaStock": 0}, {"colour": "Red", "category": "CHEST BAG", "productName": "MINI UMBRA RED", "bagType": "MINI UMBRA", "kenyaStock": 6}, {"colour": "Brown", "category": "CHEST BAG", "productName": "MINI UMBRA YELLOW BROWN", "bagType": "MINI UMBRA", "kenyaStock": 0}, {"colour": "Brown", "category": "CHEST BAG", "productName": "MINI UMBRA CHOCOLATE", "bagType": "MINI UMBRA", "kenyaStock": 5}, {"colour": "Grey", "category": "HANDBAG", "productName": "MINI ZURI GREY", "bagType": "MINI ZURI", "kenyaStock": 50}, {"colour": "Black", "category": "HANDBAG", "productName": "MINI ZURI WOOVEN BLACK", "bagType": "MINI ZURI", "kenyaStock": 6}, {"colour": "Red", "category": "HANDBAG", "productName": "MINI ZURI WOOVEN MAROON", "bagType": "MINI ZURI", "kenyaStock": 7}, {"colour": "Brown", "category": "HANDBAG", "productName": "MINI ZURI WOOVEN MUSTARD", "bagType": "MINI ZURI", "kenyaStock": 1}, {"colour": "Purple", "category": "HANDBAG", "productName": "MINI ZURI WOOVEN PURPLE", "bagType": "MINI ZURI", "kenyaStock": 0}, {"colour": "Black", "category": "HANDBAG", "productName": "MINI ZURI BLACK", "bagType": "MINI ZURI", "kenyaStock": 41}, {"colour": "Beige", "category": "HANDBAG", "productName": "MINI ZURI BEIGE", "bagType": "MINI ZURI", "kenyaStock": 21}, {"colour": "Red", "category": "HANDBAG", "productName": "MINI ZURI RED", "bagType": "MINI ZURI", "kenyaStock": 12}, {"colour": "Brown", "category": "HANDBAG", "productName": "MINI ZURI SPICE", "bagType": "MINI ZURI", "kenyaStock": 11}, {"colour": "Brown", "category": "HANDBAG", "productName": "MINI ZURI CRACKED", "bagType": "MINI ZURI", "kenyaStock": 54}, {"colour": "Red", "category": "HANDBAG", "productName": "MINI ZURI MAROON", "bagType": "MINI ZURI", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "MINI ZURI AMBER BROWN", "bagType": "MINI ZURI", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "MINI ZURI YELLOW BROWN", "bagType": "MINI ZURI", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "MINI ZURI CHOCOLATE", "bagType": "MINI ZURI", "kenyaStock": 10}, {"colour": "Red", "category": "HANDBAG", "productName": "MINI ZURI RED P", "bagType": "MINI ZURI", "kenyaStock": 0}, {"colour": "Brown", "category": "HANDBAG", "productName": "MINI ZURI DARK BROWN", "bagType": "MINI ZURI", "kenyaStock": 15}, {"colour": "Black", "category": "BACKPACK", "productName": "MONAH BP BLACK", "bagType": "MONAH BP", "kenyaStock": 27}, {"colour": "Brown", "category": "BACKPACK", "productName": "MONAH BP SPICE", "bagType": "MONAH BP", "kenyaStock": 0}, {"colour": "Brown", "category": "BACKPACK", "productName": "MONAH BP CRACKED", "bagType": "MONAH BP", "kenyaStock": 10}, {"colour": "Grey", "category": "BACKPACK", "productName": "MONAH BP GREY", "bagType": "MONAH BP", "kenyaStock": 1}, {"colour": "Beige", "category": "BACKPACK", "productName": "MONAH BP BEIGE", "bagType": "MONAH BP", "kenyaStock": 18}, {"colour": "Red", "category": "BACKPACK", "productName": "MONAH BP MAROON", "bagType": "MONAH BP", "kenyaStock": 1}, {"colour": "Brown", "category": "BACKPACK", "productName": "MONAH BP CHOCO", "bagType": "MONAH BP", "kenyaStock": 0}, {"colour": "Brown", "category": "BACKPACK", "productName": "MONAH BP DARK BROWN", "bagType": "MONAH BP", "kenyaStock": 0}, {"colour": "Red", "category": "BACKPACK", "productName": "MONAH BP RED", "bagType": "MONAH BP", "kenyaStock": 2}, {"colour": "Brown", "category": "SLING", "productName": "MOON BAG SPICE", "bagType": "MOON BAG", "kenyaStock": 14}, {"colour": "Red", "category": "SLING", "productName": "MOON BAG RED.PATTERN", "bagType": "MOON BAG", "kenyaStock": 0}, {"colour": "Black", "category": "SLING", "productName": "MOON BAG WOOVEN BLACK", "bagType": "MOON BAG", "kenyaStock": 0}, {"colour": "Red", "category": "SLING", "productName": "MOON BAG WOOVEN MAROON", "bagType": "MOON BAG", "kenyaStock": 0}, {"colour": "Brown", "category": "SLING", "productName": "MOON BAG WOOVEN MUSTARD", "bagType": "MOON BAG", "kenyaStock": 0}, {"colour": "Purple", "category": "SLING", "productName": "MOON BAG WOOVEN PURPLE", "bagType": "MOON BAG", "kenyaStock": 0}, {"colour": "Grey", "category": "SLING", "productName": "MOON BAG GREY", "bagType": "MOON BAG", "kenyaStock": 30}, {"colour": "Brown", "category": "SLING", "productName": "MOON BAG CRACKED", "bagType": "MOON BAG", "kenyaStock": 37}, {"colour": "Black", "category": "SLING", "productName": "MOON BAG BLACK", "bagType": "MOON BAG", "kenyaStock": 25}, {"colour": "Beige", "category": "SLING", "productName": "MOON BAG BEIGE", "bagType": "MOON BAG", "kenyaStock": 11}, {"colour": "Red", "category": "SLING", "productName": "MOON BAG RED", "bagType": "MOON BAG", "kenyaStock": 9}, {"colour": "Brown", "category": "SLING", "productName": "MOON BAG YELLOW BROWN", "bagType": "MOON BAG", "kenyaStock": 0}, {"colour": "Brown", "category": "SLING", "productName": "MOON BAG CHOCOLATE BROWN", "bagType": "MOON BAG", "kenyaStock": 8}, {"colour": "Red", "category": "SLING", "productName": "MOON BAG MAROON", "bagType": "MOON BAG", "kenyaStock": 0}, {"colour": "Brown", "category": "SLING", "productName": "MOON BAG AMBER BROWN", "bagType": "MOON BAG", "kenyaStock": 0}, {"colour": "Brown", "category": "SLING", "productName": "MOON BAG DARK BROWN", "bagType": "MOON BAG", "kenyaStock": 17}, {"colour": "Black", "category": "SLING", "productName": "NIZANA BLACK", "bagType": "NIZANA", "kenyaStock": 26}, {"colour": "Red", "category": "SLING", "productName": "NIZANA RED PATTERN", "bagType": "NIZANA", "kenyaStock": 0}, {"colour": "Brown", "category": "SLING", "productName": "NIZANA CRACKED", "bagType": "NIZANA", "kenyaStock": 46}, {"colour": "Brown", "category": "SLING", "productName": "NIZANA SPICE", "bagType": "NIZANA", "kenyaStock": 14}, {"colour": "Grey", "category": "SLING", "productName": "NIZANA GREY", "bagType": "NIZANA", "kenyaStock": 49}, {"colour": "Beige", "category": "SLING", "productName": "NIZANA BEIGE", "bagType": "NIZANA", "kenyaStock": 8}, {"colour": "Brown", "category": "SLING", "productName": "NIZANA CHOCOLATE", "bagType": "NIZANA", "kenyaStock": 4}, {"colour": "Brown", "category": "SLING", "productName": "NIZANA YELLOW BROWN", "bagType": "NIZANA", "kenyaStock": 0}, {"colour": "Red", "category": "SLING", "productName": "NIZANA RED", "bagType": "NIZANA", "kenyaStock": 16}, {"colour": "Brown", "category": "SLING", "productName": "NIZANA DARK BROWN", "bagType": "NIZANA", "kenyaStock": 3}, {"colour": "Black", "category": "BACKPACK", "productName": "PIONEER BLACK", "bagType": "PIONEER", "kenyaStock": 27}, {"colour": "Brown", "category": "BACKPACK", "productName": "PIONEER BROWN", "bagType": "PIONEER", "kenyaStock": 10}, {"colour": "Grey", "category": "BACKPACK", "productName": "PIONEER GREY", "bagType": "PIONEER", "kenyaStock": 7}, {"colour": "Beige", "category": "BACKPACK", "productName": "PIONEER NUDE", "bagType": "PIONEER", "kenyaStock": 15}, {"colour": "Green", "category": "BACKPACK", "productName": "PIONEER GREEN", "bagType": "PIONEER", "kenyaStock": 0}, {"colour": "Brown", "category": "BACKPACK", "productName": "PIONEER YELLOW DOTTED", "bagType": "PIONEER", "kenyaStock": 0}, {"colour": "Black", "category": "BACKPACK", "productName": "PRIME BLACK", "bagType": "PRIME", "kenyaStock": 45}, {"colour": "Brown", "category": "BACKPACK", "productName": "PRIME BROWN", "bagType": "PRIME", "kenyaStock": 47}, {"colour": "Beige", "category": "BACKPACK", "productName": "PRIME NUDE", "bagType": "PRIME", "kenyaStock": 13}, {"colour": "Grey", "category": "BACKPACK", "productName": "PRIME GREY", "bagType": "PRIME", "kenyaStock": 31}, {"colour": "Brown", "category": "BACKPACK", "productName": "PRIME YELLOW DOTTED", "bagType": "PRIME", "kenyaStock": 0}, {"colour": "Green", "category": "BACKPACK", "productName": "PRIME GREEN", "bagType": "PRIME", "kenyaStock": 40}, {"colour": "Red", "category": "BACKPACK", "productName": "PRIME RED", "bagType": "PRIME", "kenyaStock": 0}, {"colour": "Brown", "category": "TRAVEL", "productName": "SAFIRI TRAVEL BROWN", "bagType": "SAFIRI TRAVEL", "kenyaStock": 13}, {"colour": "Black", "category": "TRAVEL", "productName": "SAFIRI TRAVEL BLACK", "bagType": "SAFIRI TRAVEL", "kenyaStock": 29}, {"colour": "Grey", "category": "TRAVEL", "productName": "SAFIRI TRAVEL GREY", "bagType": "SAFIRI TRAVEL", "kenyaStock": 16}, {"colour": "Beige", "category": "TRAVEL", "productName": "SAFIRI TRAVEL NUDE", "bagType": "SAFIRI TRAVEL", "kenyaStock": 6}, {"colour": "Blue", "category": "TRAVEL", "productName": "SAFIRI TRAVEL P .BLUE", "bagType": "SAFIRI TRAVEL", "kenyaStock": 0}, {"colour": "Red", "category": "TRAVEL", "productName": "SAFIRI TRAVEL CRIMSON", "bagType": "SAFIRI TRAVEL", "kenyaStock": 0}, {"colour": "Green", "category": "TRAVEL", "productName": "SAFIRI TRAVEL GREEN", "bagType": "SAFIRI TRAVEL", "kenyaStock": 25}, {"colour": "Beige", "category": "TRAVEL", "productName": "SARAI NUDE", "bagType": "SARAI", "kenyaStock": 12}, {"colour": "Brown", "category": "TRAVEL", "productName": "SARAI YELLOW DOTTED", "bagType": "SARAI", "kenyaStock": 0}, {"colour": "Black", "category": "TRAVEL", "productName": "SARAI BLACK", "bagType": "SARAI", "kenyaStock": 10}, {"colour": "Green", "category": "TRAVEL", "productName": "SARAI GREEN", "bagType": "SARAI", "kenyaStock": 17}, {"colour": "Grey", "category": "TRAVEL", "productName": "SARAI GREY", "bagType": "SARAI", "kenyaStock": 18}, {"colour": "Brown", "category": "TRAVEL", "productName": "SARAI BROWN", "bagType": "SARAI", "kenyaStock": 12}, {"colour": "Grey", "category": "TRAVEL", "productName": "TRAVEL GREY", "bagType": "TRAVEL", "kenyaStock": 64}, {"colour": "Brown", "category": "TRAVEL", "productName": "TRAVEL YELLOW DOTTED", "bagType": "TRAVEL", "kenyaStock": 0}, {"colour": "Beige", "category": "TRAVEL", "productName": "TRAVEL NUDE", "bagType": "TRAVEL", "kenyaStock": 8}, {"colour": "Brown", "category": "TRAVEL", "productName": "TRAVEL BROWN", "bagType": "TRAVEL", "kenyaStock": 101}, {"colour": "Black", "category": "TRAVEL", "productName": "TRAVEL BLACK", "bagType": "TRAVEL", "kenyaStock": 45}, {"colour": "Red", "category": "TRAVEL", "productName": "TRAVEL RED", "bagType": "TRAVEL", "kenyaStock": 0}, {"colour": "Blue", "category": "TRAVEL", "productName": "TRAVEL BLUE", "bagType": "TRAVEL", "kenyaStock": 2}, {"colour": "Green", "category": "TRAVEL", "productName": "TRAVEL GREEN", "bagType": "TRAVEL", "kenyaStock": 35}, {"colour": "Brown", "category": "SLING", "productName": "TRECENTO SPICE", "bagType": "TRECENTO", "kenyaStock": 17}, {"colour": "Grey", "category": "SLING", "productName": "TRECENTO GREY", "bagType": "TRECENTO", "kenyaStock": 25}, {"colour": "Brown", "category": "SLING", "productName": "TRECENTO CRACKED", "bagType": "TRECENTO", "kenyaStock": 67}, {"colour": "Black", "category": "SLING", "productName": "TRECENTO BLACK", "bagType": "TRECENTO", "kenyaStock": 24}, {"colour": "Red", "category": "SLING", "productName": "TRECENTO RED", "bagType": "TRECENTO", "kenyaStock": 10}, {"colour": "Brown", "category": "SLING", "productName": "TRECENTO YELLOW BROWN", "bagType": "TRECENTO", "kenyaStock": 0}, {"colour": "Brown", "category": "SLING", "productName": "TRECENTO CHOCOLATE", "bagType": "TRECENTO", "kenyaStock": 4}, {"colour": "Brown", "category": "SLING", "productName": "TRECENTO DARK BROWN", "bagType": "TRECENTO", "kenyaStock": 17}, {"colour": "Red", "category": "SLING", "productName": "TRECENTO WOOVEN MAROON", "bagType": "TRECENTO", "kenyaStock": 7}, {"colour": "Beige", "category": "SLING", "productName": "TRECENTO BEIGE", "bagType": "TRECENTO", "kenyaStock": 24}, {"colour": "Black", "category": "MAN BAG", "productName": "ZANE MAN BLACK", "bagType": "ZANE MAN", "kenyaStock": 43}, {"colour": "Brown", "category": "MAN BAG", "productName": "ZANE MAN CRACKED", "bagType": "ZANE MAN", "kenyaStock": 38}, {"colour": "Beige", "category": "MAN BAG", "productName": "ZANE MAN BEIGE", "bagType": "ZANE MAN", "kenyaStock": 2}, {"colour": "Brown", "category": "MAN BAG", "productName": "ZANE MAN SPICE", "bagType": "ZANE MAN", "kenyaStock": 16}, {"colour": "Grey", "category": "MAN BAG", "productName": "ZANE MAN GREY", "bagType": "ZANE MAN", "kenyaStock": 17}, {"colour": "Brown", "category": "MAN BAG", "productName": "ZANE MAN CHOCOLATE", "bagType": "ZANE MAN", "kenyaStock": 4}, {"colour": "Red", "category": "MAN BAG", "productName": "ZANE MAN RED", "bagType": "ZANE MAN", "kenyaStock": 0}, {"colour": "Green", "category": "MAN BAG", "productName": "ZANE MAN GREEN", "bagType": "ZANE MAN", "kenyaStock": 0}, {"colour": "Brown", "category": "MAN BAG", "productName": "ZANE MAN DARK BROWN", "bagType": "ZANE MAN", "kenyaStock": 0}, {"colour": "Grey", "category": "LUNCH BAG", "productName": "ZIPPED LUNCHSET GREY", "bagType": "ZIPPED LUNCHSET", "kenyaStock": 19}, {"colour": "Brown", "category": "LUNCH BAG", "productName": "ZIPPED LUNCHSET BROWN", "bagType": "ZIPPED LUNCHSET", "kenyaStock": 18}, {"colour": "Beige", "category": "LUNCH BAG", "productName": "ZIPPED LUNCHSET BEIGE", "bagType": "ZIPPED LUNCHSET", "kenyaStock": 30}, {"colour": "Black", "category": "LUNCH BAG", "productName": "ZIPPED LUNCHSET BLACK", "bagType": "ZIPPED LUNCHSET", "kenyaStock": 22}, {"colour": "Brown", "category": "LUNCH BAG", "productName": "ZIPPED LUNCHSET YELLOW DOTTED", "bagType": "ZIPPED LUNCHSET", "kenyaStock": 0}, {"colour": "Green", "category": "LUNCH BAG", "productName": "ZIPPED LUNCHSET GREEN", "bagType": "ZIPPED LUNCHSET", "kenyaStock": 27}],
   ugComboHeaders:      ["JULY SALE", "PRICE", "WK 1", "WK 2"],
   ugCombos:            [["ANTITHEFT", "67,500.00", "1", "1"], ["SATCHEL", "85,000.00", "1", "1"], ["AVANA HB", "55,000.00", "0", "0"], ["BIG MAN BAG", "55,000.00", "0", "0"], ["JUMBO", "100,500.00", "5", "0"], ["KAI", "82,500.00", "7", "0"], ["KAYLA", "52,500.00", "0", "0"], ["MANDY HB", "40,000.00", "0", "0"], ["MINI SCHOOL", "47,500.00", "2", "0"], ["MINI ZURI", "67,500.00", "0", "0"], ["MOON BAG", "42,500.00", "0", "0"], ["NEO MAN", "42,500.00", "1", "0"], ["NIZANA", "42,500.00", "0", "0"], ["PIONEER", "69,500.00", "0", "0"], ["SKYE HB", "52,500.00", "1", "0"], ["zane man", "42,500.00", "0", "0"], ["TOTAL", "", "18", "2"]],
   ugSinglesHeaders:    [],
@@ -676,8 +652,6 @@ function fmt(n) { return Number(n).toLocaleString(); }
 /* Sort state */
 var comboSort = { col: null, dir: 'asc' };
 var powerSort = { col: null, dir: 'asc' };
-var stockState = { col: null, dir: 'asc', filters: { colour: '', category: '', productName: '', bagType: '' } };
-
 /* Helpers */
 function isTotalRow(row) {
   return row.length > 0 && String(row[0]).toUpperCase().indexOf('TOTAL') >= 0;
@@ -693,7 +667,6 @@ function isNumeric(v) {
 /* KPIs */
 set('kpi-combos',      OA.comboCount);
 set('kpi-power',       OA.powerDealCount);
-set('kpi-stock-rows',  OA.stockRowCount);
 set('kpi-kenya-stock', OA.totalKenyaStock);
 
 /* Offer product tags */
@@ -713,6 +686,144 @@ set('kpi-kenya-stock', OA.totalKenyaStock);
     var s = document.createElement('span'); s.className = 'offer-tag';
     s.textContent = p.bagType + (p.category ? '  •  ' + p.category : ''); wrap.appendChild(s);
   });
+})();
+
+/* ── Offer Sales vs Stock Guidance (per bag) ────────────────── */
+(function() {
+  var wrap    = document.getElementById('offer-guidance');
+  var typeEl  = document.getElementById('og-type');
+  var prodEl  = document.getElementById('og-product');
+  var sortEl  = document.getElementById('og-sort');
+  var introEl = document.getElementById('og-intro');
+  if (!wrap) return;
+
+  // Total Kenya stock per bag type
+  var stockMap = {};
+  (OA.stockData || []).forEach(function(r) {
+    var k = (r.bagType || '').trim().toUpperCase();
+    if (!k) return;
+    stockMap[k] = (stockMap[k] || 0) + (r.kenyaStock || 0);
+  });
+  var bagTypes = Object.keys(stockMap);
+
+  // Resolve the stock for an offer name.
+  //  • single bag  -> [{ bag, stock }]
+  //  • combo bundle -> one entry per component bag found in the title
+  function stockFor(name) {
+    var key = name.trim().toUpperCase();
+    if (stockMap[key] != null) return [{ bag: key, stock: stockMap[key] }];
+    var tokens = name.split(/[\/+,&]/).map(function(t){ return t.trim().toUpperCase(); }).filter(Boolean);
+    var comps = [];
+    tokens.forEach(function(tok) {
+      if (tok.length < 2) return;
+      var match = null;
+      for (var i = 0; i < bagTypes.length; i++) {
+        var bt = bagTypes[i];
+        if (bt === tok || bt.split(' ').indexOf(tok) !== -1 || bt.indexOf(tok + ' ') === 0 || tok.indexOf(bt) === 0) { match = bt; break; }
+      }
+      if (match && !comps.some(function(c){ return c.bag === match; })) comps.push({ bag: match, stock: stockMap[match] || 0 });
+    });
+    return comps;
+  }
+
+  function money(v) { var n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? String(v) : n.toLocaleString(); }
+  function toNum(v) { var n = parseInt(String(v).replace(/[^0-9]/g, '')); return isNaN(n) ? 0 : n; }
+
+  function chip(text, cls) {
+    var colors = { up:['rgba(16,185,129,0.2)','#6ee7b7'], down:['rgba(239,68,68,0.2)','#fca5a5'], flat:['rgba(148,163,184,0.2)','#cbd5e1'] }[cls];
+    return '<span style="font-size:0.56rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;padding:0.15rem 0.5rem;border-radius:4px;background:' + colors[0] + ';color:' + colors[1] + '">' + text + '</span>';
+  }
+  function stat(label, val, color) {
+    return '<span style="color:#64748b">' + label + '</span> <span style="color:' + color + ';font-weight:700">' + val + '</span>';
+  }
+  function row(html) {
+    return '<div style="display:flex;gap:0.75rem;align-items:flex-start;padding:0.75rem 0;border-bottom:1px solid #2d3148">' +
+      '<div style="width:8px;height:8px;border-radius:50%;background:#8b5cf6;flex-shrink:0;margin-top:6px"></div>' +
+      '<div style="font-size:0.82rem;color:#94a3b8;line-height:1.6">' + html + '</div></div>';
+  }
+
+  function render() {
+    var type = typeEl ? typeEl.value : 'combos';
+    var raw  = (type === 'power' ? (OA.powerDeals || []) : (OA.juneCombos || []));
+    var rows = raw.filter(function(r){ return r.length && String(r[0]).toUpperCase().indexOf('TOTAL') < 0; });
+
+    var prodFilter = prodEl ? prodEl.value : '';
+    var shown = prodFilter ? rows.filter(function(r){ return r[0] === prodFilter; }) : rows.slice();
+
+    // Sort by price (cheapest / most expensive first)
+    var dir = sortEl ? sortEl.value : 'asc';
+    shown.sort(function(a, b){
+      var pa = parseFloat(String(a[1]).replace(/,/g, '')) || 0;
+      var pb = parseFloat(String(b[1]).replace(/,/g, '')) || 0;
+      return dir === 'desc' ? (pb - pa) : (pa - pb);
+    });
+
+    var word = (type === 'power') ? 'Power Deals' : 'Combos';
+    if (introEl) introEl.innerHTML = 'Price, Wk 1 &rarr; Wk 2 units sold, and Kenya stock for each ' +
+      (type === 'power' ? 'power deal' : 'combo') + '. Combos break down to the stock held for each bag in the bundle.';
+
+    if (!shown.length) { wrap.innerHTML = '<p style="font-size:0.8rem;color:#64748b">No ' + word.toLowerCase() + ' match this selection.</p>'; return; }
+
+    var html = '';
+    shown.forEach(function(r) {
+      var name  = r[0];
+      var price = money(r[1]);
+      var wk1   = toNum(r[2]);
+      var wk2   = toNum(r[3]);
+      var diff  = wk2 - wk1;
+      var trend = diff > 0 ? chip('▲ ' + diff + ' Wk2', 'up') : diff < 0 ? chip('▼ ' + Math.abs(diff) + ' Wk2', 'down') : chip('— flat', 'flat');
+
+      var comps = stockFor(name);
+      var totalStock = comps.reduce(function(a, c){ return a + c.stock; }, 0);
+      var stockHtml;
+      if (comps.length === 1 && comps[0].bag === name.trim().toUpperCase()) {
+        stockHtml = stat('stock', totalStock.toLocaleString(), '#22d3ee');
+      } else if (comps.length) {
+        stockHtml = comps.map(function(c){
+          return '<span title="' + c.bag + ': ' + c.stock + ' in stock" style="display:inline-block;background:rgba(34,211,238,0.12);border:1px solid rgba(34,211,238,0.3);color:#a5f3fc;font-size:0.68rem;font-weight:700;padding:0.1rem 0.45rem;border-radius:5px;margin:0.1rem 0.25rem 0.1rem 0">' +
+            c.bag + ' <strong style="color:#e2f9ff">' + c.stock.toLocaleString() + '</strong></span>';
+        }).join('') + ' <span style="color:#64748b;font-size:0.72rem">(total ' + totalStock.toLocaleString() + ')</span>';
+      } else {
+        stockHtml = '<span style="color:#64748b">stock —</span>';
+      }
+
+      // Advice — units sold trend vs stock cover
+      var advice;
+      if (totalStock === 0) advice = '<strong style="color:#f8fafc">out of stock</strong> — pause the push until restocked.';
+      else if (diff > 0)    advice = 'sales <strong style="color:#6ee7b7">rising</strong> Wk1&rarr;Wk2 — keep the momentum, stock is covering it.';
+      else if (diff < 0)    advice = 'sales <strong style="color:#fca5a5">slowing</strong> — give it more push while ' + totalStock.toLocaleString() + ' units sit in stock.';
+      else                  advice = 'sales <strong style="color:#cbd5e1">steady</strong> — maintain the current effort.';
+
+      html += row(
+        '<strong style="color:#f8fafc">' + name + '</strong> &nbsp; ' + trend +
+        '<br><span style="display:inline-flex;gap:1.1rem;flex-wrap:wrap;margin:0.3rem 0 0.2rem">' +
+          stat('price', 'KES ' + price, '#fcd34d') +
+          stat('Wk1 sold', wk1.toLocaleString(), '#a78bfa') +
+          stat('Wk2 sold', wk2.toLocaleString(), '#c4b5fd') +
+        '</span>' +
+        '<br><span style="display:inline-block;margin:0.15rem 0 0.25rem">' + stockHtml + '</span>' +
+        '<br>' + advice
+      );
+    });
+    wrap.innerHTML = html;
+  }
+
+  // Populate the product dropdown from the current type
+  function populateProducts() {
+    if (!prodEl) return;
+    var type = typeEl ? typeEl.value : 'combos';
+    var raw  = (type === 'power' ? (OA.powerDeals || []) : (OA.juneCombos || []));
+    var names = raw.filter(function(r){ return r.length && String(r[0]).toUpperCase().indexOf('TOTAL') < 0; })
+                   .map(function(r){ return r[0]; });
+    prodEl.innerHTML = '<option value="">All</option>';
+    names.forEach(function(n){ var o = document.createElement('option'); o.value = n; o.textContent = n; prodEl.appendChild(o); });
+  }
+
+  if (typeEl) typeEl.addEventListener('change', function(){ populateProducts(); render(); });
+  if (prodEl) prodEl.addEventListener('change', render);
+  if (sortEl) sortEl.addEventListener('change', render);
+  populateProducts();
+  render();
 })();
 
 /* ── Deal tables (Combo + Power) ────────────────────────────── */
@@ -823,123 +934,6 @@ function renderDealTable(headers, rows, theadId, tbodyId, badgeId, sortState) {
 
 buildDealTable(OA.juneComboHeaders, OA.juneCombos, 'combo-thead', 'combo-tbody', 'combo-count', comboSort);
 buildDealTable(OA.powerDealHeaders, OA.powerDeals, 'power-thead', 'power-tbody', 'power-count', powerSort);
-
-/* ── Stock table: filters + sort ────────────────────────────── */
-function uniqueStockVals(key) {
-  var seen = {}, vals = [];
-  (OA.stockData || []).forEach(function(r) {
-    var v = r[key] || '';
-    if (v && !seen[v]) { seen[v] = true; vals.push(v); }
-  });
-  return vals.sort();
-}
-
-function populateSel(selId, key) {
-  var sel = document.getElementById(selId);
-  if (!sel) return;
-  uniqueStockVals(key).forEach(function(v) {
-    var opt = document.createElement('option'); opt.value = v; opt.textContent = v; sel.appendChild(opt);
-  });
-}
-
-populateSel('sf-colour',   'colour');
-populateSel('sf-category', 'category');
-populateSel('sf-product',  'productName');
-populateSel('sf-bagtype',  'bagType');
-
-function renderStock() {
-  var tbody = document.getElementById('stock-tbody');
-  var badge = document.getElementById('stock-count');
-  if (!tbody) return;
-  var f = stockState.filters;
-
-  var filtered = (OA.stockData || []).filter(function(r) {
-    return (
-      (!f.colour      || (r.colour      || '') === f.colour)      &&
-      (!f.category    || (r.category    || '') === f.category)    &&
-      (!f.productName || (r.productName || '') === f.productName) &&
-      (!f.bagType     || (r.bagType     || '') === f.bagType)
-    );
-  });
-
-  var sorted = filtered.slice();
-  if (stockState.col) {
-    sorted.sort(function(a, b) {
-      var av = a[stockState.col] || 0, bv = b[stockState.col] || 0;
-      var cmp = typeof av === 'number' ? (av - bv) : String(av).localeCompare(String(bv));
-      return stockState.dir === 'asc' ? cmp : -cmp;
-    });
-  }
-
-  if (badge) badge.textContent = sorted.length;
-
-  /* Update sort icon on Kenya Stock header */
-  var sth = document.getElementById('stock-sort-th');
-  if (sth) {
-    var ico = sth.querySelector('.sort-icon');
-    if (ico) {
-      if (stockState.col === 'kenyaStock') {
-        ico.textContent = stockState.dir === 'asc' ? ' ↑' : ' ↓';
-        ico.style.color = '#22d3ee'; ico.style.opacity = '1';
-      } else {
-        ico.textContent = ' ⇅'; ico.style.color = ''; ico.style.opacity = '0.35';
-      }
-    }
-  }
-
-  tbody.innerHTML = '';
-
-  if (!sorted.length) {
-    var tr = document.createElement('tr');
-    var td = document.createElement('td'); td.colSpan = 5; td.className = 'empty-msg';
-    td.textContent = 'No stock data matches the selected filters.';
-    tr.appendChild(td); tbody.appendChild(tr); return;
-  }
-
-  var grand = 0;
-  sorted.forEach(function(r) { grand += (r.kenyaStock || 0); });
-  var ttr = document.createElement('tr'); ttr.className = 'total-row';
-  ['TOTALS', '', '', '', fmt(grand)].forEach(function(v, i) {
-    var c = document.createElement('td'); c.textContent = v;
-    if (i === 4) c.className = 'col-stock';
-    ttr.appendChild(c);
-  });
-  tbody.appendChild(ttr);
-
-  sorted.forEach(function(r) {
-    var tr = document.createElement('tr');
-    function cell(cls, v) { var c = document.createElement('td'); c.className = cls; c.textContent = v; tr.appendChild(c); }
-    cell('col-plain', r.colour      || '—');
-    cell('col-plain', r.category    || '—');
-    cell('col-name',  r.productName || '—');
-    cell('col-plain', r.bagType     || '—');
-    cell('col-stock', fmt(r.kenyaStock || 0));
-    tbody.appendChild(tr);
-  });
-}
-
-/* Wire stock filters */
-[['sf-colour','colour'],['sf-category','category'],['sf-product','productName'],['sf-bagtype','bagType']].forEach(function(pair) {
-  var el = document.getElementById(pair[0]);
-  if (el) el.addEventListener('change', function() { stockState.filters[pair[1]] = this.value; renderStock(); });
-});
-
-var sfReset = document.getElementById('sf-reset');
-if (sfReset) sfReset.addEventListener('click', function() {
-  stockState.filters = { colour: '', category: '', productName: '', bagType: '' };
-  stockState.col = null; stockState.dir = 'asc';
-  ['sf-colour','sf-category','sf-product','sf-bagtype'].forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
-  renderStock();
-});
-
-var stockSortTh = document.getElementById('stock-sort-th');
-if (stockSortTh) stockSortTh.addEventListener('click', function() {
-  if (stockState.col === 'kenyaStock') { stockState.dir = stockState.dir === 'asc' ? 'desc' : 'asc'; }
-  else { stockState.col = 'kenyaStock'; stockState.dir = 'desc'; }
-  renderStock();
-});
-
-renderStock();
 
 /* Match Combo Deals height to Power Deals height */
 (function() {
@@ -1234,107 +1228,6 @@ window.addEventListener('DOMContentLoaded', function() {
     cornerRadius: 6
   };
 
-  function parseStock(s) { return parseInt(String(s).replace(/,/g, '')) || 0; }
-
-  // ── Chart A: Regional Stock Bar ────────────────────────────
-  var kenyaStock  = parseStock(OA.totalKenyaStock);
-  var ugandaStock = parseStock(OA.totalUgandaStock);
-  var sinzaStock  = parseStock(OA.totalSinzaStock);
-
-  if (window._chartRegionalStock) window._chartRegionalStock.destroy();
-  window._chartRegionalStock = new Chart(
-    document.getElementById('chart-regional-stock'),
-    {
-      type: 'bar',
-      data: {
-        labels: ['Kenya', 'Uganda', 'Sinza'],
-        datasets: [{
-          data: [kenyaStock, ugandaStock, sinzaStock],
-          backgroundColor: [C.greenDim, C.amberDim, C.purpleDim],
-          borderColor:     [C.green,    C.amber,    C.purple],
-          borderWidth: 2,
-          borderRadius: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: Object.assign({}, ttDefaults)
-        },
-        scales: {
-          x: {
-            grid:  { display: false },
-            ticks: { color: C.text }
-          },
-          y: {
-            grid:  { color: C.border },
-            ticks: { color: C.text }
-          }
-        }
-      }
-    }
-  );
-
-  // ── Chart B: Offer Types Grouped Bar ──────────────────────
-  if (window._chartOfferTypes) window._chartOfferTypes.destroy();
-  window._chartOfferTypes = new Chart(
-    document.getElementById('chart-offer-types'),
-    {
-      type: 'bar',
-      data: {
-        labels: ['Kenya', 'Uganda', 'Sinza'],
-        datasets: [
-          {
-            label: 'Combos',
-            data:  [OA.comboCount || 0, OA.ugComboCount || 0, OA.sinzaComboCount || 0],
-            backgroundColor: C.greenDim,
-            borderColor:     C.green,
-            borderWidth: 2,
-            borderRadius: 4
-          },
-          {
-            label: 'Power Deals',
-            data:  [OA.powerDealCount || 0, 0, 0],
-            backgroundColor: C.amberDim,
-            borderColor:     C.amber,
-            borderWidth: 2,
-            borderRadius: 4
-          },
-          {
-            label: 'Singles / Offers',
-            data:  [OA.offerCount || 0, OA.ugSinglesCount || 0, OA.sinzaSinglesCount || 0],
-            backgroundColor: C.cyanDim,
-            borderColor:     C.cyan,
-            borderWidth: 2,
-            borderRadius: 4
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: { color: C.text, padding: 16, boxWidth: 12 }
-          },
-          tooltip: Object.assign({}, ttDefaults)
-        },
-        scales: {
-          x: {
-            grid:  { display: false },
-            ticks: { color: C.text }
-          },
-          y: {
-            grid:  { color: C.border },
-            ticks: { color: C.text }
-          }
-        }
-      }
-    }
-  );
 });
 </script>
 

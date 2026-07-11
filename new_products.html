@@ -174,7 +174,7 @@
     .np-popover .pop-row { display: flex; justify-content: space-between; align-items: center; gap: 1.25rem; padding: 0.35rem 0; font-size: 0.8rem; }
     .np-popover .pop-row span { color: #94a3b8; }
     .np-popover .pop-row strong { font-weight: 800; font-variant-numeric: tabular-nums; }
-    #wk-target-card, #wk-pct-card, #mo-target-card, #mo-pct-card { cursor: pointer; }
+    #np-count-card, #np-sales-card, #np-pct-card, #wk-target-card, #wk-pct-card { cursor: pointer; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
@@ -197,7 +197,7 @@
       <div class="card-value emerald" id="kpi-count"></div>
       <div class="card-interpretation">Products launched as new this month.</div>
     </div>
-    <div class="card green">
+    <div class="card green" id="np-sales-card">
       <div class="card-label">Monthly Sales</div>
       <div class="card-value" id="kpi-sales"></div>
       <div class="card-interpretation">Bags of new products sold so far.</div>
@@ -223,47 +223,11 @@
     <div style="font-size:0.72rem;color:#64748b;margin-top:0.25rem">Total bags targeted for new products.</div>
   </div>
 
-  <!-- Per-product progress toward target -->
-  <div class="card-grid">
-    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem">
-        <div class="card-label" style="margin-bottom:0">New Products — Sold vs Remaining to Target</div>
-        <div style="display:flex;align-items:center;gap:0.4rem">
-          <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Sort by</span>
-          <select id="pt-sort" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
-            <option value="target">Highest target</option>
-            <option value="sold">Highest bags sold</option>
-            <option value="remaining">Highest still needed</option>
-            <option value="name">Product (A–Z)</option>
-          </select>
-        </div>
-      </div>
-      <div style="position:relative;height:320px"><canvas id="chart-product-targets"></canvas></div>
-    </div>
-  </div>
-
-  <!-- Top 10 Products by Monthly Sales -->
-  <div class="card-grid">
-    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div class="card-label">Top 10 Products by Monthly Sales</div>
-      <div style="position:relative;height:280px"><canvas id="chart-top-products"></canvas></div>
-    </div>
-  </div>
-
-  <!-- Colour movement & stock guidance -->
-  <div class="card-grid">
-    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem">
-        <div class="card-label" style="margin-bottom:0">Colour Movement &amp; Stock Guidance</div>
-        <div style="display:flex;align-items:center;gap:0.4rem">
-          <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Product</span>
-          <select id="cg-product" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
-            <option value="">All Products</option>
-          </select>
-        </div>
-      </div>
-      <div id="colour-guidance"></div>
-    </div>
+  <!-- Kenya / Outside split — pops up when hovering the Monthly Sales card -->
+  <div class="np-popover" id="np-sales-popover">
+    <div class="card-label" style="margin-bottom:0.5rem">Monthly Sales &mdash; Kenya vs Outside</div>
+    <div class="pop-row"><span>Monthly Kenya Sales</span><strong style="color:#4ade80" id="np-pop-ksales"></strong></div>
+    <div class="pop-row"><span>Monthly Outside Kenya</span><strong style="color:#facc15" id="np-pop-osales"></strong></div>
   </div>
 
   <!-- WEEKLY -->
@@ -317,10 +281,82 @@
     </div>
   </div>
 
+  <!-- Per-product progress toward target -->
+  <div class="card-grid">
+    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem">
+        <div class="card-label" id="pt-title" style="margin-bottom:0">New Products — Sold vs Remaining to Target</div>
+        <div style="display:flex;align-items:center;gap:0.9rem;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:0.4rem">
+            <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Period</span>
+            <select id="pt-period" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
+              <option value="monthly">Monthly</option>
+              <option value="weekly">Weekly</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.4rem">
+            <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Sort by</span>
+            <select id="pt-sort" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
+              <option value="target">Highest target</option>
+              <option value="sold">Highest bags sold</option>
+              <option value="remaining">Highest still needed</option>
+              <option value="name">Product (A–Z)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div style="position:relative;height:440px"><canvas id="chart-product-targets"></canvas></div>
+      <div id="pt-totals" style="display:flex;gap:1.75rem;justify-content:center;flex-wrap:wrap;margin-top:0.9rem;padding-top:0.85rem;border-top:1px solid #2d3148"></div>
+    </div>
+  </div>
+
+  <!-- Top 10 Products by Monthly Sales -->
+  <div class="card-grid">
+    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem">
+        <div class="card-label" id="top10-title" style="margin-bottom:0">Top 10 Products by Monthly Sales</div>
+        <div style="display:flex;align-items:center;gap:0.4rem">
+          <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Period</span>
+          <select id="top10-period" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
+            <option value="monthly">Monthly</option>
+            <option value="weekly">Weekly</option>
+          </select>
+        </div>
+      </div>
+      <div style="position:relative;height:460px"><canvas id="chart-top-products"></canvas></div>
+      <div id="top10-totals" style="display:flex;gap:1.75rem;justify-content:center;flex-wrap:wrap;margin-top:0.9rem;padding-top:0.85rem;border-top:1px solid #2d3148"></div>
+    </div>
+  </div>
+
+  <!-- Colour movement & stock guidance -->
+  <div class="card-grid">
+    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem">
+        <div class="card-label" style="margin-bottom:0">Colour Movement &amp; Stock Guidance</div>
+        <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+          <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Period</span>
+          <select id="cg-period" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
+            <option value="monthly">Monthly</option>
+            <option value="weekly">Weekly</option>
+          </select>
+          <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Product</span>
+          <select id="cg-product" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
+            <option value="">All Products</option>
+          </select>
+        </div>
+      </div>
+      <div id="colour-guidance"></div>
+    </div>
+  </div>
+
   <div class="table-wrap">
-    <div class="table-title">
-      Weekly &mdash; Sales vs Posts (per Colour)
-      <span class="count-badge" id="weekly-row-count">0</span>
+    <div class="table-title" style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap">
+      <span>Sales vs Posts (per Colour)</span>
+      <span class="count-badge" id="pc-row-count">0</span>
+      <select id="pc-period" style="margin-left:auto;text-transform:none;letter-spacing:normal;background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.25rem 0.6rem;border-radius:6px;font-size:0.72rem;cursor:pointer;outline:none">
+        <option value="weekly">Weekly</option>
+        <option value="monthly">Monthly</option>
+      </select>
     </div>
     <div class="filter-bar">
       <label>Colour</label>
@@ -333,102 +369,9 @@
       <select id="w-f-bagtype"><option value="">All</option></select>
       <button class="reset-btn" id="w-reset">Reset Filters</button>
     </div>
-    <table id="weekly-table">
-      <thead>
-        <tr>
-          <th>Colour</th>
-          <th>Category</th>
-          <th>Product Name</th>
-          <th>Bag Type</th>
-          <th class="right sortable" data-col="weeklySales"  style="color:#34d399;">Weekly Sales <span class="sort-icon">⇅</span></th>
-          <th class="right sortable" data-col="wpostKenya"   style="color:#22d3ee;">Kenya Posts <span class="sort-icon">⇅</span></th>
-          <th class="right sortable" data-col="wpostOutside" style="color:#facc15;">Outside Posts <span class="sort-icon">⇅</span></th>
-          <th class="right sortable" data-col="sKenya"       style="color:#22d3ee;">Kenya Stock <span class="sort-icon">⇅</span></th>
-          <th class="right sortable" data-col="sOutside"     style="color:#a78bfa;">Outside Stock <span class="sort-icon">⇅</span></th>
-          <th class="right sortable" data-col="sRestock"     style="color:#fb923c;">Restock <span class="sort-icon">⇅</span></th>
-        </tr>
-      </thead>
-      <tbody id="weekly-tbody"></tbody>
-    </table>
-  </div>
-
-  <!-- MONTHLY -->
-  <div class="sub-header">
-    <span class="sub-pill" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);">Monthly</span>
-    <h3>Monthly Sales vs Marketing Posts</h3>
-  </div>
-
-  <div class="card-grid">
-    <div class="card green">
-      <div class="card-label">Monthly Kenya Sales</div>
-      <div class="card-value green" id="kpi-monthly-kenya"></div>
-      <div class="card-interpretation">New-product bags sold in Kenya this month.</div>
-    </div>
-    <div class="card amber">
-      <div class="card-label">Monthly Outside Kenya</div>
-      <div class="card-value amber" id="kpi-monthly-outside"></div>
-      <div class="card-interpretation">New-product bags sold outside Kenya this month.</div>
-    </div>
-    <div class="card blue" id="mo-target-card">
-      <div class="card-label">Monthly Target</div>
-      <div class="card-value" id="kpi-mo-target"></div>
-      <div class="card-interpretation">Total bags targeted for new products.</div>
-    </div>
-    <div class="card amber" id="mo-pct-card">
-      <div class="card-label">Monthly Sales % Achieved</div>
-      <div class="card-value amber" id="kpi-mo-pct"></div>
-      <div class="card-interpretation">Monthly sales as a % of the monthly target.</div>
-    </div>
-  </div>
-
-  <div class="np-popover" id="mo-target-popover">
-    <div class="card-label" style="margin-bottom:0.5rem">Monthly &mdash; Posts &amp; Stock</div>
-    <div class="pop-row"><span>Monthly Kenya Posts</span><strong style="color:#22d3ee" id="pop-mo-kposts"></strong></div>
-    <div class="pop-row"><span>Monthly Outside Posts</span><strong style="color:#a78bfa" id="pop-mo-oposts"></strong></div>
-    <div class="pop-row"><span>Kenya Stock</span><strong style="color:#22d3ee" id="pop-mo-kstock"></strong></div>
-    <div class="pop-row"><span>Outside Stock</span><strong style="color:#a78bfa" id="pop-mo-ostock"></strong></div>
-  </div>
-  <div class="np-popover" id="mo-pct-popover">
-    <div class="card-label" style="margin-bottom:0.5rem">Monthly &mdash; Sales &amp; Restock</div>
-    <div class="pop-row"><span>Monthly Sales Total</span><strong style="color:#34d399" id="pop-mo-total"></strong></div>
-    <div class="pop-row"><span>Kenya Sales</span><strong style="color:#4ade80" id="pop-mo-ksales"></strong></div>
-    <div class="pop-row"><span>Outside Sales</span><strong style="color:#facc15" id="pop-mo-osales"></strong></div>
-    <div class="pop-row"><span>Restock</span><strong style="color:#fb923c" id="pop-mo-restock"></strong></div>
-  </div>
-
-  <div class="table-wrap">
-    <div class="table-title">
-      Monthly &mdash; Sales vs Posts (per Colour)
-      <span class="count-badge" id="monthly-row-count">0</span>
-    </div>
-    <div class="filter-bar" id="m-filter-bar">
-      <label>Colour</label>
-      <select id="m-f-colour"><option value="">All</option></select>
-      <label>Category</label>
-      <select id="m-f-category"><option value="">All</option></select>
-      <label>Product</label>
-      <select id="m-f-product"><option value="">All</option></select>
-      <label>Bag Type</label>
-      <select id="m-f-bagtype"><option value="">All</option></select>
-      <button class="reset-btn" id="m-reset">Reset Filters</button>
-    </div>
-    <table id="monthly-table">
-      <thead>
-        <tr>
-          <th>Colour</th>
-          <th>Category</th>
-          <th>Product Name</th>
-          <th>Bag Type</th>
-          <th class="right sortable" data-col="kenyaSales"   style="color:#4ade80;">Kenya Sales <span class="sort-icon">⇅</span></th>
-          <th class="right sortable" data-col="outsideKenya" style="color:#facc15;">Outside Kenya <span class="sort-icon">⇅</span></th>
-          <th class="right sortable" data-col="mpostKenya"   style="color:#22d3ee;">Kenya Posts <span class="sort-icon">⇅</span></th>
-          <th class="right sortable" data-col="mpostOutside" style="color:#a78bfa;">Outside Posts <span class="sort-icon">⇅</span></th>
-          <th class="right sortable" data-col="sKenya"       style="color:#22d3ee;">Kenya Stock <span class="sort-icon">⇅</span></th>
-          <th class="right sortable" data-col="sOutside"     style="color:#a78bfa;">Outside Stock <span class="sort-icon">⇅</span></th>
-          <th class="right sortable" data-col="sRestock"     style="color:#fb923c;">Restock <span class="sort-icon">⇅</span></th>
-        </tr>
-      </thead>
-      <tbody id="monthly-tbody"></tbody>
+    <table id="pc-table">
+      <thead id="pc-thead"><tr></tr></thead>
+      <tbody id="pc-tbody"></tbody>
     </table>
   </div>
 
@@ -528,21 +471,15 @@ set('np-pop-target',     NP.totalTarget);   // New Products hover
 set('np-pop-deficit',    NP.totalDeficit);  // Sales % Achieved hover
 set('kpi-sales',         NP.totalSales);
 set('kpi-pct',           NP.salesPct);
-set('kpi-monthly-kenya',  NP.monthlyKenya);
-set('kpi-monthly-outside',NP.monthlyOutside);
+set('np-pop-ksales',      NP.monthlyKenya);    // Monthly Sales hover
+set('np-pop-osales',      NP.monthlyOutside);  // Monthly Sales hover
 set('kpi-weekly-target',  NP.weeklyTarget);
 set('kpi-weekly-pct',     NP.weeklySalesPct);
-set('kpi-mo-target',      NP.totalTarget);
-set('kpi-mo-pct',         NP.salesPct);
 
 /* Values shown inside the hover popovers */
 set('pop-wk-kposts',  NP.wpostKenya);   set('pop-wk-oposts',  NP.wpostOutside);
 set('pop-wk-kstock',  NP.wSKenya);      set('pop-wk-ostock',  NP.wSOutside);
 set('pop-wk-total',   NP.weeklyTotal);  set('pop-wk-restock', NP.wSRestock);
-set('pop-mo-kposts',  NP.mpostKenya);   set('pop-mo-oposts',  NP.mpostOutside);
-set('pop-mo-kstock',  NP.mSKenya);      set('pop-mo-ostock',  NP.mSOutside);
-set('pop-mo-total',   NP.totalSales);   set('pop-mo-ksales',  NP.monthlyKenya);
-set('pop-mo-osales',  NP.monthlyOutside); set('pop-mo-restock', NP.mSRestock);
 
 /* Reusable card → hover popover */
 function attachNpPopover(cardId, popId) {
@@ -560,23 +497,24 @@ function attachNpPopover(cardId, popId) {
   window.addEventListener('resize', function() { if (pop.classList.contains('show')) place(); });
 }
 attachNpPopover('np-count-card',  'np-target-popover');
+attachNpPopover('np-sales-card',  'np-sales-popover');
 attachNpPopover('np-pct-card',    'np-deficit-popover');
 attachNpPopover('wk-target-card', 'wk-target-popover');
 attachNpPopover('wk-pct-card',    'wk-pct-popover');
-attachNpPopover('mo-target-card', 'mo-target-popover');
-attachNpPopover('mo-pct-card',    'mo-pct-popover');
 
 /* ── Colour movement & stock guidance (filterable by product) ── */
 (function() {
-  var wrap = document.getElementById('colour-guidance');
-  var sel  = document.getElementById('cg-product');
+  var wrap    = document.getElementById('colour-guidance');
+  var sel     = document.getElementById('cg-product');
+  var periodEl= document.getElementById('cg-period');
   if (!wrap) return;
-  var rows = NP.monthlyCombined || [];
+  var monthly = NP.monthlyCombined || [];
+  var weekly  = NP.weeklyCombined  || [];
 
-  // Populate product dropdown (bag types)
+  // Populate product dropdown (bag types) — from the monthly set (superset)
   if (sel) {
     var seen = {};
-    rows.forEach(function(r){ var b = (r.bagType || '').trim(); if (b && !seen[b]) { seen[b] = 1; } });
+    monthly.forEach(function(r){ var b = (r.bagType || '').trim(); if (b && !seen[b]) { seen[b] = 1; } });
     Object.keys(seen).sort().forEach(function(b){
       var o = document.createElement('option'); o.value = b; o.textContent = b; sel.appendChild(o);
     });
@@ -597,16 +535,24 @@ attachNpPopover('mo-pct-card',    'mo-pct-popover');
   }
 
   function render(product) {
+    var period = periodEl ? periodEl.value : 'monthly';
+    var rows   = period === 'weekly' ? weekly : monthly;
     var scoped = product ? rows.filter(function(r){ return (r.bagType || '') === product; }) : rows;
     var agg = {};
     scoped.forEach(function(r) {
       var col = (r.colour || '').trim();
       if (!col) return;
       var a = agg[col] || (agg[col] = { colour: col, sold: 0, posts: 0, stock: 0 });
-      a.sold  += (r.kenyaSales || 0) + (r.outsideKenya || 0);
-      a.posts += (r.mpostKenya || 0) + (r.mpostOutside || 0);
+      if (period === 'weekly') {
+        a.sold  += (r.weeklySales || 0);
+        a.posts += (r.wpostKenya || 0) + (r.wpostOutside || 0);
+      } else {
+        a.sold  += (r.kenyaSales || 0) + (r.outsideKenya || 0);
+        a.posts += (r.mpostKenya || 0) + (r.mpostOutside || 0);
+      }
       a.stock += (r.sKenya || 0) + (r.sOutside || 0) + (r.sRestock || 0);
     });
+    var pWord = period === 'weekly' ? 'week' : 'month';
     var list = Object.keys(agg).map(function(k){ return agg[k]; });
     if (!list.length) { wrap.innerHTML = '<p style="font-size:0.8rem;color:#64748b">No colour data for this selection.</p>'; return; }
 
@@ -614,31 +560,49 @@ attachNpPopover('mo-pct-card',    'mo-pct-popover');
       return ' &middot; ' + stat('sold', c.sold, '#34d399') + '  ' + stat('posts', c.posts, '#22d3ee') + '  ' + stat('stock', c.stock, '#a78bfa');
     }
 
-    var best  = list.slice().sort(function(a, b){ return b.sold - a.sold; }).slice(0, 2);
-    var least = list.slice().filter(function(c){ return c.stock > 0; }).sort(function(a, b){ return a.sold - b.sold; }).slice(0, 2);
+    // Dynamic classification:
+    //  • Best-moving  = the top 3 colours by bags sold
+    //  • Least-moving = colours selling BELOW the average (total sold ÷ number of colours), still holding stock
+    var totalSold = list.reduce(function(a, c){ return a + (c.sold || 0); }, 0);
+    var avg       = list.length ? (totalSold / list.length) : 0;
+
+    // A best-mover must actually have sold something (sold > 0), then top 3 by bags sold.
+    var best    = list.slice()
+      .filter(function(c){ return (c.sold || 0) > 0; })
+      .sort(function(a, b){ return b.sold - a.sold; })
+      .slice(0, 3);
+    var bestSet = {}; best.forEach(function(c){ bestSet[c.colour] = 1; });
+    // Least-mover: holding stock and either below the average OR not sold at all, and not already a best-mover.
+    var least   = list.slice()
+      .filter(function(c){ return c.stock > 0 && !bestSet[c.colour] && ((c.sold || 0) < avg || (c.sold || 0) === 0); })
+      .sort(function(a, b){ return a.sold - b.sold; });
 
     var title = product ? ('for <strong style="color:#f8fafc">' + product + '</strong>') : 'across all new products';
-    var html = '<p style="font-size:0.75rem;color:#64748b;margin-bottom:0.5rem">Best &amp; slowest colours ' + title + ' — with what to move.</p>';
+    var pTag = period === 'weekly' ? 'Weekly' : 'Monthly';
+    var html = '<p style="font-size:0.75rem;color:#64748b;margin-bottom:0.5rem"><strong style="color:#cbd5e1">' + pTag + '</strong> colour movement ' + title + ' — <strong style="color:#34d399">top 3</strong> by bags sold vs. those <strong style="color:#fbbf24">below the ' + Math.round(avg).toLocaleString() + '-bag average</strong>.</p>';
 
-    html += '<div style="font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#34d399;margin:0.25rem 0 0.25rem">Best-moving colours</div>';
+    html += '<div style="font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#34d399;margin:0.25rem 0 0.25rem">Best-moving colours (top 3 by bags sold)</div>';
+    if (!best.length) {
+      html += row('No colours have sold yet this ' + pWord + ' — see the least-moving list below for what to push.');
+    }
     best.forEach(function(c) {
       var plenty = c.stock >= Math.max(c.sold, 10);
       var advice = c.stock === 0
         ? 'now <strong style="color:#f8fafc">out of stock — restock urgently</strong>.'
         : plenty
-          ? '<strong style="color:#34d399">push more ' + c.colour + ' this week</strong>, the stock is there.'
+          ? '<strong style="color:#34d399">push more ' + c.colour + ' this ' + pWord + '</strong>, the stock is there.'
           : '<strong style="color:#f8fafc">restock soon</strong> so you don\'t run dry.';
       html += row(chip('Best', 'good') + ' <strong style="color:#f8fafc">' + c.colour + '</strong>' + line(c) + '<br>' + advice);
     });
 
-    html += '<div style="font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#fbbf24;margin:0.9rem 0 0.25rem">Least-moving colours (with stock)</div>';
+    html += '<div style="font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#fbbf24;margin:0.9rem 0 0.25rem">Least-moving colours (below average, with stock)</div>';
     if (!least.length) {
-      html += row('No slow-moving colours are holding stock — nothing sitting idle.');
+      html += row('No colours are selling below the average while holding stock — nothing sitting idle.');
     } else {
       least.forEach(function(c) {
         var lowPosts = c.posts < 3;
         var advice = lowPosts
-          ? '<strong style="color:#f8fafc">post ' + c.colour + ' more this week</strong> — stock is sitting and it\'s barely been posted (' + c.posts + ').'
+          ? '<strong style="color:#f8fafc">post ' + c.colour + ' more this ' + pWord + '</strong> — stock is sitting and it\'s barely been posted (' + c.posts + ').'
           : '<strong style="color:#f8fafc">keep posting ' + c.colour + '</strong> to clear the sitting stock.';
       html += row(chip('Slow', 'warn') + ' <strong style="color:#f8fafc">' + c.colour + '</strong>' + line(c) + '<br>' + advice);
       });
@@ -646,7 +610,8 @@ attachNpPopover('mo-pct-card',    'mo-pct-popover');
     wrap.innerHTML = html;
   }
 
-  if (sel) sel.addEventListener('change', function(){ render(this.value); });
+  if (sel) sel.addEventListener('change', function(){ render(sel.value); });
+  if (periodEl) periodEl.addEventListener('change', function(){ render(sel ? sel.value : ''); });
   render('');
 })();
 
@@ -691,192 +656,131 @@ attachNpPopover('mo-pct-card',    'mo-pct-popover');
 })();
 
 /* ═══════════════════════════════════════════════════════════
-   MONTHLY
+   SALES vs POSTS (per Colour) — weekly / monthly toggle
    ═══════════════════════════════════════════════════════════ */
-var mState = { col: null, dir: 'asc', filters: { colour: '', category: '', productName: '', bagType: '' } };
+var PC_COLS = {
+  weekly: [
+    { k:'colour',       t:'Colour',        cls:'col-colour',   txt:true },
+    { k:'category',     t:'Category',      cls:'col-category', txt:true },
+    { k:'productName',  t:'Product Name',  cls:'col-product',  txt:true },
+    { k:'bagType',      t:'Bag Type',      cls:'col-bagtype',  txt:true },
+    { k:'weeklySales',  t:'Weekly Sales',  color:'#34d399' },
+    { k:'wpostKenya',   t:'Kenya Posts',   color:'#22d3ee' },
+    { k:'wpostOutside', t:'Outside Posts', color:'#facc15' },
+    { k:'sKenya',       t:'Kenya Stock',   color:'#22d3ee' },
+    { k:'sOutside',     t:'Outside Stock', color:'#a78bfa' },
+    { k:'sRestock',     t:'Restock',       color:'#fb923c' }
+  ],
+  monthly: [
+    { k:'colour',       t:'Colour',        cls:'col-colour',   txt:true },
+    { k:'category',     t:'Category',      cls:'col-category', txt:true },
+    { k:'productName',  t:'Product Name',  cls:'col-product',  txt:true },
+    { k:'bagType',      t:'Bag Type',      cls:'col-bagtype',  txt:true },
+    { k:'kenyaSales',   t:'Kenya Sales',   color:'#4ade80' },
+    { k:'outsideKenya', t:'Outside Kenya', color:'#facc15' },
+    { k:'mpostKenya',   t:'Kenya Posts',   color:'#22d3ee' },
+    { k:'mpostOutside', t:'Outside Posts', color:'#a78bfa' },
+    { k:'sKenya',       t:'Kenya Stock',   color:'#22d3ee' },
+    { k:'sOutside',     t:'Outside Stock', color:'#a78bfa' },
+    { k:'sRestock',     t:'Restock',       color:'#fb923c' }
+  ]
+};
+var pcState = { period: 'weekly', col: null, dir: 'asc', filters: { colour:'', category:'', productName:'', bagType:'' } };
 
-function renderMonthly() {
-  var filtered = applyFilters(NP.monthlyCombined || [], mState.filters);
-  var rows     = sortRows(filtered, mState.col, mState.dir);
-  var tbody    = document.getElementById('monthly-tbody');
-  var badge    = document.getElementById('monthly-row-count');
+function pcBuildThead() {
+  var thead = document.getElementById('pc-thead');
+  if (!thead) return;
+  var tr = document.createElement('tr');
+  PC_COLS[pcState.period].forEach(function(col) {
+    var th = document.createElement('th');
+    if (col.txt) {
+      th.textContent = col.t;
+    } else {
+      th.className = 'right sortable'; th.setAttribute('data-col', col.k);
+      if (col.color) th.style.color = col.color;
+      var icon = (pcState.col === col.k) ? (pcState.dir === 'asc' ? ' ▲' : ' ▼') : ' ⇅';
+      th.innerHTML = col.t + ' <span class="sort-icon">' + icon + '</span>';
+      th.addEventListener('click', function() {
+        if (pcState.col === col.k) pcState.dir = pcState.dir === 'asc' ? 'desc' : 'asc';
+        else { pcState.col = col.k; pcState.dir = 'asc'; }
+        pcBuildThead(); renderPC();
+      });
+    }
+    tr.appendChild(th);
+  });
+  thead.innerHTML = ''; thead.appendChild(tr);
+}
+
+function renderPC() {
+  var cols  = PC_COLS[pcState.period];
+  var src   = pcState.period === 'weekly' ? (NP.allWeeklyCombined || NP.weeklyCombined || []) : (NP.allMonthlyCombined || NP.monthlyCombined || []);
+  var rows  = sortRows(applyFilters(src, pcState.filters), pcState.col, pcState.dir);
+  var tbody = document.getElementById('pc-tbody');
+  var badge = document.getElementById('pc-row-count');
   if (!tbody) return;
   tbody.innerHTML = '';
   if (badge) badge.textContent = rows.length;
 
-  /* Totals */
-  var gKS = 0, gOS = 0, gPK = 0, gPO = 0, gSK = 0, gSO = 0, gSR = 0;
-  rows.forEach(function(r) {
-    gKS += (r.kenyaSales   || 0); gOS += (r.outsideKenya || 0);
-    gPK += (r.mpostKenya   || 0); gPO += (r.mpostOutside || 0);
-    gSK += (r.sKenya || 0); gSO += (r.sOutside || 0); gSR += (r.sRestock || 0);
-  });
-
-  /* Totals row at top */
+  /* Totals row */
+  var totals = {}; cols.forEach(function(c){ if (!c.txt) totals[c.k] = 0; });
+  rows.forEach(function(r){ cols.forEach(function(c){ if (!c.txt) totals[c.k] += (r[c.k] || 0); }); });
   var ttr = document.createElement('tr'); ttr.className = 'total-row';
-  [['TOTALS',''], ['',''], ['',''], ['',''],
-   [fmt(gKS),'right'], [fmt(gOS),'right'], [fmt(gPK),'right'], [fmt(gPO),'right'],
-   [fmt(gSK),'right'], [fmt(gSO),'right'], [fmt(gSR),'right']
-  ].forEach(function(pair) {
-    var c = document.createElement('td'); c.textContent = pair[0];
-    if (pair[1] === 'right') c.style.textAlign = 'right'; ttr.appendChild(c);
+  cols.forEach(function(c, i) {
+    var td = document.createElement('td');
+    if (c.txt) { td.textContent = i === 0 ? 'TOTALS' : ''; }
+    else { td.textContent = fmt(totals[c.k]); td.style.textAlign = 'right'; }
+    ttr.appendChild(td);
   });
   tbody.appendChild(ttr);
 
   if (!rows.length) {
-    var tr = document.createElement('tr');
-    var td = document.createElement('td');
-    td.colSpan = 11; td.className = 'empty-msg';
+    var tr = document.createElement('tr'), td = document.createElement('td');
+    td.colSpan = cols.length; td.className = 'empty-msg';
     td.textContent = 'No data matches the current filters.';
     tr.appendChild(td); tbody.appendChild(tr);
-  } else {
-    // Default view is capped at 10 rows; applying ANY filter shows them all
-    var anyFilter = Object.keys(mState.filters).some(function(k) { return mState.filters[k]; });
-    var display   = (!anyFilter && rows.length > 10) ? rows.slice(0, 10) : rows;
-    display.forEach(function(r) { tbody.appendChild(buildMRow(r)); });
-    if (display.length < rows.length) {
-      var mtr = document.createElement('tr');
-      var mtd = document.createElement('td');
-      mtd.colSpan = 11; mtd.className = 'empty-msg';
-      mtd.textContent = 'Showing ' + display.length + ' of ' + rows.length +
-        ' rows — use the filters above to see the rest.';
-      mtr.appendChild(mtd); tbody.appendChild(mtr);
-    }
+    return;
   }
-}
-
-function buildMRow(r) {
-  var tr = document.createElement('tr');
-  function c(cls, v) { var td = document.createElement('td'); td.className = cls; td.textContent = v; tr.appendChild(td); }
-  c('col-colour',      r.colour       || '—');
-  c('col-category',    r.category     || '—');
-  c('col-product',     r.productName  || '—');
-  c('col-bagtype',     r.bagType      || '—');
-  c('col-m-kenya-s',   fmt(r.kenyaSales   || 0));
-  c('col-m-outside-s', fmt(r.outsideKenya || 0));
-  c('col-m-post-ke',   fmt(r.mpostKenya   || 0));
-  c('col-m-post-out',  fmt(r.mpostOutside || 0));
-  c('col-skenya',      fmt(r.sKenya   || 0));
-  c('col-soutside',    fmt(r.sOutside || 0));
-  c('col-srestock',    fmt(r.sRestock || 0));
-  return tr;
-}
-
-/* Populate monthly filters */
-var mData = NP.monthlyCombined || [];
-populateSel('m-f-colour',   uniqueVals(mData, 'colour'),      'All Colours');
-populateSel('m-f-category', uniqueVals(mData, 'category'),   'All Categories');
-populateSel('m-f-product',  uniqueVals(mData, 'productName'), 'All Products');
-populateSel('m-f-bagtype',  uniqueVals(mData, 'bagType'),     'All Bag Types');
-
-[['m-f-colour','colour'],['m-f-category','category'],['m-f-product','productName'],['m-f-bagtype','bagType']].forEach(function(pair) {
-  var el = document.getElementById(pair[0]);
-  if (el) el.addEventListener('change', function() { mState.filters[pair[1]] = this.value; renderMonthly(); });
-});
-
-document.getElementById('m-reset').addEventListener('click', function() {
-  mState.filters = { colour:'', category:'', productName:'', bagType:'' };
-  ['m-f-colour','m-f-category','m-f-product','m-f-bagtype'].forEach(function(id) {
-    var el = document.getElementById(id); if (el) el.value = '';
-  });
-  renderMonthly();
-});
-
-initSort('monthly-table', mState, renderMonthly);
-renderMonthly();
-
-/* ═══════════════════════════════════════════════════════════
-   WEEKLY
-   ═══════════════════════════════════════════════════════════ */
-var wState = { col: null, dir: 'asc', filters: { colour: '', category: '', productName: '', bagType: '' } };
-
-function renderWeekly() {
-  var filtered = applyFilters(NP.weeklyCombined || [], wState.filters);
-  var rows     = sortRows(filtered, wState.col, wState.dir);
-  var tbody    = document.getElementById('weekly-tbody');
-  var badge    = document.getElementById('weekly-row-count');
-  if (!tbody) return;
-  tbody.innerHTML = '';
-  if (badge) badge.textContent = rows.length;
-
-  /* Totals (computed from filtered set) */
-  var gS = 0, gPK = 0, gPO = 0, gSK = 0, gSO = 0, gSR = 0;
+  // Show every bag — no row cap
   rows.forEach(function(r) {
-    gS  += (r.weeklySales  || 0); gPK += (r.wpostKenya   || 0); gPO += (r.wpostOutside || 0);
-    gSK += (r.sKenya || 0); gSO += (r.sOutside || 0); gSR += (r.sRestock || 0);
-  });
-
-  /* Totals row at TOP */
-  var ttr = document.createElement('tr'); ttr.className = 'total-row';
-  [['TOTALS',''], ['',''], ['',''], ['',''],
-   [fmt(gS),'right'], [fmt(gPK),'right'], [fmt(gPO),'right'],
-   [fmt(gSK),'right'], [fmt(gSO),'right'], [fmt(gSR),'right']
-  ].forEach(function(pair) {
-    var c = document.createElement('td'); c.textContent = pair[0];
-    if (pair[1] === 'right') c.style.textAlign = 'right'; ttr.appendChild(c);
-  });
-  tbody.appendChild(ttr);
-
-  if (!rows.length) {
     var tr = document.createElement('tr');
-    var td = document.createElement('td');
-    td.colSpan = 10; td.className = 'empty-msg';
-    td.textContent = 'No data matches the current filters.';
-    tr.appendChild(td); tbody.appendChild(tr);
-  } else {
-    // Default view is capped at 10 rows; applying ANY filter shows them all
-    var anyFilter = Object.keys(wState.filters).some(function(k) { return wState.filters[k]; });
-    var display   = (!anyFilter && rows.length > 10) ? rows.slice(0, 10) : rows;
-    display.forEach(function(r) { tbody.appendChild(buildWRow(r)); });
-    if (display.length < rows.length) {
-      var mtr = document.createElement('tr');
-      var mtd = document.createElement('td');
-      mtd.colSpan = 10; mtd.className = 'empty-msg';
-      mtd.textContent = 'Showing ' + display.length + ' of ' + rows.length +
-        ' rows — use the filters above to see the rest.';
-      mtr.appendChild(mtd); tbody.appendChild(mtr);
-    }
-  }
+    cols.forEach(function(c) {
+      var td = document.createElement('td');
+      if (c.txt) { td.className = c.cls; td.textContent = r[c.k] || '—'; }
+      else { td.textContent = fmt(r[c.k] || 0); td.style.textAlign = 'right'; td.style.fontWeight = '800'; if (c.color) td.style.color = c.color; }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
 }
 
-function buildWRow(r) {
-  var tr = document.createElement('tr');
-  function c(cls, v) { var td = document.createElement('td'); td.className = cls; td.textContent = v; tr.appendChild(td); }
-  c('col-colour',     r.colour       || '—');
-  c('col-category',   r.category     || '—');
-  c('col-product',    r.productName  || '—');
-  c('col-bagtype',    r.bagType      || '—');
-  c('col-w-sales',    fmt(r.weeklySales  || 0));
-  c('col-w-post-ke',  fmt(r.wpostKenya   || 0));
-  c('col-w-post-out', fmt(r.wpostOutside || 0));
-  c('col-skenya',     fmt(r.sKenya   || 0));
-  c('col-soutside',   fmt(r.sOutside || 0));
-  c('col-srestock',   fmt(r.sRestock || 0));
-  return tr;
-}
-
-/* Populate weekly filters */
-var wData = NP.weeklyCombined || [];
-populateSel('w-f-colour',   uniqueVals(wData, 'colour'),      'All Colours');
-populateSel('w-f-category', uniqueVals(wData, 'category'),   'All Categories');
-populateSel('w-f-product',  uniqueVals(wData, 'productName'), 'All Products');
-populateSel('w-f-bagtype',  uniqueVals(wData, 'bagType'),     'All Bag Types');
+/* Filters — options from the full monthly set (same SKUs as weekly) */
+var pcData = NP.allMonthlyCombined || NP.monthlyCombined || [];
+populateSel('w-f-colour',   uniqueVals(pcData, 'colour'),      'All Colours');
+populateSel('w-f-category', uniqueVals(pcData, 'category'),   'All Categories');
+populateSel('w-f-product',  uniqueVals(pcData, 'productName'), 'All Products');
+populateSel('w-f-bagtype',  uniqueVals(pcData, 'bagType'),     'All Bag Types');
 
 [['w-f-colour','colour'],['w-f-category','category'],['w-f-product','productName'],['w-f-bagtype','bagType']].forEach(function(pair) {
   var el = document.getElementById(pair[0]);
-  if (el) el.addEventListener('change', function() { wState.filters[pair[1]] = this.value; renderWeekly(); });
+  if (el) el.addEventListener('change', function() { pcState.filters[pair[1]] = this.value; renderPC(); });
 });
 
 document.getElementById('w-reset').addEventListener('click', function() {
-  wState.filters = { colour:'', category:'', productName:'', bagType:'' };
+  pcState.filters = { colour:'', category:'', productName:'', bagType:'' };
   ['w-f-colour','w-f-category','w-f-product','w-f-bagtype'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.value = '';
   });
-  renderWeekly();
+  renderPC();
 });
 
-initSort('weekly-table', wState, renderWeekly);
-renderWeekly();
+var pcPeriodEl = document.getElementById('pc-period');
+if (pcPeriodEl) pcPeriodEl.addEventListener('change', function() {
+  pcState.period = this.value; pcState.col = null; pcState.dir = 'asc';
+  pcBuildThead(); renderPC();
+});
+
+pcBuildThead();
+renderPC();
 </script>
 
 <script>
@@ -906,86 +810,180 @@ window.addEventListener('DOMContentLoaded', function() {
 
   function parseNum(s) { return parseInt(String(s).replace(/[^0-9]/g,'')) || 0; }
 
-  // ── Top 10 Products Bar ───────────────────────────────────
-  var sorted = (NP.monthlyCombined || [])
-    .map(function(r) {
-      return {
-        name:  r.productName || r.colour || r.bagType || '—',
-        sales: (r.sKenya || 0) + (r.sOutside || 0) + (r.sRestock || 0)
-      };
-    })
-    .sort(function(a, b) { return b.sales - a.sales; })
-    .slice(0, 10);
-
-  if (window._chartTopProducts) window._chartTopProducts.destroy();
-  // Rank gradient: brightest emerald at the top, fading down the ranking
-  var topN = sorted.length;
-  function rankColor(i) {
+  // ── Top 10 Products Bar (weekly or monthly actual sales) ──
+  function rankColor(i, topN) {
     var t = topN > 1 ? i / (topN - 1) : 0;      // 0 = best, 1 = last
     var r = Math.round(16  + t * (100 - 16));
     var g = Math.round(185 + t * (139 - 185));
     var b = Math.round(129 + t * (250 - 129));  // emerald → soft violet
     return 'rgb(' + r + ',' + g + ',' + b + ')';
   }
-  var maxVal = Math.max.apply(null, sorted.map(function(r){ return r.sales; }).concat([1]));
 
-  // Value labels at the end of each bar
-  var valueLabels = {
-    id: 'topValueLabels',
-    afterDatasetsDraw: function(chart) {
-      var ctx = chart.ctx, meta = chart.getDatasetMeta(0);
-      ctx.save();
-      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      ctx.font = 'bold 0.78rem "Segoe UI", system-ui, sans-serif';
-      meta.data.forEach(function(bar, i) {
-        ctx.fillStyle = rankColor(i);
-        ctx.fillText(sorted[i].sales.toLocaleString(), bar.x + 8, bar.y);
-      });
-      ctx.restore();
+  function drawTop10(period) {
+    var src = period === 'weekly' ? (NP.weeklyCombined || []) : (NP.monthlyCombined || []);
+    var sorted = src.map(function(r) {
+      return {
+        name:  r.productName || r.colour || r.bagType || '—',
+        sales: period === 'weekly' ? (r.weeklySales || 0) : ((r.kenyaSales || 0) + (r.outsideKenya || 0)),
+        posts: period === 'weekly' ? ((r.wpostKenya || 0) + (r.wpostOutside || 0)) : ((r.mpostKenya || 0) + (r.mpostOutside || 0))
+      };
+    }).sort(function(a, b) { return b.sales - a.sales; }).slice(0, 10);
+
+    var topN   = sorted.length;
+    var maxVal = Math.max.apply(null, sorted.map(function(r){ return Math.max(r.sales, r.posts); }).concat([1]));
+    var seriesLabel = period === 'weekly' ? 'Weekly Sales' : 'Monthly Sales';
+
+    var titleEl = document.getElementById('top10-title');
+    if (titleEl) titleEl.textContent = 'Top 10 Products by ' + (period === 'weekly' ? 'Weekly' : 'Monthly') + ' Sales';
+
+    function renderTop10Total() {
+      var el = document.getElementById('top10-totals');
+      var chart = window._chartTopProducts;
+      if (!el || !chart) return;
+      var parts = [];
+      if (chart.isDatasetVisible(0)) {
+        var tSales = sorted.reduce(function(a, r){ return a + (r.sales || 0); }, 0);
+        parts.push('<span style="display:inline-flex;align-items:center;gap:0.4rem">' +
+          '<span style="width:11px;height:11px;border-radius:3px;background:' + rankColor(0, topN) + '"></span>' +
+          '<span style="color:#94a3b8">Total — Top ' + topN + ' sold (' + (period === 'weekly' ? 'week' : 'month') + ')</span> ' +
+          '<strong style="color:#34d399;font-variant-numeric:tabular-nums">' + tSales.toLocaleString() + '</strong></span>');
+      }
+      if (chart.isDatasetVisible(1)) {
+        var tPosts = sorted.reduce(function(a, r){ return a + (r.posts || 0); }, 0);
+        parts.push('<span style="display:inline-flex;align-items:center;gap:0.4rem">' +
+          '<span style="width:11px;height:11px;border-radius:3px;background:' + C.cyan + '"></span>' +
+          '<span style="color:#94a3b8">Total posts</span> ' +
+          '<strong style="color:#22d3ee;font-variant-numeric:tabular-nums">' + tPosts.toLocaleString() + '</strong></span>');
+      }
+      el.innerHTML = parts.join('');
     }
-  };
 
-  window._chartTopProducts = new Chart(
-    document.getElementById('chart-top-products'),
-    {
-      type: 'bar',
-      data: {
-        labels: sorted.map(function(r) { return r.name; }),
-        datasets: [{
-          label: 'Monthly Sales',
-          data:  sorted.map(function(r) { return r.sales; }),
-          backgroundColor: sorted.map(function(r, i) { return rankColor(i); }),
-          borderRadius: 5,
-          borderSkipped: false
-        }]
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        layout: { padding: { right: 48 } },
-        plugins: {
-          legend: { display: false },
-          tooltip: Object.assign({}, ttDefaults, {
-            callbacks: { label: function(c){ return c.parsed.x.toLocaleString() + ' sales'; } }
-          })
+    var valueLabels = {
+      id: 'topValueLabels',
+      afterDatasetsDraw: function(chart) {
+        var ctx = chart.ctx;
+        ctx.save();
+        ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        ctx.font = 'bold 0.78rem "Segoe UI", system-ui, sans-serif';
+        ctx.shadowColor = 'rgba(0,0,0,0.75)'; ctx.shadowBlur = 4;
+        chart.data.datasets.forEach(function(ds, di) {
+          if (!chart.isDatasetVisible(di)) return;
+          var meta = chart.getDatasetMeta(di);
+          meta.data.forEach(function(bar, i) {
+            var v = ds.data[i] || 0;
+            ctx.fillStyle = (di === 0) ? '#ffffff' : '#67e8f9';   // white sales / bright cyan posts
+            ctx.fillText(v.toLocaleString(), bar.x + 6, bar.y);
+          });
+        });
+        ctx.restore();
+      }
+    };
+
+    if (window._chartTopProducts) window._chartTopProducts.destroy();
+    window._chartTopProducts = new Chart(
+      document.getElementById('chart-top-products'),
+      {
+        type: 'bar',
+        data: {
+          labels: sorted.map(function(r) { return r.name; }),
+          datasets: [
+            {
+              label: seriesLabel,
+              data:  sorted.map(function(r) { return r.sales; }),
+              backgroundColor: sorted.map(function(r, i) { return rankColor(i, topN); }),
+              borderRadius: 4, borderSkipped: false,
+              categoryPercentage: 0.74, barPercentage: 0.82, maxBarThickness: 15
+            },
+            {
+              label: 'Posts',
+              data:  sorted.map(function(r) { return r.posts; }),
+              backgroundColor: C.cyan,
+              borderRadius: 4, borderSkipped: false,
+              categoryPercentage: 0.74, barPercentage: 0.82, maxBarThickness: 15
+            }
+          ]
         },
-        scales: {
-          x: { max: maxVal * 1.12, grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: C.text } },
-          y: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 11 } } }
-        }
-      },
-      plugins: [valueLabels]
-    }
-  );
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { right: 52 } },
+          plugins: {
+            legend: {
+              display: true,
+              labels: { color: C.text, boxWidth: 11, boxHeight: 11, padding: 16, usePointStyle: true, pointStyle: 'rectRounded', font: { size: 11 } },
+              onClick: function(e, legendItem, legend) {
+                Chart.defaults.plugins.legend.onClick.call(this, e, legendItem, legend);
+                renderTop10Total();
+              }
+            },
+            tooltip: Object.assign({}, ttDefaults, {
+              callbacks: { label: function(c){ return c.dataset.label + ': ' + c.parsed.x.toLocaleString(); } }
+            })
+          },
+          scales: {
+            x: { max: maxVal * 1.12, grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: C.text } },
+            y: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 11 } } }
+          }
+        },
+        plugins: [valueLabels]
+      }
+    );
+    renderTop10Total();
+  }
+
+  var top10PeriodEl = document.getElementById('top10-period');
+  if (top10PeriodEl) top10PeriodEl.addEventListener('change', function(){ drawTop10(this.value); });
+  drawTop10(top10PeriodEl ? top10PeriodEl.value : 'monthly');
 
   // ── Per-product: Sold vs Remaining to Target (sortable) ────
   (function () {
-    var ctx = document.getElementById('chart-product-targets');
-    var sel = document.getElementById('pt-sort');
+    var ctx     = document.getElementById('chart-product-targets');
+    var sel     = document.getElementById('pt-sort');
+    var perSel  = document.getElementById('pt-period');
+    var titleEl = document.getElementById('pt-title');
     if (!ctx) return;
-    var base = (NP.productTargets || []);
-    if (!base.length) return;
+    if (!(NP.productTargets || []).length) return;
+
+    // Posts per product (marketing posts) — Kenya + Outside, weekly or monthly.
+    // Keyed by bagType because the product chart's names are bag types (e.g. "LAMORA").
+    function postsByProduct(wk) {
+      var rows = wk ? (NP.weeklyCombined || []) : (NP.monthlyCombined || []);
+      var m = {};
+      rows.forEach(function(r){
+        var n = (r.bagType || '').trim().toUpperCase();
+        if (!n) return;
+        m[n] = (m[n] || 0) + (wk ? ((r.wpostKenya || 0) + (r.wpostOutside || 0))
+                                 : ((r.mpostKenya || 0) + (r.mpostOutside || 0)));
+      });
+      return m;
+    }
+
+    var monthlyPosts = postsByProduct(false);
+    var monthlyItems = (NP.productTargets || []).map(function(p){
+      return { name: p.name, target: p.target || 0, sold: p.sold || 0,
+               remaining: p.remaining || 0, posts: monthlyPosts[String(p.name).trim().toUpperCase()] || 0 };
+    });
+
+    // Weekly view: per-product target stays the monthly goal, "sold"/"posts" = this week's figures
+    function weeklyItems() {
+      var sold = {};
+      (NP.weeklyCombined || []).forEach(function(r){
+        var n = (r.bagType || '').trim().toUpperCase();
+        if (!n) return;
+        sold[n] = (sold[n] || 0) + (r.weeklySales || 0);
+      });
+      var wkPosts = postsByProduct(true);
+      return monthlyItems.map(function(p){
+        var key = String(p.name).trim().toUpperCase();
+        var s = sold[key] || 0;
+        return { name: p.name, target: p.target || 0, sold: s,
+                 remaining: Math.max((p.target || 0) - s, 0), posts: wkPosts[key] || 0 };
+      });
+    }
+
+    var period = perSel ? perSel.value : 'monthly';
+    var base   = monthlyItems;
 
     function sortItems(mode) {
       var arr = base.slice();
@@ -997,33 +995,73 @@ window.addEventListener('DOMContentLoaded', function() {
       return arr;
     }
 
+    // Totals under the legend — only for datasets currently shown
+    function tot(sw, lbl, val, col) {
+      return '<span style="display:inline-flex;align-items:center;gap:0.4rem">' +
+        '<span style="width:11px;height:11px;border-radius:3px;background:' + sw + '"></span>' +
+        '<span style="color:#94a3b8">' + lbl + '</span> ' +
+        '<strong style="color:' + col + ';font-variant-numeric:tabular-nums">' + val.toLocaleString() + '</strong></span>';
+    }
+    function renderTotals(items) {
+      var el = document.getElementById('pt-totals');
+      var chart = window._chartProductTargets;
+      if (!el || !chart) return;
+      var soldVis  = chart.isDatasetVisible(0);
+      var remVis   = chart.isDatasetVisible(1);
+      var postsVis = chart.isDatasetVisible(2);
+      var tSold  = items.reduce(function(a, p){ return a + (p.sold || 0); }, 0);
+      var tRem   = items.reduce(function(a, p){ return a + (p.remaining || 0); }, 0);
+      var tPosts = items.reduce(function(a, p){ return a + (p.posts || 0); }, 0);
+      var parts = [];
+      if (soldVis) parts.push(tot(C.green, 'Total sold', tSold, '#34d399'));
+      if (remVis)  parts.push(tot('rgba(239,68,68,0.55)', 'Total still needed', tRem, '#f87171'));
+      // Target = sum of whatever is currently shown of the target stack
+      var tShown = (soldVis ? tSold : 0) + (remVis ? tRem : 0);
+      if (soldVis && remVis) parts.push(tot('#2d3148', 'Total target', tShown, '#e2e8f0'));
+      if (postsVis) parts.push(tot(C.cyan, 'Total posts', tPosts, '#22d3ee'));
+      el.innerHTML = parts.join('');
+    }
+
     function draw(mode) {
       var items = sortItems(mode);
-      // Numbers on the bars: value inside each segment + target at the end
+      // Numbers on the bars: sold/needed inside each segment, target at the end of the
+      // target stack, and the posts count at the end of the posts bar.
       var valueLabels = {
         id: 'ptValueLabels',
         afterDatasetsDraw: function(chart) {
           var ctx2 = chart.ctx, x = chart.scales.x;
           ctx2.save();
           ctx2.textBaseline = 'middle';
-          ctx2.font = 'bold 0.72rem "Segoe UI", system-ui, sans-serif';
-          chart.data.datasets.forEach(function(ds, di) {
-            var meta = chart.getDatasetMeta(di);
+          ctx2.font = 'bold 0.76rem "Segoe UI", system-ui, sans-serif';
+          ctx2.shadowColor = 'rgba(0,0,0,0.8)'; ctx2.shadowBlur = 4;
+          // Inside-segment numbers for the target stack (Sold = 0, Still needed = 1)
+          [0, 1].forEach(function(di) {
+            if (!chart.isDatasetVisible(di)) return;
+            var ds = chart.data.datasets[di], meta = chart.getDatasetMeta(di);
             meta.data.forEach(function(bar, i) {
               var v = ds.data[i] || 0;
               var base = (bar.base != null) ? bar.base : x.getPixelForValue(0);
               if (v <= 0 || (bar.x - base) < 20) return;   // skip narrow segments
-              ctx2.fillStyle = '#0b1220';
+              ctx2.fillStyle = '#ffffff';
               ctx2.textAlign = 'center';
               ctx2.fillText(v.toLocaleString(), (bar.x + base) / 2, bar.y);
             });
           });
-          var last = chart.getDatasetMeta(chart.data.datasets.length - 1);
           ctx2.textAlign = 'left';
-          ctx2.fillStyle = '#e2e8f0';
-          last.data.forEach(function(bar, i) {
+          // Target number at the end of the target stack
+          var endMeta = chart.isDatasetVisible(1) ? chart.getDatasetMeta(1) : chart.getDatasetMeta(0);
+          ctx2.fillStyle = '#f8fafc';
+          endMeta.data.forEach(function(bar, i) {
             ctx2.fillText((items[i].target || 0).toLocaleString(), bar.x + 8, bar.y);
           });
+          // Posts count at the end of the posts bar
+          if (chart.isDatasetVisible(2)) {
+            var pMeta = chart.getDatasetMeta(2), pds = chart.data.datasets[2];
+            ctx2.fillStyle = '#67e8f9';
+            pMeta.data.forEach(function(bar, i) {
+              ctx2.fillText((pds.data[i] || 0).toLocaleString(), bar.x + 8, bar.y);
+            });
+          }
           ctx2.restore();
         }
       };
@@ -1034,20 +1072,34 @@ window.addEventListener('DOMContentLoaded', function() {
           labels: items.map(function(p){ return p.name; }),
           datasets: [
             { label: 'Sold so far', data: items.map(function(p){ return p.sold || 0; }),
-              backgroundColor: C.green, borderRadius: 4, borderSkipped: false, stack: 's' },
+              backgroundColor: C.green, borderRadius: 4, borderSkipped: false, stack: 's',
+              categoryPercentage: 0.76, barPercentage: 0.84, maxBarThickness: 17 },
             { label: 'Still needed', data: items.map(function(p){ return p.remaining || 0; }),
-              backgroundColor: 'rgba(239,68,68,0.55)', borderRadius: 4, borderSkipped: false, stack: 's' }
+              backgroundColor: 'rgba(239,68,68,0.5)', borderRadius: 4, borderSkipped: false, stack: 's',
+              categoryPercentage: 0.76, barPercentage: 0.84, maxBarThickness: 17 },
+            { label: 'Posts', data: items.map(function(p){ return p.posts || 0; }),
+              backgroundColor: C.cyan, borderRadius: 4, borderSkipped: false, stack: 'p',
+              categoryPercentage: 0.76, barPercentage: 0.84, maxBarThickness: 17 }
           ]
         },
         options: {
           indexAxis: 'y',
           responsive: true, maintainAspectRatio: false,
-          layout: { padding: { right: 52 } },
+          layout: { padding: { right: 56 } },
           plugins: {
-            legend: { labels: { color: C.text, boxWidth: 11, font: { size: 11 } } },
+            legend: {
+              labels: { color: C.text, boxWidth: 11, boxHeight: 11, padding: 16, usePointStyle: true, pointStyle: 'rectRounded', font: { size: 11 } },
+              onClick: function(e, legendItem, legend) {
+                Chart.defaults.plugins.legend.onClick.call(this, e, legendItem, legend);
+                renderTotals(items);   // update totals when a series is toggled
+              }
+            },
             tooltip: Object.assign({}, ttDefaults, {
               callbacks: {
-                label: function(c){ return c.dataset.label + ': ' + c.parsed.x.toLocaleString() + ' bags'; },
+                label: function(c){
+                  var unit = c.dataset.label === 'Posts' ? ' posts' : ' bags';
+                  return c.dataset.label + ': ' + c.parsed.x.toLocaleString() + unit;
+                },
                 footer: function(items2){
                   var i = items2[0].dataIndex;
                   return 'Target: ' + (items[i].target || 0).toLocaleString() + ' bags';
@@ -1057,16 +1109,27 @@ window.addEventListener('DOMContentLoaded', function() {
           },
           scales: {
             x: { stacked: true, grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: C.text },
-                 title: { display: true, text: 'Bags — green = sold, red = still needed, number at end = target', color: '#64748b', font: { size: 10 } } },
+                 title: { display: true, text: 'Green = sold, red = still needed (number at end = target) · cyan = marketing posts', color: '#64748b', font: { size: 10 } } },
             y: { stacked: true, grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 11 } } }
           }
         },
         plugins: [valueLabels]
       });
+      renderTotals(items);
     }
 
-    if (sel) sel.addEventListener('change', function(){ draw(this.value); });
-    draw(sel ? sel.value : 'target');
+    function applyPeriod() {
+      period = perSel ? perSel.value : 'monthly';
+      base = (period === 'weekly') ? weeklyItems() : monthlyItems;
+      if (titleEl) titleEl.textContent = (period === 'weekly')
+        ? 'New Products — Sold (This Week) vs Remaining to Target'
+        : 'New Products — Sold vs Remaining to Target';
+      draw(sel ? sel.value : 'target');
+    }
+
+    if (sel)    sel.addEventListener('change', function(){ draw(this.value); });
+    if (perSel) perSel.addEventListener('change', applyPeriod);
+    applyPeriod();
   })();
 
   // ── Weekly posts trend line (needs 2+ weeks) ──────────────
