@@ -263,12 +263,22 @@ def fetch_offer_data():
 
     offer_products = []   # [{bagType, category}]
     offer_set      = set()   # bag_upper keys for STOCK_LEVELS filter
+    bag_targets    = {}   # BAG_UPPER -> {target, sold, remaining}  (from cols C/D/E)
 
     for row in mt_rows[1:]:
         if len(row) < 6:
             continue
+        bag = str(row[0]).strip()
+        # Capture the monthly target for EVERY bag (needed for combo/power targets)
+        if bag:
+            t   = safe_int(row[2]) if len(row) > 2 else 0   # col C = TARGET
+            s   = safe_int(row[3]) if len(row) > 3 else 0   # col D = SALES
+            dfc = safe_int(row[4]) if len(row) > 4 else 0   # col E = DEFICIT
+            bag_targets[bag.upper()] = {
+                "target": t, "sold": s,
+                "remaining": dfc if dfc else max(t - s, 0),
+            }
         if is_checked(row[5]):   # col F
-            bag      = str(row[0]).strip()
             category = str(row[1]).strip()
             if bag:
                 offer_products.append({"bagType": bag, "category": category})
@@ -404,7 +414,8 @@ def fetch_offer_data():
             sinza_combo_headers, sinza_combos,
             sinza_singles_headers, sinza_singles,
             sinza_special_headers, sinza_specials,
-            sinza_stock_data, total_sinza_stock)
+            sinza_stock_data, total_sinza_stock,
+            bag_targets)
 
 
 # ── RUN ───────────────────────────────────────────────────────
@@ -420,7 +431,30 @@ print("Fetching Offer Type Analysis data...")
  sinza_combo_headers, sinza_combos,
  sinza_singles_headers, sinza_singles,
  sinza_special_headers, sinza_specials,
- sinza_stock_data, total_sinza_stock) = fetch_offer_data()
+ sinza_stock_data, total_sinza_stock,
+ bag_targets) = fetch_offer_data()
+
+# ── Complete (perfect) weeks REMAINING in the current month ───
+# A "perfect week" is a Sun–Sat week with >=5 of its days in the month;
+# "remaining" counts this week (if it still has days left) plus later ones.
+def complete_weeks_remaining(ref=None):
+    from datetime import date, timedelta
+    today = ref or date.today()
+    year, month = today.year, today.month
+    me = (date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)) - timedelta(days=1)
+    ws = today - timedelta(days=(today.weekday() + 1) % 7)   # Sunday of current week
+    n = 0
+    while ws <= me:
+        days_in = sum(1 for i in range(7)
+                      if (ws + timedelta(days=i)).year == year
+                      and (ws + timedelta(days=i)).month == month)
+        we = ws + timedelta(days=6)
+        if days_in >= 5 and we >= today:   # perfect week not yet finished
+            n += 1
+        ws += timedelta(days=7)
+    return max(n, 1)
+
+weeks_remaining = complete_weeks_remaining()
 
 def data_rows_count(rows):
     """Count product rows, excluding the appended TOTAL row."""
@@ -461,6 +495,8 @@ inline_script = (
     f'  juneCombos:          {json.dumps(june_combos,         ensure_ascii=False)},\n'
     f'  powerDealHeaders:    {json.dumps(power_deal_headers,  ensure_ascii=False)},\n'
     f'  powerDeals:          {json.dumps(power_deals,         ensure_ascii=False)},\n'
+    f'  bagTargets:          {json.dumps(bag_targets,         ensure_ascii=False)},\n'
+    f'  weeksRemaining:      {weeks_remaining},\n'
     f'  offerProducts:       {json.dumps(offer_products,      ensure_ascii=False)},\n'
     f'  stockData:           {json.dumps(stock_data,          ensure_ascii=False)},\n'
     f'  ugComboHeaders:      {json.dumps(ug_combo_headers,    ensure_ascii=False)},\n'
