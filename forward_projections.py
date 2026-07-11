@@ -18,7 +18,7 @@ Reads live from Google Sheets (one connection, two sheets):
     col C = "SUM TOTAL" row, col X (TOTAL)      →  weekly_sales_total
 """
 
-import re, webbrowser, os, pathlib, calendar, subprocess, sys
+import re, webbrowser, os, pathlib, calendar, subprocess, sys, json
 from datetime import date, timedelta
 
 # ── SPREADSHEET ───────────────────────────────────────────────
@@ -29,7 +29,35 @@ SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 # ── MANUAL INPUTS — fill these in yourself ────────────────────
 
 corporate_bags = 118     # Bags from corporate orders (Forecasted Projection)
-bare_minimum   = 6400     # Minimum bags you need to sell this week
+# bare_minimum is computed below = monthly target ÷ perfect weeks in month.
+
+
+# ── PERFECT (COMPLETE) WEEKS IN THE MONTH ─────────────────────
+# A "perfect week" = a week with >=5 of its days falling inside the month
+# (the project's count_complete_weeks_in_month definition). Sales run
+# Sun–Sat, so weeks are counted from Sunday.
+
+def count_complete_weeks_in_month(ref=None):
+    today = ref or date.today()
+    year, month = today.year, today.month
+    month_start = date(year, month, 1)
+    if month == 12:
+        month_end = date(year + 1, 1, 1) - timedelta(days=1)
+    else:
+        month_end = date(year, month + 1, 1) - timedelta(days=1)
+    # align to the Sunday that starts the week containing the 1st
+    week_start = month_start - timedelta(days=(month_start.weekday() + 1) % 7)
+    complete = 0
+    while week_start <= month_end:
+        days_in = sum(
+            1 for i in range(7)
+            if (week_start + timedelta(days=i)).year  == year
+            and (week_start + timedelta(days=i)).month == month
+        )
+        if days_in >= 5:
+            complete += 1
+        week_start += timedelta(days=7)
+    return max(complete, 1)
 
 
 # ── GOOGLE SHEETS AUTH ────────────────────────────────────────
@@ -133,6 +161,9 @@ current_day     = max(yesterday.day, 1)
 days_in_month   = calendar.monthrange(yesterday.year, yesterday.month)[1]
 velocity_factor = days_in_month / current_day
 
+# Perfect (complete) weeks in the month — used for the bare minimum
+perfect_weeks = count_complete_weeks_in_month()
+
 
 # ── CALCULATIONS ──────────────────────────────────────────────
 
@@ -146,7 +177,8 @@ standard_projection_pct = (total_sales * velocity_factor) / total_target * 100
 #    Step 2: ÷ total_target × 100                         → as % of target
 forecasted_projection_pct = ((total_sales + corporate_bags) * velocity_factor) / total_target * 100
 
-# 3. Bare Minimum (entered manually above)
+# 3. Bare Minimum = monthly target ÷ perfect weeks in the month
+bare_minimum       = round(total_target / perfect_weeks) if perfect_weeks else 0
 bare_minimum_value = bare_minimum
 
 # 3b. Bare Minimum Growth %
@@ -154,6 +186,81 @@ bare_minimum_growth_pct = (bare_minimum / total_target) * 100 if total_target el
 
 # 4. Declined By
 declined_by = bare_minimum_value - weekly_sales_total if bare_minimum_value else 0
+
+
+# ── WEEKLY PERFORMANCE SNAPSHOT ───────────────────────────────
+# Record each Sun–Sat week's Sales / Weekly Sales / Declined By so the
+# dashboard can show Week 1 → the latest week. One entry per week; the
+# current week's row is refreshed each run until the week rolls over.
+WEEKLY_HISTORY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                   "weekly_history.json")
+
+def _week_start(d):                       # Sunday that starts d's week
+    return d - timedelta(days=(d.weekday() + 1) % 7)
+
+def _perfect_week_index(d):
+    """Ordinal of d's Sun–Sat week among the month's PERFECT weeks
+    (weeks with >=5 days in the month). Returns 0 for a partial lead week."""
+    year, month = d.year, d.month
+    ms = date(year, month, 1)
+    me = (date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)) - timedelta(days=1)
+    ws = ms - timedelta(days=(ms.weekday() + 1) % 7)
+    target = _week_start(d)
+    idx = 0
+    while ws <= me:
+        days_in = sum(1 for i in range(7)
+                      if (ws + timedelta(days=i)).year == year
+                      and (ws + timedelta(days=i)).month == month)
+        if days_in >= 5:
+            idx += 1
+        if ws == target:
+            return idx if days_in >= 5 else 0
+        ws += timedelta(days=7)
+    return idx
+
+def update_weekly_history():
+    ref = date.today() - timedelta(days=1)       # data covers through yesterday
+    ws  = _week_start(ref)
+    wk_idx = _perfect_week_index(ref)
+    # Percentages (deficit + sales == target, so prev% uses total_target)
+    sales_pct = (total_sales / total_target * 100) if total_target else 0
+    prev_pct  = ((total_sales - weekly_sales_total) / total_target * 100) if total_target else 0
+    # Previous-period bags come from the snapshot current_performance keeps
+    prev_bags = 0
+    snap = os.path.join(os.path.dirname(os.path.abspath(__file__)), "previous_snapshot.json")
+    if os.path.exists(snap):
+        try:
+            with open(snap, "r") as f:
+                prev_bags = json.load(f).get("previous_week_bags", 0)
+        except (ValueError, OSError):
+            prev_bags = 0
+    entry = {
+        "weekStart":    ws.isoformat(),
+        "label":        ("Wk " + str(wk_idx)) if wk_idx else "Partial",
+        "month":        ref.strftime("%b"),
+        "salesPct":     round(sales_pct, 2),      # Sales % Achieved
+        "salesBags":    total_sales,              # bags behind that %
+        "prevSalesPct": round(prev_pct, 2),       # Previous Sales % Achieved
+        "prevSalesBags": prev_bags,               # bags behind that %
+        "weeklySales":  weekly_sales_total,       # bags sold this week (reference)
+        "declinedBy":   weekly_sales_total - bare_minimum,  # +over / -under minimum
+    }
+    weeks = []
+    if os.path.exists(WEEKLY_HISTORY_FILE):
+        try:
+            with open(WEEKLY_HISTORY_FILE, "r") as f:
+                weeks = json.load(f).get("weeks", [])
+        except (ValueError, OSError):
+            weeks = []
+    weeks = [w for w in weeks if w.get("weekStart") != entry["weekStart"]]
+    weeks.append(entry)
+    weeks.sort(key=lambda w: w.get("weekStart", ""))
+    weeks = weeks[-16:]
+    with open(WEEKLY_HISTORY_FILE, "w") as f:
+        json.dump({"weeks": weeks}, f, indent=2)
+    return weeks
+
+weekly_history = update_weekly_history()
 
 
 # ── FORMAT HELPERS ────────────────────────────────────────────
@@ -185,7 +292,8 @@ inline_script = (
     f'  bareMinimum:              "{fmt_int(bare_minimum_value) if bare_minimum_value else ""}",\n'
     f'  bareMinimumGrowthPct:     "{fmt_pct(bare_minimum_growth_pct)}",\n'
     f'  declinedBy:               "{("-" + fmt_int(abs(declined_by))) if bare_minimum_value else ""}",\n'
-    f'  weeklySalesTotal:         "{fmt_int(weekly_sales_total)}"\n'
+    f'  weeklySalesTotal:         "{fmt_int(weekly_sales_total)}",\n'
+    f'  weeklyHistory:            {json.dumps(weekly_history)}\n'
     "};\n"
     "</script>\n"
     "<!-- PROJ_DATA_END -->"
@@ -226,7 +334,8 @@ print(f"  Total Target (col C)  : {fmt_int(total_target)}")
 print(f"  Total Sales  (col D)  : {fmt_int(total_sales)}")
 print(f"  Standard Proj.        : {fmt_pct(standard_projection_pct)}")
 print(f"  Forecasted Proj.      : {fmt_pct(forecasted_projection_pct)}  (incl. {fmt_int(corporate_bags)} corporate)")
-print(f"  Bare Minimum          : {fmt_int(bare_minimum_value) if bare_minimum_value else '(not set)'}")
+print(f"  Perfect weeks / month : {perfect_weeks}")
+print(f"  Bare Minimum          : {fmt_int(bare_minimum_value)}  (= {fmt_int(total_target)} / {perfect_weeks})")
 print(f"  Bare Min Growth %     : {fmt_pct(bare_minimum_growth_pct)}")
 print(f"  Weekly Sales (col X)  : {fmt_int(weekly_sales_total)}")
 print(f"  Declined By           : {'-' + fmt_int(abs(declined_by)) if bare_minimum_value else '(bare minimum not set)'}")

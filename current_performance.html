@@ -225,6 +225,21 @@
       min-height: 1rem;
     }
 
+    /* ── Sales → target hover popover ─────────────────────── */
+    #sales-card, #weekly-card, #remaining-card { cursor: pointer; }
+    .sales-popover {
+      position: fixed;
+      width: 320px; max-width: 92vw;
+      background: #1e2130; border: 1px solid #2d3148; border-radius: 12px;
+      padding: 0.9rem 1rem;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.55);
+      opacity: 0; visibility: hidden; transform: translateY(-6px);
+      transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+      z-index: 100; pointer-events: none;
+    }
+    /* When shown, allow the mouse into the popover to read chart tooltips */
+    .sales-popover.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+
     /* ── Section divider ──────────────────────────────────── */
     .section-divider {
       display: flex; align-items: center; gap: 1rem;
@@ -252,43 +267,17 @@
 
   <div class="card-grid">
 
-    <div class="card blue">
+    <div class="card blue" id="sales-card">
       <div class="card-label">Sales</div>
       <div class="card-value" id="kpi-sales"></div>
-      <div class="card-interpretation">Absolute number of bags sold so far.</div>
+      <div class="card-interpretation">Absolute number of bags sold so far. <span style="color:#60a5fa">Hover for target progress ▸</span></div>
     </div>
 
-    <div class="card amber">
-      <div class="card-label">Sales % Achieved</div>
-      <div class="card-value pct" id="kpi-pct"></div>
-      <div class="card-interpretation">Percentage of the overall target already achieved.</div>
-    </div>
-
-    <div class="card amber">
-      <div class="card-label">Growth % Towards The Achieved Monthly Sales</div>
-      <div class="card-value pct" id="kpi-weekly-pct"></div>
-      <div class="card-interpretation">Previous sales total as a % of this week's sales total.</div>
-    </div>
-
-    <div class="card purple">
-      <div class="card-label">Previous Sales % Achieved</div>
-      <div class="card-value pct" id="kpi-prev-pct"></div>
-      <div class="card-sub" id="prev-bags-card"></div>
-      <div class="card-interpretation">Sales % achieved in the previous period (bags sold).</div>
-    </div>
-
-    <div class="card blue">
+    <div class="card blue" id="weekly-card">
       <div class="card-label">Weekly Sales</div>
       <div class="card-value" id="kpi-weekly-sales"></div>
       <div class="card-sub" id="weekly-carryover-sub"></div>
-      <div class="card-interpretation">Total bags sold this week (Sun–Sat).</div>
-    </div>
-
-    <div class="card green">
-      <div class="card-label">WoW Sales %</div>
-      <div class="card-value pct" id="kpi-wow-pct"></div>
-      <div class="card-sub" id="wow-bags-card"></div>
-      <div class="card-interpretation">Week-over-week change in sales % (bags sold).</div>
+      <div class="card-interpretation">Total bags sold this week (Sun–Sat). <span style="color:#60a5fa">Hover for week-over-week ▸</span></div>
     </div>
 
     <div class="card purple">
@@ -298,26 +287,62 @@
       <div class="card-interpretation">Current weekly sales vs the final weekly figure of last month.</div>
     </div>
 
-    <div class="card rose">
-      <div class="card-label">Declined By</div>
-      <div class="card-value rose" id="kpi-declined"></div>
-      <div class="card-sub" id="kpi-declined-sub"></div>
-      <div class="card-interpretation">Bags missed vs the weekly bare minimum target.</div>
-    </div>
-
-    <div class="card red">
+    <div class="card red" id="remaining-card">
       <div class="card-label">Remaining Target</div>
       <div class="card-value" id="kpi-remaining"></div>
-      <div class="card-interpretation">Bags still required to meet the full target.</div>
+      <div class="card-interpretation">Bags still required to meet the full target. <span style="color:#60a5fa">Hover for bare minimum ▸</span></div>
     </div>
 
   </div>
 
+  <!-- Weekly performance snapshot — Week 1 → latest -->
   <div class="card-grid">
-    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div class="card-label">Sales vs Monthly Target</div>
-      <div style="position:relative;height:240px"><canvas id="chart-progress-donut"></canvas></div>
+    <div class="card" style="grid-column:1/-1;padding:0;overflow:hidden;">
+      <div class="table-title">Weekly Performance — Week 1 to Latest</div>
+      <div id="weekly-perf-chart-wrap" style="padding:1rem 1.4rem 0;display:none">
+        <div style="position:relative;height:210px"><canvas id="chart-weekly-perf"></canvas></div>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="weekly-perf-table" style="width:100%;border-collapse:collapse;font-size:0.85rem;white-space:nowrap">
+          <thead><tr>
+            <th style="text-align:left">Week</th>
+            <th style="text-align:right">Previous Sales % Achieved</th>
+            <th style="text-align:right">Previous Sales Bags</th>
+            <th style="text-align:right">Declined By</th>
+          </tr></thead>
+          <tbody id="weekly-perf-tbody"></tbody>
+        </table>
+      </div>
     </div>
+  </div>
+
+  <!-- Sales vs Monthly Target — pops up when hovering the Sales card -->
+  <div class="sales-popover" id="sales-popover">
+    <div class="card-label">Sales vs Monthly Target</div>
+    <div style="position:relative;height:200px"><canvas id="chart-progress-donut"></canvas></div>
+    <div style="border-top:1px solid #2d3148;margin-top:0.6rem;padding-top:0.6rem;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:0.72rem;color:#94a3b8">Growth % towards achieved monthly sales</span>
+      <strong id="sales-pop-growth" style="font-size:0.95rem;color:#facc15;font-variant-numeric:tabular-nums"></strong>
+    </div>
+    <div style="margin-top:0.4rem;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:0.72rem;color:#94a3b8">Previous sales % achieved</span>
+      <strong id="sales-pop-prev" style="font-size:0.95rem;color:#facc15;font-variant-numeric:tabular-nums"></strong>
+    </div>
+  </div>
+
+  <!-- Week-over-week — pops up when hovering the Weekly Sales card -->
+  <div class="sales-popover" id="weekly-popover">
+    <div class="card-label">Week-over-Week Sales</div>
+    <div style="position:relative;height:170px"><canvas id="chart-wow"></canvas></div>
+    <div id="wow-pop-note" style="text-align:center;font-weight:800;font-size:0.9rem;margin-top:0.5rem"></div>
+  </div>
+
+  <!-- Bare minimum — pops up when hovering the Remaining Target card -->
+  <div class="sales-popover" id="remaining-popover">
+    <div class="card-label">Bare Minimum (Bags &amp; Growth %)</div>
+    <div style="position:relative;height:190px"><canvas id="chart-bare-min"></canvas></div>
+    <div id="bare-min-note" style="text-align:center;font-size:0.78rem;color:#94a3b8;margin-top:0.5rem"></div>
+    <div id="bare-min-declined" style="text-align:center;font-size:0.8rem;margin-top:0.4rem;border-top:1px solid #2d3148;padding-top:0.5rem"></div>
   </div>
 
 </div><!-- /.section -->
@@ -355,25 +380,6 @@
       <div class="card-interpretation">Based on maintaining the current sales velocity and product mix with corporate in mind.</div>
     </div>
 
-    <div class="card orange">
-      <div class="card-label">Bare Minimum<br/>(Bags to be Sold)</div>
-      <div class="card-value orange" id="kpi-bare"></div>
-      <div class="card-interpretation">We are needed to achieve at least this in a week's time.</div>
-    </div>
-
-    <div class="card amber">
-      <div class="card-label">Bare Minimum<br/>(Growth %)</div>
-      <div class="card-value amber" id="kpi-bare-growth"></div>
-      <div class="card-interpretation">Bare minimum as a % of the total monthly target.</div>
-    </div>
-
-  </div>
-
-  <div class="card-grid">
-    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div class="card-label">Projection vs 100% Target</div>
-      <div style="position:relative;height:200px"><canvas id="chart-proj-bar"></canvas></div>
-    </div>
   </div>
 
 </div><!-- /.section -->
@@ -381,16 +387,17 @@
 <!-- PERF_DATA_START -->
 <script>
 const PERF = {
-  remainingTarget:    "18,420",
-  salesPctAchieved:   "20.71%",
-  sales:              "4,812",
+  remainingTarget:    "17,765",
+  salesPctAchieved:   "23.53%",
+  sales:              "5,467",
   previousSalesPct:   "11.22%",
   previousSalesBags:  "2,445",
-  wowSalesPct:        "10.88%",
-  wowSalesBags:       "-240",
-  weeklySalesTotal:   "2,205",
-  weeklySalesPct:     "9.49%",
-  weeklyThisMonth:    "2,205",
+  wowSalesPct:        "+16.97%",
+  wowSalesBags:       "+415",
+  weeklySalesTotal:   "2,860",
+  weeklySalesPct:     "12.31%",
+  growthHistory:      [{"date": "2026-07-11", "growth": 12.31}],
+  weeklyThisMonth:    "2,860",
   weeklyCarryover:    "",
   carryoverMonth:     "",
   carryoverDate:      "",
@@ -407,18 +414,19 @@ const PERF = {
 <!-- PROJ_DATA_START -->
 <script>
 const PROJ = {
-  currentDay:               9,
+  currentDay:               10,
   daysInMonth:              31,
-  velocityFactor:           "3.44x",
+  velocityFactor:           "3.10x",
   totalTarget:              "23,232",
-  totalSales:               "4,812",
-  standardProjection:       "71.34%",
-  forecastedProjection:     "73.09%",
+  totalSales:               "5,467",
+  standardProjection:       "72.95%",
+  forecastedProjection:     "74.52%",
   corporateBags:            "118",
-  bareMinimum:              "6,400",
-  bareMinimumGrowthPct:     "27.55%",
-  declinedBy:               "-4,195",
-  weeklySalesTotal:         "2,205"
+  bareMinimum:              "5,808",
+  bareMinimumGrowthPct:     "25.00%",
+  declinedBy:               "-2,948",
+  weeklySalesTotal:         "2,860",
+  weeklyHistory:            [{"weekStart": "2026-07-05", "label": "Wk 1", "month": "Jul", "salesPct": 23.53, "salesBags": 5467, "prevSalesPct": 11.22, "prevSalesBags": 2445, "weeklySales": 2860, "declinedBy": -2948}]
 };
 </script>
 <!-- PROJ_DATA_END -->
@@ -444,12 +452,11 @@ const PROJ = {
 
   /* ── Section 1: Current Performance ─────────────────────── */
   setText('kpi-remaining',    PERF.remainingTarget);
-  setText('kpi-pct',          PERF.salesPctAchieved);
   setText('kpi-sales',        PERF.sales);
-  setText('kpi-prev-pct',     PERF.previousSalesPct);
-  setText('kpi-wow-pct',      PERF.wowSalesPct);
   setText('kpi-weekly-sales', PERF.weeklySalesTotal);
-  setText('kpi-weekly-pct',   PERF.weeklySalesPct);
+  // Shown in the Sales hover popover
+  setText('sales-pop-growth', PERF.weeklySalesPct);
+  setText('sales-pop-prev',   PERF.previousSalesPct + ' (' + PERF.previousSalesBags + ' bags)');
 
   // Month-boundary carryover: when the Sun–Sat week straddles a month
   // change, show how the week's total splits between the two months
@@ -472,12 +479,35 @@ const PROJ = {
     setText('mom-weekly-sub', 'Available after the first month change');
   }
 
-  setBags('prev-bags-card', 'prev-bags-card', PERF.previousSalesBags);
-  setBags('wow-bags-card',  'wow-bags-card',  PERF.wowSalesBags);
+  // ── Weekly performance snapshot table (Week 1 → latest) ───
+  (function () {
+    var tb = document.getElementById('weekly-perf-tbody');
+    if (!tb) return;
+    var weeks = (PROJ.weeklyHistory || []);
+    if (!weeks.length) {
+      tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#475569;padding:1.2rem">' +
+        'No weeks recorded yet — this fills in each week from now on.</td></tr>';
+      return;
+    }
+    function cell(v, align, color) {
+      return '<td style="padding:0.6rem 1.5rem;border-top:1px solid #2d3148;text-align:' + align +
+        ';font-variant-numeric:tabular-nums' + (color ? ';color:' + color : '') + '">' + v + '</td>';
+    }
+    tb.innerHTML = weeks.map(function (w) {
+      var d = w.declinedBy || 0;
+      var dTxt = (d > 0 ? '+' : '') + d.toLocaleString();
+      var dCol = d < 0 ? '#f87171' : '#34d399';
+      var pp = (w.prevSalesPct != null) ? w.prevSalesPct.toFixed(2) + '%' : '—';
+      var pb = (w.prevSalesBags || 0).toLocaleString() + ' bags';
+      return '<tr>' +
+        cell('<strong style="color:#e2e8f0">' + w.label + '</strong> <span style="color:#64748b">' + (w.month || '') + '</span>', 'left', '') +
+        cell(pp, 'right', '#facc15') +
+        cell(pb, 'right', '#94a3b8') +
+        cell(dTxt, 'right', dCol) +
+      '</tr>';
+    }).join('');
+  })();
 
-  setText('kpi-declined', PROJ.declinedBy || '—');
-  if (PROJ.declinedBy && PROJ.bareMinimum)
-    setSub('kpi-declined-sub', PROJ.weeklySalesTotal + ' sold vs ' + PROJ.bareMinimum + ' target');
 
   /* ── Section 2: Forward Projections ─────────────────────── */
   const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -492,9 +522,6 @@ const PROJ = {
   setText('kpi-forecasted', PROJ.forecastedProjection);
   if (PROJ.corporateBags && PROJ.corporateBags !== "0")
     setSub('kpi-forecasted-sub', 'incl. ' + PROJ.corporateBags + ' corporate bags');
-
-  setText('kpi-bare',        PROJ.bareMinimum);
-  setText('kpi-bare-growth', PROJ.bareMinimumGrowthPct);
 </script>
 
 <script>
@@ -578,71 +605,160 @@ window.addEventListener('DOMContentLoaded', function() {
     }
   );
 
-  // ── Chart B: Projections vs Target Bar ─────────────────────
-  var refLine = {
-    id: 'refLine',
-    afterDraw: function(chart) {
-      var x    = chart.scales.x;
-      var ctx  = chart.ctx;
-      var xPos = x.getPixelForValue(100);
-      ctx.save();
-      ctx.beginPath();
-      ctx.setLineDash([4, 4]);
-      ctx.strokeStyle = 'rgba(248,250,252,0.2)';
-      ctx.lineWidth   = 1;
-      ctx.moveTo(xPos, chart.chartArea.top);
-      ctx.lineTo(xPos, chart.chartArea.bottom);
-      ctx.stroke();
-      ctx.restore();
+  // ── Reusable hover popover (card → floating diagram) ──────
+  function attachPopover(cardId, popId) {
+    var card = document.getElementById(cardId);
+    var pop  = document.getElementById(popId);
+    if (!card || !pop) return;
+    var hideTimer = null;
+    function place() {
+      var r = card.getBoundingClientRect();
+      var w = pop.offsetWidth || 320;
+      pop.style.left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8)) + 'px';
+      pop.style.top  = (r.bottom + 6) + 'px';
     }
-  };
+    function show() { clearTimeout(hideTimer); place(); pop.classList.add('show'); }
+    function scheduleHide() { hideTimer = setTimeout(function () { pop.classList.remove('show'); }, 220); }
+    // Card hover opens it; leaving the card starts a short grace timer
+    card.addEventListener('mouseenter', show);
+    card.addEventListener('mouseleave', scheduleHide);
+    // Moving the mouse INTO the popover keeps it open so you can read tooltips
+    pop.addEventListener('mouseenter', function () { clearTimeout(hideTimer); });
+    pop.addEventListener('mouseleave', scheduleHide);
+    window.addEventListener('resize', function () { if (pop.classList.contains('show')) place(); });
+  }
+  attachPopover('sales-card',     'sales-popover');
+  attachPopover('weekly-card',    'weekly-popover');
+  attachPopover('remaining-card', 'remaining-popover');
 
-  if (window._chartProjBar) window._chartProjBar.destroy();
-  window._chartProjBar = new Chart(
-    document.getElementById('chart-proj-bar'),
-    {
+  // ── WoW diagram (in the Weekly Sales popover) ─────────────
+  (function () {
+    var ctx = document.getElementById('chart-wow');
+    if (!ctx) return;
+    var lastWk = parseNum(PERF.previousSalesBags);
+    var thisWk = parseNum(PERF.weeklySalesTotal);
+    var up = (PERF.wowSalesBags || '').charAt(0) !== '-';
+    new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ['Standard Projection', 'Forecasted Projection', 'Bare Minimum %', 'Target'],
+        labels: ['Last week', 'This week'],
         datasets: [{
-          data: [
-            parsePct(PROJ.standardProjection),
-            parsePct(PROJ.forecastedProjection),
-            parsePct(PROJ.bareMinimumGrowthPct),
-            100
-          ],
-          backgroundColor: [C.cyanDim,  C.purpleDim, C.amberDim, C.greenDim],
-          borderColor:     [C.cyan,     C.purple,    C.amber,    C.green],
-          borderWidth: 2,
-          borderRadius: 4
+          data: [lastWk, thisWk],
+          backgroundColor: ['rgba(148,163,184,0.5)', up ? C.green : C.red],
+          borderRadius: 4, borderSkipped: false, barThickness: 46,
         }]
       },
       options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
+        responsive: true, maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
           tooltip: Object.assign({}, ttDefaults, {
-            callbacks: {
-              label: function(ctx) { return ' ' + ctx.parsed.x.toFixed(2) + '%'; }
-            }
+            callbacks: { label: function(c){ return c.parsed.y.toLocaleString() + ' bags'; } }
           })
         },
         scales: {
-          x: {
-            grid:  { color: C.border },
-            ticks: { color: C.text, callback: function(v) { return v + '%'; } }
-          },
-          y: {
-            grid:  { display: false },
-            ticks: { color: C.text }
-          }
+          x: { grid: { display: false }, ticks: { color: C.text } },
+          y: { grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: C.text }, beginAtZero: true }
+        }
+      }
+    });
+    var note = document.getElementById('wow-pop-note');
+    if (note) {
+      note.textContent = PERF.wowSalesPct + '  (' + PERF.wowSalesBags + ' bags)';
+      note.style.color = up ? '#34d399' : '#f87171';
+    }
+  })();
+
+  // ── Bare-minimum diagram (in the Remaining Target popover) ─
+  (function () {
+    var ctx = document.getElementById('chart-bare-min');
+    if (!ctx) return;
+    var bareMinPct = parsePct(PROJ.bareMinimumGrowthPct);   // % of total target
+    var bareMinBags = PROJ.bareMinimum || '—';
+    var rest = Math.max(100 - bareMinPct, 0);
+
+    var centerPlugin = {
+      id: 'bareMinCenter',
+      afterDraw: function(chart) {
+        var ca = chart.chartArea, ctx2 = chart.ctx;
+        ctx2.save();
+        ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+        ctx2.fillStyle = '#fbbf24';
+        ctx2.font = 'bold 1.3rem "Segoe UI", system-ui, sans-serif';
+        ctx2.fillText(PROJ.bareMinimumGrowthPct, (ca.left+ca.right)/2, (ca.top+ca.bottom)/2 - 6);
+        ctx2.fillStyle = '#94a3b8';
+        ctx2.font = '600 0.6rem "Segoe UI", system-ui, sans-serif';
+        ctx2.fillText('of target', (ca.left+ca.right)/2, (ca.top+ca.bottom)/2 + 12);
+        ctx2.restore();
+      }
+    };
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Bare minimum', 'Rest of target'],
+        datasets: [{
+          data: [bareMinPct, rest],
+          backgroundColor: [C.amber, 'rgba(45,49,72,0.5)'],
+          borderColor: [C.amber, C.border], borderWidth: 2
+        }]
+      },
+      options: {
+        cutout: '70%', responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: C.text, padding: 12, boxWidth: 10, font: { size: 10 } } },
+          tooltip: Object.assign({}, ttDefaults, {
+            callbacks: { label: function(c){ return c.label + ': ' + c.parsed.toFixed(2) + '%'; } }
+          })
         }
       },
-      plugins: [refLine]
+      plugins: [centerPlugin]
+    });
+    var note = document.getElementById('bare-min-note');
+    if (note) note.innerHTML = 'Bare minimum: <strong style="color:#fbbf24">' + bareMinBags +
+      ' bags</strong> to be sold this week';
+
+    // Declined By — how far this week's sales fell short of the bare minimum
+    var dnote = document.getElementById('bare-min-declined');
+    if (dnote && PROJ.declinedBy) {
+      var short = PROJ.declinedBy.trim().charAt(0) === '-';
+      dnote.innerHTML = 'Declined by <strong style="color:' + (short ? '#f87171' : '#34d399') + '">' +
+        PROJ.declinedBy + ' bags</strong> ' +
+        '<span style="color:#64748b">(' + PROJ.weeklySalesTotal + ' sold vs ' + PROJ.bareMinimum + ' minimum)</span>';
     }
-  );
+  })();
+
+  // ── Weekly performance trend line (needs 2+ weeks) ────────
+  (function () {
+    var weeks = (PROJ.weeklyHistory || []);
+    var wrap  = document.getElementById('weekly-perf-chart-wrap');
+    var ctx   = document.getElementById('chart-weekly-perf');
+    if (!wrap || !ctx || weeks.length < 2) return;   // table alone until 2 weeks
+    wrap.style.display = 'block';
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: weeks.map(function(w){ return w.label; }),
+        datasets: [
+          { label: 'Previous Sales % Achieved', data: weeks.map(function(w){ return w.prevSalesPct || 0; }),
+            borderColor: C.amber, backgroundColor: C.amberDim, borderWidth: 2, fill: true,
+            tension: 0.3, pointRadius: 3, pointBackgroundColor: C.amber }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: C.text, boxWidth: 11, font: { size: 11 } } },
+          tooltip: Object.assign({}, ttDefaults, {
+            callbacks: { label: function(c){ return c.dataset.label + ': ' + c.parsed.y.toFixed(2) + '%'; } }
+          })
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: C.text } },
+          y: { grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: C.text, callback: function(v){ return v + '%'; } } }
+        }
+      }
+    });
+  })();
 });
 </script>
 

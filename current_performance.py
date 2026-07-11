@@ -261,9 +261,10 @@ sales = total_sales
 previous_sales_pct = ((total_sales - weekly_sales_total) / (remaining_target + total_sales)) * 100 if (remaining_target + total_sales) else 0
 
 # 5. Week-over-Week Sales
-#    (Last week's Weekly Sales - This week's Weekly Sales) / This week's Weekly Sales × 100
+#    Growth of this week vs last week: (this week - last week) / last week × 100.
+#    Sign matches the bag change — up = positive (green), down = negative (red).
 wow_sales_bags = weekly_sales_total - previous_sales_bags
-wow_sales_pct  = (previous_sales_bags - weekly_sales_total) / weekly_sales_total * 100 if weekly_sales_total else 0
+wow_sales_pct  = (wow_sales_bags / previous_sales_bags * 100) if previous_sales_bags else 0
 
 # 6. Growth % Towards Achieved Monthly Sales
 #    How much Sales % Achieved grew this week: Sales % Achieved - Previous Sales % Achieved
@@ -273,6 +274,32 @@ weekly_sales_pct = sales_pct_achieved - previous_sales_pct
 declined_by = bare_minimum - weekly_sales_total if bare_minimum else 0
 
 
+# ── GROWTH TREND HISTORY ──────────────────────────────────────
+# Record the weekly growth % each run so the dashboard can draw a trend
+# line over time. One point per day (latest run of the day wins).
+GROWTH_HISTORY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                   "growth_history.json")
+
+def update_growth_history(growth_pct):
+    today = datetime.date.today().isoformat()
+    points = []
+    if os.path.exists(GROWTH_HISTORY_FILE):
+        try:
+            with open(GROWTH_HISTORY_FILE, "r") as f:
+                points = json.load(f).get("points", [])
+        except (ValueError, OSError):
+            points = []
+    points = [p for p in points if p.get("date") != today]
+    points.append({"date": today, "growth": round(growth_pct, 2)})
+    points.sort(key=lambda p: p.get("date", ""))
+    points = points[-120:]
+    with open(GROWTH_HISTORY_FILE, "w") as f:
+        json.dump({"points": points}, f, indent=2)
+    return points
+
+growth_history = update_growth_history(weekly_sales_pct)
+
+
 # ── FORMAT HELPERS ────────────────────────────────────────────
 
 def fmt_int(n):
@@ -280,6 +307,12 @@ def fmt_int(n):
 
 def fmt_pct(p):
     return f"{p:.2f}%"
+
+def fmt_signed(n):
+    return f"+{n:,}" if n > 0 else f"{n:,}"   # negatives already carry "-"
+
+def fmt_signed_pct(p):
+    return f"+{p:.2f}%" if p > 0 else f"{p:.2f}%"
 
 
 # ── INJECT INTO HTML ──────────────────────────────────────────
@@ -293,10 +326,11 @@ inline_script = (
     f'  sales:              "{fmt_int(sales)}",\n'
     f'  previousSalesPct:   "{fmt_pct(previous_sales_pct)}",\n'
     f'  previousSalesBags:  "{fmt_int(previous_sales_bags)}",\n'
-    f'  wowSalesPct:        "{fmt_pct(wow_sales_pct)}",\n'
-    f'  wowSalesBags:       "{fmt_int(wow_sales_bags)}",\n'
+    f'  wowSalesPct:        "{fmt_signed_pct(wow_sales_pct)}",\n'
+    f'  wowSalesBags:       "{fmt_signed(wow_sales_bags)}",\n'
     f'  weeklySalesTotal:   "{fmt_int(weekly_sales_total)}",\n'
     f'  weeklySalesPct:     "{fmt_pct(weekly_sales_pct)}",\n'
+    f'  growthHistory:      {json.dumps(growth_history)},\n'
     f'  weeklyThisMonth:    "{fmt_int(weekly_this_month)}",\n'
     f'  weeklyCarryover:    "{fmt_int(carryover_bags) if carryover_bags is not None else ""}",\n'
     f'  carryoverMonth:     "{_prev_month}",\n'

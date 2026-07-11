@@ -19,6 +19,7 @@ Reads live from Google Sheets (five sheets):
 """
 
 import re, webbrowser, os, pathlib, json
+from datetime import date, timedelta
 
 # ── SPREADSHEET ───────────────────────────────────────────────
 
@@ -110,6 +111,7 @@ def fetch_new_products_data():
     total_sales       = 0
     total_deficit     = 0
     category_lookup   = {}   # bag_upper -> CATEGORY (col B of MONTHLY_TARGET)
+    product_targets   = []   # per-product {name, target, sold, remaining}
 
     for row in mt_rows[1:]:
         if len(row) < 1:
@@ -119,11 +121,16 @@ def fetch_new_products_data():
             category_lookup[bag.upper()] = str(row[1]).strip()
         if len(row) < 9 or not is_checked(row[8]):
             continue
+        t = safe_int(row[2]); s = safe_int(row[3]); dfc = safe_int(row[4])
+        total_target  += t
+        total_sales   += s
+        total_deficit += dfc
         if bag:
             new_product_names.append(bag)
-        total_target  += safe_int(row[2])
-        total_sales   += safe_int(row[3])
-        total_deficit += safe_int(row[4])
+            product_targets.append({
+                "name": bag, "target": t, "sold": s,
+                "remaining": max(t - s, 0),
+            })
 
     names_upper = {n.upper() for n in new_product_names}
 
@@ -290,13 +297,13 @@ def fetch_new_products_data():
                 "sRestock":     stk["sRestock"]
             })
 
-    return new_product_names, total_target, total_sales, total_deficit, monthly_combined, weekly_combined
+    return new_product_names, total_target, total_sales, total_deficit, monthly_combined, weekly_combined, product_targets
 
 
 # ── RUN ───────────────────────────────────────────────────────
 
 print("Fetching data from Google Sheets...")
-new_product_names, total_target, total_sales, total_deficit, monthly_combined, weekly_combined = fetch_new_products_data()
+new_product_names, total_target, total_sales, total_deficit, monthly_combined, weekly_combined, product_targets = fetch_new_products_data()
 
 product_count    = len(new_product_names)
 sales_pct        = (total_sales / total_target * 100) if total_target else 0
@@ -313,6 +320,86 @@ wpost_outside    = sum(r["wpostOutside"] for r in weekly_combined)
 w_skenya         = sum(r["sKenya"]       for r in weekly_combined)
 w_soutside       = sum(r["sOutside"]     for r in weekly_combined)
 w_srestock       = sum(r["sRestock"]     for r in weekly_combined)
+
+
+# ── WEEKLY POSTS SNAPSHOT ─────────────────────────────────────
+# Record each Sun–Sat week's Weekly Sales Total / Kenya Posts / Outside
+# Posts so the dashboard can track Week 1 → the latest week.
+WEEKLY_POSTS_HISTORY = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                    "new_products_weekly_history.json")
+
+def _np_week_start(d):
+    return d - timedelta(days=(d.weekday() + 1) % 7)
+
+def _np_complete_weeks_in_month(ref=None):
+    """Total perfect weeks in the month (Sun–Sat weeks with >=5 days in it)."""
+    d = ref or (date.today() - timedelta(days=1))
+    year, month = d.year, d.month
+    ms = date(year, month, 1)
+    me = (date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)) - timedelta(days=1)
+    ws = ms - timedelta(days=(ms.weekday() + 1) % 7)
+    n = 0
+    while ws <= me:
+        days_in = sum(1 for i in range(7)
+                      if (ws + timedelta(days=i)).year == year
+                      and (ws + timedelta(days=i)).month == month)
+        if days_in >= 5:
+            n += 1
+        ws += timedelta(days=7)
+    return max(n, 1)
+
+def _np_perfect_week_index(d):
+    """Ordinal among the month's perfect weeks (>=5 days in month)."""
+    year, month = d.year, d.month
+    ms = date(year, month, 1)
+    me = (date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)) - timedelta(days=1)
+    ws = ms - timedelta(days=(ms.weekday() + 1) % 7)
+    target = _np_week_start(d)
+    idx = 0
+    while ws <= me:
+        days_in = sum(1 for i in range(7)
+                      if (ws + timedelta(days=i)).year == year
+                      and (ws + timedelta(days=i)).month == month)
+        if days_in >= 5:
+            idx += 1
+        if ws == target:
+            return idx if days_in >= 5 else 0
+        ws += timedelta(days=7)
+    return idx
+
+def update_np_weekly_history():
+    ref = date.today() - timedelta(days=1)
+    ws  = _np_week_start(ref)
+    wk_idx = _np_perfect_week_index(ref)
+    entry = {
+        "weekStart":    ws.isoformat(),
+        "label":        ("Wk " + str(wk_idx)) if wk_idx else "Partial",
+        "month":        ref.strftime("%b"),
+        "weeklyTotal":  weekly_total,
+        "kenyaPosts":   wpost_kenya,
+        "outsidePosts": wpost_outside,
+    }
+    weeks = []
+    if os.path.exists(WEEKLY_POSTS_HISTORY):
+        try:
+            with open(WEEKLY_POSTS_HISTORY, "r") as f:
+                weeks = json.load(f).get("weeks", [])
+        except (ValueError, OSError):
+            weeks = []
+    weeks = [w for w in weeks if w.get("weekStart") != entry["weekStart"]]
+    weeks.append(entry)
+    weeks.sort(key=lambda w: w.get("weekStart", ""))
+    weeks = weeks[-16:]
+    with open(WEEKLY_POSTS_HISTORY, "w") as f:
+        json.dump({"weeks": weeks}, f, indent=2)
+    return weeks
+
+np_weekly_history = update_np_weekly_history()
+
+# Weekly target = new-product monthly target ÷ perfect weeks in the month
+np_complete_weeks   = _np_complete_weeks_in_month()
+weekly_target       = round(total_target / np_complete_weeks) if np_complete_weeks else 0
+weekly_sales_pct    = (weekly_total / weekly_target * 100) if weekly_target else 0
 
 
 # ── INJECT INTO HTML ──────────────────────────────────────────
@@ -333,7 +420,11 @@ inline_script = (
     f'  mSKenya:         "{fmt_int(m_skenya)}",\n'
     f'  mSOutside:       "{fmt_int(m_soutside)}",\n'
     f'  mSRestock:       "{fmt_int(m_srestock)}",\n'
+    f'  productTargets:  {json.dumps(product_targets, ensure_ascii=False)},\n'
     f'  weeklyTotal:     "{fmt_int(weekly_total)}",\n'
+    f'  weeklyTarget:    "{fmt_int(weekly_target)}",\n'
+    f'  weeklySalesPct:  "{fmt_pct(weekly_sales_pct)}",\n'
+    f'  perfectWeeks:    {np_complete_weeks},\n'
     f'  wpostKenya:      "{fmt_int(wpost_kenya)}",\n'
     f'  wpostOutside:    "{fmt_int(wpost_outside)}",\n'
     f'  wSKenya:         "{fmt_int(w_skenya)}",\n'
@@ -341,7 +432,8 @@ inline_script = (
     f'  wSRestock:       "{fmt_int(w_srestock)}",\n'
     f'  productNames:    {json.dumps(new_product_names, ensure_ascii=False)},\n'
     f'  monthlyCombined: {json.dumps(monthly_combined, ensure_ascii=False)},\n'
-    f'  weeklyCombined:  {json.dumps(weekly_combined, ensure_ascii=False)}\n'
+    f'  weeklyCombined:  {json.dumps(weekly_combined, ensure_ascii=False)},\n'
+    f'  weeklyPostsHistory: {json.dumps(np_weekly_history)}\n'
     "};\n"
     "</script>\n"
     "<!-- NEW_PROD_DATA_END -->"

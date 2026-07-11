@@ -1,0 +1,15 @@
+{
+  "weeks": [
+    {
+      "weekStart": "2026-07-05",
+      "label": "Wk 1",
+      "month": "Jul",
+      "salesPct": 23.53,
+      "salesBags": 5467,
+      "prevSalesPct": 11.22,
+      "prevSalesBags": 2445,
+      "weeklySales": 2860,
+      "declinedBy": -2948
+    }
+  ]
+}

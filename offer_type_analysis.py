@@ -422,21 +422,26 @@ print("Fetching Offer Type Analysis data...")
  sinza_special_headers, sinza_specials,
  sinza_stock_data, total_sinza_stock) = fetch_offer_data()
 
-combo_count      = len(june_combos)
-power_deal_count = len(power_deals)
-offer_count      = len(offer_products)
-stock_row_cnt    = len(stock_data)
+def data_rows_count(rows):
+    """Count product rows, excluding the appended TOTAL row."""
+    return sum(1 for r in rows
+               if not (r and str(r[0]).strip().upper().startswith("TOTAL")))
+
+combo_count      = data_rows_count(june_combos)
+power_deal_count = data_rows_count(power_deals)
+offer_count      = len(offer_products)      # no total row in this list
+stock_row_cnt    = len(stock_data)          # no total row in this list
 
 # Uganda counts
-ug_combo_count   = len(ug_combos)
-ug_singles_count = len(ug_singles)
+ug_combo_count   = data_rows_count(ug_combos)
+ug_singles_count = data_rows_count(ug_singles)
 ug_stock_row_cnt = len(ug_stock_data)
 
 # Sinza counts
-sinza_combo_count   = len(sinza_combos)
-sinza_singles_count = len(sinza_singles)
-sinza_specials_count = len(sinza_specials)
-sinza_stock_row_cnt = len(sinza_stock_data)
+sinza_combo_count    = data_rows_count(sinza_combos)
+sinza_singles_count  = data_rows_count(sinza_singles)
+sinza_specials_count = data_rows_count(sinza_specials)
+sinza_stock_row_cnt  = len(sinza_stock_data)
 
 
 # ── INJECT INTO HTML ──────────────────────────────────────────
