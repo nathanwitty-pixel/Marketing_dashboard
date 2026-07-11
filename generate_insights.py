@@ -291,6 +291,11 @@ html = f'''<!DOCTYPE html>
   <title>Marketing Dashboard Insights &mdash; {month_name} {today.year}</title>
   <style>
     *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
+    html {{ overflow-y: scroll; }}
+    ::-webkit-scrollbar {{ width: 12px; height: 12px; }}
+    ::-webkit-scrollbar-track {{ background: #0f1117; }}
+    ::-webkit-scrollbar-thumb {{ background: #2d3148; border-radius: 6px; border: 3px solid #0f1117; }}
+    ::-webkit-scrollbar-thumb:hover {{ background: #3d4a5c; }}
     body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; line-height: 1.6; padding: 2rem; }}
     .container {{ max-width: 900px; margin: 0 auto; }}
     .page-header {{ margin-bottom: 2rem; }}

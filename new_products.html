@@ -6,13 +6,32 @@
   <title>New Products Analytics</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { overflow-y: scroll; }
     body {
       font-family: 'Segoe UI', system-ui, sans-serif;
       background: #0f1117; color: #e2e8f0;
       min-height: 100vh; display: flex;
-      align-items: center; justify-content: center; padding: 2rem;
+      align-items: flex-start; justify-content: center; padding: 2rem;
     }
     .section { width: 100%; max-width: 1500px; }
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track { background: #0f1117; }
+    ::-webkit-scrollbar-thumb { background: #2d3148; border-radius: 6px; border: 3px solid #0f1117; }
+    ::-webkit-scrollbar-thumb:hover { background: #3d4a5c; }
+
+    /* Custom scrollable dropdown (replaces native selects) */
+    .cs-wrap { position: relative; display: inline-block; vertical-align: middle; }
+    .cs-btn { background:#1e2130; border:1px solid #2d3148; color:#e2e8f0; padding:0.3rem 1.5rem 0.3rem 0.6rem; border-radius:6px; font-size:0.78rem; cursor:pointer; text-align:left; position:relative; }
+    .cs-btn::after { content:'▾'; position:absolute; right:0.55rem; top:50%; transform:translateY(-50%); color:#64748b; font-size:0.7rem; }
+    .cs-btn:hover { border-color:#10b981; }
+    .cs-panel { position:absolute; top:calc(100% + 4px); left:0; min-width:100%; max-height:210px; overflow-y:auto; background:#1e2130; border:1px solid #2d3148; border-radius:8px; box-shadow:0 12px 30px rgba(0,0,0,0.5); z-index:300; display:none; }
+    .cs-panel.open { display:block; }
+    .cs-opt { padding:0.4rem 0.75rem; font-size:0.78rem; color:#cbd5e1; cursor:pointer; white-space:nowrap; }
+    .cs-opt:hover { background:#252840; color:#fff; }
+    .cs-opt.sel { background:#0d2a1f; color:#34d399; }
+    .cs-panel::-webkit-scrollbar { width:10px; }
+    .cs-panel::-webkit-scrollbar-track { background:#161824; }
+    .cs-panel::-webkit-scrollbar-thumb { background:#3d4a5c; border-radius:5px; }
 
     /* Header */
     .section-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
@@ -176,23 +195,25 @@
     <div class="card emerald" id="np-count-card">
       <div class="card-label">New Products</div>
       <div class="card-value emerald" id="kpi-count"></div>
-      <div class="card-interpretation">Products launched as new this month. <span style="color:#34d399">Hover for monthly target ▸</span></div>
+      <div class="card-interpretation">Products launched as new this month.</div>
     </div>
     <div class="card green">
       <div class="card-label">Monthly Sales</div>
       <div class="card-value" id="kpi-sales"></div>
       <div class="card-interpretation">Bags of new products sold so far.</div>
     </div>
-    <div class="card red">
-      <div class="card-label">Deficit</div>
-      <div class="card-value red" id="kpi-deficit"></div>
-      <div class="card-interpretation">Bags still needed to meet target.</div>
-    </div>
-    <div class="card amber">
+    <div class="card amber" id="np-pct-card">
       <div class="card-label">Sales % Achieved</div>
       <div class="card-value amber" id="kpi-pct"></div>
       <div class="card-interpretation">Percentage of new products target achieved.</div>
     </div>
+  </div>
+
+  <!-- Deficit — pops up when hovering the Sales % Achieved card -->
+  <div class="np-popover" id="np-deficit-popover">
+    <div class="card-label" style="margin-bottom:0.4rem">Deficit</div>
+    <div style="font-size:1.7rem;font-weight:800;color:#f87171" id="np-pop-deficit"></div>
+    <div style="font-size:0.72rem;color:#64748b;margin-top:0.25rem">Bags still needed to meet the target.</div>
   </div>
 
   <!-- Monthly Target — pops up when hovering the New Products card -->
@@ -255,12 +276,12 @@
     <div class="card blue" id="wk-target-card">
       <div class="card-label">Weekly Target</div>
       <div class="card-value" id="kpi-weekly-target"></div>
-      <div class="card-interpretation">Monthly target ÷ perfect weeks. <span style="color:#60a5fa">Hover for posts &amp; stock ▸</span></div>
+      <div class="card-interpretation">Monthly target ÷ perfect weeks in the month.</div>
     </div>
     <div class="card amber" id="wk-pct-card">
       <div class="card-label">Weekly Sales % Achieved</div>
       <div class="card-value amber" id="kpi-weekly-pct"></div>
-      <div class="card-interpretation">Weekly sales ÷ weekly target. <span style="color:#fbbf24">Hover for sales &amp; restock ▸</span></div>
+      <div class="card-interpretation">Weekly sales as a % of the weekly target.</div>
     </div>
   </div>
 
@@ -351,12 +372,12 @@
     <div class="card blue" id="mo-target-card">
       <div class="card-label">Monthly Target</div>
       <div class="card-value" id="kpi-mo-target"></div>
-      <div class="card-interpretation">Total bags targeted for new products. <span style="color:#60a5fa">Hover for posts &amp; stock ▸</span></div>
+      <div class="card-interpretation">Total bags targeted for new products.</div>
     </div>
     <div class="card amber" id="mo-pct-card">
       <div class="card-label">Monthly Sales % Achieved</div>
       <div class="card-value amber" id="kpi-mo-pct"></div>
-      <div class="card-interpretation">Monthly sales ÷ target. <span style="color:#fbbf24">Hover for sales &amp; restock ▸</span></div>
+      <div class="card-interpretation">Monthly sales as a % of the monthly target.</div>
     </div>
   </div>
 
@@ -504,8 +525,8 @@ function initSort(tableId, state, renderFn) {
 /* ── KPIs ─────────────────────────────────────────────────── */
 set('kpi-count',         NP.productCount);
 set('np-pop-target',     NP.totalTarget);   // New Products hover
+set('np-pop-deficit',    NP.totalDeficit);  // Sales % Achieved hover
 set('kpi-sales',         NP.totalSales);
-set('kpi-deficit',       NP.totalDeficit);
 set('kpi-pct',           NP.salesPct);
 set('kpi-monthly-kenya',  NP.monthlyKenya);
 set('kpi-monthly-outside',NP.monthlyOutside);
@@ -539,6 +560,7 @@ function attachNpPopover(cardId, popId) {
   window.addEventListener('resize', function() { if (pop.classList.contains('show')) place(); });
 }
 attachNpPopover('np-count-card',  'np-target-popover');
+attachNpPopover('np-pct-card',    'np-deficit-popover');
 attachNpPopover('wk-target-card', 'wk-target-popover');
 attachNpPopover('wk-pct-card',    'wk-pct-popover');
 attachNpPopover('mo-target-card', 'mo-target-popover');
@@ -1091,6 +1113,45 @@ window.addEventListener('DOMContentLoaded', function() {
     el.classList.add('card-reveal');
     el.style.setProperty('--reveal-delay', (i * 40) + 'ms');
   });
+</script>
+
+<!-- Custom scrollable dropdowns (replace native selects on all filters) -->
+<script>
+(function(){
+  function enhance(sel){
+    if (sel.dataset.enhanced || sel.multiple) return;
+    sel.dataset.enhanced = '1';
+    var wrap = document.createElement('span'); wrap.className = 'cs-wrap';
+    sel.parentNode.insertBefore(wrap, sel); wrap.appendChild(sel); sel.style.display = 'none';
+    var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'cs-btn';
+    var panel = document.createElement('div'); panel.className = 'cs-panel';
+    function label(){ var o = sel.options[sel.selectedIndex]; btn.textContent = o ? o.textContent : ''; }
+    sel._csSync = label;
+    function build(){
+      panel.innerHTML = '';
+      Array.prototype.forEach.call(sel.options, function(o){
+        var d = document.createElement('div'); d.className = 'cs-opt' + (o.selected ? ' sel' : ''); d.textContent = o.textContent;
+        d.addEventListener('click', function(e){ e.stopPropagation(); sel.value = o.value; sel.dispatchEvent(new Event('change', { bubbles:true })); label(); panel.classList.remove('open'); });
+        panel.appendChild(d);
+      });
+    }
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var open = panel.classList.contains('open');
+      document.querySelectorAll('.cs-panel.open').forEach(function(p){ p.classList.remove('open'); });
+      if (!open) { build(); panel.classList.add('open'); }
+    });
+    sel.addEventListener('change', label);
+    wrap.appendChild(btn); wrap.appendChild(panel); label();
+  }
+  function enhanceAll(){ Array.prototype.forEach.call(document.querySelectorAll('select'), enhance); }
+  function syncAll(){ Array.prototype.forEach.call(document.querySelectorAll('select[data-enhanced]'), function(s){ if (s._csSync) s._csSync(); }); }
+  document.addEventListener('click', function(e){
+    document.querySelectorAll('.cs-panel.open').forEach(function(p){ p.classList.remove('open'); });
+    if (e.target.closest && e.target.closest('.filter-bar')) setTimeout(syncAll, 0);
+  });
+  window.addEventListener('load', function(){ setTimeout(enhanceAll, 60); });
+})();
 </script>
 
 </body>
