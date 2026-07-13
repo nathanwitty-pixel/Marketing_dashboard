@@ -42,8 +42,14 @@
     .section-header h2 { font-size: 1.4rem; font-weight: 700; color: #f8fafc; letter-spacing: 0.02em; }
 
     /* Region tabs */
-    .region-tabs { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin: 1rem 0 1.75rem; }
-    .region-tab  { background: #1e2130; border: 1px solid #2d3148; color: #94a3b8; padding: 0.5rem 1.5rem; border-radius: 9px; font-size: 0.86rem; font-weight: 600; letter-spacing: 0.02em; cursor: pointer; transition: color .15s, border-color .15s, background .15s; }
+    .region-tabs {
+      position: fixed; right: 14px; top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: 0.45rem; z-index: 500; margin: 0;
+      background: rgba(15,17,23,0.82); padding: 0.5rem; border: 1px solid #2d3148;
+      border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.45); backdrop-filter: blur(4px);
+    }
+    .region-tab  { background: #1e2130; border: 1px solid #2d3148; color: #94a3b8; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.02em; cursor: pointer; text-align: center; min-width: 86px; transition: color .15s, border-color .15s, background .15s; }
+    @media (max-width: 720px) { .region-tabs { right: 8px; top: auto; bottom: 12px; transform: none; flex-direction: row; } .region-tab { min-width: 0; padding: 0.4rem 0.7rem; font-size: 0.75rem; } }
     .region-tab:hover  { color: #e2e8f0; border-color: #3d4468; }
     .region-tab.active { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; border-color: transparent; }
 
@@ -1877,6 +1883,72 @@ window.addEventListener('DOMContentLoaded', function() {
   var ACTUAL = '#34d399', EXPECT = '#a78bfa', POSTS = '#22d3ee';   // emerald=actual, violet=expected, cyan=posts
   function num(v) { return parseFloat(String(v == null ? 0 : v).replace(/[^0-9.]/g, '')) || 0; }
 
+  // ── Shared "trend line" renderer (reused by every toggleable chart) ──────────
+  // series = [{label, data, color}] ; fmt formats point/tooltip values.
+  // Returns the Chart instance; draws each point's value above it.
+  window.pvLineChart = function(canvasEl, labels, series, fmt, afterBodyFn) {
+    if (!canvasEl || typeof Chart === 'undefined') return null;
+    fmt = fmt || function(v){ return Math.round(Number(v) || 0).toLocaleString(); };
+    return new Chart(canvasEl, {
+      type: 'line',
+      data: { labels: labels, datasets: series.map(function(s) {
+        return { label: s.label, data: s.data, borderColor: s.color,
+          backgroundColor: 'transparent', borderWidth: 2, tension: 0.4,
+          pointRadius: 4, pointHoverRadius: 7, pointBackgroundColor: s.color, pointBorderColor: '#0b0d16', pointBorderWidth: 1, fill: false };
+      }) },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', labels: { color: TXT, boxWidth: 11, usePointStyle: true, pointStyle: 'line', font: { size: 11 } } },
+          tooltip: { backgroundColor: SURF, borderColor: '#2d3148', borderWidth: 1, titleColor: '#f8fafc', bodyColor: TXT, padding: 10, cornerRadius: 6,
+            callbacks: {
+              label: function(c) { return c.dataset.label + ': ' + fmt(c.parsed.y); },
+              afterBody: afterBodyFn || function(){ return ''; }
+            } }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: TXT, maxRotation: 40, minRotation: 0, font: { size: 10 } } },
+          y: { beginAtZero: true, grid: { color: GRID }, ticks: { color: TXT } }
+        }
+      }
+    });
+  };
+
+  // Injects a small "Bars / Trend line" toggle into a chart card's label; returns a getView() fn.
+  window.pvAddViewToggle = function(canvasEl, onChange) {
+    var card = canvasEl && canvasEl.closest ? canvasEl.closest('.card') : null;
+    var label = card ? card.querySelector('.card-label') : null;
+    if (!label || label.querySelector('.pv-view-sel')) return function(){ return 'bars'; };
+    var s = document.createElement('select');
+    s.className = 'pv-view-sel';
+    s.style.cssText = 'margin-left:0.6rem;background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.12rem 0.4rem;border-radius:6px;font-size:0.66rem;font-weight:600;cursor:pointer;outline:none;vertical-align:middle;text-transform:none;letter-spacing:normal';
+    s.innerHTML = '<option value="bars">Bars</option><option value="trend">Trend line</option>';
+    s.addEventListener('change', function(){ onChange(s.value); });
+    label.appendChild(s);
+    return function(){ return s.value; };
+  };
+
+  // Renders a totals row (colored chips) below a chart's canvas — for cards without one.
+  window.pvTotalsInto = function(canvasEl, chips) {
+    var card = canvasEl && canvasEl.closest ? canvasEl.closest('.card') : null;
+    if (!card) return;
+    var box = card.querySelector('.pv-line-totals');
+    if (!box) {
+      box = document.createElement('div');
+      box.className = 'pv-line-totals';
+      box.style.cssText = 'display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-top:0.7rem;padding-top:0.7rem;border-top:1px solid #2d3148';
+      var wrap = canvasEl.parentNode;
+      if (wrap && wrap.parentNode) wrap.parentNode.insertBefore(box, wrap.nextSibling); else card.appendChild(box);
+    }
+    box.innerHTML = chips.map(function(c) {
+      return '<span style="display:inline-flex;align-items:center;gap:0.4rem">' +
+        '<span style="width:11px;height:11px;border-radius:3px;background:' + c.sw + '"></span>' +
+        '<span style="color:#94a3b8">' + c.label + '</span> ' +
+        '<strong style="color:' + (c.ink || '#e2e8f0') + ';font-variant-numeric:tabular-nums">' + c.val + '</strong></span>';
+    }).join('');
+  };
+
   // Shared floating tooltip for the far-right % labels
   var pvTip = document.createElement('div');
   pvTip.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;background:#0b0d16;border:1px solid #2d3148;' +
@@ -2006,6 +2078,7 @@ window.addEventListener('DOMContentLoaded', function() {
     var REMAIN = 'rgba(167,139,250,0.40)';   // faded violet = remaining to target
     var curExp = [], curPosts = [];   // current period's expected / posts, set by draw()
     var vis = { expected: true, remaining: true };   // toggle state for the track / remaining marker
+    var getView = function(){ return 'bars'; };   // Bars ↔ Trend line toggle (set after first draw)
     function renderTotals() {
       var box = cfg.totals ? document.getElementById(cfg.totals) : null;
       if (!box || !chart) return;
@@ -2043,6 +2116,18 @@ window.addEventListener('DOMContentLoaded', function() {
         (cfg.hidePosts ? '' : ', cyan bar = posts made') + ' · % = share of ' + ACTUAL_LABEL.toLowerCase();
       var ds = [ Object.assign({ label: ACTUAL_LABEL, data: actual, backgroundColor: ACTUAL }, bar) ];
       if (!cfg.hidePosts) ds.push(Object.assign({ label: 'Total Posts Made', data: posts, backgroundColor: POSTS }, bar));
+      if (getView() === 'trend') {
+        var lseries = [ { label: ACTUAL_LABEL, data: actual, color: ACTUAL, dim: 'rgba(52,211,153,0.12)' },
+                        { label: 'Expected (target)', data: expected, color: EXPECT } ];
+        if (!cfg.hidePosts) lseries.push({ label: 'Posts made', data: posts, color: POSTS });
+        if (chart) chart.destroy();
+        chart = window.pvLineChart(el, ['Bags On Offer', 'Bags Not On Offer'], lseries, null,
+          function(items){ var i = items[0].dataIndex, ev = Number(expected[i]) || 0, av = Number(actual[i]) || 0;
+            return ['Remaining: ' + Math.round(Math.max(ev - av, 0)).toLocaleString(),
+                    'Achieved: ' + (ev > 0 ? Math.round(av / ev * 100) : 0) + '% of expected']; });
+        renderTotals();
+        return;
+      }
       if (chart) chart.destroy();
       chart = new Chart(el, {
         type: 'bar',
@@ -2103,6 +2188,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
     if (sel) sel.addEventListener('change', draw);
     draw();
+    getView = window.pvAddViewToggle(el, draw);   // add the Bars/Trend toggle to this card
 
     // Hover the far-right % → show the underlying sales metric
     el.addEventListener('mousemove', function(e) {
@@ -2154,6 +2240,7 @@ window.addEventListener('DOMContentLoaded', function() {
     var REMAIN = 'rgba(167,139,250,0.40)';   // faded violet = remaining to target
     var curExp = [];   // current period's expected, set by draw()
     var vis = { expected: true, remaining: true };   // toggle state for track / remaining marker
+    var getView = function(){ return 'bars'; };   // Bars ↔ Trend line toggle
     function renderTotals() {
       var box = cfg.totals ? document.getElementById(cfg.totals) : null;
       if (!box || !chart) return;
@@ -2177,6 +2264,17 @@ window.addEventListener('DOMContentLoaded', function() {
       var maxVal = Math.max.apply(null, actual.concat(expected).map(Number).concat([1]));
       var bar = { borderRadius: 4, borderSkipped: false, categoryPercentage: 0.62, barPercentage: 0.7, maxBarThickness: 22 };
       var caption = (wk ? 'Weekly' : 'Monthly') + ' — emerald bar = actual sales, track + violet line = expected (target), gap = remaining';
+      if (getView() === 'trend') {
+        if (chart) chart.destroy();
+        chart = window.pvLineChart(el, LABELS,
+          [ { label: 'Actual sales', data: actual, color: ACTUAL, dim: 'rgba(52,211,153,0.12)' },
+            { label: 'Expected (target)', data: expected, color: EXPECT } ], null,
+          function(items){ var i = items[0].dataIndex, ev = Number(expected[i]) || 0, av = Number(actual[i]) || 0;
+            return ['Remaining: ' + Math.round(Math.max(ev - av, 0)).toLocaleString(),
+                    'Achieved: ' + (ev > 0 ? Math.round(av / ev * 100) : 0) + '% of expected']; });
+        renderTotals();
+        return;
+      }
       if (chart) chart.destroy();
       chart = new Chart(el, {
         type: 'bar',
@@ -2208,6 +2306,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
     if (sel) sel.addEventListener('change', draw);
     draw();
+    getView = window.pvAddViewToggle(el, draw);   // add the Bars/Trend toggle
   }
 
   // Expected Sales = posts × sales-per-post (followers × 5% reach × 1% click × 2% conversion)
@@ -2421,16 +2520,39 @@ window.addEventListener('DOMContentLoaded', function() {
     var c = { outofstock: 0, underposted: 0, posted: 0 };
     (data || []).forEach(function(r) { c[reasonOf(r)]++; });
     var total = c.outofstock + c.underposted + c.posted;
-    new Chart(el, {
-      type: 'doughnut',
-      data: { labels: ['Out of stock', 'Under-posted', 'Posted, not selling'],
-        datasets: [{ data: [c.outofstock, c.underposted, c.posted],
-          backgroundColor: ['rgba(239,68,68,0.8)', 'rgba(245,158,11,0.8)', 'rgba(139,92,246,0.8)'],
-          borderColor: '#0b0d16', borderWidth: 2 }] },
-      options: { cutout: '62%', responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 14, boxWidth: 12, font: { size: 11 } } },
-          tooltip: { callbacks: { label: function(ctx) { var v = ctx.parsed || 0, p = total ? (v / total * 100) : 0; return ctx.label + ': ' + v + ' bag' + (v === 1 ? '' : 's') + ' (' + p.toFixed(0) + '%)'; } } } } }
-    });
+    var vals = [c.outofstock, c.underposted, c.posted];
+    var rlabels = ['Out of stock', 'Under-posted', 'Posted, not selling'];
+    var chart = null;
+    function drawDonut() {
+      if (chart) chart.destroy();
+      chart = new Chart(el, {
+        type: 'doughnut',
+        data: { labels: rlabels,
+          datasets: [{ data: vals,
+            backgroundColor: ['rgba(239,68,68,0.8)', 'rgba(245,158,11,0.8)', 'rgba(139,92,246,0.8)'],
+            borderColor: '#0b0d16', borderWidth: 2 }] },
+        options: { cutout: '62%', responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 14, boxWidth: 12, font: { size: 11 } } },
+            tooltip: { callbacks: { label: function(ctx) { var v = ctx.parsed || 0, p = total ? (v / total * 100) : 0; return ctx.label + ': ' + v + ' bag' + (v === 1 ? '' : 's') + ' (' + p.toFixed(0) + '%)'; } } } } }
+      });
+    }
+    function drawTrend() {
+      if (chart) chart.destroy();
+      chart = window.pvLineChart(el, rlabels,
+        [{ label: 'Bags not selling', data: vals, color: '#a78bfa', dim: 'rgba(167,139,250,0.12)' }], null,
+        function(items){ var v = vals[items[0].dataIndex] || 0, p = total ? (v / total * 100) : 0; return [p.toFixed(0) + '% of not-selling bags']; });
+    }
+    function reasonTotals() {
+      window.pvTotalsInto(el, [
+        { sw: 'rgba(239,68,68,0.8)',  label: 'Out of stock',        val: c.outofstock, ink: '#fca5a5' },
+        { sw: 'rgba(245,158,11,0.8)', label: 'Under-posted',        val: c.underposted, ink: '#fcd34d' },
+        { sw: 'rgba(139,92,246,0.8)', label: 'Posted, not selling', val: c.posted, ink: '#c4b5fd' }
+      ]);
+    }
+    var getView = function(){ return 'bars'; };
+    function render(){ if (getView() === 'trend') drawTrend(); else drawDonut(); reasonTotals(); }
+    render();
+    getView = window.pvAddViewToggle(el, render);
   }
   renderReasonDonut('chart-s3-donut',  PA.noConvertWk);
   renderReasonDonut('chart-sz3-donut', (PA.sinza  || {}).noConvertWk);
@@ -2493,9 +2615,13 @@ window.addEventListener('DOMContentLoaded', function() {
         c.restore();
       }
     };
-    new Chart(el, {
+    var chart = null;
+    var labels = rows.map(function(b) { return b.productName || b.bagType || '—'; });
+    function drawBars() {
+    if (chart) chart.destroy();
+    chart = new Chart(el, {
       type: 'bar',
-      data: { labels: rows.map(function(b) { return b.productName || b.bagType || '—'; }),
+      data: { labels: labels,
         datasets: [
           { label: 'Actual sales', data: actual, backgroundColor: '#34d399', borderRadius: 4, borderSkipped: false, categoryPercentage: 0.82, barPercentage: 0.92, maxBarThickness: 11 },
           { label: 'Posts made',   data: posts,  backgroundColor: '#22d3ee', borderRadius: 4, borderSkipped: false, categoryPercentage: 0.82, barPercentage: 0.92, maxBarThickness: 11 }
@@ -2520,6 +2646,29 @@ window.addEventListener('DOMContentLoaded', function() {
           y: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 11 } } } } },
       plugins: [accTrack]
     });
+    }
+    function drawTrend() {
+      if (chart) chart.destroy();
+      chart = window.pvLineChart(el, labels,
+        [ { label: 'Actual sales', data: actual, color: '#34d399', dim: 'rgba(16,185,129,0.12)' },
+          { label: 'Expected from posting', data: expected, color: '#a78bfa' },
+          { label: 'Posts made', data: posts, color: '#22d3ee' } ], null,
+        function(items){ var i = items[0].dataIndex, ev = expected[i] || 0, av = actual[i] || 0;
+          return ['Remaining: ' + Math.round(Math.max(ev - av, 0)).toLocaleString() + ' bags',
+                  'Achieved: ' + (ev > 0 ? Math.round(av / ev * 100) : 0) + '% of expected']; });
+    }
+    var sum = function(a){ return a.reduce(function(x, y){ return x + (Number(y) || 0); }, 0); };
+    function accTotals() {
+      window.pvTotalsInto(el, [
+        { sw: '#34d399', label: 'Total actual sales', val: Math.round(sum(actual)).toLocaleString(), ink: '#6ee7b7' },
+        { sw: '#a78bfa', label: 'Total expected',     val: Math.round(sum(expected)).toLocaleString(), ink: '#c4b5fd' },
+        { sw: '#22d3ee', label: 'Total posts',        val: Math.round(sum(posts)).toLocaleString(), ink: '#67e8f9' }
+      ]);
+    }
+    var getView = function(){ return 'bars'; };
+    function render(){ if (getView() === 'trend') drawTrend(); else drawBars(); accTotals(); }
+    render();
+    getView = window.pvAddViewToggle(el, render);
   }
   renderAccChart('acc-kenya-chart',  PA.accuracyBags);
   renderAccChart('acc-sinza-chart',  (PA.sinza  || {}).accuracyBags);
@@ -2674,6 +2823,8 @@ window.addEventListener('DOMContentLoaded', function() {
           function() { vis.remaining = !vis.remaining; chart.update(); renderTotals(); }, !vis.remaining);
       }
     }
+    function drawBars() {
+    if (chart) chart.destroy();
     chart = new Chart(el, {
       type: 'bar',
       data: { labels: rows.map(function(r) { return r.label; }),
@@ -2693,7 +2844,20 @@ window.addEventListener('DOMContentLoaded', function() {
           y: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 12 } } } } },
       plugins: [track]
     });
-    renderTotals();
+    }
+    function drawTrend() {
+      if (chart) chart.destroy();
+      var series = [ { label: aLbl, data: actual, color: '#22d3ee', dim: 'rgba(34,211,238,0.12)' } ];
+      if (hasTarget) series.push({ label: tLbl + ' (target)', data: target, color: '#a78bfa' });
+      chart = window.pvLineChart(el, rows.map(function(r){ return r.label; }), series, fmt,
+        function(items){ var i = items[0].dataIndex, tv = target[i] || 0, av = actual[i] || 0;
+          if (tv <= 0) return '';
+          return ['Remaining: ' + fmt(Math.max(tv - av, 0)), 'Reached: ' + Math.round(av / tv * 100) + '% of target']; });
+    }
+    var getView = function(){ return 'bars'; };
+    function render(){ if (getView() === 'trend') drawTrend(); else drawBars(); renderTotals(); }
+    render();
+    getView = window.pvAddViewToggle(el, render);
     var noteEl = document.getElementById(noteId);
     if (noteEl && note) noteEl.innerHTML = note;
   }

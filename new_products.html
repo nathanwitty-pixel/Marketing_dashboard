@@ -288,6 +288,13 @@
         <div class="card-label" id="pt-title" style="margin-bottom:0">New Products — Sold vs Remaining to Target</div>
         <div style="display:flex;align-items:center;gap:0.9rem;flex-wrap:wrap">
           <div style="display:flex;align-items:center;gap:0.4rem">
+            <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">View</span>
+            <select id="pt-view" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
+              <option value="bars">Bars</option>
+              <option value="trend">Trend line</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.4rem">
             <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Period</span>
             <select id="pt-period" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
               <option value="monthly">Monthly</option>
@@ -305,7 +312,8 @@
           </div>
         </div>
       </div>
-      <div style="position:relative;height:440px"><canvas id="chart-product-targets"></canvas></div>
+      <div style="position:relative;height:440px" id="pt-bars-wrap"><canvas id="chart-product-targets"></canvas></div>
+      <div style="position:relative;height:440px;display:none" id="pt-trend-wrap"><canvas id="chart-product-trend"></canvas></div>
       <div id="pt-totals" style="display:flex;gap:1.75rem;justify-content:center;flex-wrap:wrap;margin-top:0.9rem;padding-top:0.85rem;border-top:1px solid #2d3148"></div>
     </div>
   </div>
@@ -315,15 +323,25 @@
     <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem">
         <div class="card-label" id="top10-title" style="margin-bottom:0">Top 10 Products by Monthly Sales</div>
-        <div style="display:flex;align-items:center;gap:0.4rem">
-          <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Period</span>
-          <select id="top10-period" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
-            <option value="monthly">Monthly</option>
-            <option value="weekly">Weekly</option>
-          </select>
+        <div style="display:flex;align-items:center;gap:0.9rem;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:0.4rem">
+            <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">View</span>
+            <select id="top10-view" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
+              <option value="bars">Bars</option>
+              <option value="trend">Trend line</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.4rem">
+            <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Period</span>
+            <select id="top10-period" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
+              <option value="monthly">Monthly</option>
+              <option value="weekly">Weekly</option>
+            </select>
+          </div>
         </div>
       </div>
-      <div style="position:relative;height:460px"><canvas id="chart-top-products"></canvas></div>
+      <div style="position:relative;height:460px" id="top10-bars-wrap"><canvas id="chart-top-products"></canvas></div>
+      <div style="position:relative;height:460px;display:none" id="top10-trend-wrap"><canvas id="chart-top-trend"></canvas></div>
       <div id="top10-totals" style="display:flex;gap:1.75rem;justify-content:center;flex-wrap:wrap;margin-top:0.9rem;padding-top:0.85rem;border-top:1px solid #2d3148"></div>
     </div>
   </div>
@@ -345,6 +363,7 @@
           </select>
         </div>
       </div>
+      <div style="position:relative;height:240px;margin:0.2rem 0 1rem"><canvas id="chart-colour-trend"></canvas></div>
       <div id="colour-guidance"></div>
     </div>
   </div>
@@ -536,6 +555,51 @@ attachNpPopover('wk-pct-card',    'wk-pct-popover');
     return '<span style="color:#64748b">' + label + '</span> <span style="color:' + color + ';font-weight:700">' + val.toLocaleString() + '</span>';
   }
 
+  // Trend line: Sold / Posts / Stock across colours (sorted by bags sold), hover shows a note.
+  var colourTrend = null;
+  function renderColourTrend(list, period) {
+    var el = document.getElementById('chart-colour-trend');
+    if (!el || typeof Chart === 'undefined') return;
+    if (colourTrend) { colourTrend.destroy(); colourTrend = null; }
+    if (!list.length) return;
+    var items = list.slice().sort(function(a, b){ return (b.sold || 0) - (a.sold || 0); });
+    var mk = function(label, key, color, dim){
+      return { label: label, data: items.map(function(c){ return c[key] || 0; }),
+        borderColor: color, backgroundColor: dim, borderWidth: 2, tension: 0.3,
+        pointRadius: 3, pointHoverRadius: 6, pointBackgroundColor: color, fill: false };
+    };
+    colourTrend = new Chart(el, {
+      type: 'line',
+      data: { labels: items.map(function(c){ return c.colour; }), datasets: [
+        mk('Sold', 'sold', '#34d399', 'rgba(16,185,129,0.12)'),
+        mk('Posts', 'posts', '#22d3ee', 'rgba(6,182,212,0.10)'),
+        mk('Stock', 'stock', '#a78bfa', 'rgba(167,139,250,0.12)')
+      ] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { labels: { color: '#94a3b8', boxWidth: 11, usePointStyle: true, pointStyle: 'line', font: { size: 11 } } },
+          tooltip: { backgroundColor: '#1e2130', borderColor: '#2d3148', borderWidth: 1, titleColor: '#f8fafc', bodyColor: '#cbd5e1', padding: 10, cornerRadius: 6,
+            callbacks: {
+              title: function(t){ return t[0].label; },
+              afterBody: function(t){
+                var c = items[t[0].dataIndex]; if (!c) return '';
+                var pw = period === 'weekly' ? 'week' : 'month';
+                return 'Sold ' + (c.sold || 0).toLocaleString() + ' this ' + pw + ' · ' +
+                  (c.posts || 0).toLocaleString() + ' posts · ' + (c.stock || 0).toLocaleString() + ' in stock.';
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#94a3b8', maxRotation: 50, minRotation: 20, font: { size: 10 } } },
+          y: { beginAtZero: true, grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: '#94a3b8' } }
+        }
+      }
+    });
+  }
+
   function render(product) {
     var period = periodEl ? periodEl.value : 'monthly';
     var rows   = period === 'weekly' ? weekly : monthly;
@@ -556,7 +620,8 @@ attachNpPopover('wk-pct-card',    'wk-pct-popover');
     });
     var pWord = period === 'weekly' ? 'week' : 'month';
     var list = Object.keys(agg).map(function(k){ return agg[k]; });
-    if (!list.length) { wrap.innerHTML = '<p style="font-size:0.8rem;color:#64748b">No colour data for this selection.</p>'; return; }
+    if (!list.length) { wrap.innerHTML = '<p style="font-size:0.8rem;color:#64748b">No colour data for this selection.</p>'; renderColourTrend([], period); return; }
+    renderColourTrend(list, period);
 
     function line(c) {
       return ' &middot; ' + stat('sold', c.sold, '#34d399') + '  ' + stat('posts', c.posts, '#22d3ee') + '  ' + stat('stock', c.stock, '#a78bfa');
@@ -835,38 +900,89 @@ window.addEventListener('DOMContentLoaded', function() {
       return {
         name:  r.productName || r.colour || r.bagType || '—',
         sales: period === 'weekly' ? (r.weeklySales || 0) : ((r.kenyaSales || 0) + (r.outsideKenya || 0)),
-        posts: period === 'weekly' ? ((r.wpostKenya || 0) + (r.wpostOutside || 0)) : ((r.mpostKenya || 0) + (r.mpostOutside || 0))
+        posts: period === 'weekly' ? ((r.wpostKenya || 0) + (r.wpostOutside || 0)) : ((r.mpostKenya || 0) + (r.mpostOutside || 0)),
+        stock: (r.sKenya || 0) + (r.sOutside || 0)
       };
     }).sort(function(a, b) { return b.sales - a.sales; }).slice(0, 10);
 
     var topN   = sorted.length;
-    var maxVal = Math.max.apply(null, sorted.map(function(r){ return Math.max(r.sales, r.posts); }).concat([1]));
+    var maxVal = Math.max.apply(null, sorted.map(function(r){ return Math.max(r.sales, r.posts, r.stock); }).concat([1]));
     var seriesLabel = period === 'weekly' ? 'Weekly Sales' : 'Monthly Sales';
 
     var titleEl = document.getElementById('top10-title');
     if (titleEl) titleEl.textContent = 'Top 10 Products by ' + (period === 'weekly' ? 'Weekly' : 'Monthly') + ' Sales';
 
     function renderTop10Total() {
-      var el = document.getElementById('top10-totals');
+      var el = document.getElementById('top10-totals'); if (!el) return;
+      var view = (document.getElementById('top10-view') || {}).value || 'bars';
       var chart = window._chartTopProducts;
-      if (!el || !chart) return;
+      var vis = function(i){ return (view === 'bars' && chart) ? chart.isDatasetVisible(i) : true; };
       var parts = [];
-      if (chart.isDatasetVisible(0)) {
+      if (vis(0)) {
         var tSales = sorted.reduce(function(a, r){ return a + (r.sales || 0); }, 0);
         parts.push('<span style="display:inline-flex;align-items:center;gap:0.4rem">' +
           '<span style="width:11px;height:11px;border-radius:3px;background:' + rankColor(0, topN) + '"></span>' +
           '<span style="color:#94a3b8">Total — Top ' + topN + ' sold (' + (period === 'weekly' ? 'week' : 'month') + ')</span> ' +
           '<strong style="color:#34d399;font-variant-numeric:tabular-nums">' + tSales.toLocaleString() + '</strong></span>');
       }
-      if (chart.isDatasetVisible(1)) {
+      if (vis(1)) {
         var tPosts = sorted.reduce(function(a, r){ return a + (r.posts || 0); }, 0);
         parts.push('<span style="display:inline-flex;align-items:center;gap:0.4rem">' +
           '<span style="width:11px;height:11px;border-radius:3px;background:' + C.cyan + '"></span>' +
           '<span style="color:#94a3b8">Total posts</span> ' +
           '<strong style="color:#22d3ee;font-variant-numeric:tabular-nums">' + tPosts.toLocaleString() + '</strong></span>');
       }
+      if (vis(2)) {
+        var tStock = sorted.reduce(function(a, r){ return a + (r.stock || 0); }, 0);
+        parts.push('<span style="display:inline-flex;align-items:center;gap:0.4rem">' +
+          '<span style="width:11px;height:11px;border-radius:3px;background:' + C.purple + '"></span>' +
+          '<span style="color:#94a3b8">Total stock</span> ' +
+          '<strong style="color:#c4b5fd;font-variant-numeric:tabular-nums">' + tStock.toLocaleString() + '</strong></span>');
+      }
       el.innerHTML = parts.join('');
     }
+    // Trend-line view: Sales / Posts / Stock across the top products, hover shows a note.
+    function drawTop10Trend() {
+      var el = document.getElementById('chart-top-trend'); if (!el || typeof Chart === 'undefined') return;
+      var mk = function(label, key, color, dim){
+        return { label: label, data: sorted.map(function(r){ return r[key] || 0; }),
+          borderColor: color, backgroundColor: dim, borderWidth: 2, tension: 0.3,
+          pointRadius: 3, pointHoverRadius: 6, pointBackgroundColor: color, fill: false };
+      };
+      if (window._chartTopTrend) window._chartTopTrend.destroy();
+      window._chartTopTrend = new Chart(el, {
+        type: 'line',
+        data: { labels: sorted.map(function(r){ return r.name; }), datasets: [
+          mk(seriesLabel, 'sales', C.green, 'rgba(16,185,129,0.12)'),
+          mk('Posts', 'posts', C.cyan, 'rgba(6,182,212,0.10)'),
+          mk('Stock', 'stock', C.purple, 'rgba(167,139,250,0.12)')
+        ] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { labels: { color: C.text, boxWidth: 11, usePointStyle: true, pointStyle: 'line', font: { size: 11 } } },
+            tooltip: Object.assign({}, ttDefaults, { callbacks: {
+              title: function(t){ return t[0].label; },
+              afterBody: function(t){
+                var r = sorted[t[0].dataIndex]; if (!r) return '';
+                return 'Sold ' + (r.sales||0).toLocaleString() + ' this ' + (period === 'weekly' ? 'week' : 'month') +
+                  ' · ' + (r.posts||0).toLocaleString() + ' posts · ' + (r.stock||0).toLocaleString() + ' in stock.';
+              }
+            } })
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: C.text, maxRotation: 50, minRotation: 20, font: { size: 10 } } },
+            y: { beginAtZero: true, grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: C.text } }
+          }
+        }
+      });
+    }
+    var _t10view = (document.getElementById('top10-view') || {}).value || 'bars';
+    var _t10bw = document.getElementById('top10-bars-wrap'), _t10tw = document.getElementById('top10-trend-wrap');
+    if (_t10bw) _t10bw.style.display = (_t10view === 'trend') ? 'none' : 'block';
+    if (_t10tw) _t10tw.style.display = (_t10view === 'trend') ? 'block' : 'none';
+    if (_t10view === 'trend') { drawTop10Trend(); renderTop10Total(); return; }
 
     var valueLabels = {
       id: 'topValueLabels',
@@ -881,7 +997,7 @@ window.addEventListener('DOMContentLoaded', function() {
           var meta = chart.getDatasetMeta(di);
           meta.data.forEach(function(bar, i) {
             var v = ds.data[i] || 0;
-            ctx.fillStyle = (di === 0) ? '#ffffff' : '#67e8f9';   // white sales / bright cyan posts
+            ctx.fillStyle = (di === 0) ? '#ffffff' : (di === 1) ? '#67e8f9' : '#c4b5fd';   // white sales / cyan posts / violet stock
             ctx.fillText(v.toLocaleString(), bar.x + 6, bar.y);
           });
         });
@@ -908,6 +1024,13 @@ window.addEventListener('DOMContentLoaded', function() {
               label: 'Posts',
               data:  sorted.map(function(r) { return r.posts; }),
               backgroundColor: C.cyan,
+              borderRadius: 4, borderSkipped: false,
+              categoryPercentage: 0.74, barPercentage: 0.82, maxBarThickness: 15
+            },
+            {
+              label: 'Stock',
+              data:  sorted.map(function(r) { return r.stock; }),
+              backgroundColor: C.purple,
               borderRadius: 4, borderSkipped: false,
               categoryPercentage: 0.74, barPercentage: 0.82, maxBarThickness: 15
             }
@@ -943,7 +1066,9 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 
   var top10PeriodEl = document.getElementById('top10-period');
+  var top10ViewEl   = document.getElementById('top10-view');
   if (top10PeriodEl) top10PeriodEl.addEventListener('change', function(){ drawTop10(this.value); });
+  if (top10ViewEl)   top10ViewEl.addEventListener('change', function(){ drawTop10(top10PeriodEl ? top10PeriodEl.value : 'monthly'); });
   drawTop10(top10PeriodEl ? top10PeriodEl.value : 'monthly');
 
   // ── Per-product: Sold vs Remaining to Target (sortable) ────
@@ -951,6 +1076,7 @@ window.addEventListener('DOMContentLoaded', function() {
     var ctx     = document.getElementById('chart-product-targets');
     var sel     = document.getElementById('pt-sort');
     var perSel  = document.getElementById('pt-period');
+    var viewSel = document.getElementById('pt-view');
     var titleEl = document.getElementById('pt-title');
     if (!ctx) return;
     if (!(NP.productTargets || []).length) return;
@@ -970,9 +1096,21 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 
     var monthlyPosts = postsByProduct(false);
+    // Current stock per product (Kenya + Outside), keyed by bag type.
+    function stockByProduct() {
+      var rows = NP.monthlyCombined || NP.weeklyCombined || [];
+      var m = {};
+      rows.forEach(function(r){
+        var n = (r.bagType || '').trim().toUpperCase(); if (!n) return;
+        m[n] = (m[n] || 0) + (r.sKenya || 0) + (r.sOutside || 0);
+      });
+      return m;
+    }
+    var stockMap = stockByProduct();
     var monthlyItems = (NP.productTargets || []).map(function(p){
+      var key = String(p.name).trim().toUpperCase();
       return { name: p.name, target: p.target || 0, sold: p.sold || 0,
-               remaining: p.remaining || 0, posts: monthlyPosts[String(p.name).trim().toUpperCase()] || 0 };
+               remaining: p.remaining || 0, posts: monthlyPosts[key] || 0, stock: stockMap[key] || 0 };
     });
 
     // Weekly view: per-product target stays the monthly goal, "sold"/"posts" = this week's figures
@@ -988,7 +1126,7 @@ window.addEventListener('DOMContentLoaded', function() {
         var key = String(p.name).trim().toUpperCase();
         var s = sold[key] || 0;
         return { name: p.name, target: p.target || 0, sold: s,
-                 remaining: Math.max((p.target || 0) - s, 0), posts: wkPosts[key] || 0 };
+                 remaining: Math.max((p.target || 0) - s, 0), posts: wkPosts[key] || 0, stock: stockMap[key] || 0 };
       });
     }
 
@@ -1014,14 +1152,19 @@ window.addEventListener('DOMContentLoaded', function() {
     }
     function renderTotals(items) {
       var el = document.getElementById('pt-totals');
+      if (!el) return;
+      var view = viewSel ? viewSel.value : 'bars';
       var chart = window._chartProductTargets;
-      if (!el || !chart) return;
-      var soldVis  = chart.isDatasetVisible(0);
-      var remVis   = chart.isDatasetVisible(1);
-      var postsVis = chart.isDatasetVisible(2);
+      // In trend view the bar chart isn't the active one — show every total.
+      var vis = function(i){ return (view === 'bars' && chart) ? chart.isDatasetVisible(i) : true; };
+      var soldVis  = vis(0);
+      var remVis   = vis(1);
+      var postsVis = vis(2);
+      var stockVis = vis(3);
       var tSold  = items.reduce(function(a, p){ return a + (p.sold || 0); }, 0);
       var tRem   = items.reduce(function(a, p){ return a + (p.remaining || 0); }, 0);
       var tPosts = items.reduce(function(a, p){ return a + (p.posts || 0); }, 0);
+      var tStock = items.reduce(function(a, p){ return a + (p.stock || 0); }, 0);
       var parts = [];
       if (soldVis) parts.push(tot(C.green, 'Total sold', tSold, '#34d399'));
       if (remVis)  parts.push(tot('rgba(239,68,68,0.55)', 'Total still needed', tRem, '#f87171'));
@@ -1029,11 +1172,66 @@ window.addEventListener('DOMContentLoaded', function() {
       var tShown = (soldVis ? tSold : 0) + (remVis ? tRem : 0);
       if (soldVis && remVis) parts.push(tot('#2d3148', 'Total target', tShown, '#e2e8f0'));
       if (postsVis) parts.push(tot(C.cyan, 'Total posts', tPosts, '#22d3ee'));
+      if (stockVis) parts.push(tot(C.purple, 'Total stock', tStock, '#c4b5fd'));
       el.innerHTML = parts.join('');
+    }
+
+    // Trend line view: Stock / Sold / Remaining across products, hover shows a progress note.
+    function drawTrend(items) {
+      var el = document.getElementById('chart-product-trend'); if (!el || typeof Chart === 'undefined') return;
+      var mk = function(label, key, color, dim){
+        return { label: label, data: items.map(function(p){ return p[key] || 0; }),
+          borderColor: color, backgroundColor: dim, borderWidth: 2, tension: 0.3,
+          pointRadius: 3, pointHoverRadius: 6, pointBackgroundColor: color, fill: false };
+      };
+      if (window._chartProductTrend) window._chartProductTrend.destroy();
+      window._chartProductTrend = new Chart(el, {
+        type: 'line',
+        data: { labels: items.map(function(p){ return p.name; }), datasets: [
+          mk('Stock', 'stock', C.purple, 'rgba(167,139,250,0.12)'),
+          mk('Sold', 'sold', C.green, 'rgba(16,185,129,0.12)'),
+          mk('Remaining to target', 'remaining', '#f87171', 'rgba(239,68,68,0.10)')
+        ] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { labels: { color: C.text, boxWidth: 11, usePointStyle: true, pointStyle: 'line', font: { size: 11 } } },
+            tooltip: Object.assign({}, ttDefaults, { callbacks: {
+              title: function(t){ return t[0].label; },
+              afterBody: function(t){
+                var p = items[t[0].dataIndex]; if (!p) return '';
+                var tgt = p.target || 0, s = p.sold || 0, rem = p.remaining || 0, st = p.stock || 0;
+                var pct = tgt > 0 ? Math.round(s / tgt * 100) : 0;
+                var txt = 'Sold ' + s.toLocaleString() + ' of ' + tgt.toLocaleString() + ' (' + pct + '%). ' +
+                  (rem > 0 ? rem.toLocaleString() + ' still needed — keep pushing.' : 'Target reached — great work.') +
+                  ' Stock: ' + st.toLocaleString() + '.';
+                var words = txt.split(' '), lines = [], cur = '';
+                words.forEach(function(w){ if ((cur + ' ' + w).trim().length > 36) { lines.push(cur.trim()); cur = w; } else { cur += ' ' + w; } });
+                if (cur.trim()) lines.push(cur.trim());
+                return lines;
+              }
+            } })
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: C.text, maxRotation: 50, minRotation: 20, font: { size: 10 } } },
+            y: { beginAtZero: true, grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: C.text } }
+          }
+        }
+      });
     }
 
     function draw(mode) {
       var items = sortItems(mode);
+      var view = viewSel ? viewSel.value : 'bars';
+      var bw = document.getElementById('pt-bars-wrap'), tw = document.getElementById('pt-trend-wrap');
+      if (bw) bw.style.display = (view === 'trend') ? 'none' : 'block';
+      if (tw) tw.style.display = (view === 'trend') ? 'block' : 'none';
+      if (view === 'trend') { drawTrend(items); renderTotals(items); return; }
+      drawBars(items);
+    }
+
+    function drawBars(items) {
       // Numbers on the bars: sold/needed inside each segment, target at the end of the
       // target stack, and the posts count at the end of the posts bar.
       var valueLabels = {
@@ -1072,6 +1270,14 @@ window.addEventListener('DOMContentLoaded', function() {
               ctx2.fillText((pds.data[i] || 0).toLocaleString(), bar.x + 8, bar.y);
             });
           }
+          // Stock count at the end of the stock bar
+          if (chart.isDatasetVisible(3)) {
+            var kMeta = chart.getDatasetMeta(3), kds = chart.data.datasets[3];
+            ctx2.fillStyle = '#c4b5fd';
+            kMeta.data.forEach(function(bar, i) {
+              ctx2.fillText((kds.data[i] || 0).toLocaleString(), bar.x + 8, bar.y);
+            });
+          }
           ctx2.restore();
         }
       };
@@ -1089,6 +1295,9 @@ window.addEventListener('DOMContentLoaded', function() {
               categoryPercentage: 0.76, barPercentage: 0.84, maxBarThickness: 17 },
             { label: 'Posts', data: items.map(function(p){ return p.posts || 0; }),
               backgroundColor: C.cyan, borderRadius: 4, borderSkipped: false, stack: 'p',
+              categoryPercentage: 0.76, barPercentage: 0.84, maxBarThickness: 17 },
+            { label: 'Stock', data: items.map(function(p){ return p.stock || 0; }),
+              backgroundColor: C.purple, borderRadius: 4, borderSkipped: false, stack: 'k',
               categoryPercentage: 0.76, barPercentage: 0.84, maxBarThickness: 17 }
           ]
         },
@@ -1119,7 +1328,7 @@ window.addEventListener('DOMContentLoaded', function() {
           },
           scales: {
             x: { stacked: true, grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: C.text },
-                 title: { display: true, text: 'Green = sold, red = still needed (number at end = target) · cyan = marketing posts', color: '#64748b', font: { size: 10 } } },
+                 title: { display: true, text: 'Green = sold, red = still needed (number at end = target) · cyan = marketing posts · violet = stock', color: '#64748b', font: { size: 10 } } },
             y: { stacked: true, grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 11 } } }
           }
         },
@@ -1139,6 +1348,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
     if (sel)    sel.addEventListener('change', function(){ draw(this.value); });
     if (perSel) perSel.addEventListener('change', applyPeriod);
+    if (viewSel) viewSel.addEventListener('change', function(){ draw(sel ? sel.value : 'target'); });
     applyPeriod();
   })();
 

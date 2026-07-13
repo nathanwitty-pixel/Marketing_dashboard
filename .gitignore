@@ -11,3 +11,11 @@ __pycache__/
 Thumbs.db
 .DS_Store
 desktop.ini
+
+# -- Extra secret patterns (future-proofing) --
+*.env
+.env*
+*.pem
+*.key
+service_account*.json
+secrets*.json

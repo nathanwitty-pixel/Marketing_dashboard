@@ -220,8 +220,14 @@
     .divider-label   { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #64748b; white-space: nowrap; }
 
     /* Region tabs */
-    .region-tabs { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin: 0 0 1.75rem; }
-    .region-tab  { background: #1e2130; border: 1px solid #2d3148; color: #94a3b8; padding: 0.5rem 1.5rem; border-radius: 9px; font-size: 0.86rem; font-weight: 600; letter-spacing: 0.02em; cursor: pointer; transition: color .15s, border-color .15s, background .15s; }
+    .region-tabs {
+      position: fixed; right: 14px; top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: 0.45rem; z-index: 500; margin: 0;
+      background: rgba(15,17,23,0.82); padding: 0.5rem; border: 1px solid #2d3148;
+      border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.45); backdrop-filter: blur(4px);
+    }
+    .region-tab  { background: #1e2130; border: 1px solid #2d3148; color: #94a3b8; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.02em; cursor: pointer; text-align: center; min-width: 86px; transition: color .15s, border-color .15s, background .15s; }
+    @media (max-width: 720px) { .region-tabs { right: 8px; top: auto; bottom: 12px; transform: none; flex-direction: row; } .region-tab { min-width: 0; padding: 0.4rem 0.7rem; font-size: 0.75rem; } }
     .region-tab:hover  { color: #e2e8f0; border-color: #3d4468; }
     .region-tab.active { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; border-color: transparent; }
 

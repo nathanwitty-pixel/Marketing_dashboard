@@ -1,0 +1,23 @@
+# ── SECRETS — never deploy ────────────────────────────────
+google_credentials.json
+google_token.json
+*.env
+.env*
+*.pem
+
+# ── Server-side generators & caches (not needed by the static site) ──
+*.py
+__pycache__/
+*.pyc
+*.pyo
+
+# ── Raw data / state JSON (baked into the HTML at build time; no need to serve) ──
+*_history.json
+*_snapshot.json
+month_boundary.json
+# (vercel.json is intentionally NOT matched here — it's the deploy config)
+
+# ── OS junk ───────────────────────────────────────────────
+Thumbs.db
+.DS_Store
+desktop.ini
