@@ -330,6 +330,7 @@
         </div>
       </div>
       <p id="og-intro" style="font-size:0.75rem;color:#64748b;margin:0 0 0.6rem"></p>
+      <div style="position:relative;height:230px;margin:0.2rem 0 1rem"><canvas id="offer-trend-chart"></canvas></div>
       <div id="offer-guidance"></div>
     </div>
   </div>
@@ -388,6 +389,7 @@
         </div>
       </div>
       <p id="ug-intro" style="font-size:0.75rem;color:#64748b;margin:0 0 0.6rem"></p>
+      <div style="position:relative;height:230px;margin:0.2rem 0 1rem"><canvas id="ug-trend-chart"></canvas></div>
       <div id="ug-guidance"></div>
     </div>
   </div>
@@ -452,6 +454,7 @@
         </div>
       </div>
       <p id="sz-intro" style="font-size:0.75rem;color:#64748b;margin:0 0 0.6rem"></p>
+      <div style="position:relative;height:230px;margin:0.2rem 0 1rem"><canvas id="sz-trend-chart"></canvas></div>
       <div id="sz-guidance"></div>
     </div>
   </div>
@@ -522,7 +525,19 @@ function isNumeric(v) {
 /* KPIs */
 set('kpi-combos',      OA.comboCount);
 set('kpi-power',       OA.powerDealCount);
-set('kpi-kenya-stock', OA.totalKenyaStock);
+// Region stock totals shown as "X out of <region total>".
+function _pNum(v) { return parseInt(String(v == null ? 0 : v).replace(/[^0-9]/g, ''), 10) || 0; }
+var STOCK_OUT_OF = { kenya: 10192, uganda: 564, sinza: 445 };   // per-region denominators (total)
+var STOCK_NOW    = { uganda: 223, sinza: 183 };                 // current in-stock (Kenya uses OA.totalKenyaStock)
+function setStockOutOf(id, val, total) {
+  var e = document.getElementById(id); if (!e) return;
+  e.innerHTML = _pNum(val).toLocaleString() +
+    ' <span style="font-size:0.48em;font-weight:600;color:#64748b;letter-spacing:0.02em">out of ' + _pNum(total).toLocaleString() + '</span>';
+}
+// Populate all three up-front so a later render error can't leave them blank.
+setStockOutOf('kpi-kenya-stock',     OA.totalKenyaStock, STOCK_OUT_OF.kenya);
+setStockOutOf('ug-kpi-uganda-stock', STOCK_NOW.uganda,   STOCK_OUT_OF.uganda);
+setStockOutOf('sz-kpi-sinza-stock',  STOCK_NOW.sinza,    STOCK_OUT_OF.sinza);
 
 /* Offer product tags */
 (function() {
@@ -579,6 +594,8 @@ renderRegionTags('sz-offer-tags', [OA.sinzaCombos, OA.sinzaSingles, OA.sinzaSpec
   function show(region) {
     Object.keys(panels).forEach(function(k) { if (panels[k]) panels[k].style.display = (k === region) ? 'block' : 'none'; });
     tabs.forEach(function(t) { t.classList.toggle('active', t.getAttribute('data-region') === region); });
+    // Charts built while a panel was hidden render at 0px — nudge them to resize now.
+    setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 30);
   }
   tabs.forEach(function(t) { t.addEventListener('click', function() { show(t.getAttribute('data-region')); }); });
   show('kenya');
@@ -592,6 +609,7 @@ function buildGuidance(cfg) {
   var sortEl  = document.getElementById(cfg.sort);
   var introEl = document.getElementById(cfg.intro);
   if (!wrap) return;
+  var trendChart = null;   // per-region trend line chart (stock / weekly gain / remaining)
 
   var stockField = cfg.stockField || 'kenyaStock';
   // Only keep offer types that actually have data rows
@@ -698,6 +716,57 @@ function buildGuidance(cfg) {
       '<div style="font-size:0.82rem;color:#94a3b8;line-height:1.6">' + html + '</div></div>';
   }
 
+  // Trend chart: 3 lines (stock / weekly gain / remaining) across the selected type's items,
+  // hover shows the same momentum advice as the guidance list.
+  function renderTrend(items) {
+    if (!cfg.trend) return;
+    var el = document.getElementById(cfg.trend);
+    if (!el || typeof Chart === 'undefined') return;
+    if (trendChart) { trendChart.destroy(); trendChart = null; }
+    if (!items.length) return;
+    var labels = items.map(function(it) { return it.name; });
+    var mk = function(label, key, color, dim) {
+      return { label: label, data: items.map(function(it) { return it[key]; }),
+        borderColor: color, backgroundColor: dim, borderWidth: 2, tension: 0.3,
+        pointRadius: 3, pointHoverRadius: 6, pointBackgroundColor: color, fill: false };
+    };
+    trendChart = new Chart(el, {
+      type: 'line',
+      data: { labels: labels, datasets: [
+        mk('Stock', 'stock', '#22d3ee', 'rgba(34,211,238,0.12)'),
+        mk('Weekly gain (Wk2−Wk1)', 'gain', '#6ee7b7', 'rgba(16,185,129,0.12)'),
+        mk('Remaining to target', 'rem', '#fca5a5', 'rgba(239,68,68,0.10)')
+      ] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { labels: { color: '#94a3b8', boxWidth: 11, usePointStyle: true, pointStyle: 'line', font: { size: 11 } } },
+          tooltip: {
+            backgroundColor: '#1e2130', borderColor: '#2d3148', borderWidth: 1,
+            titleColor: '#f8fafc', bodyColor: '#cbd5e1', padding: 10, cornerRadius: 6,
+            callbacks: {
+              title: function(t) { return t[0].label; },
+              afterBody: function(t) {
+                var it = items[t[0].dataIndex];
+                if (!it) return '';
+                // wrap the advice sentence to ~34 chars/line so the tooltip stays readable
+                var words = it.advice.split(' '), lines = [], cur = '';
+                words.forEach(function(w) { if ((cur + ' ' + w).trim().length > 34) { lines.push(cur.trim()); cur = w; } else { cur += ' ' + w; } });
+                if (cur.trim()) lines.push(cur.trim());
+                return lines;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#94a3b8', maxRotation: 50, minRotation: 20, font: { size: 10 } } },
+          y: { beginAtZero: true, grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: '#94a3b8' } }
+        }
+      }
+    });
+  }
+
   function render() {
     var typeVal = typeEl ? typeEl.value : types[0].value;
     var raw  = rowsFor(typeVal);
@@ -736,9 +805,10 @@ function buildGuidance(cfg) {
       }
     }
 
-    if (!shown.length) { wrap.innerHTML = '<p style="font-size:0.8rem;color:#64748b">No ' + word.toLowerCase() + ' match this selection.</p>'; return; }
+    if (!shown.length) { wrap.innerHTML = '<p style="font-size:0.8rem;color:#64748b">No ' + word.toLowerCase() + ' match this selection.</p>'; renderTrend([]); return; }
 
     var html = '';
+    var trendItems = [];
     shown.forEach(function(r) {
       var name  = r[0];
       var price = money(r[idx.price]);
@@ -794,6 +864,14 @@ function buildGuidance(cfg) {
       else if (diff < 0)    advice = 'sales <strong style="color:#fca5a5">slowing</strong> — push harder to hit ' + weekTgt.toLocaleString() + '/wk with ' + totalStock.toLocaleString() + ' in stock.';
       else                  advice = 'sales <strong style="color:#cbd5e1">steady</strong> — hold the effort to keep ' + weekTgt.toLocaleString() + '/wk.';
 
+      // plain-text version of the advice for the trend-chart hover
+      var adviceText;
+      if (totalStock === 0) adviceText = 'Out of stock — pause the push until restocked.';
+      else if (diff > 0)    adviceText = 'Sales rising Wk1→Wk2 — keep the momentum, ' + weekTgt.toLocaleString() + '/wk is the goal.';
+      else if (diff < 0)    adviceText = 'Sales slowing — push harder to hit ' + weekTgt.toLocaleString() + '/wk with ' + totalStock.toLocaleString() + ' in stock.';
+      else                  adviceText = 'Sales steady — hold the effort to keep ' + weekTgt.toLocaleString() + '/wk.';
+      trendItems.push({ name: name, stock: totalStock, gain: diff, rem: totalRem, advice: adviceText });
+
       html += row(
         '<strong style="color:#f8fafc">' + name + '</strong> &nbsp; ' + trend +
         '<br><span style="display:inline-flex;gap:1.1rem;flex-wrap:wrap;margin:0.3rem 0 0.2rem">' +
@@ -812,6 +890,7 @@ function buildGuidance(cfg) {
       );
     });
     wrap.innerHTML = html;
+    renderTrend(trendItems);
   }
 
   // Populate the type dropdown from the config
@@ -841,6 +920,7 @@ function buildGuidance(cfg) {
 
 buildGuidance({
   guidance: 'offer-guidance', type: 'og-type', product: 'og-product', sort: 'og-sort', intro: 'og-intro',
+  trend: 'offer-trend-chart',
   stockData: OA.stockData, stockField: 'kenyaStock', currency: 'KES',
   types: [
     { value: 'combos', label: 'Combos',      rows: OA.juneCombos || [], headers: OA.juneComboHeaders || [] },
@@ -850,6 +930,7 @@ buildGuidance({
 
 buildGuidance({
   guidance: 'ug-guidance', type: 'ug-type', product: 'ug-product', sort: 'ug-sort', intro: 'ug-intro',
+  trend: 'ug-trend-chart',
   stockData: OA.ugStockData, stockField: 'ugandaStock', currency: 'UGX', monthlyPool: 222,
   types: [
     { value: 'offer',   label: 'Bags on Offer', rows: OA.ugCombos  || [], headers: OA.ugComboHeaders   || [] },
@@ -859,6 +940,7 @@ buildGuidance({
 
 buildGuidance({
   guidance: 'sz-guidance', type: 'sz-type', product: 'sz-product', sort: 'sz-sort', intro: 'sz-intro',
+  trend: 'sz-trend-chart',
   stockData: OA.sinzaStockData, stockField: 'sinzaStock', currency: 'Ksh', monthlyPool: 331,
   types: [
     { value: 'combos',   label: 'Combos',   rows: OA.sinzaCombos   || [], headers: OA.sinzaComboHeaders   || [] },
@@ -977,7 +1059,7 @@ function renderDealTable(headers, rows, theadId, tbodyId, badgeId, sortState) {
 set('ug-kpi-combos',       OA.ugComboCount);
 set('ug-kpi-singles',      OA.ugSinglesCount);
 set('ug-kpi-stock-rows',   OA.ugStockRowCount);
-set('ug-kpi-uganda-stock', OA.totalUgandaStock);
+setStockOutOf('ug-kpi-uganda-stock', STOCK_NOW.uganda, STOCK_OUT_OF.uganda);
 
 var ugComboSort   = { col: null, dir: 'asc' };
 var ugSinglesSort = { col: null, dir: 'asc' };
@@ -1105,7 +1187,7 @@ renderUgandaStock();
 set('sz-kpi-combos',      OA.sinzaComboCount);
 set('sz-kpi-singles',     OA.sinzaSinglesCount);
 set('sz-kpi-specials',    OA.sinzaSpecialsCount);
-set('sz-kpi-sinza-stock', OA.totalSinzaStock);
+setStockOutOf('sz-kpi-sinza-stock', STOCK_NOW.sinza, STOCK_OUT_OF.sinza);
 
 var szComboSort   = { col: null, dir: 'asc' };
 var szSinglesSort = { col: null, dir: 'asc' };
