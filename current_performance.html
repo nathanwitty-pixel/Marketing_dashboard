@@ -505,12 +505,14 @@ const PROJ = {
       return '<td style="padding:0.6rem 1.5rem;border-top:1px solid #2d3148;text-align:' + align +
         ';font-variant-numeric:tabular-nums' + (color ? ';color:' + color : '') + '">' + v + '</td>';
     }
+    var lastI = weeks.length - 1;
+    // Cumulative % achieved by each week: last = current salesPct, earlier = prev-sales baseline.
+    function cumPct(x, j) { return j === lastI ? (Number(x.salesPct) || 0) : prevPctOf(x); }
     tb.innerHTML = weeks.map(function (w, i) {
-      var isLast = i === weeks.length - 1;
-      // Each week shows the sales achieved AT that week: earlier weeks use their
-      // previous-sales baseline (lower), the latest week uses current sales — so it climbs.
-      var pctV  = isLast ? (Number(w.salesPct) || 0)  : prevPctOf(w);
-      var bagsV = isLast ? (Number(w.salesBags) || 0) : (Number(w.prevSalesBags) || 0);
+      // Each week shows what it added on its own: this week's cumulative − last week's.
+      var pctV  = cumPct(w, i) - (i > 0 ? cumPct(weeks[i - 1], i - 1) : 0);
+      // Bags: first week uses its baseline, later weeks use that week's Weekly Sales.
+      var bagsV = i === 0 ? (Number(w.prevSalesBags) || 0) : (Number(w.weeklySales) || 0);
       var d = w.declinedBy || 0;
       var dTxt = (d > 0 ? '+' : '') + d.toLocaleString();
       var dCol = d < 0 ? '#f87171' : '#34d399';
@@ -763,16 +765,18 @@ window.addEventListener('DOMContentLoaded', function() {
     if (!wrap || !ctx || !weeks.length) return;
     wrap.style.display = 'block';
     var lastI = weeks.length - 1;
-    // Achieved % / bags AT each week: earlier weeks use their previous-sales baseline
-    // (lower start), latest week uses current — so the series climbs toward the target.
-    function achievedPct(w, i) {
+    // Cumulative % achieved by each week (last = current, earlier = prev-sales baseline).
+    function cumPct(w, i) {
       if (i === lastI) return Number(w.salesPct) || 0;
       var sb = Number(w.salesBags) || 0, sp = Number(w.salesPct) || 0, pb = Number(w.prevSalesBags) || 0;
       return (sb > 0 && sp > 0) ? (pb * sp / sb) : (Number(w.prevSalesPct) || 0);
     }
-    function achievedBags(w, i) { return i === lastI ? (Number(w.salesBags) || 0) : (Number(w.prevSalesBags) || 0); }
-    var series = weeks.map(achievedPct);
-    var bagsSeries = weeks.map(achievedBags);
+    // Each week's OWN contribution = its cumulative − the previous week's cumulative.
+    var series = weeks.map(function(w, i) { return cumPct(w, i) - (i > 0 ? cumPct(weeks[i - 1], i - 1) : 0); });
+    // Bags: first week = baseline, later weeks = that week's Weekly Sales.
+    var bagsSeries = weeks.map(function(w, i) { return i === 0 ? (Number(w.prevSalesBags) || 0) : (Number(w.weeklySales) || 0); });
+    // Running cumulative (for tooltip / total badge).
+    var cumSeries = []; series.reduce(function(a, v, i) { return (cumSeries[i] = a + v); }, 0);
     var minPct = parsePct(PROJ.bareMinimumGrowthPct) || 0;
 
     var cx = ctx.getContext('2d');
@@ -801,14 +805,14 @@ window.addEventListener('DOMContentLoaded', function() {
       m.data.forEach(function(pt, i) { c.fillText(series[i].toFixed(1) + '%', pt.x, pt.y - 8); });
       c.restore();
     } };
-    // Gain badge: total climb from the first week to the latest (pts + bags).
+    // Week-on-week growth badge: change between the last two weeks' contributions.
     var gainBadge = { id: 'wpGain', afterDraw: function(ch) {
       if (series.length < 2) return;
-      var g = series[series.length - 1] - series[0];
-      var gb = (bagsSeries[series.length - 1] || 0) - (bagsSeries[0] || 0);
+      var n = series.length;
+      var g = series[n - 1] - series[n - 2];          // e.g. 16.16 − 10.52 = +5.64 pts
       var up = g >= 0, c = ch.ctx, ca = ch.chartArea;
-      var txt = (up ? '▲ +' : '▼ ') + g.toFixed(1) + ' pts · ' + (up ? '+' : '') + Math.round(gb).toLocaleString() + ' bags';
-      var sub = weeks[0].label + ' → ' + weeks[series.length - 1].label + ' gain';
+      var txt = 'Week-on-week growth: ' + (up ? '+' : '') + g.toFixed(2) + ' pts';
+      var sub = weeks[n - 2].label + ' → ' + weeks[n - 1].label;
       c.save();
       c.font = '700 0.74rem "Segoe UI", system-ui, sans-serif';
       var w = Math.max(c.measureText(txt).width, c.measureText(sub).width) + 22, h = 40;
@@ -820,7 +824,7 @@ window.addEventListener('DOMContentLoaded', function() {
       c.fill(); c.stroke();
       c.textAlign = 'left'; c.textBaseline = 'top';
       c.fillStyle = up ? '#34d399' : '#f87171';
-      c.fillText(txt, x + 11, y + 7);
+      c.fillText((up ? '▲ ' : '▼ ') + txt, x + 11, y + 7);
       c.fillStyle = '#94a3b8'; c.font = '600 0.62rem "Segoe UI", system-ui, sans-serif';
       c.fillText(sub, x + 11, y + 24);
       c.restore();
@@ -840,11 +844,13 @@ window.addEventListener('DOMContentLoaded', function() {
           tooltip: Object.assign({}, ttDefaults, {
             callbacks: {
               title: function(items) { return items[0].label; },
-              label: function(c) { return 'Achieved: ' + series[c.dataIndex].toFixed(2) + '% of monthly target'; },
+              label: function(c) { return 'This week: ' + series[c.dataIndex].toFixed(2) + '% of monthly target'; },
               afterBody: function(items) {
-                var i = items[0].dataIndex, lines = ['Bags sold: ' + Math.round(bagsSeries[i]).toLocaleString()];
-                if (i > 0) { var d = series[i] - series[i - 1]; lines.push((d >= 0 ? '▲ +' : '▼ ') + d.toFixed(1) + ' pts vs ' + weeks[i - 1].label); }
-                lines.push('Remaining to target: ' + Math.max(100 - series[i], 0).toFixed(1) + ' pts');
+                var i = items[0].dataIndex;
+                var lines = ['Weekly sales: ' + Math.round(bagsSeries[i]).toLocaleString() + ' bags',
+                             'Cumulative to date: ' + (cumSeries[i] || 0).toFixed(1) + '% of target',
+                             'Remaining to target: ' + Math.max(100 - (cumSeries[i] || 0), 0).toFixed(1) + ' pts'];
+                if (i > 0) { var d = series[i] - series[i - 1]; lines.push((d >= 0 ? '▲ +' : '▼ ') + d.toFixed(1) + ' pts vs ' + weeks[i - 1].label + ' contribution'); }
                 return lines;
               }
             }
@@ -852,7 +858,7 @@ window.addEventListener('DOMContentLoaded', function() {
         },
         scales: {
           x: { grid: { display: false }, ticks: { color: C.text } },
-          y: { beginAtZero: true, suggestedMax: 100, grid: { color: 'rgba(45,49,72,0.5)' },
+          y: { beginAtZero: true, grid: { color: 'rgba(45,49,72,0.5)' },
                ticks: { color: C.text, callback: function(v){ return Number(v).toFixed(0) + '%'; } } }
         }
       },

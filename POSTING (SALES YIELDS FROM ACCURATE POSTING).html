@@ -392,10 +392,33 @@
     </div>
   </div>
 
+  <!-- Weekly Sales-Achieved % snapshot -->
+  <div class="card-grid">
+    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
+      <div class="card-label">Weekly Sales-Achieved % — Wk 1 → Latest</div>
+      <div style="position:relative;height:230px"><canvas id="mkt-kenya-chart"></canvas></div>
+      <div class="table-wrap" style="margin-top:0.85rem">
+        <table>
+          <thead><tr><th>Week</th><th style="text-align:right">Sales Achieved %</th><th style="text-align:right">Δ vs prev</th></tr></thead>
+          <tbody id="mkt-kenya-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <div class="card-grid">
     <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
       <div class="card-label" style="margin-bottom:0.4rem">Posting Accuracy Guidance — Where to Improve</div>
       <div id="acc-guide-kenya"></div>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
+      <div class="card-label">Marketing Visibility vs Target</div>
+      <div style="position:relative;height:150px"><canvas id="vis-kenya-chart"></canvas></div>
+      <div id="vis-kenya-totals" style="display:flex;gap:1.6rem;justify-content:center;flex-wrap:wrap;margin-top:0.7rem;padding-top:0.7rem;border-top:1px solid #2d3148"></div>
+      <p id="vis-kenya-note" style="font-size:0.78rem;color:#94a3b8;line-height:1.5;margin:0.6rem 0 0"></p>
     </div>
   </div>
 
@@ -472,33 +495,6 @@
       </div>
       <p style="font-size:0.75rem;color:#64748b;margin:0 0 0.6rem">Bags posted this week that sold 0 — posting isn't converting. Ranked by the biggest expected-sales gap.</p>
       <div id="nm-kenya-list"></div>
-    </div>
-  </div>
-
-  <!-- Weekly Sales-Achieved % snapshot -->
-  <div class="card-grid">
-    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div class="card-label">Weekly Sales-Achieved % — Wk 1 → Latest</div>
-      <div style="position:relative;height:230px"><canvas id="mkt-kenya-chart"></canvas></div>
-      <div class="table-wrap" style="margin-top:0.85rem">
-        <table>
-          <thead><tr><th>Week</th><th style="text-align:right">Sales Achieved %</th><th style="text-align:right">Δ vs prev</th></tr></thead>
-          <tbody id="mkt-kenya-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Bags cleared by marketing -->
-  <div class="card-grid">
-    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div class="card-label" style="display:flex;align-items:baseline;gap:0.55rem;flex-wrap:wrap">
-        <span>Bags Cleared by Marketing</span>
-        <span style="font-size:1.6rem;font-weight:800;color:#34d399" id="clr-kenya-total">–</span>
-        <span style="font-size:0.66rem;color:#64748b;text-transform:none;letter-spacing:normal" id="clr-kenya-sub">this week — stock drop on posted bags</span>
-      </div>
-      <div style="position:relative;height:140px;margin-top:0.4rem"><canvas id="clr-kenya-chart"></canvas></div>
-      <div id="clr-kenya-list" style="margin-top:0.85rem"></div>
     </div>
   </div>
 
@@ -594,10 +590,33 @@
     </div>
   </div>
 
+  <!-- Weekly Sales-Achieved % snapshot -->
+  <div class="card-grid">
+    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
+      <div class="card-label">Weekly Sales-Achieved % — Wk 1 → Latest</div>
+      <div style="position:relative;height:230px"><canvas id="mkt-sinza-chart"></canvas></div>
+      <div class="table-wrap" style="margin-top:0.85rem">
+        <table>
+          <thead><tr><th>Week</th><th style="text-align:right">Sales Achieved %</th><th style="text-align:right">Δ vs prev</th></tr></thead>
+          <tbody id="mkt-sinza-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <div class="card-grid">
     <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
       <div class="card-label" style="margin-bottom:0.4rem">Posting Accuracy Guidance — Where to Improve</div>
       <div id="acc-guide-sinza"></div>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
+      <div class="card-label">Marketing Visibility — Posts vs In-Stock Bags</div>
+      <div style="position:relative;height:150px"><canvas id="vis-sinza-chart"></canvas></div>
+      <div id="vis-sinza-totals" style="display:flex;gap:1.6rem;justify-content:center;flex-wrap:wrap;margin-top:0.7rem;padding-top:0.7rem;border-top:1px solid #2d3148"></div>
+      <p id="vis-sinza-note" style="font-size:0.78rem;color:#94a3b8;line-height:1.5;margin:0.6rem 0 0"></p>
     </div>
   </div>
 
@@ -660,33 +679,6 @@
       </div>
       <p style="font-size:0.75rem;color:#64748b;margin:0 0 0.6rem">Bags posted this week that sold 0 — posting isn't converting. Ranked by the biggest expected-sales gap.</p>
       <div id="nm-sinza-list"></div>
-    </div>
-  </div>
-
-  <!-- Weekly Sales-Achieved % snapshot -->
-  <div class="card-grid">
-    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div class="card-label">Weekly Sales-Achieved % — Wk 1 → Latest</div>
-      <div style="position:relative;height:230px"><canvas id="mkt-sinza-chart"></canvas></div>
-      <div class="table-wrap" style="margin-top:0.85rem">
-        <table>
-          <thead><tr><th>Week</th><th style="text-align:right">Sales Achieved %</th><th style="text-align:right">Δ vs prev</th></tr></thead>
-          <tbody id="mkt-sinza-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Bags cleared by marketing -->
-  <div class="card-grid">
-    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div class="card-label" style="display:flex;align-items:baseline;gap:0.55rem;flex-wrap:wrap">
-        <span>Bags Cleared by Marketing</span>
-        <span style="font-size:1.6rem;font-weight:800;color:#34d399" id="clr-sinza-total">–</span>
-        <span style="font-size:0.66rem;color:#64748b;text-transform:none;letter-spacing:normal" id="clr-sinza-sub">this week — stock drop on posted bags</span>
-      </div>
-      <div style="position:relative;height:140px;margin-top:0.4rem"><canvas id="clr-sinza-chart"></canvas></div>
-      <div id="clr-sinza-list" style="margin-top:0.85rem"></div>
     </div>
   </div>
 
@@ -805,10 +797,33 @@
     </div>
   </div>
 
+  <!-- Weekly Sales-Achieved % snapshot -->
+  <div class="card-grid">
+    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
+      <div class="card-label">Weekly Sales-Achieved % — Wk 1 → Latest</div>
+      <div style="position:relative;height:230px"><canvas id="mkt-uganda-chart"></canvas></div>
+      <div class="table-wrap" style="margin-top:0.85rem">
+        <table>
+          <thead><tr><th>Week</th><th style="text-align:right">Sales Achieved %</th><th style="text-align:right">Δ vs prev</th></tr></thead>
+          <tbody id="mkt-uganda-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <div class="card-grid">
     <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
       <div class="card-label" style="margin-bottom:0.4rem">Posting Accuracy Guidance — Where to Improve</div>
       <div id="acc-guide-uganda"></div>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
+      <div class="card-label">Marketing Visibility — Posts vs In-Stock Bags</div>
+      <div style="position:relative;height:150px"><canvas id="vis-uganda-chart"></canvas></div>
+      <div id="vis-uganda-totals" style="display:flex;gap:1.6rem;justify-content:center;flex-wrap:wrap;margin-top:0.7rem;padding-top:0.7rem;border-top:1px solid #2d3148"></div>
+      <p id="vis-uganda-note" style="font-size:0.78rem;color:#94a3b8;line-height:1.5;margin:0.6rem 0 0"></p>
     </div>
   </div>
 
@@ -896,33 +911,6 @@
     </div>
   </div>
 
-  <!-- Weekly Sales-Achieved % snapshot -->
-  <div class="card-grid">
-    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div class="card-label">Weekly Sales-Achieved % — Wk 1 → Latest</div>
-      <div style="position:relative;height:230px"><canvas id="mkt-uganda-chart"></canvas></div>
-      <div class="table-wrap" style="margin-top:0.85rem">
-        <table>
-          <thead><tr><th>Week</th><th style="text-align:right">Sales Achieved %</th><th style="text-align:right">Δ vs prev</th></tr></thead>
-          <tbody id="mkt-uganda-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Bags cleared by marketing -->
-  <div class="card-grid">
-    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div class="card-label" style="display:flex;align-items:baseline;gap:0.55rem;flex-wrap:wrap">
-        <span>Bags Cleared by Marketing</span>
-        <span style="font-size:1.6rem;font-weight:800;color:#34d399" id="clr-uganda-total">–</span>
-        <span style="font-size:0.66rem;color:#64748b;text-transform:none;letter-spacing:normal" id="clr-uganda-sub">this week — stock drop on posted bags</span>
-      </div>
-      <div style="position:relative;height:140px;margin-top:0.4rem"><canvas id="clr-uganda-chart"></canvas></div>
-      <div id="clr-uganda-list" style="margin-top:0.85rem"></div>
-    </div>
-  </div>
-
   </div><!-- /region-uganda -->
 
 </div><!-- end .section -->
@@ -955,7 +943,7 @@ const PA = {
   moInstockNotPostedSum:"3,745",
   noConvertWk:         [{"colour": "Brown", "category": "TRAVEL", "productName": "JUMBO BROWN", "bagType": "JUMBO", "stock": 80, "postingTotal": 10, "expectedSale": 22.5, "onOffer": true}, {"colour": "Blue", "category": "SLING", "productName": "LAMORA SKYE BLUE", "bagType": "LAMORA", "stock": 20, "postingTotal": 10, "expectedSale": 22.5, "onOffer": false}, {"colour": "Grey", "category": "HANDBAG", "productName": "AURORA GREY", "bagType": "AURORA", "stock": 50, "postingTotal": 9, "expectedSale": 20.25, "onOffer": false}, {"colour": "Black", "category": "SLING", "productName": "AVANA HB BLACK", "bagType": "AVANA HB", "stock": 57, "postingTotal": 9, "expectedSale": 20.25, "onOffer": false}, {"colour": "Brown", "category": "BACKPACK", "productName": "CAIRO BP CRACKED", "bagType": "CAIRO BP", "stock": 38, "postingTotal": 9, "expectedSale": 20.25, "onOffer": false}, {"colour": "Grey", "category": "BACKPACK", "productName": "DOUBLE PRESS GREY", "bagType": "DOUBLE PRESS", "stock": 52, "postingTotal": 9, "expectedSale": 20.25, "onOffer": false}, {"colour": "Black", "category": "TRAVEL", "productName": "KAZ BLACK", "bagType": "KAZ", "stock": 31, "postingTotal": 9, "expectedSale": 20.25, "onOffer": false}, {"colour": "Brown", "category": "SLING", "productName": "LEILA CRACKED", "bagType": "LEILA", "stock": 4, "postingTotal": 9, "expectedSale": 20.25, "onOffer": false}, {"colour": "Black", "category": "HANDBAG", "productName": "AMAYA BLACK TT", "bagType": "AMAYA", "stock": 40, "postingTotal": 8, "expectedSale": 18.0, "onOffer": true}, {"colour": "Black", "category": "BACKPACK", "productName": "ANTITHEFT BLACK", "bagType": "ANTITHEFT", "stock": 87, "postingTotal": 8, "expectedSale": 18.0, "onOffer": true}, {"colour": "Grey", "category": "SLING", "productName": "ARIA SLING GREY", "bagType": "ARIA SLING", "stock": 16, "postingTotal": 8, "expectedSale": 18.0, "onOffer": true}, {"colour": "Green", "category": "BRIEFCASE", "productName": "BRIEF CASE GREEN", "bagType": "BRIEF CASE", "stock": 17, "postingTotal": 8, "expectedSale": 18.0, "onOffer": false}, {"colour": "Black", "category": "HANDBAG", "productName": "CESS BLACK", "bagType": "CESS", "stock": 33, "postingTotal": 8, "expectedSale": 18.0, "onOffer": false}, {"colour": "Brown", "category": "HANDBAG", "productName": "ELYSE CRACKED", "bagType": "ELYSE", "stock": 37, "postingTotal": 8, "expectedSale": 18.0, "onOffer": true}, {"colour": "Black", "category": "HANDBAG", "productName": "JAMELA BLACK", "bagType": "JAMELA", "stock": 41, "postingTotal": 8, "expectedSale": 18.0, "onOffer": false}, {"colour": "Brown", "category": "BACKPACK", "productName": "KAI BROWN", "bagType": "KAI", "stock": 36, "postingTotal": 8, "expectedSale": 18.0, "onOffer": false}, {"colour": "Red", "category": "SLING", "productName": "LAMORA RED", "bagType": "LAMORA", "stock": 21, "postingTotal": 8, "expectedSale": 18.0, "onOffer": false}, {"colour": "Brown", "category": "SLING", "productName": "MONTANA CRACKED", "bagType": "MONTANA", "stock": 5, "postingTotal": 8, "expectedSale": 18.0, "onOffer": false}, {"colour": "Black", "category": "TRAVEL", "productName": "BONITA BLACK", "bagType": "BONITA", "stock": 48, "postingTotal": 7, "expectedSale": 15.75, "onOffer": true}, {"colour": "Black", "category": "HANDBAG", "productName": "CLAIRE HANDBAG BLACK", "bagType": "CLAIRE HANDBAG", "stock": 9, "postingTotal": 7, "expectedSale": 15.75, "onOffer": true}, {"colour": "Green", "category": "MESSENGER", "productName": "FAYOLA GREEN", "bagType": "FAYOLA", "stock": 5, "postingTotal": 7, "expectedSale": 15.75, "onOffer": false}, {"colour": "Grey", "category": "BRIEFCASE", "productName": "FEROZ GREY", "bagType": "FEROZ", "stock": 11, "postingTotal": 7, "expectedSale": 15.75, "onOffer": false}, {"colour": "Brown", "category": "HANDBAG", "productName": "KARINA CRACKED", "bagType": "KARINA", "stock": 25, "postingTotal": 7, "expectedSale": 15.75, "onOffer": false}, {"colour": "Black", "category": "SLING", "productName": "LAMORA BLACK", "bagType": "LAMORA", "stock": 58, "postingTotal": 7, "expectedSale": 15.75, "onOffer": false}, {"colour": "Brown", "category": "TRAVEL", "productName": "LIAM BROWN", "bagType": "LIAM", "stock": 37, "postingTotal": 7, "expectedSale": 15.75, "onOffer": true}, {"colour": "Grey", "category": "BACKPACK", "productName": "LOOP BP CN GREY", "bagType": "LOOP BP", "stock": 9, "postingTotal": 7, "expectedSale": 15.75, "onOffer": false}, {"colour": "Green", "category": "MAN BAG", "productName": "MAN BAG GREEN", "bagType": "MAN BAG", "stock": 47, "postingTotal": 7, "expectedSale": 15.75, "onOffer": true}, {"colour": "Grey", "category": "HANDBAG", "productName": "MINI ZURI GREY", "bagType": "MINI ZURI", "stock": 46, "postingTotal": 7, "expectedSale": 15.75, "onOffer": true}, {"colour": "Black", "category": "SLING", "productName": "MOON BAG BLACK", "bagType": "MOON BAG", "stock": 33, "postingTotal": 7, "expectedSale": 15.75, "onOffer": true}, {"colour": "Grey", "category": "MAN BAG", "productName": "NEO MAN GREY", "bagType": "NEO MAN", "stock": 27, "postingTotal": 7, "expectedSale": 15.75, "onOffer": false}, {"colour": "Black", "category": "SLING", "productName": "NIZANA BLACK", "bagType": "NIZANA", "stock": 22, "postingTotal": 7, "expectedSale": 15.75, "onOffer": true}, {"colour": "Brown", "category": "HANDBAG", "productName": "OVAL HANDBAG BROWN", "bagType": "OVAL HANDBAG", "stock": 32, "postingTotal": 7, "expectedSale": 15.75, "onOffer": false}, {"colour": "Brown", "category": "SLING", "productName": "TRECENTO CRACKED", "bagType": "TRECENTO", "stock": 68, "postingTotal": 7, "expectedSale": 15.75, "onOffer": true}, {"colour": "Grey", "category": "WAIST BAG", "productName": "BELT BAG GREY", "bagType": "BELT BAG", "stock": 45, "postingTotal": 6, "expectedSale": 13.5, "onOffer": false}, {"colour": "Grey", "category": "MAN BAG", "productName": "BIG MAN BAG GREY", "bagType": "BIG MAN BAG", "stock": 67, "postingTotal": 6, "expectedSale": 13.5, "onOffer": true}, {"colour": "Brown", "category": "SLING", "productName": "BUTTERFLY SLING CRACKED", "bagType": "BUTTERFLY SLING", "stock": 37, "postingTotal": 6, "expectedSale": 13.5, "onOffer": false}, {"colour": "Black", "category": "HANDBAG", "productName": "CATHY HANDBAG BLACK", "bagType": "CATHY HANDBAG", "stock": 46, "postingTotal": 6, "expectedSale": 13.5, "onOffer": true}, {"colour": "Brown", "category": "BACKPACK", "productName": "CODE 3 BROWN", "bagType": "CODE 3", "stock": 111, "postingTotal": 6, "expectedSale": 13.5, "onOffer": true}, {"colour": "Green", "category": "MAN BAG", "productName": "DON GREEN", "bagType": "DON", "stock": 10, "postingTotal": 6, "expectedSale": 13.5, "onOffer": false}, {"colour": "Green", "category": "TRAVEL", "productName": "FABELA GREEN", "bagType": "FABELA", "stock": 23, "postingTotal": 6, "expectedSale": 13.5, "onOffer": true}, {"colour": "Brown", "category": "WAIST BAG", "productName": "FANNY PACK BROWN", "bagType": "FANNY PACK", "stock": 40, "postingTotal": 6, "expectedSale": 13.5, "onOffer": false}, {"colour": "Black", "category": "SLING", "productName": "KATE BLACK", "bagType": "KATE", "stock": 45, "postingTotal": 6, "expectedSale": 13.5, "onOffer": false}, {"colour": "Beige", "category": "HANDBAG", "productName": "LOLA BEIGE", "bagType": "LOLA", "stock": 22, "postingTotal": 6, "expectedSale": 13.5, "onOffer": true}, {"colour": "Black", "category": "BACKPACK", "productName": "LOOP BP CN BLACK", "bagType": "LOOP BP", "stock": 18, "postingTotal": 6, "expectedSale": 13.5, "onOffer": false}, {"colour": "Black", "category": "LUNCH BAG", "productName": "LUNCHSET BLACK", "bagType": "LUNCHSET", "stock": 21, "postingTotal": 6, "expectedSale": 13.5, "onOffer": true}, {"colour": "Black", "category": "HANDBAG", "productName": "MANDY HB BLACK", "bagType": "MANDY HB", "stock": 19, "postingTotal": 6, "expectedSale": 13.5, "onOffer": false}, {"colour": "Green", "category": "BACKPACK", "productName": "MEGA GREEN", "bagType": "MEGA", "stock": 27, "postingTotal": 6, "expectedSale": 13.5, "onOffer": true}, {"colour": "Black", "category": "HANDBAG", "productName": "MINI MAYA WOOVEN BLACK", "bagType": "MINI MAYA", "stock": 8, "postingTotal": 6, "expectedSale": 13.5, "onOffer": true}, {"colour": "Brown", "category": "CHEST BAG", "productName": "MINI UMBRA CRACKED", "bagType": "MINI UMBRA", "stock": 41, "postingTotal": 6, "expectedSale": 13.5, "onOffer": true}, {"colour": "Black", "category": "BACKPACK", "productName": "PIONEER BLACK", "bagType": "PIONEER", "stock": 37, "postingTotal": 6, "expectedSale": 13.5, "onOffer": true}, {"colour": "Green", "category": "TRAVEL", "productName": "SAFIRI TRAVEL GREEN", "bagType": "SAFIRI TRAVEL", "stock": 23, "postingTotal": 6, "expectedSale": 13.5, "onOffer": true}, {"colour": "Black", "category": "HANDBAG", "productName": "SKYE HB WOOVEN BLACK", "bagType": "SKYE HB", "stock": 16, "postingTotal": 6, "expectedSale": 13.5, "onOffer": false}, {"colour": "Brown", "category": "MAN BAG", "productName": "ZANE MAN CRACKED", "bagType": "ZANE MAN", "stock": 37, "postingTotal": 6, "expectedSale": 13.5, "onOffer": true}, {"colour": "Black", "category": "SLING", "productName": "ACE BLACK TT", "bagType": "ACE", "stock": 10, "postingTotal": 5, "expectedSale": 11.25, "onOffer": false}, {"colour": "Black", "category": "SLING", "productName": "AMORA BLACK", "bagType": "AMORA", "stock": 13, "postingTotal": 5, "expectedSale": 11.25, "onOffer": false}, {"colour": "Black", "category": "TRAVEL", "productName": "ANKARA TRAVEL BLACK", "bagType": "ANKARA TRAVEL", "stock": 2, "postingTotal": 5, "expectedSale": 11.25, "onOffer": false}, {"colour": "Black", "category": "BRIEFCASE", "productName": "JADE BLACK", "bagType": "JADE", "stock": 33, "postingTotal": 5, "expectedSale": 11.25, "onOffer": false}, {"colour": "Grey", "category": "BRIEFCASE", "productName": "LEGACY GREY", "bagType": "LEGACY", "stock": 14, "postingTotal": 5, "expectedSale": 11.25, "onOffer": false}, {"colour": "Brown", "category": "MAN BAG", "productName": "LUNA BROWN", "bagType": "LUNA", "stock": 31, "postingTotal": 5, "expectedSale": 11.25, "onOffer": false}, {"colour": "Black", "category": "MAN BAG", "productName": "MINI MANBAG BLACK", "bagType": "MINI MANBAG", "stock": 15, "postingTotal": 5, "expectedSale": 11.25, "onOffer": false}, {"colour": "Black", "category": "HANDBAG", "productName": "NALA BLACK", "bagType": "NALA", "stock": 19, "postingTotal": 5, "expectedSale": 11.25, "onOffer": false}, {"colour": "Brown", "category": "BACKPACK", "productName": "PRIME BROWN", "bagType": "PRIME", "stock": 42, "postingTotal": 5, "expectedSale": 11.25, "onOffer": true}, {"colour": "Brown", "category": "BACKPACK", "productName": "REMI CRACKED", "bagType": "REMI", "stock": 20, "postingTotal": 5, "expectedSale": 11.25, "onOffer": false}, {"colour": "Black", "category": "TRAVEL", "productName": "SARAI BLACK", "bagType": "SARAI", "stock": 8, "postingTotal": 5, "expectedSale": 11.25, "onOffer": true}, {"colour": "Black", "category": "BACKPACK", "productName": "TYLER BLACK", "bagType": "TYLER", "stock": 7, "postingTotal": 5, "expectedSale": 11.25, "onOffer": false}, {"colour": "Beige", "category": "LUNCH BAG", "productName": "ZIPPED LUNCHSET BEIGE", "bagType": "ZIPPED LUNCHSET", "stock": 30, "postingTotal": 5, "expectedSale": 11.25, "onOffer": true}, {"colour": "", "category": "GIFT BAG", "productName": "GIFT BAG A3", "bagType": "GIFT BAG", "stock": 145, "postingTotal": 4, "expectedSale": 9.0, "onOffer": false}, {"colour": "", "category": "GIFT BAG", "productName": "GIFT BAG A4", "bagType": "GIFT BAG", "stock": 205, "postingTotal": 4, "expectedSale": 9.0, "onOffer": false}, {"colour": "Black", "category": "SPORT", "productName": "GYM BAG BLACK", "bagType": "GYM BAG", "stock": 18, "postingTotal": 4, "expectedSale": 9.0, "onOffer": false}, {"colour": "Black", "category": "BACKPACK", "productName": "MONAH BP BLACK", "bagType": "MONAH BP", "stock": 22, "postingTotal": 4, "expectedSale": 9.0, "onOffer": true}, {"colour": "Grey", "category": "WASHBAG", "productName": "WASHBAG GREY", "bagType": "WASHBAG", "stock": 13, "postingTotal": 4, "expectedSale": 9.0, "onOffer": false}, {"colour": "Brown", "category": "SPORT", "productName": "ZOEZI BROWN", "bagType": "ZOEZI", "stock": 19, "postingTotal": 4, "expectedSale": 9.0, "onOffer": false}, {"colour": "Green", "category": "HANDBAG", "productName": "CESS GREEN", "bagType": "CESS", "stock": 0, "postingTotal": 3, "expectedSale": 6.75, "onOffer": false}, {"colour": "Blue", "category": "HANDBAG", "productName": "NALA BLUE", "bagType": "NALA", "stock": 19, "postingTotal": 3, "expectedSale": 6.75, "onOffer": false}, {"colour": "Green", "category": "HANDBAG", "productName": "NALA GREEN", "bagType": "NALA", "stock": 11, "postingTotal": 3, "expectedSale": 6.75, "onOffer": false}],
   noConvertMo:         [{"colour": "Black", "category": "SLING", "productName": "AMORA BLACK", "bagType": "AMORA", "stock": 13, "postingTotal": 9, "expectedSale": 20.25, "onOffer": false}, {"colour": "Brown", "category": "SLING", "productName": "MONTANA CRACKED", "bagType": "MONTANA", "stock": 5, "postingTotal": 8, "expectedSale": 18.0, "onOffer": false}, {"colour": "Green", "category": "HANDBAG", "productName": "CESS GREEN", "bagType": "CESS", "stock": 0, "postingTotal": 3, "expectedSale": 6.75, "onOffer": false}, {"colour": "Black", "category": "SLING", "productName": "MONTANA BLACK", "bagType": "MONTANA", "stock": 2, "postingTotal": 1, "expectedSale": 2.25, "onOffer": false}],
-  mktPctHistory:       [{"label": "Wk 1", "month": "Jul", "kenya": 67.4, "sinza": 25.0, "uganda": 5.6, "_sig": [176, 78, 176]}, {"label": "Wk 2", "month": "Jul", "kenya": 68.7, "sinza": 0.0, "uganda": 0.0, "_sig": [189, 0, 0]}, {"label": "Wk 3", "month": "Jul", "kenya": 68.7, "sinza": 43.2, "uganda": 15.2, "_sig": [189, 22, 12]}],
+  mktPctHistory:       [{"label": "Wk 1", "month": "Jul", "kenya": 67.4, "sinza": 25.0, "uganda": 5.6, "_sig": [176, 78, 176]}, {"label": "Wk 2", "month": "Jul", "kenya": 68.7, "sinza": 34.1, "uganda": 0.0, "_sig": [189, 0, 0]}, {"label": "Wk 3", "month": "Jul", "kenya": 68.7, "sinza": 43.2, "uganda": 15.2, "_sig": [189, 22, 12]}],
   clearedKenya:        [],
   clearedSinza:        [],
   clearedUganda:       [],
@@ -1911,7 +1899,7 @@ window.addEventListener('DOMContentLoaded', function() {
         meta.data.forEach(function(bar, i) {
           var v = ds.data[i] || 0;
           if (!v) return;   // skip zero-width segments (e.g. no remaining-to-target)
-          ctx.fillStyle = ['#6ee7b7', '#c4b5fd', '#67e8f9'][di] || '#e2e8f0';   // emerald / violet / cyan
+          ctx.fillStyle = ['#6ee7b7', '#67e8f9', '#67e8f9'][di] || '#e2e8f0';   // emerald actual / cyan posts
           ctx.fillText(Math.round(v).toLocaleString(), bar.x + 6, bar.y);
         });
       });
@@ -1949,10 +1937,13 @@ window.addEventListener('DOMContentLoaded', function() {
 
   // Bullet/target-track: faint full-length track = Expected drawn behind the Actual bar,
   // a violet marker at the Expected end, and a "needs +N" label for the remaining gap.
-  function targetTrackPlugin(expected) {
+  function targetTrackPlugin(expected, vis) {
+    function showExp() { return !vis || vis.expected !== false; }
+    function showRem() { return !vis || vis.remaining !== false; }
     return {
       id: 'pvTargetTrack',
       beforeDatasetsDraw: function(chart) {
+        if (!showExp()) return;
         var meta0 = chart.getDatasetMeta(0); if (!meta0) return;
         var xs = chart.scales.x, ctx = chart.ctx, x0 = xs.getPixelForValue(0);
         ctx.save();
@@ -1973,10 +1964,12 @@ window.addEventListener('DOMContentLoaded', function() {
         meta0.data.forEach(function(bar, i) {
           var ev = Number(expected[i]) || 0, av = Number(ds0.data[i]) || 0;
           var xE = xs.getPixelForValue(ev), h = (bar.height || 16), y = bar.y;
-          ctx.strokeStyle = 'rgba(167,139,250,0.9)'; ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.moveTo(xE, y - h / 2 - 2); ctx.lineTo(xE, y + h / 2 + 2); ctx.stroke();
+          if (showExp()) {
+            ctx.strokeStyle = 'rgba(167,139,250,0.9)'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(xE, y - h / 2 - 2); ctx.lineTo(xE, y + h / 2 + 2); ctx.stroke();
+          }
           var rem = Math.max(ev - av, 0);
-          if (rem > 0.5) {
+          if (showRem() && rem > 0.5) {
             ctx.font = '700 0.62rem "Segoe UI", system-ui, sans-serif';
             ctx.fillStyle = '#c4b5fd'; ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 3;
             ctx.textAlign = 'left'; ctx.fillText('needs +' + Math.round(rem).toLocaleString(), xE + 6, y);
@@ -2012,6 +2005,7 @@ window.addEventListener('DOMContentLoaded', function() {
     var ACTUAL_LABEL = cfg.actualLabel || 'Sales with Posting';
     var REMAIN = 'rgba(167,139,250,0.40)';   // faded violet = remaining to target
     var curExp = [], curPosts = [];   // current period's expected / posts, set by draw()
+    var vis = { expected: true, remaining: true };   // toggle state for the track / remaining marker
     function renderTotals() {
       var box = cfg.totals ? document.getElementById(cfg.totals) : null;
       if (!box || !chart) return;
@@ -2019,14 +2013,19 @@ window.addEventListener('DOMContentLoaded', function() {
       var aSum = chart.data.datasets[0].data.reduce(function(a, b) { return a + (Number(b) || 0); }, 0);
       var eSum = curExp.reduce(function(a, b) { return a + (Number(b) || 0); }, 0);
       var rem  = Math.max(eSum - aSum, 0);
+      var postsIdx = cfg.hidePosts ? -1 : 1;
       totalChip(box, ACTUAL, 'Total ' + ACTUAL_LABEL.toLowerCase(), aSum, '#6ee7b7',
         function() { chart.setDatasetVisibility(0, !chart.isDatasetVisible(0)); chart.update(); renderTotals(); },
         !chart.isDatasetVisible(0));
-      totalChip(box, REMAIN, 'Expected (target)', eSum, '#c4b5fd', null, false);
-      totalChip(box, '#f59e0b', 'Remaining to target', rem, '#fbbf24', null, false);
-      if (!cfg.hidePosts) {
+      totalChip(box, REMAIN, 'Expected (target)', eSum, '#c4b5fd',
+        function() { vis.expected = !vis.expected; chart.update(); renderTotals(); }, !vis.expected);
+      totalChip(box, '#f59e0b', 'Remaining to target', rem, '#fbbf24',
+        function() { vis.remaining = !vis.remaining; chart.update(); renderTotals(); }, !vis.remaining);
+      if (postsIdx >= 0) {
         var pSum = curPosts.reduce(function(a, b) { return a + (Number(b) || 0); }, 0);
-        totalChip(box, POSTS, 'Total posts made', pSum, '#67e8f9', null, false);
+        totalChip(box, POSTS, 'Total posts made', pSum, '#67e8f9',
+          function() { chart.setDatasetVisibility(postsIdx, !chart.isDatasetVisible(postsIdx)); chart.update(); renderTotals(); },
+          !chart.isDatasetVisible(postsIdx));
       }
     }
 
@@ -2036,16 +2035,18 @@ window.addEventListener('DOMContentLoaded', function() {
       var expected = wk ? [cfg.wkOnExp,    cfg.wkOffExp]    : [cfg.moOnExp,    cfg.moOffExp];
       var posts    = cfg.hidePosts ? [] : (wk ? [cfg.wkOnPosts, cfg.wkOffPosts] : [cfg.moOnPosts, cfg.moOffPosts]);
       curExp = expected; curPosts = posts;
+      vis.expected = true; vis.remaining = true;   // reset toggles when the period changes
       var maxVal   = Math.max.apply(null, actual.concat(expected).concat(posts).map(Number).concat([1]));
-      var bar = { borderRadius: 4, borderSkipped: false, categoryPercentage: 0.7, barPercentage: 0.72, maxBarThickness: 22 };
+      var bar = { borderRadius: 4, borderSkipped: false, categoryPercentage: 0.76, barPercentage: 0.9, maxBarThickness: 18 };
       var caption = (wk ? 'Weekly' : 'Monthly') + ' — emerald bar = ' + ACTUAL_LABEL.toLowerCase() +
         ', track + violet line = expected (target), gap = remaining' +
-        (cfg.hidePosts ? '' : ' · posts shown in totals') + ' · % = share of ' + ACTUAL_LABEL.toLowerCase();
+        (cfg.hidePosts ? '' : ', cyan bar = posts made') + ' · % = share of ' + ACTUAL_LABEL.toLowerCase();
+      var ds = [ Object.assign({ label: ACTUAL_LABEL, data: actual, backgroundColor: ACTUAL }, bar) ];
+      if (!cfg.hidePosts) ds.push(Object.assign({ label: 'Total Posts Made', data: posts, backgroundColor: POSTS }, bar));
       if (chart) chart.destroy();
       chart = new Chart(el, {
         type: 'bar',
-        data: { labels: ['Bags On Offer', 'Bags Not On Offer'],
-          datasets: [ Object.assign({ label: ACTUAL_LABEL, data: actual, backgroundColor: ACTUAL }, bar) ] },
+        data: { labels: ['Bags On Offer', 'Bags Not On Offer'], datasets: ds },
         options: {
           indexAxis: 'y',
           responsive: true, maintainAspectRatio: false,
@@ -2056,16 +2057,20 @@ window.addEventListener('DOMContentLoaded', function() {
             tooltip: {
               backgroundColor: SURF, borderColor: '#2d3148', borderWidth: 1,
               titleColor: '#f8fafc', bodyColor: TXT, padding: 10, cornerRadius: 6,
-              callbacks: { label: function(c) {
-                var i = c.dataIndex, ev = Number(expected[i]) || 0, av = Number(c.parsed.x) || 0;
-                var totA = actual.reduce(function(a, b) { return a + (Number(b) || 0); }, 0);
-                var out = [ACTUAL_LABEL + ': ' + Math.round(av).toLocaleString() + ' bags',
-                        'Expected (target): ' + Math.round(ev).toLocaleString() + ' bags',
-                        'Remaining: ' + Math.round(Math.max(ev - av, 0)).toLocaleString() + ' bags',
-                        'Achieved: ' + (ev > 0 ? Math.round(av / ev * 100) : 0) + '% of expected',
-                        'Share of actual: ' + (totA > 0 ? (av / totA * 100).toFixed(1) : '0') + '%'];
-                if (!cfg.hidePosts) out.push('Posts made: ' + Math.round(Number(posts[i]) || 0).toLocaleString());
-                return out; } }
+              callbacks: {
+                label: function(c) {
+                  if (c.datasetIndex === 0) return ACTUAL_LABEL + ': ' + Math.round(c.parsed.x).toLocaleString() + ' bags';
+                  return 'Posts made: ' + Math.round(c.parsed.x).toLocaleString();
+                },
+                afterBody: function(items) {
+                  var i = items[0].dataIndex, ev = Number(expected[i]) || 0, av = Number(actual[i]) || 0;
+                  var totA = actual.reduce(function(a, b) { return a + (Number(b) || 0); }, 0);
+                  return ['Expected (target): ' + Math.round(ev).toLocaleString() + ' bags',
+                          'Remaining: ' + Math.round(Math.max(ev - av, 0)).toLocaleString() + ' bags',
+                          'Achieved: ' + (ev > 0 ? Math.round(av / ev * 100) : 0) + '% of expected',
+                          'Share of actual: ' + (totA > 0 ? (av / totA * 100).toFixed(1) : '0') + '%'];
+                }
+              }
             }
           },
           scales: {
@@ -2074,7 +2079,7 @@ window.addEventListener('DOMContentLoaded', function() {
             y: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 12 } } }
           }
         },
-        plugins: [valueLabels, pctLabels, targetTrackPlugin(expected), {
+        plugins: [valueLabels, pctLabels, targetTrackPlugin(expected, vis), {
           id: 'pvMktAchieved',
           afterDatasetsDraw: function(ch) {
             if (cfg.mktWk == null) return;   // only the posting chart passes this
@@ -2148,6 +2153,7 @@ window.addEventListener('DOMContentLoaded', function() {
     function collapse(a) { return [(Number(a[0]) || 0) + (Number(a[2]) || 0), (Number(a[1]) || 0) + (Number(a[3]) || 0)]; }
     var REMAIN = 'rgba(167,139,250,0.40)';   // faded violet = remaining to target
     var curExp = [];   // current period's expected, set by draw()
+    var vis = { expected: true, remaining: true };   // toggle state for track / remaining marker
     function renderTotals() {
       var box = cfg.totals ? document.getElementById(cfg.totals) : null;
       if (!box || !chart) return;
@@ -2157,14 +2163,17 @@ window.addEventListener('DOMContentLoaded', function() {
       totalChip(box, ACTUAL, 'Total actual sales', aSum, '#6ee7b7',
         function() { chart.setDatasetVisibility(0, !chart.isDatasetVisible(0)); chart.update(); renderTotals(); },
         !chart.isDatasetVisible(0));
-      totalChip(box, REMAIN, 'Expected (target)', eSum, '#c4b5fd', null, false);
-      totalChip(box, '#f59e0b', 'Remaining to target', Math.max(eSum - aSum, 0), '#fbbf24', null, false);
+      totalChip(box, REMAIN, 'Expected (target)', eSum, '#c4b5fd',
+        function() { vis.expected = !vis.expected; chart.update(); renderTotals(); }, !vis.expected);
+      totalChip(box, '#f59e0b', 'Remaining to target', Math.max(eSum - aSum, 0), '#fbbf24',
+        function() { vis.remaining = !vis.remaining; chart.update(); renderTotals(); }, !vis.remaining);
     }
     function draw() {
       var wk = sel ? (sel.value === 'weekly') : true;
       var actual   = collapse(wk ? cfg.wkActual : cfg.moActual);
       var expected = collapse(wk ? cfg.wkExp    : cfg.moExp);
       curExp = expected;
+      vis.expected = true; vis.remaining = true;   // reset toggles when the period changes
       var maxVal = Math.max.apply(null, actual.concat(expected).map(Number).concat([1]));
       var bar = { borderRadius: 4, borderSkipped: false, categoryPercentage: 0.62, barPercentage: 0.7, maxBarThickness: 22 };
       var caption = (wk ? 'Weekly' : 'Monthly') + ' — emerald bar = actual sales, track + violet line = expected (target), gap = remaining';
@@ -2193,7 +2202,7 @@ window.addEventListener('DOMContentLoaded', function() {
             y: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 12 } } }
           }
         },
-        plugins: [valueLabels, pctLabels, targetTrackPlugin(expected)]
+        plugins: [valueLabels, pctLabels, targetTrackPlugin(expected, vis)]
       });
       renderTotals();
     }
@@ -2438,7 +2447,8 @@ window.addEventListener('DOMContentLoaded', function() {
     if (!rows.length) return;
     var actual   = rows.map(function(b) { return Number(b.salesTotal) || 0; });
     var expected = rows.map(function(b) { return Number(b.expectedSales) || 0; });
-    var maxV = Math.max.apply(null, actual.concat(expected).concat([1]));
+    var posts    = rows.map(function(b) { return Number(b.postingTotal) || 0; });
+    var maxV = Math.max.apply(null, actual.concat(expected).concat(posts).concat([1]));
     // Bullet/target-track: faint Expected track + solid Actual fill + target marker + "needs +N".
     var accTrack = {
       id: 'accTrack',
@@ -2472,6 +2482,14 @@ window.addEventListener('DOMContentLoaded', function() {
             c.textAlign = 'left'; c.fillText('needs +' + Math.round(rem).toLocaleString(), xE + 5, y);
           }
         });
+        // posts bar value labels (cyan)
+        var mp = ch.getDatasetMeta(1);
+        if (mp) mp.data.forEach(function(bar, i) {
+          var pv = posts[i] || 0; if (!pv) return;
+          c.textAlign = 'left'; c.font = 'bold 0.66rem "Segoe UI", system-ui, sans-serif';
+          c.fillStyle = '#67e8f9'; c.shadowColor = 'rgba(0,0,0,0.75)'; c.shadowBlur = 4;
+          c.fillText(Math.round(pv).toLocaleString(), bar.x + 5, bar.y); c.shadowBlur = 0;
+        });
         c.restore();
       }
     };
@@ -2479,19 +2497,26 @@ window.addEventListener('DOMContentLoaded', function() {
       type: 'bar',
       data: { labels: rows.map(function(b) { return b.productName || b.bagType || '—'; }),
         datasets: [
-          { label: 'Actual sales', data: actual, backgroundColor: '#34d399', borderRadius: 4, borderSkipped: false, categoryPercentage: 0.7, barPercentage: 0.72, maxBarThickness: 18 }
+          { label: 'Actual sales', data: actual, backgroundColor: '#34d399', borderRadius: 4, borderSkipped: false, categoryPercentage: 0.82, barPercentage: 0.92, maxBarThickness: 11 },
+          { label: 'Posts made',   data: posts,  backgroundColor: '#22d3ee', borderRadius: 4, borderSkipped: false, categoryPercentage: 0.82, barPercentage: 0.92, maxBarThickness: 11 }
         ] },
       options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 70 } },
         interaction: { mode: 'index', axis: 'y', intersect: false },
         plugins: { legend: { display: false },
-          tooltip: { callbacks: { label: function(c) {
-            var i = c.dataIndex, ev = expected[i] || 0, av = Number(c.parsed.x) || 0;
-            return ['Actual sales: ' + Math.round(av).toLocaleString() + ' bags',
-                    'Expected from posting: ' + Math.round(ev).toLocaleString() + ' bags',
-                    'Remaining: ' + Math.round(Math.max(ev - av, 0)).toLocaleString() + ' bags',
-                    'Achieved: ' + (ev > 0 ? Math.round(av / ev * 100) : 0) + '% of expected']; } } } },
+          tooltip: { callbacks: {
+            label: function(c) {
+              if (c.datasetIndex === 0) return 'Actual sales: ' + Math.round(c.parsed.x).toLocaleString() + ' bags';
+              return 'Posts made: ' + Math.round(c.parsed.x).toLocaleString();
+            },
+            afterBody: function(items) {
+              var i = items[0].dataIndex, ev = expected[i] || 0, av = actual[i] || 0;
+              return ['Expected from posting: ' + Math.round(ev).toLocaleString() + ' bags',
+                      'Remaining: ' + Math.round(Math.max(ev - av, 0)).toLocaleString() + ' bags',
+                      'Achieved: ' + (ev > 0 ? Math.round(av / ev * 100) : 0) + '% of expected'];
+            }
+          } } },
         scales: { x: { beginAtZero: true, max: maxV * 1.3, grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: '#94a3b8' },
-                       title: { display: true, text: 'Bags — emerald bar = actual, track + violet line = expected from posting, gap = shortfall', color: '#64748b', font: { size: 10 } } },
+                       title: { display: true, text: 'Bags — emerald = actual sales, cyan = posts made, track + violet line = expected from posting', color: '#64748b', font: { size: 10 } } },
           y: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 11 } } } } },
       plugins: [accTrack]
     });
@@ -2503,38 +2528,64 @@ window.addEventListener('DOMContentLoaded', function() {
   // ── Posting-accuracy guidance: where to improve (posting % vs no-posting %) ──
   function pctNum(v) { return parseFloat(String(v == null ? 0 : v).replace(/[^0-9.]/g, '')) || 0; }
   function accStat(title, wk, mo, ink) {
-    return '<div style="flex:1;min-width:210px;background:#151824;border:1px solid #2d3148;border-radius:10px;padding:0.7rem 0.95rem">' +
-      '<div style="font-size:0.64rem;color:#64748b;text-transform:uppercase;letter-spacing:0.06em">' + title + '</div>' +
-      '<div style="font-size:1.7rem;font-weight:800;color:' + ink + ';line-height:1.1">' + wk.toFixed(1) + '%</div>' +
-      '<div style="font-size:0.7rem;color:#64748b">Monthly: ' + mo.toFixed(1) + '%</div></div>';
+    function metric(lbl, v) {
+      return '<div><div style="font-size:0.6rem;color:#64748b;text-transform:uppercase;letter-spacing:0.05em">' + lbl + '</div>' +
+        '<div style="font-size:1.5rem;font-weight:800;color:' + ink + ';line-height:1.1;font-variant-numeric:tabular-nums">' + v.toFixed(1) + '%</div></div>';
+    }
+    return '<div style="flex:1;min-width:230px;background:#151824;border:1px solid #2d3148;border-radius:10px;padding:0.8rem 1rem">' +
+      '<div style="font-size:0.64rem;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.45rem">' + title + '</div>' +
+      '<div style="display:flex;gap:1.6rem;align-items:flex-end;flex-wrap:wrap">' + metric('Weekly', wk) + metric('Monthly', mo) + '</div></div>';
   }
   function renderAccGuide(containerId, postWk, postMo, noPostWk, noPostMo) {
     var el = document.getElementById(containerId); if (!el) return;
     postWk = pctNum(postWk); postMo = pctNum(postMo); noPostWk = pctNum(noPostWk); noPostMo = pctNum(noPostMo);
     var gap = Math.abs(postWk - noPostWk);
-    var advice, tone;
+    var advice, tone, actions;
     if (postWk + 0.05 < noPostWk) {
       tone = '#fca5a5';
       advice = '⚠ <strong>Posting is the area to improve.</strong> Posted bags reached only <strong>' + postWk.toFixed(1) +
         '%</strong> of expected, yet bags that sold with <em>no</em> posting hit <strong>' + noPostWk.toFixed(1) +
-        '%</strong> — a ' + gap.toFixed(1) + ' pt gap. The posts aren\'t lifting sales as they should: post the in-demand, in-stock bags more consistently and cut posts on bags that don\'t convert.';
+        '%</strong> — a ' + gap.toFixed(1) + ' pt gap. The posts aren\'t lifting sales as they should.';
+      actions = [
+        'Set a weekly posting target = the number of bags in stock, and hit it — coverage is the biggest gap.',
+        'Stop posting bags that sold 0 last week; redirect that effort to proven, in-stock sellers.',
+        'Push the biggest-shortfall bags from the "Top Posted Bags" chart above with daily, peak-hour posts.',
+        'Fix post quality — clear photo, price and offer on every post; the current posts aren\'t converting.',
+        'Report line: "posting reached ' + postWk.toFixed(1) + '% of expected vs ' + noPostWk.toFixed(1) + '% without posting — closing this ' + gap.toFixed(1) + ' pt gap is the week\'s priority."'
+      ];
     } else if (noPostWk + 0.05 < postWk) {
       tone = '#6ee7b7';
       advice = '✓ <strong>Posting is working</strong> — posted bags reached <strong>' + postWk.toFixed(1) +
-        '%</strong> of expected vs <strong>' + noPostWk.toFixed(1) + '%</strong> for unposted (a ' + gap.toFixed(1) +
-        ' pt lead). The opportunity is the unposted side: extend posting to those bags to capture the sales they\'re missing.';
+        '%</strong> of expected vs <strong>' + noPostWk.toFixed(1) + '%</strong> for unposted (a ' + gap.toFixed(1) + ' pt lead).';
+      actions = [
+        'Add every in-stock bag that is still unposted to the posting rota this week.',
+        'Keep the current cadence on the bags that are already converting — don\'t change what works.',
+        'Prioritise the highest-stock unposted bags first (biggest clearance upside).',
+        'Document the winning format/timing and copy it across more bags.',
+        'Report line: "posting is lifting sales ' + gap.toFixed(1) + ' pts above unposted — the growth lever now is widening coverage to unposted stock."'
+      ];
     } else {
       tone = '#c4b5fd';
       advice = 'Posted and unposted bags are converting at about the same rate (' + postWk.toFixed(1) + '% vs ' +
-        noPostWk.toFixed(1) + '%). Posting isn\'t yet creating a clear lift — target the highest-demand, in-stock bags to push posted conversion ahead.';
+        noPostWk.toFixed(1) + '%). Posting isn\'t yet creating a clear lift.';
+      actions = [
+        'Concentrate posts on the highest-demand, in-stock bags to create a visible lift.',
+        'Trim low-value posts that aren\'t moving stock.',
+        'Test post timing and creatives on 3–5 priority bags and compare next week.',
+        'Align posting volume with stock levels so effort matches opportunity.',
+        'Report line: "posted and unposted convert alike (' + postWk.toFixed(1) + '% vs ' + noPostWk.toFixed(1) + '%) — next step is proving posting lifts the priority bags."'
+      ];
     }
     el.innerHTML =
       '<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:0.7rem">' +
         accStat('Sales with Posting vs Expected', postWk, postMo, '#34d399') +
         accStat('Sales with no Posting vs Expected', noPostWk, noPostMo, '#fbbf24') +
       '</div>' +
-      '<p style="font-size:0.8rem;line-height:1.5;color:#cbd5e1;margin:0;border-left:3px solid ' + tone +
-        ';padding-left:0.7rem">' + advice + '</p>';
+      '<p style="font-size:0.8rem;line-height:1.5;color:#cbd5e1;margin:0 0 0.6rem;border-left:3px solid ' + tone +
+        ';padding-left:0.7rem">' + advice + '</p>' +
+      '<div style="font-size:0.64rem;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem">Action points for the report</div>' +
+      '<ul style="margin:0;padding-left:1.1rem;color:#cbd5e1;font-size:0.79rem;line-height:1.6">' +
+        actions.map(function(a) { return '<li>' + a + '</li>'; }).join('') + '</ul>';
   }
   var _sz = PA.sinza || {}, _ug = PA.uganda || {};
   function noPostPct(unposted, total) { var t = pctNum(total); return t > 0 ? Math.min(pctNum(unposted) / t, 1) * 100 : 0; }
@@ -2542,6 +2593,143 @@ window.addEventListener('DOMContentLoaded', function() {
     noPostPct(PA.weeklyUnposted, PA.wkSumTotal), noPostPct(PA.monthlyUnposted, PA.monthlyTotal));
   renderAccGuide('acc-guide-sinza', _sz.szWkMktPct, _sz.szMoMktPct, _sz.szWkNonMktPct, _sz.szMoNonMktPct);
   renderAccGuide('acc-guide-uganda', _ug.ugWkMktPct, _ug.ugMoMktPct, _ug.ugWkNonMktPct, _ug.ugMoNonMktPct);
+
+  // ── Marketing Visibility bullet: posts (current) vs target/coverage, like New Products ──
+  function vNum(v) { return parseFloat(String(v == null ? 0 : v).replace(/[^0-9.]/g, '')) || 0; }
+  function vFmt(n) { return Math.round(n).toLocaleString(); }
+  function visChip(box, sw, label, valueStr, ink, onToggle, struck) {
+    var item = document.createElement('span');
+    item.style.cssText = 'display:inline-flex;align-items:center;gap:0.4rem;' +
+      (onToggle ? 'cursor:pointer;user-select:none;' : '') + (struck ? 'opacity:0.4;text-decoration:line-through;' : '');
+    if (onToggle) item.title = 'Click to toggle';
+    item.innerHTML = '<span style="width:11px;height:11px;border-radius:3px;background:' + sw + '"></span>' +
+      '<span style="color:#94a3b8">' + label + '</span> ' +
+      '<strong style="color:' + ink + ';font-variant-numeric:tabular-nums">' + valueStr + '</strong>';
+    if (onToggle) item.addEventListener('click', onToggle);
+    box.appendChild(item);
+  }
+  function visBullet(canvasId, noteId, rows, note, opts) {
+    var el = document.getElementById(canvasId); if (!el || typeof Chart === 'undefined') return;
+    var fmt = (opts && opts.fmt) || function(v) { return Math.round(v).toLocaleString(); };
+    var totalsId = canvasId.replace('-chart', '-totals');
+    var actual = rows.map(function(r) { return r.actual; });
+    var target = rows.map(function(r) { return r.target; });
+    var maxV = Math.max.apply(null, actual.concat(target).concat([1]));
+    var hasTarget = target.some(function(t) { return t > 0; });
+    var aLbl = (rows[0] && rows[0].aLabel) || 'Current';
+    var tLbl = (rows[0] && rows[0].tLabel) || 'Target';
+    var vis = { target: true, remaining: true };   // toggle state for track / remaining
+    var chart = null;
+    var track = {
+      id: 'visTrack',
+      beforeDatasetsDraw: function(ch) {
+        if (!vis.target) return;
+        var m = ch.getDatasetMeta(0); if (!m) return;
+        var xs = ch.scales.x, c = ch.ctx, x0 = xs.getPixelForValue(0);
+        c.save();
+        m.data.forEach(function(bar, i) {
+          var xE = xs.getPixelForValue(target[i] || 0), h = (bar.height || 14), y = bar.y - h / 2;
+          c.fillStyle = 'rgba(148,163,184,0.15)'; c.fillRect(x0, y, Math.max(xE - x0, 0), h);
+        });
+        c.restore();
+      },
+      afterDatasetsDraw: function(ch) {
+        var m = ch.getDatasetMeta(0); if (!m) return;
+        var xs = ch.scales.x, c = ch.ctx; c.save(); c.textBaseline = 'middle';
+        var showActual = ch.isDatasetVisible(0);
+        m.data.forEach(function(bar, i) {
+          var tv = target[i] || 0, av = actual[i] || 0, xE = xs.getPixelForValue(tv), h = (bar.height || 14), y = bar.y;
+          if (showActual) {
+            c.textAlign = 'left'; c.font = 'bold 0.72rem "Segoe UI", system-ui, sans-serif';
+            c.fillStyle = '#67e8f9'; c.shadowColor = 'rgba(0,0,0,0.75)'; c.shadowBlur = 4;
+            c.fillText(fmt(av), bar.x + 5, y); c.shadowBlur = 0;
+          }
+          if (tv > 0 && vis.target) {
+            c.strokeStyle = 'rgba(167,139,250,0.9)'; c.lineWidth = 2;
+            c.beginPath(); c.moveTo(xE, y - h / 2 - 2); c.lineTo(xE, y + h / 2 + 2); c.stroke();
+          }
+          if (tv > 0 && vis.remaining) {
+            var rem = Math.max(tv - av, 0);
+            if (rem > 0.001) {
+              c.font = '700 0.6rem "Segoe UI", system-ui, sans-serif'; c.fillStyle = '#c4b5fd';
+              c.textAlign = 'left'; c.fillText('needs +' + fmt(rem), xE + 6, y);
+            }
+          }
+        });
+        c.restore();
+      }
+    };
+    function joinVals(arr) { return arr.map(function(v) { return fmt(v); }).join('  /  '); }
+    function renderTotals() {
+      var box = document.getElementById(totalsId); if (!box || !chart) return;
+      box.innerHTML = '';
+      visChip(box, '#22d3ee', aLbl + ' (wk / mo)', joinVals(actual), '#67e8f9',
+        function() { chart.setDatasetVisibility(0, !chart.isDatasetVisible(0)); chart.update(); renderTotals(); },
+        !chart.isDatasetVisible(0));
+      if (hasTarget) {
+        visChip(box, 'rgba(167,139,250,0.55)', tLbl + ' (wk / mo)', joinVals(target), '#c4b5fd',
+          function() { vis.target = !vis.target; chart.update(); renderTotals(); }, !vis.target);
+        var remArr = actual.map(function(a, i) { return Math.max((target[i] || 0) - a, 0); });
+        visChip(box, '#f59e0b', 'Remaining to target', joinVals(remArr), '#fbbf24',
+          function() { vis.remaining = !vis.remaining; chart.update(); renderTotals(); }, !vis.remaining);
+      }
+    }
+    chart = new Chart(el, {
+      type: 'bar',
+      data: { labels: rows.map(function(r) { return r.label; }),
+        datasets: [{ label: 'Current', data: actual, backgroundColor: '#22d3ee', borderRadius: 4, borderSkipped: false, categoryPercentage: 0.6, barPercentage: 0.7, maxBarThickness: 20 }] },
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 78 } },
+        interaction: { mode: 'index', axis: 'y', intersect: false },
+        plugins: { legend: { display: false },
+          tooltip: { callbacks: { label: function(c) {
+            var i = c.dataIndex, tv = target[i] || 0, av = Number(c.parsed.x) || 0;
+            var out = [(rows[i].aLabel || 'Current') + ': ' + fmt(av)];
+            if (tv > 0) out.push((rows[i].tLabel || 'Target') + ': ' + fmt(tv),
+              'Remaining: ' + fmt(Math.max(tv - av, 0)),
+              'Reached: ' + Math.round(av / tv * 100) + '% of target');
+            return out; } } } },
+        scales: { x: { beginAtZero: true, max: maxV * 1.3, grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: '#94a3b8' },
+                       title: { display: true, text: 'cyan = current · track + violet line = target · gap = to reach target', color: '#64748b', font: { size: 10 } } },
+          y: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 12 } } } } },
+      plugins: [track]
+    });
+    renderTotals();
+    var noteEl = document.getElementById(noteId);
+    if (noteEl && note) noteEl.innerHTML = note;
+  }
+
+  // Kenya — visibility as a MULTIPLIER (posts ÷ in-stock bags) vs the target multiplier.
+  var xFmt = function(v) { return (Number(v) || 0).toFixed(1) + '×'; };
+  (function() {
+    var instockTotal = (Number(PA.wkInstockPosted) || 0) + (Number(PA.wkInstockNotPosted) || 0);
+    var wkSales = vNum(PA.weeklySalesTotal), moSales = vNum(PA.monthlySalesTotal);
+    var weeklySlice = (Number(PA.completeWeeks) || 0) > 0 ? (Number(PA.totalTarget) || 0) / PA.completeWeeks : 0;
+    var visWk = instockTotal > 0 ? vNum(PA.s3WkPosts) / instockTotal : 0;   // e.g. 2.9×
+    var visMo = instockTotal > 0 ? vNum(PA.s3MoPosts) / instockTotal : 0;   // e.g. 4.3×
+    var tgtWk = wkSales > 0 ? weeklySlice / wkSales : 0;                    // e.g. 7.2×
+    var tgtMo = moSales > 0 ? (Number(PA.totalTarget) || 0) / moSales : 0;  // e.g. 15.4×
+    visBullet('vis-kenya-chart', 'vis-kenya-note',
+      [{ label: 'Weekly',  actual: visWk, target: tgtWk, aLabel: 'Visibility', tLabel: 'Target' },
+       { label: 'Monthly', actual: visMo, target: tgtMo, aLabel: 'Visibility', tLabel: 'Target' }],
+      'Visibility = marketing posts ÷ in-stock bags. On the <strong>' + vFmt(instockTotal) +
+      '</strong> in-stock bags, marketing posted <strong style="color:#22d3ee">' + xFmt(visWk) +
+      '</strong> per bag this week (target ' + xFmt(tgtWk) + ') and <strong style="color:#22d3ee">' + xFmt(visMo) +
+      '</strong> this month (target ' + xFmt(tgtMo) + ') — higher = more posting behind each bag to clear it.',
+      { fmt: xFmt });
+  })();
+
+  // Sinza / Uganda — posts vs in-stock bags (coverage): no sales-based target in the data.
+  function visRegion(canvasId, noteId, wkObj, name) {
+    var pWk = vNum(wkObj.wkPostsAcc), bWk = vNum(wkObj.wkInstockPosted);
+    var pMo = vNum(wkObj.moPostsAcc), bMo = vNum(wkObj.moInstockPosted);
+    visBullet(canvasId, noteId,
+      [{ label: 'Weekly',  actual: pWk, target: bWk, aLabel: 'Posts made', tLabel: 'In-stock bags' },
+       { label: 'Monthly', actual: pMo, target: bMo, aLabel: 'Posts made', tLabel: 'In-stock bags' }],
+      'Marketing made <strong style="color:#22d3ee">' + vFmt(pWk) + '</strong> posts across <strong>' + vFmt(bWk) +
+      '</strong> in-stock bags this week in ' + name + ' — the posting that helps clear that stock.');
+  }
+  visRegion('vis-sinza-chart',  'vis-sinza-note',  (PA.sinza  || {}).weekly || {}, 'Sinza');
+  visRegion('vis-uganda-chart', 'vis-uganda-note', (PA.uganda || {}).weekly || {}, 'Uganda');
 
   // ── Bags cleared by marketing: headline total + trend + per-bag list ──
   function renderClearance(totalId, chartId, listId, key, list, history) {
@@ -2598,9 +2786,7 @@ window.addEventListener('DOMContentLoaded', function() {
           y: { beginAtZero: true, grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: '#94a3b8' } } } }
     });
   }
-  renderClearance('clr-kenya-total',  'clr-kenya-chart',  'clr-kenya-list',  'kenya',  PA.clearedKenya,  PA.clearedHistory);
-  renderClearance('clr-sinza-total',  'clr-sinza-chart',  'clr-sinza-list',  'sinza',  PA.clearedSinza,  PA.clearedHistory);
-  renderClearance('clr-uganda-total', 'clr-uganda-chart', 'clr-uganda-list', 'uganda', PA.clearedUganda, PA.clearedHistory);
+  // (Bags Cleared by Marketing section removed.)
 });
 </script>
 

@@ -60,16 +60,44 @@
     .topbar-right { display: flex; align-items: center; gap: 0.5rem; }
 
     .dot-live {
-      width: 7px; height: 7px; border-radius: 50%;
+      width: 8px; height: 8px; border-radius: 50%;
       background: var(--accent);
-      box-shadow: 0 0 6px rgba(16,185,129,0.55);
+      animation: dotPulse 1.8s ease-out infinite;
     }
-    .dot-live.stale { background: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,0.5); }
+    @keyframes dotPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(16,185,129,0.55); }
+      70%  { box-shadow: 0 0 0 7px rgba(16,185,129,0); }
+      100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+    }
+    .dot-live.stale { background: #f59e0b; animation: none; box-shadow: 0 0 6px rgba(245,158,11,0.5); }
+
+    /* subtle animated accent under the live time */
+    .topbar-time::after {
+      content: ''; display: inline-block; width: 5px; height: 5px; margin-left: 6px;
+      border-radius: 50%; background: var(--accent); vertical-align: middle;
+      animation: blink 1s step-start infinite;
+    }
+    @keyframes blink { 50% { opacity: 0.15; } }
 
     .topbar-time {
-      font-size: 0.68rem; color: var(--text-lo);
-      font-variant-numeric: tabular-nums;
+      font-size: 0.84rem; color: var(--text-mid); font-weight: 600;
+      font-variant-numeric: tabular-nums; letter-spacing: 0.01em;
     }
+
+    .topbar-user {
+      display: flex; flex-direction: column; align-items: flex-end;
+      line-height: 1.25; margin-right: 0.5rem;
+    }
+    .tu-name {
+      font-size: 0.84rem; font-weight: 700;
+      background: linear-gradient(90deg, #e2e8f0 0%, #e2e8f0 30%, #34d399 50%, #22d3ee 60%, #e2e8f0 80%, #e2e8f0 100%);
+      background-size: 220% auto;
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent; color: transparent;
+      animation: nameShimmer 7s linear infinite;
+    }
+    @keyframes nameShimmer { to { background-position: -220% center; } }
+    .tu-role { font-size: 0.64rem; color: var(--text-lo); letter-spacing: 0.03em; }
 
     .btn-ref {
       display: flex; align-items: center; gap: 0.35rem;
@@ -319,6 +347,10 @@
   <div class="topbar">
     <div class="topbar-mid" id="page-title">Current Performance</div>
     <div class="topbar-right">
+      <div class="topbar-user">
+        <span class="tu-name">Jonathan Owiti</span>
+        <span class="tu-role">Business Intelligence (BI) Analyst</span>
+      </div>
       <div class="dot-live" id="status-dot"></div>
       <span class="topbar-time" id="clock"></span>
       <div class="export-wrap">
@@ -442,10 +474,14 @@
     var now = new Date();
     var h = now.getHours().toString().padStart(2,'0');
     var m = now.getMinutes().toString().padStart(2,'0');
-    clockEl.textContent = h + ':' + m;
+    var s = now.getSeconds().toString().padStart(2,'0');
+    var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var mons = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var dateStr = days[now.getDay()] + ', ' + now.getDate() + ' ' + mons[now.getMonth()] + ' ' + now.getFullYear();
+    clockEl.textContent = dateStr + ' · ' + h + ':' + m + ':' + s;
   }
   tick();
-  setInterval(tick, 30000);
+  setInterval(tick, 1000);   // live ticking
 
   /* ── Export (PDF / Word / Excel) ─────────────────────────── */
 
