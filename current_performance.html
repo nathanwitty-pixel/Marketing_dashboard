@@ -311,8 +311,8 @@
         <table id="weekly-perf-table" style="width:100%;border-collapse:collapse;font-size:0.85rem;white-space:nowrap">
           <thead><tr>
             <th style="text-align:left">Week</th>
-            <th style="text-align:right">Previous Sales % Achieved</th>
-            <th style="text-align:right">Previous Sales Bags</th>
+            <th style="text-align:right">Sales % Achieved</th>
+            <th style="text-align:right">Sales Bags</th>
             <th style="text-align:right">Declined By</th>
           </tr></thead>
           <tbody id="weekly-perf-tbody"></tbody>
@@ -396,12 +396,12 @@ const PERF = {
   salesPctAchieved:   "26.68%",
   sales:              "6,199",
   previousSalesPct:   "11.92%",
-  previousSalesBags:  "2,445",
-  wowSalesPct:        "+40.25%",
-  wowSalesBags:       "+984",
+  previousSalesBags:  "3,429",
+  wowSalesPct:        "0.00%",
+  wowSalesBags:       "0",
   weeklySalesTotal:   "3,429",
   weeklySalesPct:     "14.76%",
-  growthHistory:      [{"date": "2026-07-11", "growth": 12.31}, {"date": "2026-07-12", "growth": 14.76}],
+  growthHistory:      [{"date": "2026-07-11", "growth": 12.31}, {"date": "2026-07-12", "growth": 14.76}, {"date": "2026-07-13", "growth": 14.76}],
   weeklyThisMonth:    "3,429",
   weeklyCarryover:    "",
   carryoverMonth:     "",
@@ -419,19 +419,19 @@ const PERF = {
 <!-- PROJ_DATA_START -->
 <script>
 const PROJ = {
-  currentDay:               11,
+  currentDay:               12,
   daysInMonth:              31,
-  velocityFactor:           "2.82x",
+  velocityFactor:           "2.58x",
   totalTarget:              "23,232",
   totalSales:               "6,199",
-  standardProjection:       "75.20%",
-  forecastedProjection:     "76.87%",
+  standardProjection:       "68.93%",
+  forecastedProjection:     "70.47%",
   corporateBags:            "138",
   bareMinimum:              "5,808",
   bareMinimumGrowthPct:     "25.00%",
   declinedBy:               "-2,379",
   weeklySalesTotal:         "3,429",
-  weeklyHistory:            [{"weekStart": "2026-07-05", "label": "Wk 1", "month": "Jul", "salesPct": 26.68, "salesBags": 6199, "prevSalesPct": 11.92, "prevSalesBags": 2445, "weeklySales": 3429, "declinedBy": -2379}]
+  weeklyHistory:            [{"weekStart": "2026-07-05", "label": "Wk 1", "month": "Jul", "salesPct": 26.68, "salesBags": 6199, "prevSalesPct": 11.92, "prevSalesBags": 2445, "weeklySales": 3429, "declinedBy": -2379}, {"weekStart": "2026-07-12", "label": "Wk 2", "month": "Jul", "salesPct": 26.68, "salesBags": 6199, "prevSalesPct": 14.76, "prevSalesBags": 3429, "weeklySales": 3429, "declinedBy": -2379}]
 };
 </script>
 <!-- PROJ_DATA_END -->
@@ -484,6 +484,13 @@ const PROJ = {
     setText('mom-weekly-sub', 'Available after the first month change');
   }
 
+  // Previous-sales % consistent with Previous-sales bags: bags ÷ (same week's target).
+  // target = salesBags ÷ (salesPct/100)  →  prevPct = prevSalesBags × salesPct ÷ salesBags
+  function prevPctOf(w) {
+    var sb = Number(w.salesBags) || 0, sp = Number(w.salesPct) || 0, pb = Number(w.prevSalesBags) || 0;
+    return (sb > 0 && sp > 0) ? (pb * sp / sb) : (Number(w.prevSalesPct) || 0);
+  }
+
   // ── Weekly performance snapshot table (Week 1 → latest) ───
   (function () {
     var tb = document.getElementById('weekly-perf-tbody');
@@ -498,12 +505,17 @@ const PROJ = {
       return '<td style="padding:0.6rem 1.5rem;border-top:1px solid #2d3148;text-align:' + align +
         ';font-variant-numeric:tabular-nums' + (color ? ';color:' + color : '') + '">' + v + '</td>';
     }
-    tb.innerHTML = weeks.map(function (w) {
+    tb.innerHTML = weeks.map(function (w, i) {
+      var isLast = i === weeks.length - 1;
+      // Each week shows the sales achieved AT that week: earlier weeks use their
+      // previous-sales baseline (lower), the latest week uses current sales — so it climbs.
+      var pctV  = isLast ? (Number(w.salesPct) || 0)  : prevPctOf(w);
+      var bagsV = isLast ? (Number(w.salesBags) || 0) : (Number(w.prevSalesBags) || 0);
       var d = w.declinedBy || 0;
       var dTxt = (d > 0 ? '+' : '') + d.toLocaleString();
       var dCol = d < 0 ? '#f87171' : '#34d399';
-      var pp = (w.prevSalesPct != null) ? w.prevSalesPct.toFixed(2) + '%' : '—';
-      var pb = (w.prevSalesBags || 0).toLocaleString() + ' bags';
+      var pp = pctV.toFixed(2) + '%';
+      var pb = bagsV.toLocaleString() + ' bags';
       return '<tr>' +
         cell('<strong style="color:#e2e8f0">' + w.label + '</strong> <span style="color:#64748b">' + (w.month || '') + '</span>', 'left', '') +
         cell(pp, 'right', '#facc15') +
@@ -640,9 +652,20 @@ window.addEventListener('DOMContentLoaded', function() {
   (function () {
     var ctx = document.getElementById('chart-wow');
     if (!ctx) return;
-    var lastWk = parseNum(PERF.previousSalesBags);
-    var thisWk = parseNum(PERF.weeklySalesTotal);
-    var up = (PERF.wowSalesBags || '').charAt(0) !== '-';
+    // Prefer the weekly history so "last week" is a real prior figure, not this week's
+    // snapshot (which can equal this week and show a misleading 0%).
+    var hist = (typeof PROJ !== 'undefined' && PROJ.weeklyHistory) ? PROJ.weeklyHistory : [];
+    var lastWk, thisWk;
+    if (hist.length >= 2) {
+      lastWk = Number(hist[hist.length - 2].prevSalesBags) || 0;
+      thisWk = Number(hist[hist.length - 1].prevSalesBags) || 0;
+    } else {
+      lastWk = parseNum(PERF.previousSalesBags);
+      thisWk = parseNum(PERF.weeklySalesTotal);
+    }
+    var wowDelta = thisWk - lastWk;
+    var wowPct   = lastWk > 0 ? (wowDelta / lastWk * 100) : 0;
+    var up = wowDelta >= 0;
     new Chart(ctx, {
       type: 'bar',
       data: {
@@ -669,7 +692,7 @@ window.addEventListener('DOMContentLoaded', function() {
     });
     var note = document.getElementById('wow-pop-note');
     if (note) {
-      note.textContent = PERF.wowSalesPct + '  (' + PERF.wowSalesBags + ' bags)';
+      note.textContent = (up ? '+' : '') + wowPct.toFixed(1) + '%  (' + (up ? '+' : '') + wowDelta.toLocaleString() + ' bags)';
       note.style.color = up ? '#34d399' : '#f87171';
     }
   })();
@@ -732,36 +755,108 @@ window.addEventListener('DOMContentLoaded', function() {
     }
   })();
 
-  // ── Weekly performance trend line (needs 2+ weeks) ────────
+  // ── Weekly performance: the climb to the monthly target ──────
   (function () {
     var weeks = (PROJ.weeklyHistory || []);
     var wrap  = document.getElementById('weekly-perf-chart-wrap');
     var ctx   = document.getElementById('chart-weekly-perf');
-    if (!wrap || !ctx || weeks.length < 2) return;   // table alone until 2 weeks
+    if (!wrap || !ctx || !weeks.length) return;
     wrap.style.display = 'block';
+    var lastI = weeks.length - 1;
+    // Achieved % / bags AT each week: earlier weeks use their previous-sales baseline
+    // (lower start), latest week uses current — so the series climbs toward the target.
+    function achievedPct(w, i) {
+      if (i === lastI) return Number(w.salesPct) || 0;
+      var sb = Number(w.salesBags) || 0, sp = Number(w.salesPct) || 0, pb = Number(w.prevSalesBags) || 0;
+      return (sb > 0 && sp > 0) ? (pb * sp / sb) : (Number(w.prevSalesPct) || 0);
+    }
+    function achievedBags(w, i) { return i === lastI ? (Number(w.salesBags) || 0) : (Number(w.prevSalesBags) || 0); }
+    var series = weeks.map(achievedPct);
+    var bagsSeries = weeks.map(achievedBags);
+    var minPct = parsePct(PROJ.bareMinimumGrowthPct) || 0;
+
+    var cx = ctx.getContext('2d');
+    var grad = cx.createLinearGradient(0, 0, 0, 210);
+    grad.addColorStop(0, 'rgba(245,158,11,0.38)'); grad.addColorStop(1, 'rgba(245,158,11,0.02)');
+
+    // Dashed reference lines: monthly target (100%) + bare-minimum threshold.
+    var refLines = { id: 'wpRefs', beforeDatasetsDraw: function(ch) {
+      var c = ch.ctx, ys = ch.scales.y, ca = ch.chartArea;
+      c.save();
+      [[100, '#34d399', 'Monthly target (100%)'], [minPct, '#64748b', 'Bare minimum ' + minPct.toFixed(0) + '%']].forEach(function(r) {
+        if (!r[0]) return; var y = ys.getPixelForValue(r[0]); if (y < ca.top || y > ca.bottom) return;
+        c.strokeStyle = r[1]; c.setLineDash([5, 4]); c.lineWidth = 1; c.globalAlpha = 0.75;
+        c.beginPath(); c.moveTo(ca.left, y); c.lineTo(ca.right, y); c.stroke();
+        c.setLineDash([]); c.globalAlpha = 1; c.fillStyle = r[1];
+        c.font = '600 0.62rem "Segoe UI", system-ui, sans-serif'; c.textAlign = 'left'; c.textBaseline = 'bottom';
+        c.fillText(r[2], ca.left + 4, y - 2);
+      });
+      c.restore();
+    } };
+    // Value label above each point.
+    var ptLabels = { id: 'wpPts', afterDatasetsDraw: function(ch) {
+      var c = ch.ctx, m = ch.getDatasetMeta(0);
+      c.save(); c.font = '700 0.72rem "Segoe UI", system-ui, sans-serif'; c.fillStyle = '#fde68a';
+      c.textAlign = 'center'; c.textBaseline = 'bottom'; c.shadowColor = 'rgba(0,0,0,0.6)'; c.shadowBlur = 3;
+      m.data.forEach(function(pt, i) { c.fillText(series[i].toFixed(1) + '%', pt.x, pt.y - 8); });
+      c.restore();
+    } };
+    // Gain badge: total climb from the first week to the latest (pts + bags).
+    var gainBadge = { id: 'wpGain', afterDraw: function(ch) {
+      if (series.length < 2) return;
+      var g = series[series.length - 1] - series[0];
+      var gb = (bagsSeries[series.length - 1] || 0) - (bagsSeries[0] || 0);
+      var up = g >= 0, c = ch.ctx, ca = ch.chartArea;
+      var txt = (up ? '▲ +' : '▼ ') + g.toFixed(1) + ' pts · ' + (up ? '+' : '') + Math.round(gb).toLocaleString() + ' bags';
+      var sub = weeks[0].label + ' → ' + weeks[series.length - 1].label + ' gain';
+      c.save();
+      c.font = '700 0.74rem "Segoe UI", system-ui, sans-serif';
+      var w = Math.max(c.measureText(txt).width, c.measureText(sub).width) + 22, h = 40;
+      var x = ca.left + 6, y = ca.top + 4;
+      c.fillStyle = up ? 'rgba(16,185,129,0.14)' : 'rgba(239,68,68,0.14)';
+      c.strokeStyle = up ? '#34d399' : '#f87171'; c.lineWidth = 1;
+      c.beginPath();
+      if (c.roundRect) c.roundRect(x, y, w, h, 8); else c.rect(x, y, w, h);
+      c.fill(); c.stroke();
+      c.textAlign = 'left'; c.textBaseline = 'top';
+      c.fillStyle = up ? '#34d399' : '#f87171';
+      c.fillText(txt, x + 11, y + 7);
+      c.fillStyle = '#94a3b8'; c.font = '600 0.62rem "Segoe UI", system-ui, sans-serif';
+      c.fillText(sub, x + 11, y + 24);
+      c.restore();
+    } };
+
     new Chart(ctx, {
       type: 'line',
-      data: {
-        labels: weeks.map(function(w){ return w.label; }),
-        datasets: [
-          { label: 'Previous Sales % Achieved', data: weeks.map(function(w){ return w.prevSalesPct || 0; }),
-            borderColor: C.amber, backgroundColor: C.amberDim, borderWidth: 2, fill: true,
-            tension: 0.3, pointRadius: 3, pointBackgroundColor: C.amber }
-        ]
-      },
+      data: { labels: weeks.map(function(w){ return w.label; }),
+        datasets: [{ label: 'Sales % Achieved', data: series,
+          borderColor: C.amber, backgroundColor: grad, borderWidth: 3, fill: true, tension: 0.35,
+          pointRadius: 5, pointHoverRadius: 8, pointBackgroundColor: C.amber, pointBorderColor: '#0b0d16', pointBorderWidth: 2 }] },
       options: {
         responsive: true, maintainAspectRatio: false,
+        layout: { padding: { top: 22 } },
         plugins: {
-          legend: { labels: { color: C.text, boxWidth: 11, font: { size: 11 } } },
+          legend: { display: false },
           tooltip: Object.assign({}, ttDefaults, {
-            callbacks: { label: function(c){ return c.dataset.label + ': ' + c.parsed.y.toFixed(2) + '%'; } }
+            callbacks: {
+              title: function(items) { return items[0].label; },
+              label: function(c) { return 'Achieved: ' + series[c.dataIndex].toFixed(2) + '% of monthly target'; },
+              afterBody: function(items) {
+                var i = items[0].dataIndex, lines = ['Bags sold: ' + Math.round(bagsSeries[i]).toLocaleString()];
+                if (i > 0) { var d = series[i] - series[i - 1]; lines.push((d >= 0 ? '▲ +' : '▼ ') + d.toFixed(1) + ' pts vs ' + weeks[i - 1].label); }
+                lines.push('Remaining to target: ' + Math.max(100 - series[i], 0).toFixed(1) + ' pts');
+                return lines;
+              }
+            }
           })
         },
         scales: {
           x: { grid: { display: false }, ticks: { color: C.text } },
-          y: { grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: C.text, callback: function(v){ return v + '%'; } } }
+          y: { beginAtZero: true, suggestedMax: 100, grid: { color: 'rgba(45,49,72,0.5)' },
+               ticks: { color: C.text, callback: function(v){ return Number(v).toFixed(0) + '%'; } } }
         }
-      }
+      },
+      plugins: [refLines, ptLabels, gainBadge]
     });
   })();
 });

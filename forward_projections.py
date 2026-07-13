@@ -222,9 +222,7 @@ def update_weekly_history():
     ref = date.today() - timedelta(days=1)       # data covers through yesterday
     ws  = _week_start(ref)
     wk_idx = _perfect_week_index(ref)
-    # Percentages (deficit + sales == target, so prev% uses total_target)
     sales_pct = (total_sales / total_target * 100) if total_target else 0
-    prev_pct  = ((total_sales - weekly_sales_total) / total_target * 100) if total_target else 0
     # Previous-period bags come from the snapshot current_performance keeps
     prev_bags = 0
     snap = os.path.join(os.path.dirname(os.path.abspath(__file__)), "previous_snapshot.json")
@@ -234,6 +232,9 @@ def update_weekly_history():
                 prev_bags = json.load(f).get("previous_week_bags", 0)
         except (ValueError, OSError):
             prev_bags = 0
+    # Previous Sales % = the previous-sales bags as a share of the SAME target,
+    # so the % column stays consistent with the bags column and trends week to week.
+    prev_pct  = (prev_bags / total_target * 100) if total_target else 0
     entry = {
         "weekStart":    ws.isoformat(),
         "label":        ("Wk " + str(wk_idx)) if wk_idx else "Partial",
