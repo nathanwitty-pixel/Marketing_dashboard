@@ -379,6 +379,8 @@ def _build_no_convert(post_rows, sales_rows, sales_col_indices,
         if sales_map.get(k, 0) > 0:
             continue          # has sales — not a no-convert
         post_count = safe_int(row[count_col]) if len(row) > count_col else 0
+        if post_count <= 0:
+            continue          # not actually posted this week — exclude
         stock_info = stock_map.get(k, {"bagType": "", "stock": 0})
         result.append({
             "colour":       colour,
@@ -388,10 +390,34 @@ def _build_no_convert(post_rows, sales_rows, sales_col_indices,
             "stock":        stock_info["stock"],
             "postingTotal": post_count,
             "expectedSale": round(post_count * spp, 4),
+            "onOffer":      _is_checked(row, check_col),   # ✅ = on offer, x = not on offer
         })
 
     result.sort(key=lambda x: -x["expectedSale"])
     return result
+
+
+def _posted_stock(wmp_rows, sl_rows, post_col, check_col, stock_col):
+    """Current stock for bags marketing POSTED (col post_col > 0, flagged ✅/x).
+    Returns { 'colour|name': {colour, productName, category, bagType, stock} }."""
+    posted = {}
+    for row in wmp_rows[1:]:
+        if len(row) > post_col and safe_int(row[post_col]) > 0 and (_is_checked(row, check_col) or _is_x(row, check_col)):
+            name = str(row[2]).strip()
+            if not name:
+                continue
+            key = str(row[0]).lower().strip() + '|' + name.lower()
+            if key not in posted:
+                posted[key] = {"colour": str(row[0]).strip(), "productName": name,
+                               "category": str(row[1]).strip(), "bagType": "", "stock": 0}
+    for row in sl_rows[1:]:
+        if len(row) < 4:
+            continue
+        key = str(row[0]).lower().strip() + '|' + str(row[2]).lower().strip()
+        if key in posted:
+            posted[key]["bagType"] = str(row[3]).strip()
+            posted[key]["stock"] += safe_int(row[stock_col]) if len(row) > stock_col else 0
+    return posted
 
 
 # ── WEEKLY REGION (generic for Sinza / Uganda) ────────────────
@@ -576,7 +602,8 @@ def _fetch_weekly_kenya(sh, sl_rows):
         sales_check_col=24,   # only count sales where col Y is checked
     )
 
-    # Weekly sales total from SUM TOTAL row in WEEKLY_SALES col X (idx 23)
+    # Kenya total bags sold this week = SUM TOTAL row, WEEKLY_SALES col AB (idx 27)
+    # (col AB is the Kenya sales column; all posting splits below also read col AB).
     proj_weekly_sales = 0
     for row in ws_rows:
         if any(str(cell).strip().upper() == "SUM TOTAL" for cell in row[:5]):
@@ -795,9 +822,9 @@ def _fetch_monthly_kenya(ms_rows, mmp_rows):
         and str(row[2]).lower().strip() not in _mmp_any_posted  # never posted elsewhere
     }
     monthly_unposted = sum(
-        safe_int(row[31])
+        safe_int(row[23])   # MS col X = monthly Kenya sales (col AF/31 was empty → wrong total)
         for row in ms_rows[1:]
-        if len(row) > 31 and str(row[1]).lower().strip() in _mmp_zero_post_names
+        if len(row) > 23 and str(row[1]).lower().strip() in _mmp_zero_post_names
     )
 
     # S2 monthly total: col X (idx 23) where col AB has x OR ✅
@@ -903,11 +930,10 @@ def _fetch_monthly_kenya(ms_rows, mmp_rows):
         if len(row) > 8 and _is_checked(row, 8) and safe_int(row[4]) == 0 and str(row[2]).strip()
     }
     offer_not_posted_mo_sales = sum(
-        safe_int(row[31])
+        safe_int(row[23])   # MS col X = monthly Kenya sales (col AF/31 was empty → 0)
         for row in ms_rows[1:]
-        if len(row) > 31
-        and _is_checked(row, 27)
-        and safe_int(row[31]) > 0
+        if len(row) > 23
+        and not any(str(cell).strip().upper() == "SUM TOTAL" for cell in row[:5])
         and str(row[1]).lower().strip() in _mmp_chk_zero_mo
     )
 
@@ -918,9 +944,10 @@ def _fetch_monthly_kenya(ms_rows, mmp_rows):
         if len(row) > 8 and _is_x(row, 8) and safe_int(row[4]) == 0 and str(row[2]).strip()
     }
     not_offer_not_posted_mo_sales = sum(
-        safe_int(row[31])
+        safe_int(row[23])   # MS col X = monthly Kenya sales (col AF/31 was empty → 0)
         for row in ms_rows[1:]
-        if len(row) > 31
+        if len(row) > 23
+        and not any(str(cell).strip().upper() == "SUM TOTAL" for cell in row[:5])
         and str(row[1]).lower().strip() in _mmp_x_zero_mo
     )
 
@@ -1609,6 +1636,15 @@ def fetch_posting_data():
     sinza['weekly']  = sz_wk
     uganda['weekly'] = ug_wk
 
+    # Posted-but-didn't-sell bags (weekly), tagged on/not-on-offer, for the guidance panel
+    sinza['noConvertWk']  = _build_no_convert(wmp_rows_wk, ws_rows_wk, [17],  9, 5, sl_rows, 17, SINZA_SPP,  sales_check_col=25)
+    uganda['noConvertWk'] = _build_no_convert(wmp_rows_wk, ws_rows_wk, [18], 10, 6, sl_rows, 18, UGANDA_SPP, sales_check_col=26)
+
+    # Current stock of bags marketing POSTED (for the clearance tracker)
+    kenya['postedStock']  = _posted_stock(wmp_rows_wk, sl_rows, 4,  8, 24)
+    sinza['postedStock']  = _posted_stock(wmp_rows_wk, sl_rows, 5,  9, 17)
+    uganda['postedStock'] = _posted_stock(wmp_rows_wk, sl_rows, 6, 10, 18)
+
     # Sinza accuracy: STOCK_LEVELS col R (idx 17) > 0, col AC (idx 28) = ✅ or x → Sinza-specific rows
     # Match against WMP/MMP using col C (idx 2) name only
     sz_sl_keys = set()
@@ -1848,6 +1884,105 @@ print("Fetching Posting Analysis data...")
  wk_not_offer_mkt_pct, mo_not_offer_mkt_pct,
  offer_not_posted_wk_sales, offer_not_posted_mo_sales) = fetch_posting_data()
 
+# ── Sales-Achieved % snapshot: a new "week" whenever POSTING changes ──
+# Week 1 is the first recorded state; each time the posts-made signature
+# (Kenya / Sinza / Uganda weekly posts) changes, that becomes the next week.
+from datetime import date
+
+MKT_HISTORY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "posting_mkt_history.json")
+
+def _pct_num(v):
+    try:
+        return round(float(str(v).replace('%', '').strip()), 1)
+    except (ValueError, TypeError):
+        return 0.0
+
+def update_mkt_history(vals, sig):
+    """vals = {kenya,sinza,uganda} %; sig = [kenya_posts, sinza_posts, uganda_posts]."""
+    weeks = []
+    if os.path.exists(MKT_HISTORY):
+        try:
+            with open(MKT_HISTORY, "r") as f:
+                weeks = json.load(f).get("weeks", [])
+        except (ValueError, OSError):
+            weeks = []
+
+    month = date.today().strftime("%b")
+    if weeks and weeks[-1].get("_sig") == sig:
+        # Posting unchanged → same week; just refresh its % to the latest read
+        weeks[-1].update({"kenya": vals["kenya"], "sinza": vals["sinza"],
+                          "uganda": vals["uganda"], "month": month})
+    else:
+        # Posting changed (or first run) → new week
+        weeks.append({
+            "label": "Wk " + str(len(weeks) + 1),
+            "month": month,
+            "kenya": vals["kenya"], "sinza": vals["sinza"], "uganda": vals["uganda"],
+            "_sig":  sig,
+        })
+        weeks = weeks[-12:]
+
+    with open(MKT_HISTORY, "w") as f:
+        json.dump({"weeks": weeks}, f, indent=2)
+    return weeks
+
+mkt_pct_history = update_mkt_history(
+    {"kenya":  _pct_num(wk_mkt_pct),
+     "sinza":  _pct_num(sinza.get('szWkMktPct')),
+     "uganda": _pct_num(uganda.get('ugWkMktPct'))},
+    [wk_posts, sinza.get('szWkPosts', 0), uganda.get('ugWkPosts', 0)],
+)
+
+# ── Bags cleared by marketing: stock drop on posted bags since the week's baseline ──
+STOCK_HISTORY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "posting_stock_history.json")
+
+def update_clearance(current, sig):
+    """current = {region: {key: {productName,colour,category,bagType,stock}}}.
+    A new week's baseline is captured whenever the posting signature changes;
+    'cleared' = baseline stock − current stock (per posted bag)."""
+    state = {}
+    if os.path.exists(STOCK_HISTORY):
+        try:
+            with open(STOCK_HISTORY, "r") as f:
+                state = json.load(f)
+        except (ValueError, OSError):
+            state = {}
+    baseline = state.get("baseline") or {}
+    history  = state.get("history") or []
+    month    = date.today().strftime("%b")
+
+    if (state.get("sig") is None) or (state.get("sig") != sig):
+        baseline = current   # posting changed → new week: re-baseline stock
+        history.append({"label": "Wk " + str(len(history) + 1), "month": month,
+                        "kenya": 0, "sinza": 0, "uganda": 0})
+        history = history[-12:]
+
+    lists, totals = {}, {}
+    for region in ("kenya", "sinza", "uganda"):
+        base, cur = baseline.get(region, {}), current.get(region, {})
+        lst, tot = [], 0
+        for key, b in base.items():
+            cur_stock = (cur.get(key) or {}).get("stock", 0)
+            drop = b.get("stock", 0) - cur_stock
+            if drop > 0:
+                lst.append({"productName": b.get("productName"), "colour": b.get("colour"),
+                            "category": b.get("category"), "bagType": b.get("bagType"),
+                            "prevStock": b.get("stock", 0), "curStock": cur_stock, "cleared": drop})
+                tot += drop
+        lst.sort(key=lambda x: -x["cleared"])
+        lists[region], totals[region] = lst, tot
+    if history:
+        history[-1].update({"kenya": totals["kenya"], "sinza": totals["sinza"], "uganda": totals["uganda"]})
+
+    with open(STOCK_HISTORY, "w") as f:
+        json.dump({"sig": sig, "baseline": baseline, "history": history}, f, indent=2)
+    return lists, totals, history
+
+cleared_lists, cleared_totals, cleared_history = update_clearance(
+    {"kenya": kenya.get('postedStock', {}), "sinza": sinza.get('postedStock', {}), "uganda": uganda.get('postedStock', {})},
+    [wk_posts, sinza.get('szWkPosts', 0), uganda.get('ugWkPosts', 0)],
+)
+
 # Flatten Kenya into top-level PA keys (keeps HTML backward-compatible)
 # Sinza goes under PA.sinza
 inline_script = (
@@ -1856,7 +1991,7 @@ inline_script = (
     "const PA = {\n"
     # ── Kenya top-level ──
     f'  weeklyPostsMade:  {wk_posts},\n'
-    f'  weeklySalesTotal: "{fmt_int(offer_posted_wk_count)}",\n'
+    f'  weeklySalesTotal: "{fmt_int(offer_posted_wk_count)}",\n'   # WS col AB for ✅-posted (on-offer) names — Kenya
     f'  weeklyExpected:   "{fmt_int(round(wk_expected))}",\n'
     f'  monthlyPostsMade: {mo_posts},\n'
     f'  monthlySalesTotal:"{fmt_int(mo_sales)}",\n'
@@ -1880,6 +2015,12 @@ inline_script = (
     f'  moInstockNotPostedSum:"{fmt_int(mo_instock_not_posted_sum)}",\n'
     f'  noConvertWk:         {json.dumps(nc_wk, ensure_ascii=False)},\n'
     f'  noConvertMo:         {json.dumps(nc_mo, ensure_ascii=False)},\n'
+    f'  mktPctHistory:       {json.dumps(mkt_pct_history)},\n'
+    f'  clearedKenya:        {json.dumps(cleared_lists["kenya"],  ensure_ascii=False)},\n'
+    f'  clearedSinza:        {json.dumps(cleared_lists["sinza"],  ensure_ascii=False)},\n'
+    f'  clearedUganda:       {json.dumps(cleared_lists["uganda"], ensure_ascii=False)},\n'
+    f'  clearedTotals:       {json.dumps(cleared_totals)},\n'
+    f'  clearedHistory:      {json.dumps(cleared_history)},\n'
     f'  notOfferPostedWk:    {not_offer_posted_wk},\n'
     f'  offerNotPostedWkSales: "{fmt_int(offer_not_posted_wk_sales)}",\n'
     f'  offerNotPostedMoSales: "{fmt_int(offer_not_posted_mo_sales)}",\n'

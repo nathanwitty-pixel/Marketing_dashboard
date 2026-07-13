@@ -22,7 +22,10 @@
     }
 
     html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
-    body { background: var(--bg-app); color: var(--text-hi); display: flex; flex-direction: column; }
+    body { background: var(--bg-app); color: var(--text-hi); display: flex; flex-direction: row; }
+
+    /* Right-hand column: top bar + content stacked */
+    .main-col { flex: 1; display: flex; flex-direction: column; overflow: hidden; height: 100vh; min-width: 0; }
 
     /* ── Top bar ───────────────────────────────────────────── */
     .topbar {
@@ -31,31 +34,20 @@
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
-      padding: 0 1rem 0 0;
+      padding: 0 1rem;
       flex-shrink: 0;
       gap: 0;
     }
 
-    .topbar-brand {
-      width: var(--sidebar-w);
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      padding: 0 1rem;
-      flex-shrink: 0;
-      border-right: 1px solid var(--border);
-      height: 100%;
-    }
     .brand-mark {
-      width: 30px; height: 30px;
       background: linear-gradient(135deg, #10b981, #06b6d4);
       border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.62rem; font-weight: 800; color: #fff;
+      font-weight: 800; color: #fff;
       letter-spacing: 0.04em; flex-shrink: 0;
     }
-    .brand-name { font-size: 0.8rem; font-weight: 700; color: var(--text-hi); line-height: 1.2; }
-    .brand-sub  { font-size: 0.6rem; color: var(--text-lo); letter-spacing: 0.05em; margin-top: 1px; }
+    .brand-name { font-weight: 700; color: var(--text-hi); line-height: 1.2; }
+    .brand-sub  { color: var(--text-lo); letter-spacing: 0.05em; margin-top: 2px; }
 
     .topbar-mid {
       flex: 1;
@@ -122,39 +114,101 @@
     /* ── App body ──────────────────────────────────────────── */
     .app-body { display: flex; flex: 1; overflow: hidden; }
 
-    /* ── Sidebar ───────────────────────────────────────────── */
+    /* ── Sidebar (slim icon rail) ──────────────────────────── */
     .sidebar {
-      width: var(--sidebar-w);
-      background: var(--bg-sidebar);
-      border-right: 1px solid var(--border);
-      overflow-y: auto; flex-shrink: 0;
-      padding: 0.5rem 0 1.5rem;
-      scrollbar-width: thin; scrollbar-color: #1e2235 transparent;
+      width: 72px;
+      background: #0b0d16;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      margin: 12px 0 12px 12px;
+      height: calc(100vh - 24px);
+      flex-shrink: 0;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 0.7rem 0;
     }
 
-    .nav-section {
-      font-size: 0.56rem; font-weight: 700; letter-spacing: 0.14em;
-      text-transform: uppercase; color: var(--text-lo);
-      padding: 0.9rem 1.1rem 0.3rem;
+    /* Brand mark at the top (hover shows full name) */
+    .sidebar-brand {
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 0 0.6rem; flex-shrink: 0; position: relative;
     }
+    .sidebar-brand .brand-mark { width: 42px; height: 42px; border-radius: 13px; font-size: 0.82rem; }
+    .brand-text { display: none; }
+    .sidebar-brand::after {
+      content: 'Denri Africa · Marketing Analytics';
+      position: absolute; left: calc(100% + 14px); top: 50%; transform: translateY(-50%);
+      background: #ffffff; color: #0b0d16; padding: 0.4rem 0.75rem; border-radius: 9px;
+      font-size: 0.74rem; font-weight: 700; white-space: nowrap;
+      opacity: 0; pointer-events: none; transition: opacity 0.12s;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.45); z-index: 200;
+    }
+    .sidebar-brand:hover::after { opacity: 1; }
+
+    .sidebar-nav {
+      flex: 1; overflow: visible;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0.25rem; padding: 0.4rem 0; width: 100%;
+    }
+
+    /* Section labels don't fit an icon rail */
+    .nav-section { display: none; }
 
     .nav-item {
-      display: flex; align-items: center; gap: 0.55rem;
-      padding: 0.5rem 1.1rem;
-      font-size: 0.76rem; font-weight: 500;
+      width: 46px; height: 46px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 14px;
       color: var(--text-mid);
-      cursor: pointer;
-      border-left: 2px solid transparent;
-      transition: background 0.12s, color 0.12s, border-color 0.12s;
-      user-select: none; line-height: 1.3;
+      cursor: pointer; position: relative;
+      font-size: 0;                    /* hides the text label */
+      transition: background 0.14s, color 0.14s;
+      user-select: none; flex-shrink: 0;
     }
-    .nav-item:hover { background: rgba(255,255,255,0.03); color: var(--text-hi); }
-    .nav-item.active { background: var(--accent-dim); border-left-color: var(--accent); color: #34d399; }
-    .nav-item.active svg { color: #34d399; }
-    .nav-icon { flex-shrink: 0; opacity: 0.6; }
+    .nav-item:hover { background: rgba(255,255,255,0.07); color: var(--text-hi); }
+    .nav-item.active { background: #ffffff; color: #0b0d16; }
     .nav-item.active .nav-icon { opacity: 1; }
 
-    .nav-divider { height: 1px; background: var(--border); margin: 0.5rem 1.1rem; }
+    .nav-icon { flex-shrink: 0; width: 22px; height: 22px; opacity: 0.7; }
+    .nav-item:hover .nav-icon { opacity: 1; }
+
+    /* White tooltip on hover (from data-title) */
+    .nav-item::after {
+      content: attr(data-title);
+      position: absolute; left: calc(100% + 14px); top: 50%; transform: translateY(-50%);
+      background: #ffffff; color: #0b0d16; padding: 0.4rem 0.75rem; border-radius: 9px;
+      font-size: 0.74rem; font-weight: 600; white-space: nowrap;
+      opacity: 0; pointer-events: none; transition: opacity 0.12s;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.45); z-index: 200;
+    }
+    .nav-item:hover::after { opacity: 1; }
+
+    .nav-divider { height: 1px; width: 28px; background: var(--border); margin: 0.4rem 0; flex-shrink: 0; }
+
+    /* Toggle (hamburger) */
+    .sidebar-toggle {
+      width: 38px; height: 38px; flex-shrink: 0; align-self: center;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.05); border: none; border-radius: 11px;
+      color: var(--text-mid); cursor: pointer; margin-bottom: 0.45rem;
+      transition: background 0.14s, color 0.14s;
+    }
+    .sidebar-toggle:hover { background: rgba(255,255,255,0.1); color: var(--text-hi); }
+    .toggle-icon { width: 18px; height: 18px; }
+    .sidebar.expanded .sidebar-toggle { align-self: flex-end; }
+
+    /* ── Expanded state ─────────────────────────────────────── */
+    .sidebar.expanded { width: 236px; align-items: stretch; padding: 0.7rem 0.6rem; }
+    .sidebar.expanded .sidebar-brand { justify-content: flex-start; gap: 0.7rem; padding: 0 0.35rem 0.7rem; }
+    .sidebar.expanded .sidebar-brand::after { display: none; }
+    .sidebar.expanded .brand-text { display: block; }
+    .sidebar.expanded .brand-name { font-size: 0.92rem; }
+    .sidebar.expanded .brand-sub  { font-size: 0.62rem; }
+    .sidebar.expanded .sidebar-nav { align-items: stretch; }
+    .sidebar.expanded .nav-section { display: block; align-self: stretch; padding: 0.75rem 0.85rem 0.3rem; }
+    .sidebar.expanded .nav-item { width: 100%; justify-content: flex-start; gap: 0.85rem; padding: 0 0.7rem; font-size: 0.84rem; }
+    .sidebar.expanded .nav-item::after { display: none; }
+    .sidebar.expanded .nav-item.active { background: var(--accent-dim); color: #34d399; }
+    .sidebar.expanded .nav-item.active .nav-icon { color: #34d399; opacity: 1; }
+    .sidebar.expanded .nav-divider { width: auto; align-self: stretch; margin: 0.5rem 0.85rem; }
 
     /* ── Content + iframe ──────────────────────────────────── */
     .content { flex: 1; overflow: hidden; position: relative; background: var(--bg-content); }
@@ -178,80 +232,47 @@
 </head>
 <body>
 
-<!-- ── Top bar ───────────────────────────────────────────── -->
-<div class="topbar">
-  <div class="topbar-brand">
+<!-- ── Sidebar ───────────────────────────────────────────── -->
+<aside class="sidebar expanded" id="sidebar">
+
+  <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">
+    <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="4" y1="7" x2="20" y2="7"></line>
+      <line x1="4" y1="12" x2="20" y2="12"></line>
+      <line x1="4" y1="17" x2="20" y2="17"></line>
+    </svg>
+  </button>
+
+  <div class="sidebar-brand">
     <div class="brand-mark">DA</div>
-    <div>
+    <div class="brand-text">
       <div class="brand-name">Denri Africa</div>
       <div class="brand-sub">Marketing Analytics</div>
     </div>
   </div>
-  <div class="topbar-mid" id="page-title">Current Performance</div>
-  <div class="topbar-right">
-    <div class="dot-live" id="status-dot"></div>
-    <span class="topbar-time" id="clock"></span>
-    <div class="export-wrap">
-      <button class="btn-ref" id="btn-export" onclick="toggleExportMenu(event)">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <polyline points="7 10 12 15 17 10"></polyline>
-          <line x1="12" y1="15" x2="12" y2="3"></line>
-        </svg>
-        Export
-      </button>
-      <div class="export-menu" id="export-menu">
-        <button class="export-item" onclick="exportPDF()"><span class="fmt fmt-pdf">PDF</span> PDF — full colour</button>
-        <button class="export-item" onclick="exportWord()"><span class="fmt fmt-doc">DOC</span> Word — colour on white</button>
-        <button class="export-item" onclick="exportExcel()"><span class="fmt fmt-xls">XLS</span> Excel workbook</button>
-      </div>
-    </div>
-    <button class="btn-ref" id="btn-ref" onclick="reloadFrame()">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-        <polyline points="23 4 23 10 17 10"></polyline>
-        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-      </svg>
-      Refresh
-    </button>
-  </div>
-</div>
 
-<!-- ── App body ──────────────────────────────────────────── -->
-<div class="app-body">
-
-  <aside class="sidebar">
+  <nav class="sidebar-nav">
 
     <div class="nav-section">Performance</div>
-
-    <div class="nav-item active"
-         data-src="current_performance.html"
-         data-title="Current Performance"
-         onclick="navigate(this)">
-      <svg class="nav-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <div class="nav-item active" data-src="current_performance.html" data-title="Current Performance" onclick="navigate(this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
       </svg>
       Current Performance
     </div>
 
-
     <div class="nav-divider"></div>
     <div class="nav-section">Products</div>
-
-    <div class="nav-item"
-         data-src="new_products.html"
-         data-title="New Products Analytics"
-         onclick="navigate(this)">
-      <svg class="nav-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <div class="nav-item" data-src="new_products.html" data-title="New Products Analytics" onclick="navigate(this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+        <line x1="12" y1="22.08" x2="12" y2="12"></line>
       </svg>
       New Products
     </div>
-
-    <div class="nav-item"
-         data-src="offer_type_analysis.html"
-         data-title="Offer Type Analysis"
-         onclick="navigate(this)">
-      <svg class="nav-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <div class="nav-item" data-src="offer_type_analysis.html" data-title="Offer Type Analysis" onclick="navigate(this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
         <line x1="7" y1="7" x2="7.01" y2="7"></line>
       </svg>
@@ -260,26 +281,16 @@
 
     <div class="nav-divider"></div>
     <div class="nav-section">Marketing</div>
-
-    <div class="nav-item"
-         data-src="POSTING (SALES YIELDS FROM ACCURATE POSTING).html"
-         data-title="Posting – Sales Yields from Accurate Posting"
-         onclick="navigate(this)">
-      <svg class="nav-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-        <polyline points="14 2 14 8 20 8"></polyline>
-        <line x1="16" y1="13" x2="8" y2="13"></line>
-        <line x1="16" y1="17" x2="8" y2="17"></line>
-        <polyline points="10 9 9 9 8 9"></polyline>
+    <div class="nav-item" data-src="POSTING (SALES YIELDS FROM ACCURATE POSTING).html" data-title="Posting – Sales Yields from Accurate Posting" onclick="navigate(this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 11v2a1 1 0 0 0 1 1h2l4.5 4V6L6 10H4a1 1 0 0 0-1 1z"></path>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7"></path>
+        <path d="M18.5 6a7 7 0 0 1 0 12"></path>
       </svg>
       Posting Yields
     </div>
-
-    <div class="nav-item"
-         data-src="shops_efficiency.html"
-         data-title="Shops Efficiency Tracking"
-         onclick="navigate(this)">
-      <svg class="nav-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <div class="nav-item" data-src="shops_efficiency.html" data-title="Shops Efficiency Tracking" onclick="navigate(this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 9l1-5h16l1 5"></path>
         <path d="M4 9v11a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"></path>
         <path d="M9 21v-6h6v6"></path>
@@ -289,20 +300,51 @@
 
     <div class="nav-divider"></div>
     <div class="nav-section">Intelligence</div>
-
-    <div class="nav-item"
-         data-src="insights.html"
-         data-title="Dashboard Insights"
-         onclick="navigate(this)">
-      <svg class="nav-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    <div class="nav-item" data-src="insights.html" data-title="Dashboard Insights" onclick="navigate(this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18h6"></path>
+        <path d="M10 22h4"></path>
+        <path d="M12 2a7 7 0 0 0-4 12.7c.5.4.9 1 1 1.6h6c.1-.6.5-1.2 1-1.6A7 7 0 0 0 12 2z"></path>
       </svg>
       Insights
     </div>
 
-  </aside>
+  </nav>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="main-col">
+
+  <!-- ── Top bar ─────────────────────────────────────────── -->
+  <div class="topbar">
+    <div class="topbar-mid" id="page-title">Current Performance</div>
+    <div class="topbar-right">
+      <div class="dot-live" id="status-dot"></div>
+      <span class="topbar-time" id="clock"></span>
+      <div class="export-wrap">
+        <button class="btn-ref" id="btn-export" onclick="toggleExportMenu(event)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export
+        </button>
+        <div class="export-menu" id="export-menu">
+          <button class="export-item" onclick="exportPDF()"><span class="fmt fmt-pdf">PDF</span> PDF — full colour</button>
+          <button class="export-item" onclick="exportWord()"><span class="fmt fmt-doc">DOC</span> Word — colour on white</button>
+          <button class="export-item" onclick="exportExcel()"><span class="fmt fmt-xls">XLS</span> Excel workbook</button>
+        </div>
+      </div>
+      <button class="btn-ref" id="btn-ref" onclick="reloadFrame()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        Refresh
+      </button>
+    </div>
+  </div>
 
   <main class="content">
     <iframe id="dash-frame" src="current_performance.html"></iframe>
@@ -320,6 +362,14 @@
   var titleEl = document.getElementById('page-title');
   var clockEl = document.getElementById('clock');
   var btnRef  = document.getElementById('btn-ref');
+
+  // Collapsible sidebar (expanded = labels + user card; collapsed = icon rail)
+  var sidebarEl = document.getElementById('sidebar');
+  function toggleSidebar() {
+    sidebarEl.classList.toggle('expanded');
+    try { localStorage.setItem('denri_sidebar', sidebarEl.classList.contains('expanded') ? '1' : '0'); } catch (e) {}
+  }
+  try { if (localStorage.getItem('denri_sidebar') === '0') sidebarEl.classList.remove('expanded'); } catch (e) {}
 
   // Append a cache-busting timestamp so the browser never serves a stale iframe
   function bust(file) {

@@ -367,6 +367,22 @@ def fetch_offer_data():
     # are located below it by their own title cells (any column).
     sinza_combo_headers, sinza_combos = process_table(section_raw(sinza_r))
 
+    # Sinza combo NAMES are maintained in a separate column (AK372:AK381);
+    # override the parsed names with those, matched positionally to the data rows.
+    try:
+        ak_vals  = combos_ws.get("AK372:AK381")
+        ak_names = [str(row[0]).strip() if row else '' for row in ak_vals]
+        di = 0
+        for row in sinza_combos:
+            if row and str(row[0]).strip().upper().startswith("TOTAL"):
+                continue
+            if di < len(ak_names) and ak_names[di]:
+                row[0] = ak_names[di]
+            di += 1
+        print(f"  Sinza combo names from AK: {len([n for n in ak_names if n])}")
+    except Exception as e:
+        print(f"  (Sinza AK names skipped: {e})")
+
     singles_r = find_row_any("SINGLES", start=(sinza_r or 0) + 1) if sinza_r is not None else None
     sinza_singles_headers, sinza_singles = process_table(section_raw(singles_r))
 
