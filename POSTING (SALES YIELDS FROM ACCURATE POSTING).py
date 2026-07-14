@@ -1850,10 +1850,36 @@ print("Fetching Posting Analysis data...")
  wk_not_offer_mkt_pct, mo_not_offer_mkt_pct,
  offer_not_posted_wk_sales, offer_not_posted_mo_sales) = fetch_posting_data()
 
-# ── Sales-Achieved % snapshot: a new "week" whenever POSTING changes ──
-# Week 1 is the first recorded state; each time the posts-made signature
-# (Kenya / Sinza / Uganda weekly posts) changes, that becomes the next week.
-from datetime import date
+# ── Sales-Achieved % snapshot: one row per CALENDAR week ──
+# Weeks are numbered so the opening partial week of the month is Wk 1
+# (e.g. Jul 1–4 = Wk 1, Jul 5–11 = Wk 2, Jul 12–18 = Wk 3, ...). Each time the
+# posts-made signature changes within a week its % is refreshed in place; the
+# row only rolls over to the next number when a new calendar week begins.
+from datetime import date, timedelta
+
+def _mkt_perfect_week_index(d):
+    """Ordinal of d's Sun–Sat week within the month, counting every week that has
+    at least one day in the month — so the opening partial week is Week 1."""
+    year, month = d.year, d.month
+    ms = date(year, month, 1)
+    me = (date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)) - timedelta(days=1)
+    ws = ms - timedelta(days=(ms.weekday() + 1) % 7)
+    target = d - timedelta(days=(d.weekday() + 1) % 7)
+    idx = 0
+    while ws <= me:
+        days_in = sum(1 for i in range(7)
+                      if (ws + timedelta(days=i)).year == year
+                      and (ws + timedelta(days=i)).month == month)
+        if days_in >= 1:
+            idx += 1
+        if ws == target:
+            return idx if days_in >= 1 else 0
+        ws += timedelta(days=7)
+    return idx
+
+def _mkt_week_label(d=None):
+    wi = _mkt_perfect_week_index(d or date.today())
+    return ("Wk " + str(wi)) if wi else "Partial"
 
 MKT_HISTORY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "posting_mkt_history.json")
 
@@ -1874,14 +1900,15 @@ def update_mkt_history(vals, sig):
             weeks = []
 
     month = date.today().strftime("%b")
-    if weeks and weeks[-1].get("_sig") == sig:
-        # Posting unchanged → same week; just refresh its % to the latest read
+    wk_label = _mkt_week_label()
+    if weeks and weeks[-1].get("label") == wk_label:
+        # Same calendar week → refresh its % (and signature) to the latest read
         weeks[-1].update({"kenya": vals["kenya"], "sinza": vals["sinza"],
-                          "uganda": vals["uganda"], "month": month})
+                          "uganda": vals["uganda"], "month": month, "_sig": sig})
     else:
-        # Posting changed (or first run) → new week
+        # A new calendar week has begun → new row
         weeks.append({
-            "label": "Wk " + str(len(weeks) + 1),
+            "label": wk_label,
             "month": month,
             "kenya": vals["kenya"], "sinza": vals["sinza"], "uganda": vals["uganda"],
             "_sig":  sig,
@@ -1918,10 +1945,12 @@ def update_clearance(current, sig):
     month    = date.today().strftime("%b")
 
     if (state.get("sig") is None) or (state.get("sig") != sig):
-        baseline = current   # posting changed → new week: re-baseline stock
-        history.append({"label": "Wk " + str(len(history) + 1), "month": month,
-                        "kenya": 0, "sinza": 0, "uganda": 0})
-        history = history[-12:]
+        baseline = current   # posting changed → re-baseline stock
+        wk_label = _mkt_week_label()
+        if not history or history[-1].get("label") != wk_label:
+            history.append({"label": wk_label, "month": month,
+                            "kenya": 0, "sinza": 0, "uganda": 0})
+            history = history[-12:]
 
     lists, totals = {}, {}
     for region in ("kenya", "sinza", "uganda"):

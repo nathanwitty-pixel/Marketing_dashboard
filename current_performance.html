@@ -392,10 +392,10 @@
 <!-- PERF_DATA_START -->
 <script>
 const PERF = {
-  remainingTarget:    "16,532",
-  salesPctAchieved:   "28.84%",
-  sales:              "6,700",
-  previousSalesPct:   "14.08%",
+  remainingTarget:    "16,519",
+  salesPctAchieved:   "28.90%",
+  sales:              "6,713",
+  previousSalesPct:   "14.14%",
   previousSalesBags:  "3,429",
   wowSalesPct:        "0.00%",
   wowSalesBags:       "0",
@@ -431,7 +431,7 @@ const PROJ = {
   bareMinimumGrowthPct:     "25.00%",
   declinedBy:               "-2,379",
   weeklySalesTotal:         "3,429",
-  weeklyHistory:            [{"weekStart": "2026-07-05", "label": "Wk 1", "month": "Jul", "salesPct": 26.68, "salesBags": 6199, "prevSalesPct": 11.92, "prevSalesBags": 2445, "weeklySales": 3429, "declinedBy": -2379}, {"weekStart": "2026-07-12", "label": "Wk 2", "month": "Jul", "salesPct": 28.84, "salesBags": 6700, "prevSalesPct": 14.76, "prevSalesBags": 3429, "weeklySales": 3429, "declinedBy": -2379}]
+  weeklyHistory:            [{"weekStart": "2026-06-28", "label": "Wk 1", "month": "Jul", "salesPct": 10.52, "salesBags": 2445, "prevSalesPct": 0, "prevSalesBags": 0, "weeklySales": 2445, "declinedBy": -2379}, {"weekStart": "2026-07-05", "label": "Wk 2", "month": "Jul", "salesPct": 26.68, "salesBags": 6199, "prevSalesPct": 10.52, "prevSalesBags": 2445, "weeklySales": 3754, "declinedBy": -2379}, {"weekStart": "2026-07-12", "label": "Wk 3", "month": "Jul", "salesPct": 28.84, "salesBags": 6700, "prevSalesPct": 26.68, "prevSalesBags": 6199, "weeklySales": 501, "declinedBy": -2379}]
 };
 </script>
 <!-- PROJ_DATA_END -->
@@ -505,14 +505,13 @@ const PROJ = {
       return '<td style="padding:0.6rem 1.5rem;border-top:1px solid #2d3148;text-align:' + align +
         ';font-variant-numeric:tabular-nums' + (color ? ';color:' + color : '') + '">' + v + '</td>';
     }
-    var lastI = weeks.length - 1;
-    // Cumulative % achieved by each week: last = current salesPct, earlier = prev-sales baseline.
-    function cumPct(x, j) { return j === lastI ? (Number(x.salesPct) || 0) : prevPctOf(x); }
+    // Cumulative % achieved by end of each week is stored directly in salesPct.
+    function cumPct(x) { return Number(x.salesPct) || 0; }
     tb.innerHTML = weeks.map(function (w, i) {
       // Each week shows what it added on its own: this week's cumulative − last week's.
-      var pctV  = cumPct(w, i) - (i > 0 ? cumPct(weeks[i - 1], i - 1) : 0);
-      // Bags: first week uses its baseline, later weeks use that week's Weekly Sales.
-      var bagsV = i === 0 ? (Number(w.prevSalesBags) || 0) : (Number(w.weeklySales) || 0);
+      var pctV  = cumPct(w) - (i > 0 ? cumPct(weeks[i - 1]) : 0);
+      // Bags: each week's own Weekly Sales contribution.
+      var bagsV = Number(w.weeklySales) || 0;
       var d = w.declinedBy || 0;
       var dTxt = (d > 0 ? '+' : '') + d.toLocaleString();
       var dCol = d < 0 ? '#f87171' : '#34d399';
@@ -764,17 +763,12 @@ window.addEventListener('DOMContentLoaded', function() {
     var ctx   = document.getElementById('chart-weekly-perf');
     if (!wrap || !ctx || !weeks.length) return;
     wrap.style.display = 'block';
-    var lastI = weeks.length - 1;
-    // Cumulative % achieved by each week (last = current, earlier = prev-sales baseline).
-    function cumPct(w, i) {
-      if (i === lastI) return Number(w.salesPct) || 0;
-      var sb = Number(w.salesBags) || 0, sp = Number(w.salesPct) || 0, pb = Number(w.prevSalesBags) || 0;
-      return (sb > 0 && sp > 0) ? (pb * sp / sb) : (Number(w.prevSalesPct) || 0);
-    }
+    // Cumulative % achieved by end of each week is stored directly in salesPct.
+    function cumPct(w) { return Number(w.salesPct) || 0; }
     // Each week's OWN contribution = its cumulative − the previous week's cumulative.
-    var series = weeks.map(function(w, i) { return cumPct(w, i) - (i > 0 ? cumPct(weeks[i - 1], i - 1) : 0); });
-    // Bags: first week = baseline, later weeks = that week's Weekly Sales.
-    var bagsSeries = weeks.map(function(w, i) { return i === 0 ? (Number(w.prevSalesBags) || 0) : (Number(w.weeklySales) || 0); });
+    var series = weeks.map(function(w, i) { return cumPct(w) - (i > 0 ? cumPct(weeks[i - 1]) : 0); });
+    // Bags: each week's own Weekly Sales contribution.
+    var bagsSeries = weeks.map(function(w) { return Number(w.weeklySales) || 0; });
     // Running cumulative (for tooltip / total badge).
     var cumSeries = []; series.reduce(function(a, v, i) { return (cumSeries[i] = a + v); }, 0);
     var minPct = parsePct(PROJ.bareMinimumGrowthPct) || 0;

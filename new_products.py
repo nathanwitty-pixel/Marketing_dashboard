@@ -324,7 +324,10 @@ def _np_complete_weeks_in_month(ref=None):
     return max(n, 1)
 
 def _np_perfect_week_index(d):
-    """Ordinal among the month's perfect weeks (>=5 days in month)."""
+    """Ordinal among the month's perfect weeks (>=5 days in month), so the first
+    FULL week is Week 1 (the opening partial week is not counted here — posts
+    tracking only begins on the first full week).
+    (e.g. Jul 5–11 = Wk 1, Jul 12–18 = Wk 2, Jul 19–25 = Wk 3, ...)"""
     year, month = d.year, d.month
     ms = date(year, month, 1)
     me = (date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)) - timedelta(days=1)
@@ -365,6 +368,14 @@ def update_np_weekly_history():
     weeks.append(entry)
     weeks.sort(key=lambda w: w.get("weekStart", ""))
     weeks = weeks[-16:]
+    # Re-label every stored week from its own weekStart, so the numbering stays
+    # consistent (opening partial week = Wk 1) even for previously-frozen rows.
+    for w in weeks:
+        try:
+            wi = _np_perfect_week_index(date.fromisoformat(w["weekStart"]))
+            w["label"] = ("Wk " + str(wi)) if wi else "Partial"
+        except Exception:
+            pass
     with open(WEEKLY_POSTS_HISTORY, "w") as f:
         json.dump({"weeks": weeks}, f, indent=2)
     return weeks

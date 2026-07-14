@@ -165,8 +165,9 @@ def _week_start(d):                       # Sunday that starts d's week
     return d - timedelta(days=(d.weekday() + 1) % 7)
 
 def _perfect_week_index(d):
-    """Ordinal of d's Sun–Sat week among the month's PERFECT weeks
-    (weeks with >=5 days in the month). Returns 0 for a partial lead week."""
+    """Ordinal of d's Sun–Sat week within the month, counting EVERY week that has
+    at least one day in the month — so the opening partial week is Week 1.
+    (e.g. Jul 1–4 = Wk 1, Jul 5–11 = Wk 2, Jul 12–18 = Wk 3, ...)"""
     year, month = d.year, d.month
     ms = date(year, month, 1)
     me = (date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)) - timedelta(days=1)
@@ -177,10 +178,10 @@ def _perfect_week_index(d):
         days_in = sum(1 for i in range(7)
                       if (ws + timedelta(days=i)).year == year
                       and (ws + timedelta(days=i)).month == month)
-        if days_in >= 5:
+        if days_in >= 1:
             idx += 1
         if ws == target:
-            return idx if days_in >= 5 else 0
+            return idx if days_in >= 1 else 0
         ws += timedelta(days=7)
     return idx
 
@@ -223,6 +224,14 @@ def update_weekly_history():
     weeks.append(entry)
     weeks.sort(key=lambda w: w.get("weekStart", ""))
     weeks = weeks[-16:]
+    # Re-label every stored week from its own weekStart, so the numbering stays
+    # consistent (opening partial week = Wk 1) even for previously-frozen rows.
+    for w in weeks:
+        try:
+            wi = _perfect_week_index(date.fromisoformat(w["weekStart"]))
+            w["label"] = ("Wk " + str(wi)) if wi else "Partial"
+        except Exception:
+            pass
     with open(WEEKLY_HISTORY_FILE, "w") as f:
         json.dump({"weeks": weeks}, f, indent=2)
     return weeks
