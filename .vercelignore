@@ -1,6 +1,7 @@
 # ── SECRETS — never deploy ────────────────────────────────
 google_credentials.json
 google_token.json
+service_account.json
 *.env
 .env*
 *.pem

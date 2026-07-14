@@ -28,42 +28,8 @@ SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 
 # ── GOOGLE SHEETS AUTH ────────────────────────────────────────
 
-def get_gspread_client():
-    from google.oauth2.credentials import Credentials
-    from google_auth_oauthlib.flow import InstalledAppFlow
-    from google.auth.transport.requests import Request
-    import gspread
-
-    SCOPES     = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
-    CREDS_FILE = os.path.join(os.path.dirname(__file__), "google_credentials.json")
-    TOKEN_FILE = os.path.join(os.path.dirname(__file__), "google_token.json")
-
-    if not os.path.exists(CREDS_FILE):
-        print()
-        print("  !! google_credentials.json not found.")
-        print("  Follow these steps once to set up access:")
-        print("  1. Go to https://console.cloud.google.com/")
-        print("  2. Create a project > APIs & Services > Enable 'Google Sheets API'")
-        print("  3. APIs & Services > Credentials > Create OAuth client (Desktop app)")
-        print("  4. Download the JSON and save it as:")
-        print(f"     {CREDS_FILE}")
-        print()
-        raise FileNotFoundError("google_credentials.json missing.")
-
-    creds = None
-    if os.path.exists(TOKEN_FILE):
-        creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
-
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(CREDS_FILE, SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open(TOKEN_FILE, "w") as f:
-            f.write(creds.to_json())
-
-    return gspread.authorize(creds)
+# Shared auth: service account (permanent) or self-healing OAuth — see google_auth.py
+from google_auth import get_gspread_client
 
 
 # ── HELPERS ───────────────────────────────────────────────────
