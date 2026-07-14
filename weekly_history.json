@@ -2,7 +2,7 @@
   "weeks": [
     {
       "weekStart": "2026-06-28",
-      "label": "Wk 1",
+      "label": "Wk 5",
       "month": "Jul",
       "salesPct": 10.52,
       "salesBags": 2445,
@@ -26,11 +26,11 @@
       "weekStart": "2026-07-12",
       "label": "Wk 3",
       "month": "Jul",
-      "salesPct": 28.84,
-      "salesBags": 6700,
-      "prevSalesPct": 26.68,
-      "prevSalesBags": 6199,
-      "weeklySales": 501,
+      "salesPct": 28.9,
+      "salesBags": 6713,
+      "prevSalesPct": 14.76,
+      "prevSalesBags": 3429,
+      "weeklySales": 3429,
       "declinedBy": -2379
     }
   ]
