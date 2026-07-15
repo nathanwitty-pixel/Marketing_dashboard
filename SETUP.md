@@ -52,6 +52,30 @@ No code changes are needed after adding the file.
 python main.py          # refreshes every page, then serves the dashboard
 ```
 
+---
+
+## Timed Offers — snapshots over a window
+
+Set the campaign on the **Timed Offers** page (the "Offer Window" card): pick
+**All shops** or **Specific**, choose a **start / end date**, and hit
+**Save & apply**. This writes `timed_offers_config.json` and records a snapshot
+(sales + stock + posts, scoped to the chosen shops) for that day.
+
+While `python main.py` is running, it **auto-records one snapshot per day** for
+as long as the offer window is active — so the timeline fills itself in without
+you refreshing. It only records on days the dashboard is left running.
+
+### Always-on option (records even when the dashboard is closed)
+Use Windows **Task Scheduler** to run the generator once a day:
+
+1. Task Scheduler → **Create Basic Task** → name it "Timed Offer Snapshot".
+2. Trigger: **Daily**, pick a time (e.g. 8:00 pm).
+3. Action: **Start a program** →
+   - Program/script: `python`
+   - Arguments: `timed_offers.py`
+   - Start in: this folder's full path.
+4. Finish. It now records a snapshot each day the PC is on, window permitting.
+
 ## Secrets — never commit / deploy these
 `google_credentials.json`, `google_token.json`, and `service_account.json` are
 listed in `.gitignore` and `.vercelignore`. Keep real keys only on the machine

@@ -17,6 +17,7 @@ import time
 import webbrowser
 import http.server
 import socketserver
+from datetime import date
 from urllib.parse import urlparse, parse_qs
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -95,6 +96,43 @@ def run_scripts():
     print()
 
 
+def _offer_active_today():
+    """True if a timed-offer window is set and today falls inside it."""
+    cfg_path = os.path.join(BASE_DIR, "timed_offers_config.json")
+    try:
+        with open(cfg_path, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+        start, end = raw.get("startDate", ""), raw.get("endDate", "")
+        if start and end:
+            return date.fromisoformat(start) <= date.today() <= date.fromisoformat(end)
+    except (ValueError, OSError):
+        pass
+    return False
+
+
+def start_daily_snapshot():
+    """Once per calendar day, while an offer window is active, re-run
+    timed_offers.py so it records that day's shop-scoped snapshot. Runs in the
+    background for as long as the dashboard server is up (records only on days
+    the dashboard is left running — see SETUP.md for the always-on option)."""
+    to_py = os.path.join(BASE_DIR, "timed_offers.py")
+    last_date = date.today()   # startup run_scripts() already recorded today
+    while True:
+        time.sleep(1800)       # check twice an hour so a day-rollover is caught promptly
+        today = date.today()
+        if today != last_date and os.path.exists(to_py) and _offer_active_today():
+            try:
+                subprocess.run(
+                    [sys.executable, to_py], cwd=BASE_DIR, timeout=120,
+                    capture_output=True, text=True, encoding='utf-8', errors='replace',
+                    env={**os.environ, "PYTHONIOENCODING": "utf-8", "DENRI_LAUNCHER": "1"},
+                )
+                print(f"  (timed-offer snapshot recorded for {today.isoformat()})", flush=True)
+            except Exception:
+                pass
+        last_date = today
+
+
 # Scripts to run when the Refresh button is used on each page.
 # current_performance.html holds BOTH the PERF and PROJ data blocks, so its
 # refresh also re-runs forward_projections.py — this picks up manual edits
@@ -130,8 +168,67 @@ def start_server():
             parsed = urlparse(self.path)
             if parsed.path == "/api/refresh":
                 self._handle_refresh(parse_qs(parsed.query))
+            elif parsed.path == "/api/timed-offers-config":
+                self._handle_to_config(parse_qs(parsed.query))
             else:
                 super().do_GET()
+
+        def _handle_to_config(self, params):
+            """GET (no params) → return the current timed-offer config.
+            GET with save=1&shops=..&start=..&end=.. → write it + re-run the
+            generator so the page reflects the new shops/window immediately."""
+            cfg_path = os.path.join(BASE_DIR, "timed_offers_config.json")
+            if params.get("save"):
+                shops_raw = params.get("shops", ["ALL"])[0].strip()
+                start = params.get("start", [""])[0].strip()
+                end   = params.get("end", [""])[0].strip()
+                shops = "ALL" if (not shops_raw or shops_raw.upper() == "ALL") \
+                    else [s.strip() for s in shops_raw.split(",") if s.strip()]
+                cfg = {
+                    "_help": ("shops: \"ALL\" or a list of shop names exactly as in the "
+                              "sheet headers. startDate/endDate: YYYY-MM-DD; snapshots "
+                              "record only while today is inside this window."),
+                    "shops": shops, "startDate": start, "endDate": end,
+                }
+                try:
+                    with open(cfg_path, "w", encoding="utf-8") as f:
+                        json.dump(cfg, f, indent=2)
+                except OSError as exc:
+                    self._json(500, {"ok": False, "error": str(exc)})
+                    return
+                # Re-run the generator so the injected data + snapshot update now.
+                to_py = os.path.join(BASE_DIR, "timed_offers.py")
+                try:
+                    result = subprocess.run(
+                        [sys.executable, to_py], cwd=BASE_DIR, timeout=90,
+                        capture_output=True, text=True, encoding='utf-8', errors='replace',
+                        env={**os.environ, "PYTHONIOENCODING": "utf-8", "DENRI_LAUNCHER": "1"},
+                    )
+                    if result.returncode != 0:
+                        lines = result.stderr.strip().splitlines()
+                        msg = lines[-1][:200] if lines else "unknown error"
+                        self._json(500, {"ok": False, "error": f"timed_offers.py: {msg}"})
+                        return
+                except subprocess.TimeoutExpired:
+                    self._json(500, {"ok": False, "error": "timed_offers.py timed out after 90s"})
+                    return
+                except Exception as exc:
+                    self._json(500, {"ok": False, "error": str(exc)})
+                    return
+                self._json(200, {"ok": True})
+                return
+            # No save → return current config
+            cfg = {"shops": "ALL", "startDate": "", "endDate": ""}
+            if os.path.exists(cfg_path):
+                try:
+                    with open(cfg_path, "r", encoding="utf-8") as f:
+                        raw = json.load(f)
+                    cfg = {"shops": raw.get("shops", "ALL"),
+                           "startDate": raw.get("startDate", ""),
+                           "endDate": raw.get("endDate", "")}
+                except (ValueError, OSError):
+                    pass
+            self._json(200, {"ok": True, "config": cfg})
 
         def _handle_refresh(self, params):
             html_file = params.get("dashboard", [None])[0]
@@ -267,6 +364,9 @@ if __name__ == "__main__":
 
         # Refresh all dashboard data before opening browser
         run_scripts()
+
+        # Record a timed-offer snapshot once a day while the server is running
+        threading.Thread(target=start_daily_snapshot, daemon=True).start()
 
         url = f"http://127.0.0.1:{PORT}/shell.html"
         print(f"  Server running at {url}")
