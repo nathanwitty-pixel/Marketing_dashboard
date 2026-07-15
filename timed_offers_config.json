@@ -1,0 +1,6 @@
+{
+  "_help": "Timed-offer campaign settings. shops: \"ALL\" for every shop, or a list of shop names exactly as they appear in the sheet headers, e.g. [\"STARMALL\", \"MOMBASA\", \"HAZINA\"]. startDate / endDate: YYYY-MM-DD — snapshots are recorded (sales + stock + posts, scoped to the shops above) only while today is inside this window.",
+  "shops": "ALL",
+  "startDate": "2026-07-15",
+  "endDate": "2026-07-31"
+}

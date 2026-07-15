@@ -56,6 +56,58 @@ def fmt_pct(p):
     return f"{p:.2f}%"
 
 
+# ── TIMED-OFFER CAMPAIGN CONFIG ───────────────────────────────
+# Which shops the offer runs on + the window we record snapshots from.
+# Edit timed_offers_config.json (shops: "ALL" or a list; dates YYYY-MM-DD).
+CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "timed_offers_config.json")
+
+def load_offer_config():
+    cfg = {"shops": "ALL", "startDate": "", "endDate": ""}
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                raw = json.load(f)
+            cfg["shops"]     = raw.get("shops", "ALL")
+            cfg["startDate"] = str(raw.get("startDate", "") or "").strip()
+            cfg["endDate"]   = str(raw.get("endDate", "") or "").strip()
+        except (ValueError, OSError):
+            pass
+    return cfg
+
+OFFER_CONFIG = load_offer_config()
+
+def _scoped_total(rows, names_upper, shops):
+    """Sum the chosen shops' columns for rows whose BAG TYPE is a timed offer.
+    Columns are located by header name so it works across sheet layouts."""
+    if not rows:
+        return 0
+    header_up = [str(h).strip().upper() for h in rows[0]]
+    def col_of(name):
+        try:
+            return header_up.index(name)
+        except ValueError:
+            return None
+    bag_c = col_of("BAG TYPE")
+    if bag_c is None:
+        return 0
+    shop_cols = [c for c in (col_of(str(s).strip().upper()) for s in shops) if c is not None]
+    if not shop_cols:
+        return 0
+    total = 0
+    for row in rows[1:]:
+        if len(row) <= bag_c:
+            continue
+        bag = str(row[bag_c]).strip()
+        if not bag or bag.upper() in ("SUM TOTAL", "TOTAL", "GRAND TOTAL"):
+            continue
+        if bag.upper() not in names_upper:
+            continue
+        for c in shop_cols:
+            if len(row) > c:
+                total += safe_int(row[c])
+    return total
+
+
 # ── FETCH ─────────────────────────────────────────────────────
 
 def fetch_new_products_data():
@@ -268,9 +320,26 @@ def fetch_new_products_data():
     monthly_combined = [r for r in ms_base         if r["bagType"].upper() in names_upper]
     weekly_combined  = [r for r in weekly_combined if r["bagType"].upper() in names_upper]
 
+    # ── Timed-offer campaign scope: totals for ONLY the shops the offer runs on.
+    # "ALL" → every shop (use the Kenya + Outside aggregates already computed);
+    # a shop list → sum just those shops' columns for the timed-offer bags.
+    shops_cfg = OFFER_CONFIG.get("shops", "ALL")
+    if isinstance(shops_cfg, str) and shops_cfg.strip().upper() == "ALL":
+        scope_shops    = "ALL"
+        scope_sales_mo = sum(r["kenyaSales"] + r["outsideKenya"] for r in monthly_combined)
+        scope_sales_wk = sum(r["weeklySales"] for r in weekly_combined)
+        scope_stock    = sum(r["sKenya"] + r["sOutside"] for r in monthly_combined)
+    else:
+        scope_shops    = shops_cfg if isinstance(shops_cfg, list) else [shops_cfg]
+        scope_sales_mo = _scoped_total(ms_rows, names_upper, scope_shops)
+        scope_sales_wk = _scoped_total(ws_rows, names_upper, scope_shops)
+        scope_stock    = _scoped_total(sl_rows, names_upper, scope_shops)
+    offer_scope = {"shops": scope_shops, "salesMo": scope_sales_mo,
+                   "salesWk": scope_sales_wk, "stock": scope_stock}
+
     return (new_product_names, total_target, total_sales, total_deficit,
             monthly_combined, weekly_combined, product_targets,
-            all_monthly_combined, all_weekly_combined)
+            all_monthly_combined, all_weekly_combined, offer_scope)
 
 
 # ── RUN ───────────────────────────────────────────────────────
@@ -278,7 +347,7 @@ def fetch_new_products_data():
 print("Fetching data from Google Sheets...")
 (new_product_names, total_target, total_sales, total_deficit,
  monthly_combined, weekly_combined, product_targets,
- all_monthly_combined, all_weekly_combined) = fetch_new_products_data()
+ all_monthly_combined, all_weekly_combined, offer_scope) = fetch_new_products_data()
 
 product_count    = len(new_product_names)
 sales_pct        = (total_sales / total_target * 100) if total_target else 0
@@ -388,6 +457,65 @@ weekly_target       = round(total_target / np_complete_weeks) if np_complete_wee
 weekly_sales_pct    = (weekly_total / weekly_target * 100) if weekly_target else 0
 
 
+# ── TIMED-OFFER SNAPSHOTS ─────────────────────────────────────
+# While today is inside the campaign window, record one dated snapshot per run
+# (deduped by date) of the shop-scoped sales / stock / posts, so the page can
+# chart how the offer performed over its window.
+SNAPSHOTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              "timed_offers_snapshots.json")
+
+_start, _end = OFFER_CONFIG["startDate"], OFFER_CONFIG["endDate"]
+_today       = date.today()
+offer_configured = False
+offer_active     = False
+offer_days_left  = None
+if _start and _end:
+    try:
+        _s = date.fromisoformat(_start)
+        _e = date.fromisoformat(_end)
+        offer_configured = True
+        offer_active     = _s <= _today <= _e
+        offer_days_left  = max((_e - _today).days, 0) if _today <= _e else 0
+    except ValueError:
+        offer_configured = False
+
+offer_snapshots = []
+if os.path.exists(SNAPSHOTS_FILE):
+    try:
+        with open(SNAPSHOTS_FILE, "r", encoding="utf-8") as f:
+            offer_snapshots = json.load(f).get("snapshots", [])
+    except (ValueError, OSError):
+        offer_snapshots = []
+
+if offer_active:
+    entry = {
+        "date":    _today.isoformat(),
+        "salesMo": offer_scope["salesMo"],
+        "salesWk": offer_scope["salesWk"],
+        "stock":   offer_scope["stock"],
+        "postsWk": wpost_kenya + wpost_outside,
+        "postsMo": mpost_kenya + mpost_outside,
+    }
+    offer_snapshots = [x for x in offer_snapshots if x.get("date") != entry["date"]]
+    offer_snapshots.append(entry)
+    offer_snapshots.sort(key=lambda x: x.get("date", ""))
+    offer_snapshots = offer_snapshots[-120:]
+    with open(SNAPSHOTS_FILE, "w", encoding="utf-8") as f:
+        json.dump({"snapshots": offer_snapshots}, f, indent=2)
+
+offer_config_out = {
+    "shops":      offer_scope["shops"],
+    "startDate":  _start,
+    "endDate":    _end,
+    "configured": offer_configured,
+    "active":     offer_active,
+    "daysLeft":   offer_days_left,
+    "salesMo":    offer_scope["salesMo"],
+    "salesWk":    offer_scope["salesWk"],
+    "stock":      offer_scope["stock"],
+}
+
+
 # ── INJECT INTO HTML ──────────────────────────────────────────
 
 inline_script = (
@@ -421,7 +549,9 @@ inline_script = (
     f'  weeklyCombined:  {json.dumps(weekly_combined, ensure_ascii=False)},\n'
     f'  allMonthlyCombined: {json.dumps(all_monthly_combined, ensure_ascii=False)},\n'
     f'  allWeeklyCombined:  {json.dumps(all_weekly_combined, ensure_ascii=False)},\n'
-    f'  weeklyPostsHistory: {json.dumps(np_weekly_history)}\n'
+    f'  weeklyPostsHistory: {json.dumps(np_weekly_history)},\n'
+    f'  offerConfig:     {json.dumps(offer_config_out, ensure_ascii=False)},\n'
+    f'  offerSnapshots:  {json.dumps(offer_snapshots, ensure_ascii=False)}\n'
     "};\n"
     "</script>\n"
     "<!-- NEW_PROD_DATA_END -->"

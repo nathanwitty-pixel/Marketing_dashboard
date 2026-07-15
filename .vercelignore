@@ -15,6 +15,8 @@ __pycache__/
 # ── Raw data / state JSON (baked into the HTML at build time; no need to serve) ──
 *_history.json
 *_snapshot.json
+*_snapshots.json
+timed_offers_config.json
 month_boundary.json
 # (vercel.json is intentionally NOT matched here — it's the deploy config)
 
