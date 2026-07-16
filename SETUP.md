@@ -76,6 +76,39 @@ Use Windows **Task Scheduler** to run the generator once a day:
    - Start in: this folder's full path.
 4. Finish. It now records a snapshot each day the PC is on, window permitting.
 
+## Auto-refresh the deployed (Vercel) site from the sheet
+
+The Vercel site is **static** — it shows whatever numbers were baked in the last
+time the generators ran. To keep the deployed site fresh **without running
+anything locally**, a GitHub Action (`.github/workflows/refresh.yml`) re-reads
+the sheet, regenerates the HTML, and commits it — and Vercel auto-deploys the
+commit.
+
+- **Automatic:** runs on a schedule (default every 2 hours; edit the `cron` line).
+- **On demand:** GitHub repo → **Actions** tab → *Refresh dashboard from Google
+  Sheets* → **Run workflow**. ~2–3 min later the live site is updated.
+
+### One-time setup
+1. **Service account key.** In Google Cloud Console open the service account you
+   already use (e.g. `marketing-and-predictive-sales@…`) → **Keys → Add key →
+   Create new key → JSON** → download. (CI can't use the browser login.)
+2. **Share the sheet with it.** The dashboard spreadsheet must be shared
+   (**Viewer**) with that service account's email.
+3. **Push the code.** Commit & push this repo (including `requirements.txt`,
+   `build_all.py`, and `.github/workflows/refresh.yml`).
+4. **Add the secret.** Repo → **Settings → Secrets and variables → Actions → New
+   repository secret** → name `SERVICE_ACCOUNT_JSON`, value = the **entire**
+   contents of the downloaded key file.
+5. **Vercel deploy trigger.** If your Vercel project is linked to this GitHub
+   repo (Vercel → Project → Settings → Git), the push auto-deploys — done. If it
+   is **not** linked, create a Vercel **Deploy Hook** and add its URL as a second
+   secret named `VERCEL_DEPLOY_HOOK`.
+6. **Test it.** Actions tab → Run workflow → watch it go green → check the site.
+
+Run all generators headlessly yourself any time with `python build_all.py`.
+
+---
+
 ## Secrets — never commit / deploy these
 `google_credentials.json`, `google_token.json`, and `service_account.json` are
 listed in `.gitignore` and `.vercelignore`. Keep real keys only on the machine

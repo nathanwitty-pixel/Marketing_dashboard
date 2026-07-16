@@ -503,16 +503,37 @@ if offer_active:
     with open(SNAPSHOTS_FILE, "w", encoding="utf-8") as f:
         json.dump({"snapshots": offer_snapshots}, f, indent=2)
 
+# Window-anchored metrics: measure the offer FROM its start date = current
+# (shop-scoped) totals minus the baseline captured at the window's first snapshot.
+# Only snapshots inside the CURRENT window count (so changing the window starts
+# a fresh baseline and drops a previous campaign's points from the headline).
+_win_snaps = [s for s in offer_snapshots
+              if (not _start or s.get("date", "") >= _start)
+              and (not _end or s.get("date", "") <= _end)]
+_baseline = _win_snaps[0] if _win_snaps else None
+if _baseline is not None:
+    window_sales  = max(offer_scope["salesMo"] - (_baseline.get("salesMo") or 0), 0)
+    window_posts  = max((mpost_kenya + mpost_outside) - (_baseline.get("postsMo") or 0), 0)
+    window_pct    = round(window_sales / total_target * 100, 2) if total_target else 0.0
+    baseline_date = _baseline.get("date", "")
+else:
+    window_sales = window_posts = window_pct = None
+    baseline_date = ""
+
 offer_config_out = {
-    "shops":      offer_scope["shops"],
-    "startDate":  _start,
-    "endDate":    _end,
-    "configured": offer_configured,
-    "active":     offer_active,
-    "daysLeft":   offer_days_left,
-    "salesMo":    offer_scope["salesMo"],
-    "salesWk":    offer_scope["salesWk"],
-    "stock":      offer_scope["stock"],
+    "shops":        offer_scope["shops"],
+    "startDate":    _start,
+    "endDate":      _end,
+    "configured":   offer_configured,
+    "active":       offer_active,
+    "daysLeft":     offer_days_left,
+    "salesMo":      offer_scope["salesMo"],
+    "salesWk":      offer_scope["salesWk"],
+    "stock":        offer_scope["stock"],
+    "baselineDate": baseline_date,
+    "windowSales":  window_sales,
+    "windowPosts":  window_posts,
+    "windowPct":    window_pct,
 }
 
 
@@ -551,7 +572,7 @@ inline_script = (
     f'  allWeeklyCombined:  {json.dumps(all_weekly_combined, ensure_ascii=False)},\n'
     f'  weeklyPostsHistory: {json.dumps(np_weekly_history)},\n'
     f'  offerConfig:     {json.dumps(offer_config_out, ensure_ascii=False)},\n'
-    f'  offerSnapshots:  {json.dumps(offer_snapshots, ensure_ascii=False)}\n'
+    f'  offerSnapshots:  {json.dumps(_win_snaps, ensure_ascii=False)}\n'
     "};\n"
     "</script>\n"
     "<!-- NEW_PROD_DATA_END -->"

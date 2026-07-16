@@ -1,0 +1,74 @@
+name: Refresh dashboard from Google Sheets
+
+# Re-reads the Google Sheet, regenerates the HTML, and commits it so Vercel
+# (connected to this repo) auto-deploys the fresh data.
+#
+#   • Runs automatically on a schedule (below).
+#   • Runs on demand: Actions tab → this workflow → "Run workflow".
+#
+# One-time setup (repo → Settings → Secrets and variables → Actions):
+#   SERVICE_ACCOUNT_JSON  – the FULL contents of your service_account.json key.
+#                           The service account's email must have Viewer access
+#                           to the dashboard spreadsheet.
+#   VERCEL_DEPLOY_HOOK     – (optional) a Vercel Deploy Hook URL. Only needed if
+#                           your Vercel project is NOT linked to this GitHub repo.
+
+on:
+  schedule:
+    - cron: "0 */2 * * *"     # every 2 hours (UTC). Change to "*/30 * * * *" for every 30 min.
+  workflow_dispatch: {}        # the manual "Run workflow" button
+
+permissions:
+  contents: write              # allow committing the regenerated files
+
+concurrency:
+  group: dashboard-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Write service-account key from secret
+        env:
+          SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$SERVICE_ACCOUNT_JSON" ]; then
+            echo "::error::SERVICE_ACCOUNT_JSON secret is not set. Add it in repo Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          printf '%s' "$SERVICE_ACCOUNT_JSON" > service_account.json
+
+      - name: Regenerate all dashboards from the sheet
+        run: python build_all.py
+
+      - name: Remove the key before committing
+        if: always()
+        run: rm -f service_account.json
+
+      - name: Commit & push if the data changed
+        run: |
+          git config user.name  "dashboard-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No data changes this run."
+          else
+            git commit -m "chore: refresh dashboard data from Google Sheets [skip ci]"
+            git push
+          fi
+
+      - name: Trigger Vercel deploy hook (only if configured)
+        if: ${{ env.VERCEL_DEPLOY_HOOK != '' }}
+        run: curl -sS -X POST "$VERCEL_DEPLOY_HOOK"
