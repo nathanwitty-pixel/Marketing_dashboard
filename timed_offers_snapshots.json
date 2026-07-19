@@ -7,6 +7,30 @@
       "stock": 6165,
       "postsWk": 405,
       "postsMo": 815
+    },
+    {
+      "date": "2026-07-17",
+      "salesMo": 1556,
+      "salesWk": 654,
+      "stock": 6234,
+      "postsWk": 405,
+      "postsMo": 815
+    },
+    {
+      "date": "2026-07-18",
+      "salesMo": 1803,
+      "salesWk": 654,
+      "stock": 5898,
+      "postsWk": 405,
+      "postsMo": 815
+    },
+    {
+      "date": "2026-07-19",
+      "salesMo": 1996,
+      "salesWk": 654,
+      "stock": 5360,
+      "postsWk": 405,
+      "postsMo": 815
     }
   ]
 }
