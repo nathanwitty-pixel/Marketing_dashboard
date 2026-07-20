@@ -23,16 +23,20 @@ def read_block(filename, start, end):
     m = re.search(re.escape(start) + r"(.*?)" + re.escape(end), txt, re.DOTALL)
     return m.group(1) if m else ""
 
+# The injected blocks mix two styles: top-level keys are plain JS identifiers
+# (wkMktPct: "65.8%"), while nested objects come from json.dumps and are quoted
+# ("szWkMktPct": "15.0%"). The optional `"?` after the key matches both — without
+# it every nested lookup (Sinza / Uganda) silently fell back to the default.
 def gstr(block, key, default=""):
-    m = re.search(rf'\b{key}\s*:\s*"([^"]*)"', block)
+    m = re.search(rf'\b{key}"?\s*:\s*"([^"]*)"', block)
     return m.group(1) if m else default
 
 def graw(block, key, default=0.0):
-    m = re.search(rf'\b{key}\s*:\s*(-?[\d.]+)', block)
+    m = re.search(rf'\b{key}"?\s*:\s*(-?[\d.]+)', block)
     return float(m.group(1)) if m else default
 
 def garr(block, key):
-    m = re.search(rf'\b{key}\s*:\s*(\[.*?\]),?\s*\n', block)
+    m = re.search(rf'\b{key}"?\s*:\s*(\[.*?\]),?\s*\n', block)
     if not m:
         return []
     try:
