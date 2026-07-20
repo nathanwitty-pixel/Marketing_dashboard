@@ -323,8 +323,8 @@
             <select id="og-sort" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
               <option value="price-asc">Price: low → high</option>
               <option value="price-desc">Price: high → low</option>
-              <option value="gain-desc">Wk1→Wk2 gain: high → low</option>
-              <option value="gain-asc">Wk1→Wk2 gain: low → high</option>
+              <option value="gain-desc">Latest-week gain: high → low</option>
+              <option value="gain-asc">Latest-week gain: low → high</option>
             </select>
           </div>
           <div style="display:flex;align-items:center;gap:0.4rem">
@@ -382,8 +382,8 @@
             <select id="ug-sort" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
               <option value="price-asc">Price: low → high</option>
               <option value="price-desc">Price: high → low</option>
-              <option value="gain-desc">Wk1→Wk2 gain: high → low</option>
-              <option value="gain-asc">Wk1→Wk2 gain: low → high</option>
+              <option value="gain-desc">Latest-week gain: high → low</option>
+              <option value="gain-asc">Latest-week gain: low → high</option>
             </select>
           </div>
           <div style="display:flex;align-items:center;gap:0.4rem">
@@ -447,8 +447,8 @@
             <select id="sz-sort" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
               <option value="price-asc">Price: low → high</option>
               <option value="price-desc">Price: high → low</option>
-              <option value="gain-desc">Wk1→Wk2 gain: high → low</option>
-              <option value="gain-asc">Wk1→Wk2 gain: low → high</option>
+              <option value="gain-desc">Latest-week gain: high → low</option>
+              <option value="gain-asc">Latest-week gain: low → high</option>
             </select>
           </div>
           <div style="display:flex;align-items:center;gap:0.4rem">
@@ -640,16 +640,24 @@ function buildGuidance(cfg) {
   function labelFor(val)   { for (var i=0;i<types.length;i++) if (types[i].value===val) return types[i].label; return types[0].label; }
   function headersFor(val) { for (var i=0;i<types.length;i++) if (types[i].value===val) return types[i].headers||[]; return types[0].headers||[]; }
 
-  // Locate the price / week columns from the table headers (Sinza has an extra
-  // "PRICE (TSH)" column, so weeks shift right by one). Falls back to 1/2/3.
+  // Locate the price + EVERY week column from the table headers (Sinza has an
+  // extra "PRICE (TSH)" column, so weeks shift right by one). Weeks are picked
+  // up dynamically — Wk 1, Wk 2, Wk 3, … — so new weeks appear as the sheet
+  // fills them in, with no code change. Falls back to columns 2/3.
   function colIdxs(headers) {
     var norm = (headers || []).map(function(h){ return String(h).toUpperCase().replace(/\s+/g, '').trim(); });
-    var idx = { price: 1, wk1: 2, wk2: 3 };
+    var idx = { price: 1, weeks: [], labels: [] };
     for (var i = 0; i < norm.length; i++) {
       if (norm[i] === 'PRICE' && idx.price === 1) idx.price = i;   // exact KES price, not PRICE(TSH)
-      if (norm[i] === 'WK1') idx.wk1 = i;
-      if (norm[i] === 'WK2') idx.wk2 = i;
+      var m = norm[i].match(/^WK(\d+)$/);
+      if (m) { idx.weeks.push(i); idx.labels.push('Wk ' + m[1]); }
     }
+    if (!idx.weeks.length) { idx.weeks = [2, 3]; idx.labels = ['Wk 1', 'Wk 2']; }
+    var n = idx.weeks.length;
+    idx.last      = idx.weeks[n - 1];
+    idx.prev      = idx.weeks[n > 1 ? n - 2 : 0];
+    idx.lastLabel = idx.labels[n - 1];
+    idx.prevLabel = idx.labels[n > 1 ? n - 2 : 0];
     return idx;
   }
 
@@ -740,7 +748,7 @@ function buildGuidance(cfg) {
       type: 'line',
       data: { labels: labels, datasets: [
         mk('Stock', 'stock', '#22d3ee', 'rgba(34,211,238,0.12)'),
-        mk('Weekly gain (Wk2−Wk1)', 'gain', '#6ee7b7', 'rgba(16,185,129,0.12)'),
+        mk('Weekly gain (' + (items.gainLabel || 'latest week') + ')', 'gain', '#6ee7b7', 'rgba(16,185,129,0.12)'),
         mk('Remaining to target', 'rem', '#fca5a5', 'rgba(239,68,68,0.10)')
       ] },
       options: {
@@ -776,21 +784,23 @@ function buildGuidance(cfg) {
   function render() {
     var typeVal = typeEl ? typeEl.value : types[0].value;
     var raw  = rowsFor(typeVal);
-    var idx  = colIdxs(headersFor(typeVal));   // price / wk1 / wk2 column positions
+    var idx  = colIdxs(headersFor(typeVal));   // price + every week column, in order
     var rows = raw.filter(function(r){ return r.length && String(r[0]).toUpperCase().indexOf('TOTAL') < 0; });
 
     // Pool-based targets (regions with no per-bag MONTHLY_TARGET): approximate each
-    // item's target from its share of the offer's total Wk1+Wk2 sales × the monthly pool.
+    // item's target from its share of the offer's total sales across ALL weeks
+    // × the monthly pool.
+    function weekSum(r) { return idx.weeks.reduce(function(s, c){ return s + toNum(r[c]); }, 0); }
     var pool      = cfg.monthlyPool || 0;
-    var poolDenom = pool ? rows.reduce(function(a, r){ return a + toNum(r[idx.wk1]) + toNum(r[idx.wk2]); }, 0) : 0;
+    var poolDenom = pool ? rows.reduce(function(a, r){ return a + weekSum(r); }, 0) : 0;
 
     var prodFilter = prodEl ? prodEl.value : '';
     var shown = prodFilter ? rows.filter(function(r){ return r[0] === prodFilter; }) : rows.slice();
 
-    // Sort by price or by Wk1→Wk2 gain, ascending / descending
+    // Sort by price or by the latest week-on-week gain, ascending / descending
     var mode = sortEl ? sortEl.value : 'price-asc';
     function priceOf(r){ return parseFloat(String(r[idx.price]).replace(/,/g, '')) || 0; }
-    function gainOf(r){ return toNum(r[idx.wk2]) - toNum(r[idx.wk1]); }
+    function gainOf(r){ return toNum(r[idx.last]) - toNum(r[idx.prev]); }
     shown.sort(function(a, b){
       if (mode === 'price-desc') return priceOf(b) - priceOf(a);
       if (mode === 'gain-desc')  return gainOf(b)  - gainOf(a);
@@ -801,11 +811,11 @@ function buildGuidance(cfg) {
     var word = labelFor(typeVal);
     if (introEl) {
       if (pool) {
-        introEl.innerHTML = 'Price, Wk1 &amp; Wk2 units sold (avg = the two weeks), and stock. ' +
+        introEl.innerHTML = 'Price, units sold per week (' + idx.labels.join(' &middot; ') + '; avg = across those weeks), and stock. ' +
           'Each item\'s <strong style="color:#c4b5fd">target</strong> is its share of last month\'s <strong style="color:#6ee7b7">' + pool.toLocaleString() + ' bags</strong> sold (by offer-sales weight); ' +
           '<strong style="color:#c4b5fd">weekly target</strong> = remaining &divide; ' + weeksLeft + ' complete week' + (weeksLeft === 1 ? '' : 's') + ' left.';
       } else {
-        introEl.innerHTML = 'Price, Wk1 &amp; Wk2 units sold (avg = the two weeks), stock, and a <strong style="color:#c4b5fd">weekly target</strong> ' +
+        introEl.innerHTML = 'Price, units sold per week (' + idx.labels.join(' &middot; ') + '; avg = across those weeks), stock, and a <strong style="color:#c4b5fd">weekly target</strong> ' +
           '= remaining monthly target &divide; ' + weeksLeft + ' complete week' + (weeksLeft === 1 ? '' : 's') + ' left. ' +
           'For combos we list <strong style="color:#a5f3fc">every bag\'s stock</strong>; the target takes the <strong style="color:#a5f3fc">highest-stock bag per group</strong> (★) and is <strong style="color:#6ee7b7">halved</strong>.';
       }
@@ -818,11 +828,14 @@ function buildGuidance(cfg) {
     shown.forEach(function(r) {
       var name  = r[0];
       var price = money(r[idx.price]);
-      var wk1   = toNum(r[idx.wk1]);
-      var wk2   = toNum(r[idx.wk2]);
-      var avg   = Math.round((wk1 + wk2) / 2);
-      var diff  = wk2 - wk1;
-      var trend = diff > 0 ? chip('▲ ' + diff + ' Wk2', 'up') : diff < 0 ? chip('▼ ' + Math.abs(diff) + ' Wk2', 'down') : chip('— flat', 'flat');
+      var wkVals = idx.weeks.map(function(c){ return toNum(r[c]); });
+      var avg    = Math.round(wkVals.reduce(function(a2, b2){ return a2 + b2; }, 0) / (wkVals.length || 1));
+      var lastV  = wkVals[wkVals.length - 1];
+      var prevV  = wkVals.length > 1 ? wkVals[wkVals.length - 2] : lastV;
+      var diff   = lastV - prevV;
+      var trend  = diff > 0 ? chip('▲ ' + diff + ' ' + idx.lastLabel, 'up')
+                 : diff < 0 ? chip('▼ ' + Math.abs(diff) + ' ' + idx.lastLabel, 'down')
+                 : chip('— flat', 'flat');
 
       var allB     = allBags(name);                              // every bag in the combo (for stock)
       var picks    = pickBags(name);                             // largest per group (for target)
@@ -833,7 +846,7 @@ function buildGuidance(cfg) {
       var totalTgt, totalRem;
       if (pool) {
         // Approximate target = this item's share of the region's monthly bag pool
-        var itemSold = wk1 + wk2;
+        var itemSold = wkVals.reduce(function(a2, b2){ return a2 + b2; }, 0);
         var share    = poolDenom > 0 ? (itemSold / poolDenom) : 0;
         totalTgt = Math.round(pool * share);
         totalRem = Math.max(totalTgt - itemSold, 0);
@@ -866,14 +879,14 @@ function buildGuidance(cfg) {
       // Advice — units sold trend vs weekly target
       var advice;
       if (totalStock === 0) advice = '<strong style="color:#f8fafc">out of stock</strong> — pause the push until restocked.';
-      else if (diff > 0)    advice = 'sales <strong style="color:#6ee7b7">rising</strong> Wk1&rarr;Wk2 — keep the momentum, ' + weekTgt.toLocaleString() + '/wk is the goal.';
+      else if (diff > 0)    advice = 'sales <strong style="color:#6ee7b7">rising</strong> ' + idx.prevLabel + '&rarr;' + idx.lastLabel + ' — keep the momentum, ' + weekTgt.toLocaleString() + '/wk is the goal.';
       else if (diff < 0)    advice = 'sales <strong style="color:#fca5a5">slowing</strong> — push harder to hit ' + weekTgt.toLocaleString() + '/wk with ' + totalStock.toLocaleString() + ' in stock.';
       else                  advice = 'sales <strong style="color:#cbd5e1">steady</strong> — hold the effort to keep ' + weekTgt.toLocaleString() + '/wk.';
 
       // plain-text version of the advice for the trend-chart hover
       var adviceText;
       if (totalStock === 0) adviceText = 'Out of stock — pause the push until restocked.';
-      else if (diff > 0)    adviceText = 'Sales rising Wk1→Wk2 — keep the momentum, ' + weekTgt.toLocaleString() + '/wk is the goal.';
+      else if (diff > 0)    adviceText = 'Sales rising ' + idx.prevLabel + '→' + idx.lastLabel + ' — keep the momentum, ' + weekTgt.toLocaleString() + '/wk is the goal.';
       else if (diff < 0)    adviceText = 'Sales slowing — push harder to hit ' + weekTgt.toLocaleString() + '/wk with ' + totalStock.toLocaleString() + ' in stock.';
       else                  adviceText = 'Sales steady — hold the effort to keep ' + weekTgt.toLocaleString() + '/wk.';
       trendItems.push({ name: name, stock: totalStock, gain: diff, rem: totalRem, advice: adviceText });
@@ -882,8 +895,11 @@ function buildGuidance(cfg) {
         '<strong style="color:#f8fafc">' + name + '</strong> &nbsp; ' + trend +
         '<br><span style="display:inline-flex;gap:1.1rem;flex-wrap:wrap;margin:0.3rem 0 0.2rem">' +
           stat('price', currency + ' ' + price, '#fcd34d') +
-          stat('Wk1 sold', wk1.toLocaleString(), '#a78bfa') +
-          stat('Wk2 sold', wk2.toLocaleString(), '#c4b5fd') +
+          idx.labels.map(function(lb, wi) {
+            // latest week highlighted a shade brighter than the earlier ones
+            return stat(lb + ' sold', wkVals[wi].toLocaleString(),
+                        wi === idx.labels.length - 1 ? '#c4b5fd' : '#a78bfa');
+          }).join('') +
           stat('avg/wk', avg.toLocaleString(), '#8b5cf6') +
         '</span>' +
         '<br><span style="display:inline-block;margin:0.15rem 0 0.25rem">' + stockHtml + '</span>' +
@@ -896,6 +912,7 @@ function buildGuidance(cfg) {
       );
     });
     wrap.innerHTML = html;
+    trendItems.gainLabel = idx.prevLabel + '→' + idx.lastLabel;   // legend text for the gain line
     renderTrend(trendItems);
   }
 
