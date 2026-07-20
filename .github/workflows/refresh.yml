@@ -64,10 +64,23 @@ jobs:
           git add -A
           if git diff --cached --quiet; then
             echo "No data changes this run."
-          else
-            git commit -m "chore: refresh dashboard data from Google Sheets [skip ci]"
-            git push
+            exit 0
           fi
+          git commit -m "chore: refresh dashboard data from Google Sheets [skip ci]"
+          # The remote can move while we're generating (a push from your machine,
+          # or another run). Replay our commit on top of the new tip; if the same
+          # file changed on both sides, keep OUR freshly generated version.
+          for i in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo "Pushed on attempt $i."
+              exit 0
+            fi
+            echo "Push rejected — syncing with origin/main and retrying…"
+            git pull --rebase -X theirs origin main || {
+              echo "::error::Could not rebase onto origin/main."; exit 1; }
+          done
+          echo "::error::Push still rejected after 3 attempts."
+          exit 1
 
       - name: Trigger Vercel deploy hook (only if configured)
         if: ${{ env.VERCEL_DEPLOY_HOOK != '' }}
