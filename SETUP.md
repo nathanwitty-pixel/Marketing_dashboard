@@ -99,36 +99,43 @@ Use Windows **Task Scheduler** to run the generator once a day:
    - Start in: this folder's full path.
 4. Finish. It now records a snapshot each day the PC is on, window permitting.
 
-## Auto-refresh the deployed (Vercel) site from the sheet
+## Live data on Vercel — the build reads the sheet (git stays code)
 
-The Vercel site is **static** — it shows whatever numbers were baked in the last
-time the generators ran. To keep the deployed site fresh **without running
-anything locally**, a GitHub Action (`.github/workflows/refresh.yml`) re-reads
-the sheet, regenerates the HTML, and commits it — and Vercel auto-deploys the
-commit.
+The deployed site's data is **produced by Vercel's build**, not committed to the
+repo. On each deploy Vercel runs the generators (`vercel.json` →
+`python3 build_all.py`), reads the Google Sheet, and serves the rendered HTML
+from `dist/`. So **git holds the code + a little trend-history state — not baked
+data**, and the `.py`/JSON/secrets are never served (only `dist/*.html` is).
 
-- **Automatic:** runs on a schedule (default every 2 hours; edit the `cron` line).
-- **On demand:** GitHub repo → **Actions** tab → *Refresh dashboard from Google
-  Sheets* → **Run workflow**. ~2–3 min later the live site is updated.
+Two moving parts:
+
+- **Vercel build** renders the live HTML from the sheet on every deploy.
+- **GitHub Action** (`.github/workflows/refresh.yml`) runs on the sheet's event
+  (+ a 2-hour safety net), advances the accumulating **trend history** (small
+  JSON, committed — trends can't be re-derived from one read), then **pings the
+  Vercel Deploy Hook** so the live render refreshes immediately.
 
 ### One-time setup
-1. **Service account key.** In Google Cloud Console open the service account you
-   already use (e.g. `marketing-and-predictive-sales@…`) → **Keys → Add key →
-   Create new key → JSON** → download. (CI can't use the browser login.)
-2. **Share the sheet with it.** The dashboard spreadsheet must be shared
-   (**Viewer**) with that service account's email.
-3. **Push the code.** Commit & push this repo (including `requirements.txt`,
-   `build_all.py`, and `.github/workflows/refresh.yml`).
-4. **Add the secret.** Repo → **Settings → Secrets and variables → Actions → New
-   repository secret** → name `SERVICE_ACCOUNT_JSON`, value = the **entire**
-   contents of the downloaded key file.
-5. **Vercel deploy trigger.** If your Vercel project is linked to this GitHub
-   repo (Vercel → Project → Settings → Git), the push auto-deploys — done. If it
-   is **not** linked, create a Vercel **Deploy Hook** and add its URL as a second
-   secret named `VERCEL_DEPLOY_HOOK`.
-6. **Test it.** Actions tab → Run workflow → watch it go green → check the site.
+1. **Service-account key JSON** (Google Cloud → the service account →
+   Keys → Add key → JSON). Share the spreadsheet (**Viewer**) with its email.
+2. **GitHub secret:** repo → Settings → Secrets and variables → Actions →
+   `SERVICE_ACCOUNT_JSON` = the entire key JSON.
+3. **Vercel env var:** Vercel → Project → Settings → **Environment Variables** →
+   add `SERVICE_ACCOUNT_JSON` = the **same** key JSON (Production + Preview). The
+   build reads it straight from the env — no key file is ever written or served.
+4. **Vercel build settings** (usually auto-applied from `vercel.json`): Framework
+   preset **Other**, Build Command `pip3 install -r requirements.txt && python3
+   build_all.py && rm -rf dist && mkdir dist && cp *.html dist/`, Output
+   Directory `dist`. Check the first deploy's build log shows Python running.
+5. **Vercel Deploy Hook:** Vercel → Settings → Git → **Deploy Hooks** → create
+   one on `main` → copy the URL → add as GitHub secret `VERCEL_DEPLOY_HOOK`.
+   (Optional: turn OFF Vercel's automatic git deploys so the hook is the single
+   trigger and you don't get double builds.)
+6. **Push & test:** commit/push, then Actions → Run workflow → watch it green →
+   the live site rebuilds from the sheet.
 
-Run all generators headlessly yourself any time with `python build_all.py`.
+Run everything headlessly yourself any time with `python build_all.py`
+(uses `service_account.json` locally, or your browser login).
 
 ---
 

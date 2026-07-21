@@ -27,7 +27,18 @@ TOKEN_FILE = os.path.join(_BASE, "google_token.json")
 def get_gspread_client():
     import gspread
 
-    # ── 1) Service account: permanent & non-interactive ───────────────────
+    # ── 0) Service account from an env var (CI / Vercel build) ────────────
+    # Read the key straight from SERVICE_ACCOUNT_JSON — never written to disk,
+    # so it can't end up in the deployed/served output. This is what the Vercel
+    # build and GitHub Actions use.
+    sa_json = os.environ.get("SERVICE_ACCOUNT_JSON")
+    if sa_json:
+        import json as _json
+        from google.oauth2.service_account import Credentials as SACredentials
+        creds = SACredentials.from_service_account_info(_json.loads(sa_json), scopes=SCOPES)
+        return gspread.authorize(creds)
+
+    # ── 1) Service account key file: permanent & non-interactive ──────────
     if os.path.exists(SERVICE_ACCOUNT_FILE):
         from google.oauth2.service_account import Credentials as SACredentials
         creds = SACredentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)

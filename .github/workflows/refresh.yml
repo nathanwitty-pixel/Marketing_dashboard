@@ -1,19 +1,21 @@
-name: Refresh dashboard from Google Sheets
+name: Advance dashboard history from Google Sheets
 
-# Re-reads the Google Sheet, regenerates the HTML, and commits it so Vercel
-# (connected to this repo) auto-deploys the fresh data.
+# The LIVE HTML is now rendered by Vercel's build (it reads the sheet each
+# deploy — see vercel.json), so this workflow no longer commits HTML. Its job:
+#   1. Run the generators so the accumulating trend history / snapshots advance,
+#      and commit ONLY those small state JSON files (git stays code, not data).
+#   2. Trigger the Vercel build so the live site re-reads the sheet right away.
 #
-#   • Event-driven: the Google Sheet pings GitHub the moment data changes
-#     (repository_dispatch, sent by the bound Apps Script — see SETUP.md).
-#   • Safety-net schedule (below), in case an event is ever missed.
+#   • Event-driven: the sheet pings GitHub on change (repository_dispatch, sent
+#     by the bound Apps Script — see SETUP.md).
+#   • Safety-net schedule (below).
 #   • On demand: Actions tab → this workflow → "Run workflow".
 #
 # One-time setup (repo → Settings → Secrets and variables → Actions):
-#   SERVICE_ACCOUNT_JSON  – the FULL contents of your service_account.json key.
-#                           The service account's email must have Viewer access
-#                           to the dashboard spreadsheet.
-#   VERCEL_DEPLOY_HOOK     – (optional) a Vercel Deploy Hook URL. Only needed if
-#                           your Vercel project is NOT linked to this GitHub repo.
+#   SERVICE_ACCOUNT_JSON  – FULL contents of the service-account key (also add
+#                           the SAME value as a Vercel env var, for its build).
+#   VERCEL_DEPLOY_HOOK     – a Vercel Deploy Hook URL. This is what refreshes the
+#                           live render, so set it (see SETUP.md).
 
 on:
   repository_dispatch:
@@ -23,7 +25,7 @@ on:
   workflow_dispatch: {}        # the manual "Run workflow" button
 
 permissions:
-  contents: write              # allow committing the regenerated files
+  contents: write              # allow committing the state JSON
 
 concurrency:
   group: dashboard-refresh
@@ -44,48 +46,35 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Write service-account key from secret
+      - name: Advance history from the sheet
         env:
           SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
         run: |
           if [ -z "$SERVICE_ACCOUNT_JSON" ]; then
-            echo "::error::SERVICE_ACCOUNT_JSON secret is not set. Add it in repo Settings → Secrets and variables → Actions."
+            echo "::error::SERVICE_ACCOUNT_JSON secret is not set (Settings → Secrets and variables → Actions)."
             exit 1
           fi
-          printf '%s' "$SERVICE_ACCOUNT_JSON" > service_account.json
+          python build_all.py
 
-      - name: Regenerate all dashboards from the sheet
-        run: python build_all.py
-
-      - name: Remove the key before committing
-        if: always()
-        run: rm -f service_account.json
-
-      - name: Commit & push if the data changed
+      - name: Commit the updated history/state (NOT the HTML — Vercel renders that)
         run: |
           git config user.name  "dashboard-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add -A
+          # Stage everything EXCEPT the generated HTML.
+          git add -A -- ':!*.html'
           if git diff --cached --quiet; then
-            echo "No data changes this run."
-            exit 0
+            echo "No history/state changes this run."
+          else
+            git commit -m "chore: advance dashboard history from Google Sheets [skip ci]"
+            git checkout -- '*.html' 2>/dev/null || true   # drop regenerated HTML so a rebase stays clean
+            for i in 1 2 3; do
+              if git push origin HEAD:main; then echo "Pushed on attempt $i."; break; fi
+              echo "Push rejected — syncing with origin/main and retrying…"
+              git pull --rebase -X theirs origin main || { echo "::error::Could not rebase onto origin/main."; exit 1; }
+              if [ "$i" = "3" ]; then echo "::error::Push still rejected after 3 attempts."; exit 1; fi
+            done
           fi
-          git commit -m "chore: refresh dashboard data from Google Sheets [skip ci]"
-          # The remote can move while we're generating (a push from your machine,
-          # or another run). Replay our commit on top of the new tip; if the same
-          # file changed on both sides, keep OUR freshly generated version.
-          for i in 1 2 3; do
-            if git push origin HEAD:main; then
-              echo "Pushed on attempt $i."
-              exit 0
-            fi
-            echo "Push rejected — syncing with origin/main and retrying…"
-            git pull --rebase -X theirs origin main || {
-              echo "::error::Could not rebase onto origin/main."; exit 1; }
-          done
-          echo "::error::Push still rejected after 3 attempts."
-          exit 1
 
-      - name: Trigger Vercel deploy hook (only if configured)
+      - name: Trigger the Vercel build (reads the sheet, renders the live site)
         if: ${{ env.VERCEL_DEPLOY_HOOK != '' }}
         run: curl -sS -X POST "$VERCEL_DEPLOY_HOOK"

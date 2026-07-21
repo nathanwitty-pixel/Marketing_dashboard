@@ -7,6 +7,10 @@ __pycache__/
 *.pyc
 *.pyo
 
+# ── Vercel build output (generated at deploy from the sheet) ──
+dist/
+.vercel/
+
 # ── OS junk ───────────────────────────────────────────────────
 Thumbs.db
 .DS_Store

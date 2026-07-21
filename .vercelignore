@@ -1,26 +1,24 @@
-# ── SECRETS — never deploy ────────────────────────────────
+# The Vercel BUILD needs the generators, requirements, and the committed
+# history/state JSON — so those are uploaded. Only the rendered HTML in dist/
+# is actually served (see vercel.json outputDirectory), so nothing else here is
+# exposed. We still refuse to upload secrets, as defense in depth.
+
+# ── SECRETS — never upload ────────────────────────────────
 google_credentials.json
 google_token.json
 service_account.json
 *.env
 .env*
 *.pem
+*.key
+service_account*.json
+secrets*.json
 
-# ── Server-side generators & caches (not needed by the static site) ──
-*.py
+# ── Not needed by the build ───────────────────────────────
+*.gs
 __pycache__/
 *.pyc
 *.pyo
-*.gs
-requirements.txt
-
-# ── Raw data / state JSON (baked into the HTML at build time; no need to serve) ──
-*_history.json
-*_snapshot.json
-*_snapshots.json
-timed_offers_config.json
-month_boundary.json
-# (vercel.json is intentionally NOT matched here — it's the deploy config)
 
 # ── OS junk ───────────────────────────────────────────────
 Thumbs.db
