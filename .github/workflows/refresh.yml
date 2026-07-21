@@ -1,31 +1,27 @@
-name: Advance dashboard history from Google Sheets
+name: Refresh dashboard from Google Sheets
 
-# The LIVE HTML is now rendered by Vercel's build (it reads the sheet each
-# deploy — see vercel.json), so this workflow no longer commits HTML. Its job:
-#   1. Run the generators so the accumulating trend history / snapshots advance,
-#      and commit ONLY those small state JSON files (git stays code, not data).
-#   2. Trigger the Vercel build so the live site re-reads the sheet right away.
+# Vercel serves the STATIC HTML that lives in git. This workflow keeps that HTML
+# fresh: it reads the sheet, regenerates the pages, and commits them — Vercel
+# then auto-deploys the commit. (You can also just push your own local run.)
 #
-#   • Event-driven: the sheet pings GitHub on change (repository_dispatch, sent
-#     by the bound Apps Script — see SETUP.md).
+#   • Event-driven: the sheet pings GitHub on change (repository_dispatch, from
+#     the bound Apps Script — see SETUP.md).
 #   • Safety-net schedule (below).
 #   • On demand: Actions tab → this workflow → "Run workflow".
 #
 # One-time setup (repo → Settings → Secrets and variables → Actions):
-#   SERVICE_ACCOUNT_JSON  – FULL contents of the service-account key (also add
-#                           the SAME value as a Vercel env var, for its build).
-#   VERCEL_DEPLOY_HOOK     – a Vercel Deploy Hook URL. This is what refreshes the
-#                           live render, so set it (see SETUP.md).
+#   SERVICE_ACCOUNT_JSON  – FULL contents of the service-account key JSON.
+#   VERCEL_DEPLOY_HOOK     – (optional) only if Vercel isn't linked to this repo.
 
 on:
   repository_dispatch:
-    types: [sheet-updated]     # fired by the sheet's Apps Script when data changes
+    types: [sheet-updated]
   schedule:
-    - cron: "0 */2 * * *"      # safety net every 2 hours (UTC)
-  workflow_dispatch: {}        # the manual "Run workflow" button
+    - cron: "0 */2 * * *"
+  workflow_dispatch: {}
 
 permissions:
-  contents: write              # allow committing the state JSON
+  contents: write
 
 concurrency:
   group: dashboard-refresh
@@ -46,7 +42,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Advance history from the sheet
+      - name: Regenerate the dashboards from the sheet
         env:
           SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
         run: |
@@ -56,17 +52,15 @@ jobs:
           fi
           python build_all.py
 
-      - name: Commit the updated history/state (NOT the HTML — Vercel renders that)
+      - name: Commit & push the refreshed HTML if anything changed
         run: |
           git config user.name  "dashboard-bot"
           git config user.email "actions@users.noreply.github.com"
-          # Stage everything EXCEPT the generated HTML.
-          git add -A -- ':!*.html'
+          git add -A
           if git diff --cached --quiet; then
-            echo "No history/state changes this run."
+            echo "No changes this run."
           else
-            git commit -m "chore: advance dashboard history from Google Sheets [skip ci]"
-            git checkout -- '*.html' 2>/dev/null || true   # drop regenerated HTML so a rebase stays clean
+            git commit -m "chore: refresh dashboard data from Google Sheets [skip ci]"
             for i in 1 2 3; do
               if git push origin HEAD:main; then echo "Pushed on attempt $i."; break; fi
               echo "Push rejected — syncing with origin/main and retrying…"
@@ -75,6 +69,6 @@ jobs:
             done
           fi
 
-      - name: Trigger the Vercel build (reads the sheet, renders the live site)
+      - name: Trigger Vercel deploy hook (only if configured)
         if: ${{ env.VERCEL_DEPLOY_HOOK != '' }}
         run: curl -sS -X POST "$VERCEL_DEPLOY_HOOK"

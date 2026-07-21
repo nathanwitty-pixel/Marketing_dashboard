@@ -99,43 +99,24 @@ Use Windows **Task Scheduler** to run the generator once a day:
    - Start in: this folder's full path.
 4. Finish. It now records a snapshot each day the PC is on, window permitting.
 
-## Live data on Vercel — the build reads the sheet (git stays code)
+## Deploying to Vercel — static (serves what's in git)
 
-The deployed site's data is **produced by Vercel's build**, not committed to the
-repo. On each deploy Vercel runs the generators (`vercel.json` →
-`python3 build_all.py`), reads the Google Sheet, and serves the rendered HTML
-from `dist/`. So **git holds the code + a little trend-history state — not baked
-data**, and the `.py`/JSON/secrets are never served (only `dist/*.html` is).
+Vercel is a **static** deploy: it serves the HTML committed in the repo, exactly
+as pushed. `vercel.json` only sets the home-page rewrite — there is **no build
+step**. So the deployed site = whatever HTML you last committed.
 
-Two moving parts:
+Two ways the committed HTML gets refreshed:
 
-- **Vercel build** renders the live HTML from the sheet on every deploy.
-- **GitHub Action** (`.github/workflows/refresh.yml`) runs on the sheet's event
-  (+ a 2-hour safety net), advances the accumulating **trend history** (small
-  JSON, committed — trends can't be re-derived from one read), then **pings the
-  Vercel Deploy Hook** so the live render refreshes immediately.
+- **From your machine:** run `python main.py` (or `python build_all.py`) to
+  regenerate the pages from the sheet, then commit & push. Vercel serves it.
+- **Automatically (optional):** the GitHub Action `.github/workflows/refresh.yml`
+  reads the sheet, regenerates the HTML, and commits it — Vercel then
+  auto-deploys. It runs on the sheet's event (see the event-driven section) and
+  a 2-hour safety net. Needs the `SERVICE_ACCOUNT_JSON` GitHub secret.
 
-### One-time setup
-1. **Service-account key JSON** (Google Cloud → the service account →
-   Keys → Add key → JSON). Share the spreadsheet (**Viewer**) with its email.
-2. **GitHub secret:** repo → Settings → Secrets and variables → Actions →
-   `SERVICE_ACCOUNT_JSON` = the entire key JSON.
-3. **Vercel env var:** Vercel → Project → Settings → **Environment Variables** →
-   add `SERVICE_ACCOUNT_JSON` = the **same** key JSON (Production + Preview). The
-   build reads it straight from the env — no key file is ever written or served.
-4. **Vercel build settings** (usually auto-applied from `vercel.json`): Framework
-   preset **Other**, Build Command `python3 -m pip install -r requirements.txt &&
-   python3 build_all.py && rm -rf dist && mkdir dist && cp *.html dist/`, Output
-   Directory `dist`. Check the first deploy's build log shows Python running.
-5. **Vercel Deploy Hook:** Vercel → Settings → Git → **Deploy Hooks** → create
-   one on `main` → copy the URL → add as GitHub secret `VERCEL_DEPLOY_HOOK`.
-   (Optional: turn OFF Vercel's automatic git deploys so the hook is the single
-   trigger and you don't get double builds.)
-6. **Push & test:** commit/push, then Actions → Run workflow → watch it green →
-   the live site rebuilds from the sheet.
-
-Run everything headlessly yourself any time with `python build_all.py`
-(uses `service_account.json` locally, or your browser login).
+No Vercel build settings, env vars, or deploy hooks are required for the static
+deploy — just make sure the Vercel project is linked to this GitHub repo so a
+push auto-deploys (Vercel → Project → Settings → Git).
 
 ---
 

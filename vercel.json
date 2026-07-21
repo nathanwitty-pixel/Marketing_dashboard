@@ -1,6 +1,4 @@
 {
-  "buildCommand": "python3 -m pip install -r requirements.txt && python3 build_all.py && rm -rf dist && mkdir dist && cp *.html dist/",
-  "outputDirectory": "dist",
   "rewrites": [
     { "source": "/", "destination": "/shell.html" }
   ]
