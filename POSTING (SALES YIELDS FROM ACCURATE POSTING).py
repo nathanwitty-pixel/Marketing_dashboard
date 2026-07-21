@@ -1643,6 +1643,10 @@ def fetch_posting_data():
     sinza['weekly']['wkInstockNotPostedSum'] = sum(safe_int(row[17]) for row in sl_rows[1:] if len(row) > 28 and safe_int(row[17]) > 0 and (_is_checked(row, 28) or _is_x(row, 28)) and str(row[2]).lower().strip() not in sz_wmp_keys)
     sinza['weekly']['moInstockPostedSum']    = sum(safe_int(row[17]) for row in sl_rows[1:] if len(row) > 28 and safe_int(row[17]) > 0 and (_is_checked(row, 28) or _is_x(row, 28)) and str(row[2]).lower().strip() in sz_mmp_keys)
     sinza['weekly']['moInstockNotPostedSum'] = sum(safe_int(row[17]) for row in sl_rows[1:] if len(row) > 28 and safe_int(row[17]) > 0 and (_is_checked(row, 28) or _is_x(row, 28)) and str(row[2]).lower().strip() not in sz_mmp_keys)
+    # Stock split by the OFFER flag (col AC = idx 28): ✅ = on offer, x = not on offer.
+    # Matches the two rows of the Sales-vs-Expected charts.
+    sinza['weekly']['stockOnOffer']    = sum(safe_int(row[17]) for row in sl_rows[1:] if len(row) > 28 and _is_checked(row, 28))
+    sinza['weekly']['stockNotOnOffer'] = sum(safe_int(row[17]) for row in sl_rows[1:] if len(row) > 28 and _is_x(row, 28))
 
     # Sinza monthly unposted: MONTHLY_SALES col Y (idx 24) for bags NOT in MMP (col F>0, col J=✅)
     sz_mmp_chk_keys = set()
@@ -1687,6 +1691,9 @@ def fetch_posting_data():
     uganda['weekly']['wkInstockNotPostedSum'] = sum(safe_int(row[18]) for row in sl_rows[1:] if len(row) > 29 and safe_int(row[18]) > 0 and (_is_checked(row, 29) or _is_x(row, 29)) and str(row[2]).lower().strip() not in ug_wmp_keys)
     uganda['weekly']['moInstockPostedSum']    = sum(safe_int(row[18]) for row in sl_rows[1:] if len(row) > 29 and safe_int(row[18]) > 0 and (_is_checked(row, 29) or _is_x(row, 29)) and str(row[2]).lower().strip() in ug_mmp_keys)
     uganda['weekly']['moInstockNotPostedSum'] = sum(safe_int(row[18]) for row in sl_rows[1:] if len(row) > 29 and safe_int(row[18]) > 0 and (_is_checked(row, 29) or _is_x(row, 29)) and str(row[2]).lower().strip() not in ug_mmp_keys)
+    # Stock split by the OFFER flag (col AD = idx 29): ✅ = on offer, x = not on offer.
+    uganda['weekly']['stockOnOffer']    = sum(safe_int(row[18]) for row in sl_rows[1:] if len(row) > 29 and _is_checked(row, 29))
+    uganda['weekly']['stockNotOnOffer'] = sum(safe_int(row[18]) for row in sl_rows[1:] if len(row) > 29 and _is_x(row, 29))
 
     uganda.update(_fetch_uganda_weekly(wmp_rows_wk, ws_rows_wk))
     uganda.update(_fetch_uganda_monthly(ms_rows, mmp_rows))

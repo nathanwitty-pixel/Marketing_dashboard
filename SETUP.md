@@ -65,6 +65,29 @@ While `python main.py` is running, it **auto-records one snapshot per day** for
 as long as the offer window is active — so the timeline fills itself in without
 you refreshing. It only records on days the dashboard is left running.
 
+## Auto-deploy the moment the sheet changes (event-driven)
+
+Beyond the schedule, the spreadsheet can **ping GitHub the instant its data
+changes**, so Vercel updates on its own with no clicking. The workflow already
+listens for this (`repository_dispatch: sheet-updated`); you just wire up the
+sheet once.
+
+Full code + steps are in **`sheet_trigger.gs`**. In short:
+
+1. **GitHub fine-grained token** (Settings → Developer settings → Fine-grained
+   tokens): repository access = *Marketing_dashboard* only; permission
+   *Contents: Read and write*. Copy it.
+2. **Spreadsheet → Extensions → Apps Script.** Paste in `sheet_trigger.gs`.
+3. **Project Settings → Script properties:** add `GH_TOKEN` = the token.
+4. **Run `setup` once** (authorize when asked). It installs a trigger that
+   checks every 5 minutes and pings GitHub *only when the sheet actually
+   changed* — so CI runs only on real changes, not on a fixed clock.
+
+The 2-hour schedule stays on as a safety net. Latency is up to ~5 min; lower the
+`everyMinutes(5)` in `setup` to `everyMinutes(1)` if you want it snappier.
+
+---
+
 ### Always-on option (records even when the dashboard is closed)
 Use Windows **Task Scheduler** to run the generator once a day:
 

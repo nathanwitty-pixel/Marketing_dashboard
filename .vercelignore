@@ -11,6 +11,8 @@ service_account.json
 __pycache__/
 *.pyc
 *.pyo
+*.gs
+requirements.txt
 
 # ── Raw data / state JSON (baked into the HTML at build time; no need to serve) ──
 *_history.json

@@ -3,8 +3,10 @@ name: Refresh dashboard from Google Sheets
 # Re-reads the Google Sheet, regenerates the HTML, and commits it so Vercel
 # (connected to this repo) auto-deploys the fresh data.
 #
-#   • Runs automatically on a schedule (below).
-#   • Runs on demand: Actions tab → this workflow → "Run workflow".
+#   • Event-driven: the Google Sheet pings GitHub the moment data changes
+#     (repository_dispatch, sent by the bound Apps Script — see SETUP.md).
+#   • Safety-net schedule (below), in case an event is ever missed.
+#   • On demand: Actions tab → this workflow → "Run workflow".
 #
 # One-time setup (repo → Settings → Secrets and variables → Actions):
 #   SERVICE_ACCOUNT_JSON  – the FULL contents of your service_account.json key.
@@ -14,8 +16,10 @@ name: Refresh dashboard from Google Sheets
 #                           your Vercel project is NOT linked to this GitHub repo.
 
 on:
+  repository_dispatch:
+    types: [sheet-updated]     # fired by the sheet's Apps Script when data changes
   schedule:
-    - cron: "0 */2 * * *"     # every 2 hours (UTC). Change to "*/30 * * * *" for every 30 min.
+    - cron: "0 */2 * * *"      # safety net every 2 hours (UTC)
   workflow_dispatch: {}        # the manual "Run workflow" button
 
 permissions:
