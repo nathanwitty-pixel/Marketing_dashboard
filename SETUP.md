@@ -124,8 +124,8 @@ Two moving parts:
    add `SERVICE_ACCOUNT_JSON` = the **same** key JSON (Production + Preview). The
    build reads it straight from the env — no key file is ever written or served.
 4. **Vercel build settings** (usually auto-applied from `vercel.json`): Framework
-   preset **Other**, Build Command `pip3 install -r requirements.txt && python3
-   build_all.py && rm -rf dist && mkdir dist && cp *.html dist/`, Output
+   preset **Other**, Build Command `python3 -m pip install -r requirements.txt &&
+   python3 build_all.py && rm -rf dist && mkdir dist && cp *.html dist/`, Output
    Directory `dist`. Check the first deploy's build log shows Python running.
 5. **Vercel Deploy Hook:** Vercel → Settings → Git → **Deploy Hooks** → create
    one on `main` → copy the URL → add as GitHub secret `VERCEL_DEPLOY_HOOK`.
