@@ -39,13 +39,13 @@
     {
       "label": "Wk 4",
       "month": "Jul",
-      "kenya": 50.0,
-      "sinza": 19.7,
-      "uganda": 5.7,
+      "kenya": 0.0,
+      "sinza": 0.0,
+      "uganda": 0.0,
       "_sig": [
-        133,
-        66,
-        78
+        0,
+        0,
+        0
       ]
     }
   ]
