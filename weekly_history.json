@@ -37,12 +37,12 @@
       "weekStart": "2026-07-19",
       "label": "Wk 4",
       "month": "Jul",
-      "salesPct": 50.37,
-      "salesBags": 11701,
+      "salesPct": 50.41,
+      "salesBags": 11711,
       "prevSalesPct": 15.11,
       "prevSalesBags": 3510,
-      "weeklySales": 2129,
-      "declinedBy": -3679
+      "weeklySales": 2155,
+      "declinedBy": -3653
     }
   ]
 }
