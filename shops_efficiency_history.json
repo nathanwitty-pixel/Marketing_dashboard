@@ -1415,8 +1415,8 @@
       "date": "2026-07-24",
       "wkRemaining": 1932,
       "wkCleared": 1231,
-      "moRemaining": 1370,
-      "moCleared": 4980,
+      "moRemaining": 1369,
+      "moCleared": 5000,
       "wkRemainingByShop": {
         "STARMALL": 95,
         "MOMBASA": 42,
@@ -1463,7 +1463,7 @@
         "THIKA": 18,
         "HAZINA": 55,
         "KITENGELA": 24,
-        "NANYUKI": 25,
+        "NANYUKI": 24,
         "KAKAMEGA": 29,
         "HILTON": 33,
         "KISII": 29,
@@ -1480,8 +1480,8 @@
         "MERU": 181,
         "THIKA": 329,
         "HAZINA": 309,
-        "KITENGELA": 174,
-        "NANYUKI": 119,
+        "KITENGELA": 178,
+        "NANYUKI": 135,
         "KAKAMEGA": 207,
         "HILTON": 903,
         "KISII": 235,
@@ -1510,15 +1510,15 @@
         "Nairobi Metropolitan": 67,
         "Coastal Region": 131,
         "Western & Nyanza": 148,
-        "Central Region": 167,
+        "Central Region": 166,
         "Rift Valley": 66
       },
       "moClearedByRegion": {
         "Nairobi CBD": 2166,
-        "Nairobi Metropolitan": 357,
+        "Nairobi Metropolitan": 361,
         "Coastal Region": 270,
         "Western & Nyanza": 914,
-        "Central Region": 629,
+        "Central Region": 645,
         "Rift Valley": 644
       }
     }
