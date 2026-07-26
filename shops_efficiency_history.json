@@ -1638,7 +1638,7 @@
       "wkRemaining": 1629,
       "wkCleared": 1949,
       "moRemaining": 1221,
-      "moCleared": 5535,
+      "moCleared": 5543,
       "wkRemainingByShop": {
         "STARMALL": 71,
         "MOMBASA": 38,
@@ -1702,7 +1702,7 @@
         "MERU": 201,
         "THIKA": 364,
         "HAZINA": 342,
-        "KITENGELA": 187,
+        "KITENGELA": 195,
         "NANYUKI": 148,
         "KAKAMEGA": 229,
         "HILTON": 1025,
@@ -1737,7 +1737,7 @@
       },
       "moClearedByRegion": {
         "Nairobi CBD": 2421,
-        "Nairobi Metropolitan": 380,
+        "Nairobi Metropolitan": 388,
         "Coastal Region": 309,
         "Western & Nyanza": 1017,
         "Central Region": 713,
