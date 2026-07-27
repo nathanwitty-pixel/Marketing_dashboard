@@ -1854,6 +1854,117 @@
         "Central Region": 713,
         "Rift Valley": 695
       }
+    },
+    {
+      "date": "2026-07-27",
+      "wkRemaining": 1629,
+      "wkCleared": 1949,
+      "moRemaining": 1213,
+      "moCleared": 5618,
+      "wkRemainingByShop": {
+        "STARMALL": 71,
+        "MOMBASA": 38,
+        "NAKURU": 108,
+        "ELDORET": 57,
+        "KISUMU": 18,
+        "MERU": 177,
+        "THIKA": 28,
+        "HAZINA": 76,
+        "KITENGELA": 37,
+        "NANYUKI": 36,
+        "KAKAMEGA": 43,
+        "HILTON": 208,
+        "KISII": 38,
+        "KTDA": 606,
+        "BUSIA": 26,
+        "RONGAI": 62
+      },
+      "wkClearedByShop": {
+        "STARMALL": 181,
+        "MOMBASA": 172,
+        "NAKURU": 84,
+        "ELDORET": 140,
+        "KISUMU": 109,
+        "MERU": 58,
+        "THIKA": 143,
+        "HAZINA": 129,
+        "KITENGELA": 52,
+        "NANYUKI": 55,
+        "KAKAMEGA": 56,
+        "HILTON": 372,
+        "KISII": 96,
+        "KTDA": 188,
+        "BUSIA": 72,
+        "RONGAI": 42
+      },
+      "moRemainingByShop": {
+        "STARMALL": 32,
+        "MOMBASA": 118,
+        "NAKURU": 28,
+        "ELDORET": 23,
+        "KISUMU": 24,
+        "MERU": 106,
+        "THIKA": 16,
+        "HAZINA": 45,
+        "KITENGELA": 23,
+        "NANYUKI": 22,
+        "KAKAMEGA": 27,
+        "HILTON": 21,
+        "KISII": 20,
+        "KTDA": 607,
+        "BUSIA": 59,
+        "RONGAI": 42
+      },
+      "moClearedByShop": {
+        "STARMALL": 418,
+        "MOMBASA": 311,
+        "NAKURU": 308,
+        "ELDORET": 402,
+        "KISUMU": 322,
+        "MERU": 205,
+        "THIKA": 372,
+        "HAZINA": 344,
+        "KITENGELA": 195,
+        "NANYUKI": 148,
+        "KAKAMEGA": 232,
+        "HILTON": 1031,
+        "KISII": 277,
+        "KTDA": 647,
+        "BUSIA": 210,
+        "RONGAI": 196
+      },
+      "wkRemainingByRegion": {
+        "Nairobi CBD": 961,
+        "Nairobi Metropolitan": 99,
+        "Coastal Region": 38,
+        "Western & Nyanza": 125,
+        "Central Region": 241,
+        "Rift Valley": 165
+      },
+      "wkClearedByRegion": {
+        "Nairobi CBD": 870,
+        "Nairobi Metropolitan": 94,
+        "Coastal Region": 172,
+        "Western & Nyanza": 333,
+        "Central Region": 256,
+        "Rift Valley": 224
+      },
+      "moRemainingByRegion": {
+        "Nairobi CBD": 705,
+        "Nairobi Metropolitan": 65,
+        "Coastal Region": 118,
+        "Western & Nyanza": 130,
+        "Central Region": 144,
+        "Rift Valley": 51
+      },
+      "moClearedByRegion": {
+        "Nairobi CBD": 2440,
+        "Nairobi Metropolitan": 391,
+        "Coastal Region": 311,
+        "Western & Nyanza": 1041,
+        "Central Region": 725,
+        "Rift Valley": 710
+      }
     }
   ]
 }
