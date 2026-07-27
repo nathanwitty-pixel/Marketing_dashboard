@@ -219,19 +219,24 @@ def update_weekly_history():
             with open(WEEKLY_HISTORY_FILE, "r") as f:
                 weeks = json.load(f).get("weeks", [])
         except (ValueError, OSError):
-            weeks = []
+            # Corrupt/unparseable (e.g. a git merge conflict left markers in it).
+            # Do NOT overwrite — that would wipe the whole trend history. Leave
+            # the file for manual repair and skip this run's history update.
+            print("  WARNING: weekly_history.json is unreadable (merge conflict?)."
+                  " Leaving it untouched — fix the file, then re-run.")
+            return []
     weeks = [w for w in weeks if w.get("weekStart") != entry["weekStart"]]
     weeks.append(entry)
     weeks.sort(key=lambda w: w.get("weekStart", ""))
     weeks = weeks[-16:]
-    # Re-label every stored week from its own weekStart, so the numbering stays
-    # consistent (opening partial week = Wk 1) even for previously-frozen rows.
+    # Number the weeks 1..N within each month, in date order, so the opening
+    # (partial) week is Wk 1 — even when it starts in the previous calendar month
+    # (e.g. Jun 28 → "Jul" Wk 1). Keyed off each row's own "month" field.
+    _month_counts = {}
     for w in weeks:
-        try:
-            wi = _perfect_week_index(date.fromisoformat(w["weekStart"]))
-            w["label"] = ("Wk " + str(wi)) if wi else "Partial"
-        except Exception:
-            pass
+        m = w.get("month", "")
+        _month_counts[m] = _month_counts.get(m, 0) + 1
+        w["label"] = "Wk " + str(_month_counts[m])
     with open(WEEKLY_HISTORY_FILE, "w") as f:
         json.dump({"weeks": weeks}, f, indent=2)
     return weeks
