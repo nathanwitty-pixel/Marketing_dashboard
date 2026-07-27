@@ -37,8 +37,13 @@
       "weekStart": "2026-07-19",
       "label": "Wk 4",
       "month": "Jul",
+<<<<<<< Updated upstream
       "salesPct": 56.4,
       "salesBags": 13103,
+=======
+      "salesPct": 55.67,
+      "salesBags": 12933,
+>>>>>>> Stashed changes
       "prevSalesPct": 15.11,
       "prevSalesBags": 3510,
       "weeklySales": 3373,

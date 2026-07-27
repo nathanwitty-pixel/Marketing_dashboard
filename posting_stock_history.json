@@ -1199,9 +1199,15 @@
     {
       "label": "Wk 4",
       "month": "Jul",
+<<<<<<< Updated upstream
       "kenya": 199,
       "sinza": 89,
       "uganda": 7
+=======
+      "kenya": 85,
+      "sinza": 27,
+      "uganda": 16
+>>>>>>> Stashed changes
     }
   ]
 }

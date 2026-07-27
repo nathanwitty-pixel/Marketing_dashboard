@@ -38,6 +38,7 @@
     },
     {
       "date": "2026-07-22",
+<<<<<<< Updated upstream
       "growth": 6.75
     },
     {
@@ -51,6 +52,9 @@
     {
       "date": "2026-07-25",
       "growth": 14.52
+=======
+      "growth": 4.69
+>>>>>>> Stashed changes
     },
     {
       "date": "2026-07-26",
