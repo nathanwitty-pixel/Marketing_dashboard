@@ -281,52 +281,14 @@
     </div>
   </div>
 
-  <!-- Per-product progress toward target -->
-  <div class="card-grid">
-    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem">
-        <div class="card-label" id="pt-title" style="margin-bottom:0">Bags Selection — Sold vs Remaining to Target</div>
-        <div style="display:flex;align-items:center;gap:0.9rem;flex-wrap:wrap">
-          <div style="display:flex;align-items:center;gap:0.4rem">
-            <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">View</span>
-            <select id="pt-view" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
-              <option value="bars">Bars</option>
-              <option value="trend">Trend line</option>
-            </select>
-          </div>
-          <div style="display:flex;align-items:center;gap:0.4rem">
-            <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Period</span>
-            <select id="pt-period" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
-              <option value="monthly">Monthly</option>
-              <option value="weekly">Weekly</option>
-            </select>
-          </div>
-          <div style="display:flex;align-items:center;gap:0.4rem">
-            <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Sort by</span>
-            <select id="pt-sort" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
-              <option value="target">Highest target</option>
-              <option value="sold">Highest bags sold</option>
-              <option value="remaining">Highest still needed</option>
-              <option value="name">Product (A–Z)</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <div style="position:relative;height:440px" id="pt-bars-wrap"><canvas id="chart-product-targets"></canvas></div>
-      <div style="position:relative;height:440px;display:none" id="pt-trend-wrap"><canvas id="chart-product-trend"></canvas></div>
-      <div id="pt-totals" style="display:flex;gap:1.75rem;justify-content:center;flex-wrap:wrap;margin-top:0.9rem;padding-top:0.85rem;border-top:1px solid #2d3148"></div>
-    </div>
-  </div>
-
   <!-- Top 3 colours by stock, per bag -->
   <div class="card-grid">
     <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div class="card-label" style="margin-bottom:0.35rem">Top 3 Colours by Stock — per Bag</div>
-      <div style="font-size:0.75rem;color:#64748b;margin-bottom:0.75rem">
-        For every selected bag, its three highest-stock colours — each showing monthly sales, marketing posts and stock on hand.
+      <div class="card-label" style="margin-bottom:0.35rem">Bags Selection</div>
+      <div style="font-size:0.75rem;color:#64748b;margin-bottom:0.9rem">
+        Each selected bag with its top 3 colours by stock on hand.
       </div>
-      <div style="position:relative;overflow-x:auto"><div id="top3c-wrap"><canvas id="chart-top3-colours"></canvas></div></div>
-      <div id="top3c-totals" style="display:flex;gap:1.75rem;justify-content:center;flex-wrap:wrap;margin-top:0.9rem;padding-top:0.85rem;border-top:1px solid #2d3148"></div>
+      <div id="top3c-list"></div>
     </div>
   </div>
 
@@ -1540,81 +1502,48 @@ window.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script>
-/* ── Top 3 Colours by Stock — per bag ──────────────────────────
-   For every selected bag, take its 3 highest-stock colours and show
-   Monthly Sales / Posts / Stock as three coloured bars. Data comes from the
-   per-colour rows the page already carries (NP.monthlyCombined). */
+/* ── Bags Selection — top 3 colours by stock, per bag ──────────
+   Compact list (no bars): each selected bag with its three highest-stock
+   colours and the stock numbers. Stock per (bag, colour) is summed from the
+   per-colour rows the page carries (NP.monthlyCombined). */
 (function() {
-  var el = document.getElementById('chart-top3-colours');
-  if (!el || typeof Chart === 'undefined') return;
-  var wrap = document.getElementById('top3c-wrap');
+  var box = document.getElementById('top3c-list');
+  if (!box) return;
 
-  var byBag = {};
+  // Sum stock by bag → colour, and track each bag's total stock.
+  var byBag = {}, bagTotal = {};
   (NP.monthlyCombined || []).forEach(function(r) {
-    var bag = r.bagType || r.productName || '—';
-    (byBag[bag] = byBag[bag] || []).push({
-      colour: r.colour || '—',
-      sales:  (Number(r.kenyaSales)  || 0) + (Number(r.outsideKenya)  || 0),
-      posts:  (Number(r.mpostKenya)  || 0) + (Number(r.mpostOutside)  || 0),
-      stock:  (Number(r.sKenya)      || 0) + (Number(r.sOutside)      || 0)
-    });
+    var bag = r.bagType || r.productName || '—', col = r.colour || '—';
+    var st  = (Number(r.sKenya) || 0) + (Number(r.sOutside) || 0);
+    byBag[bag] = byBag[bag] || {};
+    byBag[bag][col] = (byBag[bag][col] || 0) + st;
+    bagTotal[bag] = (bagTotal[bag] || 0) + st;
   });
 
-  var labels = [], sales = [], posts = [], stock = [];
-  Object.keys(byBag).sort().forEach(function(bag) {
-    byBag[bag].slice().sort(function(a, b) { return b.stock - a.stock; }).slice(0, 3)
-      .forEach(function(c) {
-        labels.push(bag + ' · ' + c.colour);
-        sales.push(c.sales); posts.push(c.posts); stock.push(c.stock);
-      });
-  });
-
-  if (!labels.length) {
-    if (wrap) wrap.innerHTML = '<p style="font-size:0.8rem;color:#64748b;padding:1rem 0">' +
-      'No bags selected yet — tick column M (BAGS SELECTION) in MONTHLY_TARGET, then refresh.</p>';
+  var bags = Object.keys(byBag);
+  if (!bags.length) {
+    box.innerHTML = '<p style="font-size:0.8rem;color:#64748b">No bags selected yet — tick column M (BAGS SELECTION) in MONTHLY_TARGET, then refresh.</p>';
     return;
   }
+  // Highest-stock bags first.
+  bags.sort(function(a, b) { return (bagTotal[b] || 0) - (bagTotal[a] || 0); });
 
-  var h = Math.max(220, labels.length * 30 + 44);   // grow with the number of colour rows
-  if (wrap) wrap.style.height = h + 'px';
-  else { el.parentNode.style.height = h + 'px'; }
-
-  new Chart(el, {
-    type: 'bar',
-    data: { labels: labels, datasets: [
-      { label: 'Monthly Sales', data: sales, backgroundColor: '#34d399', borderRadius: 3, borderSkipped: false, maxBarThickness: 9 },
-      { label: 'Posts',         data: posts, backgroundColor: '#22d3ee', borderRadius: 3, borderSkipped: false, maxBarThickness: 9 },
-      { label: 'Stock',         data: stock, backgroundColor: '#fbbf24', borderRadius: 3, borderSkipped: false, maxBarThickness: 9 }
-    ] },
-    options: {
-      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-      interaction: { mode: 'index', axis: 'y', intersect: false },
-      plugins: {
-        legend: { position: 'top', labels: { color: '#94a3b8', boxWidth: 12, font: { size: 11 } } },
-        tooltip: { backgroundColor: '#151824', borderColor: '#2d3148', borderWidth: 1,
-          titleColor: '#f8fafc', bodyColor: '#cbd5e1', padding: 10, cornerRadius: 6,
-          callbacks: { label: function(c) { return c.dataset.label + ': ' + (c.parsed.x || 0).toLocaleString(); } } }
-      },
-      scales: {
-        x: { beginAtZero: true, grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: '#94a3b8' } },
-        y: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 10 } } }
-      }
-    }
-  });
-
-  var box = document.getElementById('top3c-totals');
-  if (box) {
-    var sum = function(a) { return a.reduce(function(x, y) { return x + (Number(y) || 0); }, 0); };
-    var chip = function(sw, label, val, ink) {
-      return '<span style="display:inline-flex;align-items:center;gap:0.4rem">' +
-        '<span style="width:11px;height:11px;border-radius:3px;background:' + sw + '"></span>' +
-        '<span style="color:#94a3b8">' + label + '</span> ' +
-        '<strong style="color:' + ink + ';font-variant-numeric:tabular-nums">' + val.toLocaleString() + '</strong></span>';
-    };
-    box.innerHTML = chip('#34d399', 'Total sales (shown)', sum(sales), '#6ee7b7') +
-                    chip('#22d3ee', 'Total posts (shown)', sum(posts), '#67e8f9') +
-                    chip('#fbbf24', 'Total stock (shown)', sum(stock), '#fcd34d');
-  }
+  box.innerHTML = bags.map(function(bag) {
+    var cols = Object.keys(byBag[bag])
+      .map(function(c) { return { colour: c, stock: byBag[bag][c] }; })
+      .filter(function(c) { return c.stock > 0; })
+      .sort(function(a, b) { return b.stock - a.stock; })
+      .slice(0, 3);
+    var colHtml = cols.length
+      ? cols.map(function(c) {
+          return '<span style="color:#fcd34d;font-weight:600">' + c.colour + '</span> ' +
+                 '<strong style="color:#e2e8f0;font-variant-numeric:tabular-nums">' + c.stock.toLocaleString() + '</strong>';
+        }).join('<span style="color:#475569">&nbsp;&middot;&nbsp;</span>')
+      : '<span style="color:#64748b">no stock</span>';
+    return '<div style="display:flex;align-items:baseline;gap:1rem;padding:0.55rem 0;border-top:1px solid #2d3148;flex-wrap:wrap">' +
+      '<strong style="color:#f8fafc;min-width:170px;font-size:0.9rem">' + bag + '</strong>' +
+      '<span style="font-size:0.86rem;color:#94a3b8">' + colHtml + '</span></div>';
+  }).join('');
 })();
 </script>
 
