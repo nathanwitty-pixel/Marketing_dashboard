@@ -1510,14 +1510,18 @@ window.addEventListener('DOMContentLoaded', function() {
   var box = document.getElementById('top3c-list');
   if (!box) return;
 
-  // Sum stock by bag → colour, and track each bag's total stock.
-  var byBag = {}, bagTotal = {};
+  // Stock by bag → colour. Each (bag, colour) repeats across several product
+  // rows that all carry the SAME aggregate stock, so ASSIGN (take it once) —
+  // summing would multiply the stock by the number of product variants.
+  var byBag = {};
   (NP.monthlyCombined || []).forEach(function(r) {
     var bag = r.bagType || r.productName || '—', col = r.colour || '—';
-    var st  = (Number(r.sKenya) || 0) + (Number(r.sOutside) || 0);
     byBag[bag] = byBag[bag] || {};
-    byBag[bag][col] = (byBag[bag][col] || 0) + st;
-    bagTotal[bag] = (bagTotal[bag] || 0) + st;
+    byBag[bag][col] = (Number(r.sKenya) || 0) + (Number(r.sOutside) || 0);
+  });
+  var bagTotal = {};
+  Object.keys(byBag).forEach(function(bag) {
+    bagTotal[bag] = Object.keys(byBag[bag]).reduce(function(s, c) { return s + byBag[bag][c]; }, 0);
   });
 
   var bags = Object.keys(byBag);
