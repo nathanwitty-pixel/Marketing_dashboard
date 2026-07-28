@@ -1517,7 +1517,7 @@ window.addEventListener('DOMContentLoaded', function() {
   (NP.monthlyCombined || []).forEach(function(r) {
     var bag = r.bagType || r.productName || '—', col = r.colour || '—';
     byBag[bag] = byBag[bag] || {};
-    byBag[bag][col] = (Number(r.sKenya) || 0) + (Number(r.sOutside) || 0);
+    byBag[bag][col] = (Number(r.sKenya) || 0);   // Kenya stock only (STOCK_LEVELS col Y)
   });
   var bagTotal = {};
   Object.keys(byBag).forEach(function(bag) {
