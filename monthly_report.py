@@ -114,6 +114,49 @@ ke_stock  = num(gstr(oa, "totalKenyaStock"))
 sz_stock  = num(gstr(oa, "totalSinzaStock"))
 ug_stock  = num(gstr(oa, "totalUgandaStock"))
 
+# Combos vs power deals movement (units moved, value = price x units, avg price).
+def _garr_line(block, key):
+    """Greedy single-line array extractor — handles nested [[...],[...]] arrays."""
+    m = re.search(rf'\b{key}"?\s*:\s*(\[.*\]),?\s*\n', block)
+    if not m:
+        return []
+    try:
+        return json.loads(m.group(1))
+    except (ValueError, TypeError):
+        return []
+
+def _parse_offers(headers, rows):
+    headers = headers or []
+    low = [str(h).lower().strip() for h in headers]
+    iprice = next((i for i, h in enumerate(low) if "price" in h and "tsh" not in h), -1)
+    if iprice < 0:
+        iprice = next((i for i, h in enumerate(low) if "price" in h), -1)
+    itotal = next((i for i, h in enumerate(low) if h == "total"), len(low) - 1)
+    out = []
+    for r in (rows or []):
+        if not r:
+            continue
+        name = str(r[0]).strip()
+        if not name or "total" in name.lower():
+            continue
+        price = num(r[iprice]) if 0 <= iprice < len(r) else 0
+        units = num(r[itotal]) if 0 <= itotal < len(r) else 0
+        out.append((units, price))
+    return out
+
+def _agg_offers(offers):
+    units = sum(u for u, _ in offers)
+    value = sum(u * p for u, p in offers)
+    priced = [p for _, p in offers if p > 0]
+    return units, value, (sum(priced) / len(priced) if priced else 0)
+
+combo_units, combo_value, combo_avg = _agg_offers(_parse_offers(_garr_line(oa, "juneComboHeaders"), _garr_line(oa, "juneCombos")))
+deal_units, deal_value, deal_avg = _agg_offers(_parse_offers(_garr_line(oa, "powerDealHeaders"), _garr_line(oa, "powerDeals")))
+offer_more_units = "combos" if combo_units >= deal_units else "power deals"
+offer_more_value = "combos" if combo_value >= deal_value else "power deals"
+offer_cheaper    = "power deals" if deal_avg <= combo_avg else "combos"
+offer_pricier    = "combos" if offer_cheaper == "power deals" else "power deals"
+
 # Posting yields
 ke_wk_mkt = num(gstr(pa, "wkMktPct"))
 ke_mo_mkt = num(gstr(pa, "moMktPct"))
@@ -284,13 +327,13 @@ body = f"""
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#a78bfa">3</div><h2>Offer Type Analysis</h2></div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
-      <p>Across <b>{combos} combos and {deals} power deals</b>, we are holding heavy inventory — <b>{fmt(ke_stock)} bags in Kenya</b> (plus {fmt(sz_stock)} Sinza, {fmt(ug_stock)} Uganda) — that is clearing too slowly to hit target.</p></div>
+      <p>Across <b>{combos} combos and {deals} power deals</b> (Kenya), the two offer types cleared stock very differently: <b>combos moved {fmt(combo_units)} bags</b> (KES {fmt(combo_value)}) while <b>power deals moved {fmt(deal_units)} bags</b> (KES {fmt(deal_value)}). <b>{offer_more_units.capitalize()}</b> shifted the most stock; <b>{offer_more_value}</b> made the most money.</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
-      <p>The offer mix isn't drawing down stock fast enough: the same <b>{fmt(ke_stock)}-bag Kenya position</b> here is the stock behind the marketing gap in Section 4. Inventory is concentrated in a handful of colours/combos rather than spread across movers.</p></div>
+      <p>It's a price-point story: combos averaged <b>KES {fmt(combo_avg)}</b> per offer vs power deals <b>KES {fmt(deal_avg)}</b>. The cheaper <b>{offer_cheaper}</b> clear more volume, so <b>dead stock moves fastest through {offer_cheaper}</b> — yet <b>{fmt(ke_stock)} bags</b> remain in Kenya offer stock (plus {fmt(sz_stock)} Sinza, {fmt(ug_stock)} Uganda), so the mix still isn't drawing inventory down fast enough.</p></div>
     <div class="row"><div class="tag rec">Recommendation</div>
       <div class="recs">
-        <div class="rec-item"><span class="badge start">Start</span><span>Leading each week's offers with the <b>highest-stock combos</b> so pushes are aimed at what we most need to clear.</span></div>
-        <div class="rec-item"><span class="badge stop">Stop</span><span>Restocking the <b>slowest-moving colours</b> until the current position draws down.</span></div>
+        <div class="rec-item"><span class="badge start">Start</span><span>Routing the <b>slowest dead stock through {offer_cheaper}</b> (the higher-volume clearer) and keeping premium movers in <b>{offer_pricier}</b> for margin.</span></div>
+        <div class="rec-item"><span class="badge stop">Stop</span><span>Restocking the <b>slowest-moving colours</b> until the {fmt(ke_stock)}-bag Kenya position draws down.</span></div>
       </div></div>
     <div class="row"><div class="tag impact">Business Impact</div>
       <div class="impact"><p>Clearing just <b>20% of the {fmt(ke_stock)}-bag Kenya position (~{fmt(offer_clear)} bags)</b> in the month is ~{pct(offer_clear_pct)} of target — and frees working capital tied up in slow stock.</p></div>
