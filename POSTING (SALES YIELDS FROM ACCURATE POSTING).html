@@ -364,7 +364,7 @@
   <div class="card-grid">
     <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.5rem">
-        <div class="card-label" style="margin-bottom:0">Sales with no Posting vs Expected Sales</div>
+        <div class="card-label" style="margin-bottom:0">Sales with no Posting vs Opportunity if Marketed</div>
         <div style="display:flex;align-items:center;gap:0.4rem">
           <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Period</span>
           <select id="pv2-kenya-period" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
@@ -562,7 +562,7 @@
   <div class="card-grid">
     <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.5rem">
-        <div class="card-label" style="margin-bottom:0">Sales with no Posting vs Expected Sales</div>
+        <div class="card-label" style="margin-bottom:0">Sales with no Posting vs Opportunity if Marketed</div>
         <div style="display:flex;align-items:center;gap:0.4rem">
           <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Period</span>
           <select id="pv2-sinza-period" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
@@ -769,7 +769,7 @@
   <div class="card-grid">
     <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.5rem">
-        <div class="card-label" style="margin-bottom:0">Sales with no Posting vs Expected Sales</div>
+        <div class="card-label" style="margin-bottom:0">Sales with no Posting vs Opportunity if Marketed</div>
         <div style="display:flex;align-items:center;gap:0.4rem">
           <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Period</span>
           <select id="pv2-uganda-period" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
@@ -2159,6 +2159,7 @@ window.addEventListener('DOMContentLoaded', function() {
     var chart = null;
 
     var ACTUAL_LABEL = cfg.actualLabel || 'Sales with Posting';
+    var EXPECTED_LABEL = cfg.expectedLabel || 'Expected (target)';
     var REMAIN = 'rgba(167,139,250,0.40)';   // faded violet = remaining to target
     var curExp = [], curPosts = [], curActual = [], curStock = [], curStockPosts = [];   // current period's actual / expected / posts / stock / stock-posts, set by draw()
     var vis = { expected: true, remaining: true };   // toggle state for the track / remaining marker
@@ -2174,9 +2175,9 @@ window.addEventListener('DOMContentLoaded', function() {
       totalChip(box, ACTUAL, 'Total ' + ACTUAL_LABEL.toLowerCase(), aSum, '#6ee7b7',
         function() { chart.setDatasetVisibility(0, !chart.isDatasetVisible(0)); chart.update(); renderTotals(); },
         !chart.isDatasetVisible(0));
-      totalChip(box, REMAIN, 'Expected (target)', eSum, '#c4b5fd',
+      totalChip(box, REMAIN, EXPECTED_LABEL, eSum, '#c4b5fd',
         function() { vis.expected = !vis.expected; chart.update(); renderTotals(); }, !vis.expected);
-      totalChip(box, '#f59e0b', 'Remaining to target', rem, '#fbbf24',
+      totalChip(box, '#f59e0b', cfg.remainingLabel || 'Remaining to target', rem, '#fbbf24',
         function() { vis.remaining = !vis.remaining; chart.update(); renderTotals(); }, !vis.remaining);
       if (postsIdx >= 0) {
         var pSum = curPosts.reduce(function(a, b) { return a + (Number(b) || 0); }, 0);
@@ -2214,7 +2215,7 @@ window.addEventListener('DOMContentLoaded', function() {
       if (!cfg.hidePosts) ds.push(Object.assign({ label: 'Total Posts Made', data: posts, backgroundColor: POSTS }, bar));
       if (getView() === 'trend') {
         var lseries = [ { label: ACTUAL_LABEL, data: actual, color: ACTUAL, dim: 'rgba(52,211,153,0.12)' },
-                        { label: 'Expected (target)', data: expected, color: EXPECT } ];
+                        { label: EXPECTED_LABEL, data: expected, color: EXPECT } ];
         if (!cfg.hidePosts) lseries.push({ label: 'Posts made', data: posts, color: POSTS });
         if (chart) chart.destroy();
         chart = window.pvDumbbell(el,
@@ -2260,9 +2261,9 @@ window.addEventListener('DOMContentLoaded', function() {
                   var i = items[0].dataIndex, ev = Number(expected[i]) || 0, av = Number(actual[i]) || 0;
                   var totA = actual.reduce(function(a, b) { return a + (Number(b) || 0); }, 0);
                   var sv = stock[i] || 0, pv = Number(posts[i]) || 0;
-                  var out = ['Expected (target): ' + Math.round(ev).toLocaleString() + ' bags',
-                             'Remaining: ' + Math.round(Math.max(ev - av, 0)).toLocaleString() + ' bags',
-                             'Achieved: ' + (ev > 0 ? Math.round(av / ev * 100) : 0) + '% of expected',
+                  var out = [EXPECTED_LABEL + ': ' + Math.round(ev).toLocaleString() + ' bags',
+                             (cfg.hidePosts ? 'Missed opportunity: ' : 'Remaining: ') + Math.round(Math.max(ev - av, 0)).toLocaleString() + ' bags',
+                             'Achieved: ' + (ev > 0 ? Math.round(av / ev * 100) : 0) + '% of ' + (cfg.hidePosts ? 'opportunity' : 'expected'),
                              'Share of actual: ' + (totA > 0 ? (av / totA * 100).toFixed(1) : '0') + '%',
                              'Stock available: ' + Math.round(sv).toLocaleString() + ' bags'];
                   if (sv > 0) {
@@ -2527,25 +2528,32 @@ window.addEventListener('DOMContentLoaded', function() {
     moOffActual: num(ug.ugMoSalesNoOffer), moOffExp: num(ug.ugMoPostsX) * SPP.uganda, moOffPosts: num(ug.ugMoPostsX)
   });
 
-  // ── Sales with NO Posting vs Expected Sales ──
-  // Expected here = the remainder of the total expected pool after posting's share.
-  // We scale each category's no-posting sales by the posting expectation rate
-  // (posted Expected ÷ posted Actual), so total ≈ posted-expected × (total ÷ posted).
-  function rate(exp, act) { return act > 0 ? exp / act : 0; }
-  // Sales Achieved from Non-Marketing Posts % (Kenya computed as unposted ÷ total; sz/ug have fields)
+  // ── Sales with NO Posting vs "Opportunity if marketed" ──
+  // For bags with zero marketing posts, "Expected" = the OPPORTUNITY they left on the
+  // table = the unmarketed stock valued at the posted-bag conversion rate. Actual (what
+  // they sold on their own) shows the sales team's own pull; the gap up to the opportunity
+  // is the dead stock marketing could have moved. Expressed per row as a bounded multiple
+  // of self-sold, so the total ≈ (unmarketed stock × posted conversion) — no wild ratios.
   function pctOf(a, b) { return b > 0 ? Math.min(a / b, 1) * 100 : 0; }
+  function convRate(sales, stock) { return stock > 0 ? Math.min(sales / stock, 1) : 0; }   // sold per in-stock bag (capped at 1)
+  function oppFactor(unpostedStock, postedSales, postedStock, noPostActual) {
+    var opp = unpostedStock * convRate(postedSales, postedStock);   // bags we'd expect to move if these were marketed
+    return noPostActual > 0 ? Math.max(1, Math.min(opp / noPostActual, 5)) : 1;   // as a multiple of self-sold, bounded 1x–5x
+  }
   var kNMw = pctOf(num(PA.weeklyUnposted),  num(PA.wkSumTotal));
   var kNMm = pctOf(num(PA.monthlyUnposted), num(PA.monthlyTotal));
-  var kW  = rate(num(PA.weeklyExpected)  + num(PA.weeklyPostsNotOnOffer)  * SPP.kenya,  num(PA.weeklySalesTotal)  + num(PA.weeklySalesNoPost));
-  var kM  = rate(num(PA.monthlyExpected) + num(PA.monthlyPostsNotOnOffer) * SPP.kenya,  num(PA.monthlySalesTotal) + num(PA.monthlySalesNoPost));
-  var szW = rate(num(sz.szWkExpected) + num(sz.szWkPostsX) * SPP.sinza,  num(sz.szWkSalesPosted) + num(sz.szWkSalesNoOffer));
-  var szM = rate(num(sz.szMoExpected) + num(sz.szMoPostsX) * SPP.sinza,  num(sz.szMoSalesPosted) + num(sz.szMoSalesNoOffer));
-  var ugW = rate(num(ug.ugWkExpected) + num(ug.ugWkPostsX) * SPP.uganda, num(ug.ugWkSalesPosted) + num(ug.ugWkSalesNoOffer));
-  var ugM = rate(num(ug.ugMoExpected) + num(ug.ugMoPostsX) * SPP.uganda, num(ug.ugMoSalesPosted) + num(ug.ugMoSalesNoOffer));
+  // One opportunity factor per region (monthly-based, the stable series), applied to both periods.
+  var kFac  = oppFactor(num(PA.s3NotPosted), num(PA.monthlySalesTotal), num(PA.s3Posted),
+                        num(PA.offerNotPostedMoSales) + num(PA.notOfferNotPostedMoSales));
+  var szFac = oppFactor(STOCK.sinza.off, num(sz.szMoSalesPosted), STOCK.sinza.on,
+                        num(sz.szOfferNotPostedMoSales) + num(sz.szNotOfferNotPostedMoSales));
+  var ugFac = oppFactor(STOCK.uganda.off, num(ug.ugMoSalesPosted), STOCK.uganda.on,
+                        num(ug.ugOfferNotPostedMoSales) + num(ug.ugNotOfferNotPostedMoSales));
+  var kW = kFac, kM = kFac, szW = szFac, szM = szFac, ugW = ugFac, ugM = ugFac;
 
   pvChart({
     canvas: 'chart-kenya-pv2', period: 'pv2-kenya-period', totals: 'pv2-kenya-totals',
-    actualLabel: 'Sales with no Posting', hidePosts: true, mktWk: kNMw, mktMo: kNMm,
+    actualLabel: 'Sales with no Posting', expectedLabel: 'Opportunity if marketed', remainingLabel: 'Missed opportunity', hidePosts: true, mktWk: kNMw, mktMo: kNMm,
     stockOn: STOCK.kenya.on, stockOff: STOCK.kenya.off,
     wkOnActual:  num(PA.offerNotPostedWkSales),    wkOnExp:  num(PA.offerNotPostedWkSales)    * kW,
     moOnActual:  num(PA.offerNotPostedMoSales),    moOnExp:  num(PA.offerNotPostedMoSales)    * kM,
@@ -2554,7 +2562,7 @@ window.addEventListener('DOMContentLoaded', function() {
   });
   pvChart({
     canvas: 'chart-sinza-pv2', period: 'pv2-sinza-period', totals: 'pv2-sinza-totals',
-    actualLabel: 'Sales with no Posting', hidePosts: true, mktWk: num(sz.szWkNonMktPct), mktMo: num(sz.szMoNonMktPct),
+    actualLabel: 'Sales with no Posting', expectedLabel: 'Opportunity if marketed', remainingLabel: 'Missed opportunity', hidePosts: true, mktWk: num(sz.szWkNonMktPct), mktMo: num(sz.szMoNonMktPct),
     stockOn: STOCK.sinza.on, stockOff: STOCK.sinza.off,
     wkOnActual:  num(sz.szOfferNotPostedWkSales),    wkOnExp:  num(sz.szOfferNotPostedWkSales)    * szW,
     moOnActual:  num(sz.szOfferNotPostedMoSales),    moOnExp:  num(sz.szOfferNotPostedMoSales)    * szM,
@@ -2563,7 +2571,7 @@ window.addEventListener('DOMContentLoaded', function() {
   });
   pvChart({
     canvas: 'chart-uganda-pv2', period: 'pv2-uganda-period', totals: 'pv2-uganda-totals',
-    actualLabel: 'Sales with no Posting', hidePosts: true, mktWk: num(ug.ugWkNonMktPct), mktMo: num(ug.ugMoNonMktPct),
+    actualLabel: 'Sales with no Posting', expectedLabel: 'Opportunity if marketed', remainingLabel: 'Missed opportunity', hidePosts: true, mktWk: num(ug.ugWkNonMktPct), mktMo: num(ug.ugMoNonMktPct),
     stockOn: STOCK.uganda.on, stockOff: STOCK.uganda.off,
     wkOnActual:  num(ug.ugOfferNotPostedWkSales),    wkOnExp:  num(ug.ugOfferNotPostedWkSales)    * ugW,
     moOnActual:  num(ug.ugOfferNotPostedMoSales),    moOnExp:  num(ug.ugOfferNotPostedMoSales)    * ugM,

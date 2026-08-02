@@ -740,17 +740,19 @@ def _fetch_monthly_kenya(ms_rows, mmp_rows):
         if len(row) > 4 and _is_checked(row, 8)
     )
 
-    # posted names from MMP: col I ✅ AND col E > 0 → col C (idx 2)
+    # posted keys from MMP: col I ✅ AND col E > 0 → (colour, product name).
+    # Keyed by (colour, name) — NOT name-only — so a product with several colours
+    # doesn't sum every colour's sales when only one colour was posted.
     _mmp_posted = {
-        str(row[2]).lower().strip()
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > 8 and _is_checked(row, 8) and safe_int(row[4]) > 0
     }
-    # sum MONTHLY_SALES col X (idx 23) where col B (idx 1) matches a posted name
+    # sum MONTHLY_SALES col X (idx 23) where (colour, name) matches a posted key
     monthly_sales = sum(
         safe_int(row[23])
         for row in ms_rows[1:]
-        if len(row) > 23 and str(row[1]).lower().strip() in _mmp_posted
+        if len(row) > 23 and _ms_key(row) in _mmp_posted
     )
 
     # Bags Not On Offer monthly: col I = x
@@ -760,37 +762,37 @@ def _fetch_monthly_kenya(ms_rows, mmp_rows):
         if len(row) > 4 and _is_x(row, 8)
     )
 
-    # Sales without posting monthly: MMP col I = x AND col E > 0 → names → MS col B match → col X sum
+    # Sales without posting monthly: MMP col I = x AND col E > 0 → (colour, name) → MS match → col X sum
     _mmp_not_posted = {
-        str(row[2]).lower().strip()
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > 8 and _is_x(row, 8) and safe_int(row[4]) > 0
     }
     monthly_sales_no_post = sum(
         safe_int(row[23])
         for row in ms_rows[1:]
-        if len(row) > 23 and str(row[1]).lower().strip() in _mmp_not_posted
+        if len(row) > 23 and _ms_key(row) in _mmp_not_posted
     )
 
     # S2 monthly unposted: col X (idx 23) where col AB (idx 27) has an "x"
     # Total Sales w/o Posting (Monthly): MMP col E = 0 → names (col C) → MS col B match → sum col AF
     _mmp_any_posted = {
-        str(row[2]).lower().strip()
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > 4 and safe_int(row[4]) > 0 and str(row[2]).strip()
     }
-    _mmp_zero_post_names = {
-        str(row[2]).lower().strip()
+    _mmp_zero_post_keys = {
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > 4
         and str(row[2]).strip()                          # non-empty name
         and str(row[4]).strip() == '0'                   # explicitly zero, not blank
-        and str(row[2]).lower().strip() not in _mmp_any_posted  # never posted elsewhere
+        and _mmp_key(row) not in _mmp_any_posted          # this (colour,name) never posted elsewhere
     }
     monthly_unposted = sum(
         safe_int(row[23])   # MS col X = monthly Kenya sales (col AF/31 was empty → wrong total)
         for row in ms_rows[1:]
-        if len(row) > 23 and str(row[1]).lower().strip() in _mmp_zero_post_names
+        if len(row) > 23 and _ms_key(row) in _mmp_zero_post_keys
     )
 
     # S2 monthly total: col X (idx 23) where col AB has x OR ✅
@@ -889,9 +891,9 @@ def _fetch_monthly_kenya(ms_rows, mmp_rows):
     mo_not_offer_mkt_pct = round(sum(bag_pcts_x_mo) / len(bag_pcts_x_mo), 1) if bag_pcts_x_mo else 0.0
     print(f"  Mkt % mo (not-offer): {len(bag_pcts_x_mo)} bags, avg {mo_not_offer_mkt_pct}%")
 
-    # Bags Not Posted & On Offer (Monthly): MMP col I=✅, col E=0 → names col C → MS col B (col AB=✅, AF>0) → sum col AF
+    # Bags Not Posted & On Offer (Monthly): MMP col I=✅, col E=0 → (colour,name) → MS match → sum col X
     _mmp_chk_zero_mo = {
-        str(row[2]).lower().strip()
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > 8 and _is_checked(row, 8) and safe_int(row[4]) == 0 and str(row[2]).strip()
     }
@@ -900,12 +902,12 @@ def _fetch_monthly_kenya(ms_rows, mmp_rows):
         for row in ms_rows[1:]
         if len(row) > 23
         and not any(str(cell).strip().upper() == "SUM TOTAL" for cell in row[:5])
-        and str(row[1]).lower().strip() in _mmp_chk_zero_mo
+        and _ms_key(row) in _mmp_chk_zero_mo
     )
 
-    # Bags Not Posted & Not on Offer (Monthly): MMP col I=x, col E=0 → names col C → MS col B match → sum col AF
+    # Bags Not Posted & Not on Offer (Monthly): MMP col I=x, col E=0 → (colour,name) → MS match → sum col X
     _mmp_x_zero_mo = {
-        str(row[2]).lower().strip()
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > 8 and _is_x(row, 8) and safe_int(row[4]) == 0 and str(row[2]).strip()
     }
@@ -914,7 +916,7 @@ def _fetch_monthly_kenya(ms_rows, mmp_rows):
         for row in ms_rows[1:]
         if len(row) > 23
         and not any(str(cell).strip().upper() == "SUM TOTAL" for cell in row[:5])
-        and str(row[1]).lower().strip() in _mmp_x_zero_mo
+        and _ms_key(row) in _mmp_x_zero_mo
     )
 
     return (monthly_posts, monthly_sales, monthly_unposted, monthly_total,
