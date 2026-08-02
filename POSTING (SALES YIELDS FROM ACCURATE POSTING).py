@@ -108,6 +108,28 @@ def _sl_key(row):
     """STOCK_LEVELS: colour=A(0), product_name=C(2)"""
     return (str(row[0]).lower().strip(), str(row[2]).lower().strip())
 
+def _real_ms(row):
+    """True only for a genuine MONTHLY_SALES product row — not a blank spacer or a
+    SUM/GRAND TOTAL / category-subtotal row (those hold aggregates that must never be
+    summed into a per-bag figure, which is what blew monthlySalesNoPost past the total)."""
+    if len(row) < 2:
+        return False
+    colour = str(row[0]).strip()
+    name   = str(row[1]).strip()
+    if not colour or not name:
+        return False
+    return "total" not in name.lower() and "total" not in colour.lower()
+
+def _real_mmp(row):
+    """True only for a genuine MONTHLY_MARKETING_POST product row (colour A, name C)."""
+    if len(row) < 3:
+        return False
+    colour = str(row[0]).strip()
+    name   = str(row[2]).strip()
+    if not colour or not name:
+        return False
+    return "total" not in name.lower() and "total" not in colour.lower()
+
 
 # ── REGIONAL ANALYSIS ─────────────────────────────────────────
 
@@ -752,7 +774,7 @@ def _fetch_monthly_kenya(ms_rows, mmp_rows):
     monthly_sales = sum(
         safe_int(row[23])
         for row in ms_rows[1:]
-        if len(row) > 23 and _ms_key(row) in _mmp_posted
+        if len(row) > 23 and _real_ms(row) and _ms_key(row) in _mmp_posted
     )
 
     # Bags Not On Offer monthly: col I = x
@@ -771,7 +793,7 @@ def _fetch_monthly_kenya(ms_rows, mmp_rows):
     monthly_sales_no_post = sum(
         safe_int(row[23])
         for row in ms_rows[1:]
-        if len(row) > 23 and _ms_key(row) in _mmp_not_posted
+        if len(row) > 23 and _real_ms(row) and _ms_key(row) in _mmp_not_posted
     )
 
     # S2 monthly unposted: col X (idx 23) where col AB (idx 27) has an "x"
@@ -792,7 +814,7 @@ def _fetch_monthly_kenya(ms_rows, mmp_rows):
     monthly_unposted = sum(
         safe_int(row[23])   # MS col X = monthly Kenya sales (col AF/31 was empty → wrong total)
         for row in ms_rows[1:]
-        if len(row) > 23 and _ms_key(row) in _mmp_zero_post_keys
+        if len(row) > 23 and _real_ms(row) and _ms_key(row) in _mmp_zero_post_keys
     )
 
     # S2 monthly total: col X (idx 23) where col AB has x OR ✅
@@ -1108,7 +1130,7 @@ def _fetch_sinza_monthly(ms_rows, mmp_rows):
     }
     sz_mo_sales_posted = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
-        if len(row) > MS_VAL
+        if len(row) > MS_VAL and _real_ms(row)
         and _ms_key(row) in _sz_mo_posted
     )
 
@@ -1119,7 +1141,7 @@ def _fetch_sinza_monthly(ms_rows, mmp_rows):
     }
     sz_mo_sales_no_offer = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
-        if len(row) > MS_VAL
+        if len(row) > MS_VAL and _real_ms(row)
         and _ms_key(row) in _sz_mo_x_posted
     )
 
@@ -1142,7 +1164,7 @@ def _fetch_sinza_monthly(ms_rows, mmp_rows):
     }
     sz_mo_unposted = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
-        if len(row) > MS_VAL
+        if len(row) > MS_VAL and _real_ms(row)
         and _ms_key(row) in _sz_zero_post_mo
     )
 
@@ -1203,7 +1225,7 @@ def _fetch_sinza_monthly(ms_rows, mmp_rows):
     }
     sz_not_offer_not_posted_mo = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
-        if len(row) > MS_VAL
+        if len(row) > MS_VAL and _real_ms(row)
         and _ms_key(row) in _sz_x_zero_mo
     )
 
@@ -1216,13 +1238,13 @@ def _fetch_sinza_monthly(ms_rows, mmp_rows):
     }
     sz_offer_not_posted_mo = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
-        if len(row) > MS_VAL
+        if len(row) > MS_VAL and _real_ms(row)
         and _is_checked(row, MS_CHK)
         and safe_int(row[MS_VAL]) > 0
         and _ms_key(row) in _sz_chk_zero_mo
     )
 
-    sz_mo_grand_total = sum(safe_int(row[MS_VAL]) for row in ms_rows[1:] if len(row) > MS_VAL)
+    sz_mo_grand_total = sum(safe_int(row[MS_VAL]) for row in ms_rows[1:] if len(row) > MS_VAL and _real_ms(row))
     sz_mo_non_mkt_pct = round(min(sz_mo_unposted / sz_mo_grand_total, 1.0) * 100, 1) if sz_mo_grand_total > 0 else 0.0
 
     return {
@@ -1423,7 +1445,7 @@ def _fetch_uganda_monthly(ms_rows, mmp_rows):
     }
     ug_mo_sales_posted = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
-        if len(row) > MS_VAL
+        if len(row) > MS_VAL and _real_ms(row)
         and _ms_key(row) in _ug_mo_posted
     )
 
@@ -1434,7 +1456,7 @@ def _fetch_uganda_monthly(ms_rows, mmp_rows):
     }
     ug_mo_sales_no_offer = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
-        if len(row) > MS_VAL
+        if len(row) > MS_VAL and _real_ms(row)
         and _ms_key(row) in _ug_mo_x_posted
     )
 
@@ -1457,7 +1479,7 @@ def _fetch_uganda_monthly(ms_rows, mmp_rows):
     }
     ug_mo_unposted = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
-        if len(row) > MS_VAL
+        if len(row) > MS_VAL and _real_ms(row)
         and _ms_key(row) in _ug_zero_post_mo
     )
 
@@ -1518,7 +1540,7 @@ def _fetch_uganda_monthly(ms_rows, mmp_rows):
     }
     ug_not_offer_not_posted_mo = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
-        if len(row) > MS_VAL
+        if len(row) > MS_VAL and _real_ms(row)
         and _ms_key(row) in _ug_x_zero_mo
     )
 
@@ -1531,13 +1553,13 @@ def _fetch_uganda_monthly(ms_rows, mmp_rows):
     }
     ug_offer_not_posted_mo = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
-        if len(row) > MS_VAL
+        if len(row) > MS_VAL and _real_ms(row)
         and _is_checked(row, MS_CHK)
         and safe_int(row[MS_VAL]) > 0
         and _ms_key(row) in _ug_chk_zero_mo
     )
 
-    ug_mo_grand_total = sum(safe_int(row[MS_VAL]) for row in ms_rows[1:] if len(row) > MS_VAL)
+    ug_mo_grand_total = sum(safe_int(row[MS_VAL]) for row in ms_rows[1:] if len(row) > MS_VAL and _real_ms(row))
     ug_mo_non_mkt_pct = round(min(ug_mo_unposted / ug_mo_grand_total, 1.0) * 100, 1) if ug_mo_grand_total > 0 else 0.0
 
     return {
