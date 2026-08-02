@@ -28,7 +28,7 @@ SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 
 # ── MANUAL INPUTS — fill these in yourself ────────────────────
 
-corporate_bags = 138 + 131   # 138 prior + 131 new corporate bags in week 4 (Forecasted Projection)
+corporate_bags = 138+131+43   # 138 prior + 131 new corporate bags in week 4 (Forecasted Projection)
 # bare_minimum is computed below = monthly target ÷ perfect weeks in month.
 
 
