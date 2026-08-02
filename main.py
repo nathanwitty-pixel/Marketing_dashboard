@@ -32,8 +32,9 @@ SCRIPTS = [
     ("Offer Type Analysis",    "offer_type_analysis.py"),
     ("Posting Yields",         "POSTING (SALES YIELDS FROM ACCURATE POSTING).py"),
     ("Shops Efficiency",       "shops_efficiency.py"),
-    # Must run LAST — reads the data the scripts above injected
+    # These read the data the scripts above injected — keep them LAST.
     ("Dashboard Insights",     "generate_insights.py"),
+    ("Monthly Report",         "monthly_report.py"),
 ]
 
 
@@ -149,6 +150,7 @@ SCRIPT_MAP = {
     "POSTING (SALES YIELDS FROM ACCURATE POSTING).html":   ["POSTING (SALES YIELDS FROM ACCURATE POSTING).py"],
     "shops_efficiency.html":                                ["shops_efficiency.py"],
     "insights.html":                                        ["generate_insights.py"],
+    "monthly_report.html":                                  ["monthly_report.py"],
 }
 
 
