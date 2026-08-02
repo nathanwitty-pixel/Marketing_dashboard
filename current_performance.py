@@ -182,19 +182,34 @@ print("Fetching data from Google Sheets...")
 print(f"  Previous snapshot    : {previous_sales_bags:,} bags")
 total_target, total_sales, total_deficit, weekly_sales_total = fetch_monthly_target()
 
-# Month-boundary handling: split the straddling week's total by month
+# Month-boundary handling: split the straddling week's total by month.
 carryover_bags, carryover_date, prev_month_rec = update_month_boundary(weekly_sales_total)
-if carryover_bags is not None:
-    weekly_this_month = max(weekly_sales_total - carryover_bags, 0)
-    _today = datetime.date.today()
-    _prev_month = (_today.replace(day=1) - datetime.timedelta(days=1)).strftime("%B")
+prev_month_weekly = prev_month_rec.get("final_weekly_sales", 0) if prev_month_rec else 0
+
+# Are we still inside the Sun–Sat week that straddled the month boundary?
+# Derive it from the persisted prev_month record (its final run's week) vs
+# today's week — NOT from the fragile carryover dict, so a mistimed run in the
+# following week can't wipe the split. While straddling, this month's slice =
+# week total − last month's final weekly (e.g. Aug 1 alone vs Jul 27–31).
+_today = datetime.date.today()
+_data_date = _today - datetime.timedelta(days=1)   # sales data covers through yesterday
+straddling = False
+if prev_month_rec and prev_month_rec.get("recorded_on") and prev_month_weekly:
+    try:
+        straddling = (week_start_of(datetime.date.fromisoformat(prev_month_rec["recorded_on"]))
+                      == week_start_of(_data_date))
+    except ValueError:
+        straddling = False
+
+if straddling:
+    carryover_bags    = prev_month_weekly                              # last month's part of this week
+    carryover_date    = prev_month_rec.get("recorded_on", "")
+    weekly_this_month = max(weekly_sales_total - prev_month_weekly, 0)  # this month's part (e.g. Aug 1 alone)
+    _prev_month = datetime.datetime.strptime(prev_month_rec["month"] + "-01", "%Y-%m-%d").strftime("%B")
 else:
     weekly_this_month = weekly_sales_total
     _prev_month = ""
 
-# Month-over-month weekly KPI: current weekly sales vs the final weekly
-# figure recorded in the previous month
-prev_month_weekly = prev_month_rec.get("final_weekly_sales", 0) if prev_month_rec else 0
 prev_month_label  = ""
 if prev_month_rec and prev_month_rec.get("month"):
     try:
@@ -202,8 +217,10 @@ if prev_month_rec and prev_month_rec.get("month"):
             prev_month_rec["month"] + "-01", "%Y-%m-%d").strftime("%B")
     except ValueError:
         prev_month_label = prev_month_rec["month"]
-mom_weekly_bags = weekly_sales_total - prev_month_weekly
-mom_weekly_pct  = ((weekly_sales_total - prev_month_weekly) / prev_month_weekly * 100) if prev_month_weekly else 0
+
+# Weekly vs Last Month: this month's weekly slice vs last month's final weekly.
+mom_weekly_bags = weekly_this_month - prev_month_weekly
+mom_weekly_pct  = ((weekly_this_month - prev_month_weekly) / prev_month_weekly * 100) if prev_month_weekly else 0
 
 
 # ── CALCULATIONS ──────────────────────────────────────────────

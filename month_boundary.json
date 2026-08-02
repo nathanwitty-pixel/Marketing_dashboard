@@ -1,9 +1,13 @@
 {
   "last_run": {
-    "date": "2026-07-31",
-    "week_start": "2026-07-26",
-    "weekly_sales_total": 3373
+    "date": "2026-08-02",
+    "week_start": "2026-08-02",
+    "weekly_sales_total": 4584
   },
   "carryover": {},
-  "prev_month": {}
+  "prev_month": {
+    "month": "2026-07",
+    "final_weekly_sales": 3373,
+    "recorded_on": "2026-07-31"
+  }
 }
