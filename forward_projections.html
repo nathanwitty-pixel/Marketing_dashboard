@@ -247,19 +247,20 @@
 <!-- PROJ_DATA_START -->
 <script>
 const PROJ = {
-  currentDay:               30,
+  currentDay:               31,
   daysInMonth:              31,
-  velocityFactor:           "1.03x",
+  projMonth:                "July",
+  velocityFactor:           "1.00x",
   totalTarget:              "23,232",
-  totalSales:               "15,705",
-  standardProjection:       "69.85%",
-  forecastedProjection:     "71.05%",
+  totalSales:               "16,680",
+  standardProjection:       "71.80%",
+  forecastedProjection:     "72.96%",
   corporateBags:            "269",
   bareMinimum:              "5,808",
   bareMinimumGrowthPct:     "25.00%",
-  declinedBy:               "-2,435",
-  weeklySalesTotal:         "3,373",
-  weeklyHistory:            [{"weekStart": "2026-06-28", "label": "Wk 1", "month": "Jul", "salesPct": 10.52, "salesBags": 2445, "prevSalesPct": 0, "prevSalesBags": 0, "weeklySales": 2445, "declinedBy": -2379}, {"weekStart": "2026-07-05", "label": "Wk 2", "month": "Jul", "salesPct": 26.68, "salesBags": 6199, "prevSalesPct": 10.52, "prevSalesBags": 2445, "weeklySales": 3754, "declinedBy": -2379}, {"weekStart": "2026-07-12", "label": "Wk 3", "month": "Jul", "salesPct": 42.02, "salesBags": 9761, "prevSalesPct": 14.76, "prevSalesBags": 3429, "weeklySales": 3510, "declinedBy": -2298}, {"weekStart": "2026-07-19", "label": "Wk 4", "month": "Jul", "salesPct": 55.67, "salesBags": 12933, "prevSalesPct": 15.11, "prevSalesBags": 3510, "weeklySales": 3373, "declinedBy": -2435}, {"weekStart": "2026-07-26", "label": "Wk 5", "month": "Jul", "salesPct": 67.6, "salesBags": 15705, "prevSalesPct": 14.52, "prevSalesBags": 3373, "weeklySales": 3373, "declinedBy": -2435}]
+  declinedBy:               "-1,224",
+  weeklySalesTotal:         "4,584",
+  weeklyHistory:            [{"weekStart": "2026-06-28", "label": "Wk 1", "month": "Jul", "salesPct": 10.52, "salesBags": 2445, "prevSalesPct": 0, "prevSalesBags": 0, "weeklySales": 2445, "declinedBy": -2379}, {"weekStart": "2026-07-05", "label": "Wk 2", "month": "Jul", "salesPct": 26.68, "salesBags": 6199, "prevSalesPct": 10.52, "prevSalesBags": 2445, "weeklySales": 3754, "declinedBy": -2379}, {"weekStart": "2026-07-12", "label": "Wk 3", "month": "Jul", "salesPct": 42.02, "salesBags": 9761, "prevSalesPct": 14.76, "prevSalesBags": 3429, "weeklySales": 3510, "declinedBy": -2298}, {"weekStart": "2026-07-19", "label": "Wk 4", "month": "Jul", "salesPct": 55.67, "salesBags": 12933, "prevSalesPct": 15.11, "prevSalesBags": 3510, "weeklySales": 3373, "declinedBy": -2435}, {"weekStart": "2026-07-26", "label": "Wk 1", "month": "Aug", "salesPct": 71.8, "salesBags": 16680, "prevSalesPct": 14.52, "prevSalesBags": 3373, "weeklySales": 4584, "declinedBy": -1224}]
 };
 </script>
 <!-- PROJ_DATA_END -->
@@ -267,7 +268,7 @@ const PROJ = {
 <script>
   const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const today  = new Date();
-  const mon    = months[today.getMonth()];
+  const mon    = PROJ.projMonth || months[today.getMonth()];
 
   // Date line
   document.getElementById('date-line').innerHTML =

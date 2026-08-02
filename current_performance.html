@@ -419,13 +419,14 @@ const PERF = {
 <!-- PROJ_DATA_START -->
 <script>
 const PROJ = {
-  currentDay:               1,
+  currentDay:               31,
   daysInMonth:              31,
-  velocityFactor:           "31.00x",
+  projMonth:                "July",
+  velocityFactor:           "1.00x",
   totalTarget:              "23,232",
   totalSales:               "16,680",
-  standardProjection:       "2225.72%",
-  forecastedProjection:     "2261.62%",
+  standardProjection:       "71.80%",
+  forecastedProjection:     "72.96%",
   corporateBags:            "269",
   bareMinimum:              "5,808",
   bareMinimumGrowthPct:     "25.00%",
@@ -537,7 +538,7 @@ const PROJ = {
   const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const today  = new Date();
   document.getElementById('date-line').innerHTML =
-    'As of <span>day ' + PROJ.currentDay + '</span> of ' + months[today.getMonth()] +
+    'As of <span>day ' + PROJ.currentDay + '</span> of ' + (PROJ.projMonth || months[today.getMonth()]) +
     ' &mdash; projecting over <span>' + PROJ.daysInMonth + ' days</span> at <span>' + PROJ.velocityFactor + '</span> current pace';
 
   setText('kpi-standard', PROJ.standardProjection);

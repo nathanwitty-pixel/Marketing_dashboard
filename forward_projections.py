@@ -125,7 +125,22 @@ total_target, total_sales, weekly_sales_total = fetch_sheet_data()
 yesterday       = date.today() - timedelta(days=1)
 current_day     = max(yesterday.day, 1)
 days_in_month   = calendar.monthrange(yesterday.year, yesterday.month)[1]
+proj_ref        = yesterday
+
+# Start-of-month rollover guard: in the first days of a new calendar month the
+# sheet often still holds LAST month's full total (it hasn't been reset yet).
+# Multiplying that by days_in_month ÷ current_day (e.g. ×31 on day 1) produces a
+# nonsense projection (2225%). If the projection would be wildly over target this
+# early, the data is still last month's — so project the PREVIOUS, completed
+# month at 1× pace until the new month's data actually starts coming in.
+if (current_day <= 6 and days_in_month and total_target
+        and (total_sales * days_in_month / current_day) > total_target * 1.5):
+    proj_ref      = yesterday.replace(day=1) - timedelta(days=1)   # last day of previous month
+    current_day   = calendar.monthrange(proj_ref.year, proj_ref.month)[1]
+    days_in_month = current_day
+
 velocity_factor = days_in_month / current_day
+proj_month      = proj_ref.strftime("%B")
 
 # Perfect (complete) weeks in the month — used for the bare minimum
 perfect_weeks = count_complete_weeks_in_month()
@@ -264,6 +279,7 @@ inline_script = (
     "const PROJ = {\n"
     f'  currentDay:               {current_day},\n'
     f'  daysInMonth:              {days_in_month},\n'
+    f'  projMonth:                "{proj_month}",\n'
     f'  velocityFactor:           "{velocity_factor:.2f}x",\n'
     f'  totalTarget:              "{fmt_int(total_target)}",\n'
     f'  totalSales:               "{fmt_int(total_sales)}",\n'
