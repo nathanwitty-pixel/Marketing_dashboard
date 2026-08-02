@@ -222,6 +222,20 @@ if prev_month_rec and prev_month_rec.get("month"):
 mom_weekly_bags = weekly_this_month - prev_month_weekly
 mom_weekly_pct  = ((weekly_this_month - prev_month_weekly) / prev_month_weekly * 100) if prev_month_weekly else 0
 
+# Day-count split so the dashboard can compare PACE, not just totals — e.g.
+# "Aug 1 alone (1 day) did 1,211" vs "July's final 6 days did 3,373". This turns
+# a misleading 1-day-vs-many-days comparison into a fair per-day / weekly-potential read.
+this_month_days = 0   # days of THIS month that have data inside the current week
+prev_month_days = 0   # days the previous month contributed to the straddling week
+if straddling and prev_month_rec and prev_month_rec.get("recorded_on"):
+    try:
+        _wk_start = week_start_of(_data_date)
+        _prev_end = _data_date.replace(day=1) - datetime.timedelta(days=1)  # last day of prev month
+        this_month_days = _data_date.day                                    # e.g. Aug 1 → 1
+        prev_month_days = max((_prev_end - _wk_start).days + 1, 0)          # e.g. Jul 26–31 → 6
+    except ValueError:
+        this_month_days = prev_month_days = 0
+
 
 # ── CALCULATIONS ──────────────────────────────────────────────
 
@@ -315,6 +329,8 @@ inline_script = (
     f'  weeklySalesPct:     "{fmt_pct(weekly_sales_pct)}",\n'
     f'  growthHistory:      {json.dumps(growth_history)},\n'
     f'  weeklyThisMonth:    "{fmt_int(weekly_this_month)}",\n'
+    f'  weeklyThisMonthDays: {this_month_days},\n'
+    f'  prevMonthDays:      {prev_month_days},\n'
     f'  weeklyCarryover:    "{fmt_int(carryover_bags) if carryover_bags is not None else ""}",\n'
     f'  carryoverMonth:     "{_prev_month}",\n'
     f'  carryoverDate:      "{carryover_date}",\n'

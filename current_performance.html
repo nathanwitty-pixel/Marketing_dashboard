@@ -289,7 +289,7 @@
       <div class="card-label">Weekly vs Last Month</div>
       <div class="card-value pct" id="kpi-mom-weekly"></div>
       <div class="card-sub" id="mom-weekly-sub"></div>
-      <div class="card-interpretation">Current weekly sales vs the final weekly figure of last month.</div>
+      <div class="card-interpretation">This month's per-day pace vs last month's final-week pace. Above 1× means the new month is outrunning how last month closed.</div>
     </div>
 
     <div class="card red" id="remaining-card">
@@ -313,10 +313,16 @@
             <th style="text-align:left">Week</th>
             <th style="text-align:right">Sales % Achieved</th>
             <th style="text-align:right">Sales Bags</th>
+            <th style="text-align:right">Target to Beat</th>
             <th style="text-align:right">Declined By</th>
           </tr></thead>
           <tbody id="weekly-perf-tbody"></tbody>
         </table>
+      </div>
+      <div style="padding:0.7rem 1.5rem 1.1rem;font-size:0.72rem;color:#64748b;border-top:1px solid #2d3148">
+        <span style="color:#34d399">▲ green</span> = the week cleared its <strong style="color:#94a3b8">target to beat</strong> (the bare-minimum floor);
+        <span style="color:#f87171">red</span> = it fell short. Beat the floor every week and August's
+        <strong style="color:#e2e8f0">Forward Projection</strong> lifts with it — each week above the line pulls the month past target.
       </div>
     </div>
   </div>
@@ -403,6 +409,8 @@ const PERF = {
   weeklySalesPct:     "19.73%",
   growthHistory:      [{"date": "2026-07-27", "growth": 14.52}, {"date": "2026-07-28", "growth": 14.52}, {"date": "2026-07-30", "growth": 14.52}, {"date": "2026-07-31", "growth": 14.52}, {"date": "2026-08-01", "growth": 14.52}, {"date": "2026-08-02", "growth": 19.73}],
   weeklyThisMonth:    "1,211",
+  weeklyThisMonthDays: 1,
+  prevMonthDays:      6,
   weeklyCarryover:    "3,373",
   carryoverMonth:     "July",
   carryoverDate:      "2026-07-31",
@@ -464,28 +472,48 @@ const PROJ = {
   setText('sales-pop-growth', PERF.weeklySalesPct);
   setText('sales-pop-prev',   PERF.previousSalesPct + ' (' + PERF.previousSalesBags + ' bags)');
 
-  // Month-boundary carryover: when the Sun–Sat week straddles a month
-  // change, show how the week's total splits between the two months
+  var _tmw    = parseInt(String(PERF.weeklyThisMonth).replace(/[^0-9]/g, '')) || 0;   // this month's slice (e.g. Aug 1)
+  var _wk     = parseInt(String(PERF.weeklySalesTotal).replace(/[^0-9]/g, '')) || 0;  // whole Sun–Sat week
+  var _lm     = parseInt(String(PERF.prevMonthWeekly).replace(/[^0-9]/g, '')) || 0;   // last month's final weekly
+  var _tmDays = Number(PERF.weeklyThisMonthDays) || 0;                                // days of this month with data
+  var _lmDays = Number(PERF.prevMonthDays) || 0;                                      // days last month gave the week
+  var _thisMon = new Date().toLocaleDateString('en-US', { month: 'short' });          // "Aug" in the viewer's clock
+
+  // Weekly Sales card: surface how the first day(s) of the new month performed and
+  // what a full week at that pace would look like — the month's potential in one glance.
   if (PERF.weeklyCarryover) {
-    var _tmw = parseInt(String(PERF.weeklyThisMonth).replace(/[^0-9]/g, '')) || 0;
-    var _wk  = parseInt(String(PERF.weeklySalesTotal).replace(/[^0-9]/g, '')) || 0;
     var _pctOfWeek = _wk ? (_tmw / _wk * 100) : 0;
-    setText('weekly-carryover-sub',
-      PERF.weeklyThisMonth + ' this month (' + _pctOfWeek.toFixed(1) + '% of ' + PERF.weeklySalesTotal + ') · ' +
-      PERF.weeklyCarryover + ' from ' + PERF.carryoverMonth);
+    var _sub = PERF.weeklyThisMonth + ' this month (' + _pctOfWeek.toFixed(1) + '% of ' + PERF.weeklySalesTotal + ') · ' +
+               PERF.weeklyCarryover + ' from ' + PERF.carryoverMonth;
+    if (_tmDays > 0 && _tmw > 0) {
+      var _augPerDay = _tmw / _tmDays;
+      var _projWeek  = _augPerDay * 7;
+      _sub += ' · ' + Math.round(_augPerDay).toLocaleString() + '/day → a full week at this pace ≈ ' +
+              Math.round(_projWeek).toLocaleString() + ' bags';
+    }
+    setText('weekly-carryover-sub', _sub);
   }
 
-  // Month-over-month weekly KPI: needs one month change to have data
+  // Weekly vs Last Month — compare PACE, not raw totals. One day of the new month
+  // vs many days of last month's close is unfair as a total; per-day it reveals momentum.
   if (PERF.prevMonthWeekly) {
-    var _tm = parseInt(String(PERF.weeklyThisMonth).replace(/[^0-9]/g, '')) || 0;
-    var _lm = parseInt(String(PERF.prevMonthWeekly).replace(/[^0-9]/g, '')) || 0;
-    var _ratio = _lm ? (_tm / _lm * 100) : 0;
-    setText('kpi-mom-weekly', _ratio.toFixed(1) + '%');
-    setText('mom-weekly-sub',
-      PERF.weeklyThisMonth + ' this month out of ' + PERF.prevMonthWeekly +
-      ' end of ' + PERF.prevMonthLabel);
-    document.getElementById('kpi-mom-weekly').style.color =
-      _ratio >= 100 ? '#34d399' : '#facc15';
+    if (_tmDays > 0 && _lmDays > 0 && _tmw > 0) {
+      var augPerDay = _tmw / _tmDays;
+      var julPerDay = _lmDays ? (_lm / _lmDays) : 0;
+      var paceRatio = julPerDay ? (augPerDay / julPerDay * 100) : 0;
+      setText('kpi-mom-weekly', (paceRatio / 100).toFixed(2) + '×');
+      setText('mom-weekly-sub',
+        _thisMon + ': ' + _tmw.toLocaleString() + ' in ' + _tmDays + ' day' + (_tmDays > 1 ? 's' : '') +
+        ' (' + Math.round(augPerDay).toLocaleString() + '/day) vs ' + PERF.prevMonthLabel + ': ' +
+        _lm.toLocaleString() + ' in ' + _lmDays + ' days (' + Math.round(julPerDay).toLocaleString() + '/day)');
+      document.getElementById('kpi-mom-weekly').style.color = paceRatio >= 100 ? '#34d399' : '#facc15';
+    } else {
+      var _ratio = _lm ? (_tmw / _lm * 100) : 0;
+      setText('kpi-mom-weekly', _ratio.toFixed(1) + '%');
+      setText('mom-weekly-sub',
+        PERF.weeklyThisMonth + ' this month out of ' + PERF.prevMonthWeekly + ' end of ' + PERF.prevMonthLabel);
+      document.getElementById('kpi-mom-weekly').style.color = _ratio >= 100 ? '#34d399' : '#facc15';
+    }
   } else {
     setText('kpi-mom-weekly', '—');
     setText('mom-weekly-sub', 'Available after the first month change');
@@ -504,7 +532,7 @@ const PROJ = {
     if (!tb) return;
     var weeks = (PROJ.weeklyHistory || []);
     if (!weeks.length) {
-      tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#475569;padding:1.2rem">' +
+      tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#475569;padding:1.2rem">' +
         'No weeks recorded yet — this fills in each week from now on.</td></tr>';
       return;
     }
@@ -520,14 +548,19 @@ const PROJ = {
       // Bags: each week's own Weekly Sales contribution.
       var bagsV = Number(w.weeklySales) || 0;
       var d = w.declinedBy || 0;
+      // Target to beat = the bare-minimum that week had to clear = its sales + the shortfall.
+      var targetV = bagsV - d;
+      var beat = bagsV >= targetV;
       var dTxt = (d > 0 ? '+' : '') + d.toLocaleString();
       var dCol = d < 0 ? '#f87171' : '#34d399';
       var pp = pctV.toFixed(2) + '%';
       var pb = bagsV.toLocaleString() + ' bags';
+      var tb2 = targetV.toLocaleString() + ' bags';
       return '<tr>' +
         cell('<strong style="color:#e2e8f0">' + w.label + '</strong> <span style="color:#64748b">' + (w.month || '') + '</span>', 'left', '') +
         cell(pp, 'right', '#facc15') +
-        cell(pb, 'right', '#94a3b8') +
+        cell((beat ? '▲ ' : '') + pb, 'right', beat ? '#34d399' : '#f87171') +
+        cell(tb2, 'right', '#94a3b8') +
         cell(dTxt, 'right', dCol) +
       '</tr>';
     }).join('');
