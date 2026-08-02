@@ -1099,26 +1099,28 @@ def _fetch_sinza_monthly(ms_rows, mmp_rows):
         if len(row) > MMP_CHK and _is_checked(row, MMP_CHK)
     ))
 
+    # Keyed by (colour, name) — not name-only — so multi-colour products don't
+    # sum every colour's sales when only one colour was posted.
     _sz_mo_posted = {
-        str(row[MMP_NAME]).lower().strip()
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > MMP_CHK and _is_checked(row, MMP_CHK) and safe_int(row[MMP_POST]) > 0
     }
     sz_mo_sales_posted = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
         if len(row) > MS_VAL
-        and str(row[MS_NAME]).lower().strip() in _sz_mo_posted
+        and _ms_key(row) in _sz_mo_posted
     )
 
     _sz_mo_x_posted = {
-        str(row[MMP_NAME]).lower().strip()
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > MMP_CHK and _is_x(row, MMP_CHK) and safe_int(row[MMP_POST]) > 0
     }
     sz_mo_sales_no_offer = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
         if len(row) > MS_VAL
-        and str(row[MS_NAME]).lower().strip() in _sz_mo_x_posted
+        and _ms_key(row) in _sz_mo_x_posted
     )
 
     sz_mo_total = sum(
@@ -1127,32 +1129,32 @@ def _fetch_sinza_monthly(ms_rows, mmp_rows):
     )
 
     _sz_any_posted_mo = {
-        str(row[MMP_NAME]).lower().strip()
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > MMP_POST and safe_int(row[MMP_POST]) > 0 and str(row[MMP_NAME]).strip()
     }
     _sz_zero_post_mo = {
-        str(row[MMP_NAME]).lower().strip()
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > MMP_POST and str(row[MMP_NAME]).strip()
         and str(row[MMP_POST]).strip() == '0'
-        and str(row[MMP_NAME]).lower().strip() not in _sz_any_posted_mo
+        and _mmp_key(row) not in _sz_any_posted_mo
     }
     sz_mo_unposted = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
         if len(row) > MS_VAL
-        and str(row[MS_NAME]).lower().strip() in _sz_zero_post_mo
+        and _ms_key(row) in _sz_zero_post_mo
     )
 
-    # Per-bag avg % for all posted bags (S1 monthly % + On Offer monthly %)
+    # Per-bag avg % for all posted bags (S1 monthly % + On Offer monthly %), keyed (colour, name)
     sz_mo_posts_map = {}
     for row in mmp_rows[1:]:
         if len(row) < MMP_NAME + 1: continue
         if not (_is_checked(row, MMP_CHK) or _is_x(row, MMP_CHK)): continue
         col_f = safe_int(row[MMP_POST]) if len(row) > MMP_POST else 0
         if col_f <= 0: continue
-        name = str(row[MMP_NAME]).lower().strip()
-        sz_mo_posts_map[name] = sz_mo_posts_map.get(name, 0) + col_f
+        k = _mmp_key(row)
+        sz_mo_posts_map[k] = sz_mo_posts_map.get(k, 0) + col_f
 
     sz_mo_yield_map = {}
     for row in ms_rows[1:]:
@@ -1160,8 +1162,8 @@ def _fetch_sinza_monthly(ms_rows, mmp_rows):
         if not (_is_checked(row, MS_CHK) or _is_x(row, MS_CHK)): continue
         col_y = safe_int(row[MS_VAL]) if len(row) > MS_VAL else 0
         if col_y <= 0: continue
-        name = str(row[MS_NAME]).lower().strip()
-        sz_mo_yield_map[name] = sz_mo_yield_map.get(name, 0) + col_y
+        k = _ms_key(row)
+        sz_mo_yield_map[k] = sz_mo_yield_map.get(k, 0) + col_y
 
     sz_mo_pcts = [
         min((sz_mo_yield_map.get(n, 0) / p) * 100, 100.0) if p > 0 else 0.0
@@ -1169,22 +1171,22 @@ def _fetch_sinza_monthly(ms_rows, mmp_rows):
     ]
     sz_mo_mkt_pct = round(sum(sz_mo_pcts) / len(sz_mo_pcts), 1) if sz_mo_pcts else 0.0
 
-    # Per-bag avg % for x-only (Not on Offer monthly %)
+    # Per-bag avg % for x-only (Not on Offer monthly %), keyed (colour, name)
     sz_mo_x_posts_map = {}
     for row in mmp_rows[1:]:
         if len(row) < MMP_NAME + 1 or not _is_x(row, MMP_CHK): continue
         col_f = safe_int(row[MMP_POST]) if len(row) > MMP_POST else 0
         if col_f <= 0: continue
-        name = str(row[MMP_NAME]).lower().strip()
-        sz_mo_x_posts_map[name] = sz_mo_x_posts_map.get(name, 0) + col_f
+        k = _mmp_key(row)
+        sz_mo_x_posts_map[k] = sz_mo_x_posts_map.get(k, 0) + col_f
 
     sz_mo_x_yield_map = {}
     for row in ms_rows[1:]:
         if len(row) < MS_NAME + 1 or not _is_x(row, MS_CHK): continue
         col_y = safe_int(row[MS_VAL]) if len(row) > MS_VAL else 0
         if col_y <= 0: continue
-        name = str(row[MS_NAME]).lower().strip()
-        sz_mo_x_yield_map[name] = sz_mo_x_yield_map.get(name, 0) + col_y
+        k = _ms_key(row)
+        sz_mo_x_yield_map[k] = sz_mo_x_yield_map.get(k, 0) + col_y
 
     sz_mo_x_pcts = [
         min((sz_mo_x_yield_map.get(n, 0) / p) * 100, 100.0) if p > 0 else 0.0
@@ -1194,7 +1196,7 @@ def _fetch_sinza_monthly(ms_rows, mmp_rows):
 
     # Bags Not Posted & Not on Offer (Monthly)
     _sz_x_zero_mo = {
-        str(row[MMP_NAME]).lower().strip()
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > MMP_CHK and _is_x(row, MMP_CHK)
         and safe_int(row[MMP_POST]) == 0 and str(row[MMP_NAME]).strip()
@@ -1202,12 +1204,12 @@ def _fetch_sinza_monthly(ms_rows, mmp_rows):
     sz_not_offer_not_posted_mo = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
         if len(row) > MS_VAL
-        and str(row[MS_NAME]).lower().strip() in _sz_x_zero_mo
+        and _ms_key(row) in _sz_x_zero_mo
     )
 
-    # Bags Not Posted & On Offer (Monthly): MMP col J=✅ & col F=0 → MS col B (col AC=✅, Y>0) → sum col Y
+    # Bags Not Posted & On Offer (Monthly): MMP col J=✅ & col F=0 → MS (col AC=✅, Y>0) → sum col Y
     _sz_chk_zero_mo = {
-        str(row[MMP_NAME]).lower().strip()
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > MMP_CHK and _is_checked(row, MMP_CHK)
         and safe_int(row[MMP_POST]) == 0 and str(row[MMP_NAME]).strip()
@@ -1217,7 +1219,7 @@ def _fetch_sinza_monthly(ms_rows, mmp_rows):
         if len(row) > MS_VAL
         and _is_checked(row, MS_CHK)
         and safe_int(row[MS_VAL]) > 0
-        and str(row[MS_NAME]).lower().strip() in _sz_chk_zero_mo
+        and _ms_key(row) in _sz_chk_zero_mo
     )
 
     sz_mo_grand_total = sum(safe_int(row[MS_VAL]) for row in ms_rows[1:] if len(row) > MS_VAL)
@@ -1412,26 +1414,28 @@ def _fetch_uganda_monthly(ms_rows, mmp_rows):
         if len(row) > MMP_CHK and _is_checked(row, MMP_CHK)
     ))
 
+    # Keyed by (colour, name) — not name-only — so multi-colour products don't
+    # sum every colour's sales when only one colour was posted.
     _ug_mo_posted = {
-        str(row[MMP_NAME]).lower().strip()
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > MMP_CHK and _is_checked(row, MMP_CHK) and safe_int(row[MMP_POST]) > 0
     }
     ug_mo_sales_posted = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
         if len(row) > MS_VAL
-        and str(row[MS_NAME]).lower().strip() in _ug_mo_posted
+        and _ms_key(row) in _ug_mo_posted
     )
 
     _ug_mo_x_posted = {
-        str(row[MMP_NAME]).lower().strip()
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > MMP_CHK and _is_x(row, MMP_CHK) and safe_int(row[MMP_POST]) > 0
     }
     ug_mo_sales_no_offer = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
         if len(row) > MS_VAL
-        and str(row[MS_NAME]).lower().strip() in _ug_mo_x_posted
+        and _ms_key(row) in _ug_mo_x_posted
     )
 
     ug_mo_total = sum(
@@ -1440,21 +1444,21 @@ def _fetch_uganda_monthly(ms_rows, mmp_rows):
     )
 
     _ug_any_posted_mo = {
-        str(row[MMP_NAME]).lower().strip()
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > MMP_POST and safe_int(row[MMP_POST]) > 0 and str(row[MMP_NAME]).strip()
     }
     _ug_zero_post_mo = {
-        str(row[MMP_NAME]).lower().strip()
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > MMP_POST and str(row[MMP_NAME]).strip()
         and str(row[MMP_POST]).strip() == '0'
-        and str(row[MMP_NAME]).lower().strip() not in _ug_any_posted_mo
+        and _mmp_key(row) not in _ug_any_posted_mo
     }
     ug_mo_unposted = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
         if len(row) > MS_VAL
-        and str(row[MS_NAME]).lower().strip() in _ug_zero_post_mo
+        and _ms_key(row) in _ug_zero_post_mo
     )
 
     # Per-bag avg % for all posted bags (S1 monthly % + On Offer monthly %)
@@ -1464,8 +1468,8 @@ def _fetch_uganda_monthly(ms_rows, mmp_rows):
         if not (_is_checked(row, MMP_CHK) or _is_x(row, MMP_CHK)): continue
         col_f = safe_int(row[MMP_POST]) if len(row) > MMP_POST else 0
         if col_f <= 0: continue
-        name = str(row[MMP_NAME]).lower().strip()
-        ug_mo_posts_map[name] = ug_mo_posts_map.get(name, 0) + col_f
+        k = _mmp_key(row)
+        ug_mo_posts_map[k] = ug_mo_posts_map.get(k, 0) + col_f
 
     ug_mo_yield_map = {}
     for row in ms_rows[1:]:
@@ -1473,8 +1477,8 @@ def _fetch_uganda_monthly(ms_rows, mmp_rows):
         if not (_is_checked(row, MS_CHK) or _is_x(row, MS_CHK)): continue
         col_y = safe_int(row[MS_VAL]) if len(row) > MS_VAL else 0
         if col_y <= 0: continue
-        name = str(row[MS_NAME]).lower().strip()
-        ug_mo_yield_map[name] = ug_mo_yield_map.get(name, 0) + col_y
+        k = _ms_key(row)
+        ug_mo_yield_map[k] = ug_mo_yield_map.get(k, 0) + col_y
 
     ug_mo_pcts = [
         min((ug_mo_yield_map.get(n, 0) / p) * 100, 100.0) if p > 0 else 0.0
@@ -1488,16 +1492,16 @@ def _fetch_uganda_monthly(ms_rows, mmp_rows):
         if len(row) < MMP_NAME + 1 or not _is_x(row, MMP_CHK): continue
         col_f = safe_int(row[MMP_POST]) if len(row) > MMP_POST else 0
         if col_f <= 0: continue
-        name = str(row[MMP_NAME]).lower().strip()
-        ug_mo_x_posts_map[name] = ug_mo_x_posts_map.get(name, 0) + col_f
+        k = _mmp_key(row)
+        ug_mo_x_posts_map[k] = ug_mo_x_posts_map.get(k, 0) + col_f
 
     ug_mo_x_yield_map = {}
     for row in ms_rows[1:]:
         if len(row) < MS_NAME + 1 or not _is_x(row, MS_CHK): continue
         col_y = safe_int(row[MS_VAL]) if len(row) > MS_VAL else 0
         if col_y <= 0: continue
-        name = str(row[MS_NAME]).lower().strip()
-        ug_mo_x_yield_map[name] = ug_mo_x_yield_map.get(name, 0) + col_y
+        k = _ms_key(row)
+        ug_mo_x_yield_map[k] = ug_mo_x_yield_map.get(k, 0) + col_y
 
     ug_mo_x_pcts = [
         min((ug_mo_x_yield_map.get(n, 0) / p) * 100, 100.0) if p > 0 else 0.0
@@ -1507,7 +1511,7 @@ def _fetch_uganda_monthly(ms_rows, mmp_rows):
 
     # Bags Not Posted & Not on Offer (Monthly)
     _ug_x_zero_mo = {
-        str(row[MMP_NAME]).lower().strip()
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > MMP_CHK and _is_x(row, MMP_CHK)
         and safe_int(row[MMP_POST]) == 0 and str(row[MMP_NAME]).strip()
@@ -1515,12 +1519,12 @@ def _fetch_uganda_monthly(ms_rows, mmp_rows):
     ug_not_offer_not_posted_mo = sum(
         safe_int(row[MS_VAL]) for row in ms_rows[1:]
         if len(row) > MS_VAL
-        and str(row[MS_NAME]).lower().strip() in _ug_x_zero_mo
+        and _ms_key(row) in _ug_x_zero_mo
     )
 
     # Bags Not Posted & On Offer (Monthly)
     _ug_chk_zero_mo = {
-        str(row[MMP_NAME]).lower().strip()
+        _mmp_key(row)
         for row in mmp_rows[1:]
         if len(row) > MMP_CHK and _is_checked(row, MMP_CHK)
         and safe_int(row[MMP_POST]) == 0 and str(row[MMP_NAME]).strip()
@@ -1530,7 +1534,7 @@ def _fetch_uganda_monthly(ms_rows, mmp_rows):
         if len(row) > MS_VAL
         and _is_checked(row, MS_CHK)
         and safe_int(row[MS_VAL]) > 0
-        and str(row[MS_NAME]).lower().strip() in _ug_chk_zero_mo
+        and _ms_key(row) in _ug_chk_zero_mo
     )
 
     ug_mo_grand_total = sum(safe_int(row[MS_VAL]) for row in ms_rows[1:] if len(row) > MS_VAL)
@@ -1650,6 +1654,24 @@ def fetch_posting_data():
     sinza['weekly']['stockOnOffer']    = sum(safe_int(row[17]) for row in sl_rows[1:] if len(row) > 28 and _is_checked(row, 28))
     sinza['weekly']['stockNotOnOffer'] = sum(safe_int(row[17]) for row in sl_rows[1:] if len(row) > 28 and _is_x(row, 28))
 
+    # In-stock but never posted (dead stock): Sinza stock col R (idx 17) > 20, offer-flagged,
+    # (colour, name) not in the posted set → the bags sitting in stock with no marketing.
+    _sz_wmp_cn = {(str(r[0]).lower().strip(), str(r[2]).lower().strip())
+                  for r in wmp_rows_wk[1:] if len(r) > 5 and safe_int(r[5]) > 0}
+    _sz_instock_dead = []
+    for row in sl_rows[1:]:
+        if len(row) > 28 and safe_int(row[17]) > 20 and (_is_checked(row, 28) or _is_x(row, 28)):
+            if (str(row[0]).lower().strip(), str(row[2]).lower().strip()) not in _sz_wmp_cn:
+                _sz_instock_dead.append({
+                    "colour": str(row[0]).strip(),
+                    "category": str(row[1]).strip() if len(row) > 1 else "",
+                    "productName": str(row[2]).strip(),
+                    "bagType": str(row[3]).strip() if len(row) > 3 else "",
+                    "stock": safe_int(row[17]),
+                })
+    _sz_instock_dead.sort(key=lambda x: -x["stock"])
+    sinza['instockNotPosted'] = _sz_instock_dead
+
     # Sinza monthly unposted: MONTHLY_SALES col Y (idx 24) for bags NOT in MMP (col F>0, col J=✅)
     sz_mmp_chk_keys = set()
     for row in mmp_rows[1:]:
@@ -1696,6 +1718,24 @@ def fetch_posting_data():
     # Stock split by the OFFER flag (col AD = idx 29): ✅ = on offer, x = not on offer.
     uganda['weekly']['stockOnOffer']    = sum(safe_int(row[18]) for row in sl_rows[1:] if len(row) > 29 and _is_checked(row, 29))
     uganda['weekly']['stockNotOnOffer'] = sum(safe_int(row[18]) for row in sl_rows[1:] if len(row) > 29 and _is_x(row, 29))
+
+    # In-stock but never posted (dead stock): Uganda stock col S (idx 18) > 20, offer-flagged,
+    # (colour, name) not in the posted set.
+    _ug_wmp_cn = {(str(r[0]).lower().strip(), str(r[2]).lower().strip())
+                  for r in wmp_rows_wk[1:] if len(r) > 6 and safe_int(r[6]) > 0}
+    _ug_instock_dead = []
+    for row in sl_rows[1:]:
+        if len(row) > 29 and safe_int(row[18]) > 20 and (_is_checked(row, 29) or _is_x(row, 29)):
+            if (str(row[0]).lower().strip(), str(row[2]).lower().strip()) not in _ug_wmp_cn:
+                _ug_instock_dead.append({
+                    "colour": str(row[0]).strip(),
+                    "category": str(row[1]).strip() if len(row) > 1 else "",
+                    "productName": str(row[2]).strip(),
+                    "bagType": str(row[3]).strip() if len(row) > 3 else "",
+                    "stock": safe_int(row[18]),
+                })
+    _ug_instock_dead.sort(key=lambda x: -x["stock"])
+    uganda['instockNotPosted'] = _ug_instock_dead
 
     uganda.update(_fetch_uganda_weekly(wmp_rows_wk, ws_rows_wk))
     uganda.update(_fetch_uganda_monthly(ms_rows, mmp_rows))
