@@ -466,7 +466,8 @@ const PROJ = {
   // Month-boundary carryover: when the Sun–Sat week straddles a month
   // change, show how the week's total splits between the two months
   if (PERF.weeklyCarryover) {
-    var _tmw = parseNum(PERF.weeklyThisMonth), _wk = parseNum(PERF.weeklySalesTotal);
+    var _tmw = parseInt(String(PERF.weeklyThisMonth).replace(/[^0-9]/g, '')) || 0;
+    var _wk  = parseInt(String(PERF.weeklySalesTotal).replace(/[^0-9]/g, '')) || 0;
     var _pctOfWeek = _wk ? (_tmw / _wk * 100) : 0;
     setText('weekly-carryover-sub',
       PERF.weeklyThisMonth + ' this month (' + _pctOfWeek.toFixed(1) + '% of ' + PERF.weeklySalesTotal + ') · ' +
@@ -475,7 +476,8 @@ const PROJ = {
 
   // Month-over-month weekly KPI: needs one month change to have data
   if (PERF.prevMonthWeekly) {
-    var _tm = parseNum(PERF.weeklyThisMonth), _lm = parseNum(PERF.prevMonthWeekly);
+    var _tm = parseInt(String(PERF.weeklyThisMonth).replace(/[^0-9]/g, '')) || 0;
+    var _lm = parseInt(String(PERF.prevMonthWeekly).replace(/[^0-9]/g, '')) || 0;
     var _ratio = _lm ? (_tm / _lm * 100) : 0;
     setText('kpi-mom-weekly', _ratio.toFixed(1) + '%');
     setText('mom-weekly-sub',
