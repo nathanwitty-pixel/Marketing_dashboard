@@ -225,7 +225,10 @@ wk_series = []
 _prevc = 0.0
 for _w in garr(proj, "weeklyHistory"):
     _cum = num(_w.get("salesPct"))
-    wk_series.append({"label": str(_w.get("label") or ""), "pct": round(_cum - _prevc, 2)})
+    wk_series.append({"label": str(_w.get("label") or ""),
+                      "pct":  round(_cum - _prevc, 2),        # this week's own contribution
+                      "cum":  round(_cum, 2),                 # cumulative to date
+                      "bags": num(_w.get("weeklySales"))})    # weekly sales (bags)
     _prevc = _cum
 
 # ── Sinza / Uganda offer movement (counts + units + value) ────
@@ -670,7 +673,12 @@ chart_js = r"""<script>
           pointRadius:4, pointBackgroundColor:'#f59e0b', pointBorderColor:'#0b0d16', pointBorderWidth:1 } ] },
       options:{ responsive:true, maintainAspectRatio:false, layout:{ padding:{ top:16 } },
         plugins:{ legend:{display:false},
-          tooltip:{ callbacks:{ label:function(c){ return c.parsed.y.toFixed(1)+'% of target this week'; } } } },
+          tooltip:{ callbacks:{
+            label:function(c){ return 'This week: ' + w[c.dataIndex].pct.toFixed(2) + '% of monthly target'; },
+            afterBody:function(items){ var x = w[items[0].dataIndex];
+              return ['Weekly sales: ' + money(x.bags) + ' bags',
+                      'Cumulative to date: ' + x.cum.toFixed(1) + '% of target',
+                      'Remaining to target: ' + Math.max(100 - x.cum, 0).toFixed(1) + ' pts']; } } } },
         scales:{ y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ callback:function(v){ return v+'%'; } } },
                  x:{ grid:{display:false} } } },
       plugins:[LINEVAL, WOW] });
