@@ -201,6 +201,10 @@ proj_week    = next_per_day * 7
 prev_per_day = (p_weekly / p_days) if p_days else 0
 pace_ratio   = (next_per_day / prev_per_day) if prev_per_day else 0
 show_outlook = w_days > 0 and w_this > 0 and prev_per_day > 0
+w_total         = gnum(perf, "weeklySalesTotal")
+carryover_month = gstr(perf, "carryoverMonth") or p_label
+pct_of_week     = (w_this / w_total * 100) if w_total else 0
+next_short      = next_month[:3]
 
 # ── Sinza / Uganda offer movement (counts + units + value) ────
 def _offers(hkey, rkey):
@@ -314,13 +318,28 @@ if unm_sorted:
 else:
     unm_block = ''
 
-# Looking-into-next-month outlook (Section 1)
+# Looking-into-next-month outlook (Section 1) — the two live weekly cards
 if show_outlook:
+    _pl = "" if int(w_days) == 1 else "s"
     outlook_block = (
-        '<div class="row"><div class="tag" style="color:#38bdf8">Looking into ' + esc(next_month) + '</div>'
-        '<div style="background:linear-gradient(160deg,#0e2233,#141a27);border:1px solid #1e3a52;border-left:3px solid #38bdf8;border-radius:12px;padding:0.9rem 1.1rem">'
-        f'<p style="font-size:0.9rem;color:#e2e8f0"><b>{esc(next_month)} opened strong:</b> the 1st already moved <b>{fmt(w_this)} bags in a single day</b> ({fmt(next_per_day)}/day) — <b>{pace_ratio:.2f}× {esc(p_label)}\'s closing daily pace</b> ({fmt(prev_per_day)}/day).</p>'
-        f'<p style="font-size:0.88rem;color:#cbd5e1;margin-top:0.45rem">Held for a full week that is a <b>~{fmt(proj_week)}-bag week</b> — well above the {fmt(bare_min)}-bag floor. <b>Weekly Sales</b> reads this as the coming week\'s potential; <b>Weekly vs Last Month</b> ({pace_ratio:.2f}×) reads it as the ability to convert better in week 1. The job is holding that pace every day, not just the 1st.</p>'
+        f'<div class="row"><div class="tag" style="color:#38bdf8">Momentum into {esc(next_month)}</div>'
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0.9rem">'
+        # Weekly Sales card
+        '<div style="position:relative;background:#171a27;border:1px solid #2d3148;border-radius:14px;padding:1.1rem 1.2rem;overflow:hidden">'
+        '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#8b5cf6,#6366f1)"></div>'
+        '<div style="font-size:0.64rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#64748b">Weekly Sales</div>'
+        f'<div style="font-size:2.1rem;font-weight:800;color:#f8fafc;line-height:1.15;margin:0.2rem 0 0.35rem">{fmt(w_total)}</div>'
+        f'<div style="font-size:0.8rem;color:#93c5fd;line-height:1.5">{fmt(w_this)} this month ({pct_of_week:.1f}% of {fmt(w_total)}) &middot; {fmt(p_weekly)} from {esc(carryover_month)} &middot; {fmt(next_per_day)}/day &rarr; a full week at this pace &asymp; {fmt(proj_week)} bags</div>'
+        '<div style="font-size:0.72rem;color:#64748b;margin-top:0.5rem">Total bags sold this week (Sun&ndash;Sat).</div>'
+        '</div>'
+        # Weekly vs Last Month card
+        '<div style="position:relative;background:#171a27;border:1px solid #2d3148;border-radius:14px;padding:1.1rem 1.2rem;overflow:hidden">'
+        '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#8b5cf6,#22d3ee)"></div>'
+        '<div style="font-size:0.64rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#64748b">Weekly vs Last Month</div>'
+        f'<div style="font-size:2.1rem;font-weight:800;color:#34d399;line-height:1.15;margin:0.2rem 0 0.35rem">{pace_ratio:.2f}&times;</div>'
+        f'<div style="font-size:0.8rem;color:#93c5fd;line-height:1.5">{esc(next_short)}: {fmt(w_this)} in {int(w_days)} day{_pl} ({fmt(next_per_day)}/day) vs {esc(p_label)}: {fmt(p_weekly)} in {int(p_days)} days ({fmt(prev_per_day)}/day)</div>'
+        '<div style="font-size:0.72rem;color:#64748b;margin-top:0.5rem">This month&rsquo;s per-day pace vs last month&rsquo;s final-week pace. Above 1&times; means the new month is outrunning how last month closed.</div>'
+        '</div>'
         '</div></div>'
     )
 else:
