@@ -176,6 +176,22 @@
   Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
   Chart.defaults.color = INK;
 
+  // Draws each bar's value on the bar (works for stacked segments and grouped bars).
+  var VAL = { id:'valLabels', afterDatasetsDraw:function(ch){
+    var c = ch.ctx; c.save();
+    c.font='700 0.64rem "Segoe UI", system-ui, sans-serif';
+    c.textAlign='center'; c.textBaseline='middle';
+    c.shadowColor='rgba(0,0,0,0.85)'; c.shadowBlur=3; c.fillStyle='#f8fafc';
+    ch.data.datasets.forEach(function(ds, di){
+      var meta = ch.getDatasetMeta(di); if (meta.hidden) return;
+      meta.data.forEach(function(bar, i){
+        var v = ds.data[i]; if (v == null || v < 1) return;
+        c.fillText(money(v), (bar.x + bar.base) / 2, bar.y);
+      });
+    });
+    c.restore();
+  }};
+
   // 1. Current Performance — sales vs monthly target (doughnut with centre %)
   (function(){
     var el = document.getElementById('cp-chart'); if (!el) return;
@@ -203,7 +219,7 @@
   (function(){
     var el = document.getElementById('np-chart'); if (!el) return;
     var t = RPT.np.targets || []; if (!t.length){ el.parentNode.style.display='none'; return; }
-    new Chart(el, { type:'bar',
+    new Chart(el, { type:'bar', plugins:[VAL],
       data:{ labels:t.map(function(x){return x.name;}), datasets:[
         { label:'Sold', data:t.map(function(x){return x.sold;}), backgroundColor:'#22d3ee', borderRadius:3 },
         { label:'Remaining to target', data:t.map(function(x){return x.remaining;}), backgroundColor:'rgba(148,163,184,0.35)', borderRadius:3 } ] },
@@ -216,7 +232,7 @@
   (function(){
     var el = document.getElementById('np-stock-chart'); if (!el) return;
     var t = RPT.np.targets || []; if (!t.length){ el.parentNode.style.display='none'; return; }
-    new Chart(el, { type:'bar',
+    new Chart(el, { type:'bar', plugins:[VAL],
       data:{ labels:t.map(function(x){return x.name;}), datasets:[
         { label:'Stock available', data:t.map(function(x){return x.stock;}), backgroundColor:'#a78bfa', borderRadius:3 },
         { label:'Posts done', data:t.map(function(x){return x.posts;}), backgroundColor:'#22d3ee', borderRadius:3 } ] },
