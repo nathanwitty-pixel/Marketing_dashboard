@@ -59,6 +59,12 @@ def num(s, default=0.0):
     except (ValueError, TypeError):
         return default
 
+def gnum(block, key, default=0.0):
+    """Numeric field reader that handles BOTH quoted ("1,211") and bare (7, 89.7)
+    values — gstr only matches quoted strings, so counts like productCount fail it."""
+    m = re.search(rf'\b{key}"?\s*:\s*"?\s*(-?[\d,\.]+)', block)
+    return num(m.group(1)) if m else default
+
 def fmt(n):   return f"{int(round(n)):,}"
 def pct(n):   return f"{n:.1f}%"
 def esc(s):   return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -97,7 +103,7 @@ except (ValueError, OSError):
 weekly_short = max(bare_min - avg_weekly, 0)
 
 # New products
-np_count   = int(num(gstr(np_, "productCount")))
+np_count   = int(gnum(np_, "productCount"))
 np_target  = num(gstr(np_, "totalTarget"))
 np_sales   = num(gstr(np_, "totalSales"))
 np_pct     = (np_sales / np_target * 100) if np_target else 0
@@ -109,8 +115,8 @@ np_names   = garr(np_, "productNames")
 np_targets = garr(np_, "productTargets")   # [{name, target, sold, remaining}, ...]
 
 # Offer type analysis
-combos    = int(num(gstr(oa, "comboCount")))
-deals     = int(num(gstr(oa, "powerDealCount")))
+combos    = int(gnum(oa, "comboCount"))
+deals     = int(gnum(oa, "powerDealCount"))
 ke_stock  = num(gstr(oa, "totalKenyaStock"))
 sz_stock  = num(gstr(oa, "totalSinzaStock"))
 ug_stock  = num(gstr(oa, "totalUgandaStock"))
@@ -170,7 +176,7 @@ unposted_pct = (notposted / instock * 100) if instock else 0
 mo_sales_posting  = num(gstr(pa, "monthlySalesTotal"))
 mo_expect_posting = num(gstr(pa, "monthlyExpected"))
 posting_mult = (mo_sales_posting / mo_expect_posting) if mo_expect_posting else 0
-mo_posts_made = num(gstr(pa, "monthlyPostsMade"))
+mo_posts_made = gnum(pa, "monthlyPostsMade")
 
 # Per-bag "which bags were never posted" (in stock, no marketing posts).
 unmarketed_bags = garr(pa, "instockNotPosted")
@@ -179,6 +185,45 @@ unm_sorted = sorted(unmarketed_bags, key=lambda b: num(b.get("stock")), reverse=
 # Weakest region by monthly sales-achieved
 regions = [("Kenya", ke_mo_mkt), ("Sinza", sz_mo_mkt), ("Uganda", ug_mo_mkt)]
 weak_name, weak_val = min(regions, key=lambda r: r[1])
+
+# ── Outlook into the next month (weekly pace carried over) ────
+import calendar as _cal
+w_this   = gnum(perf, "weeklyThisMonth")
+w_days   = gnum(perf, "weeklyThisMonthDays")
+p_weekly = gnum(perf, "prevMonthWeekly")
+p_days   = gnum(perf, "prevMonthDays")
+p_label  = gstr(perf, "prevMonthLabel") or "last month"
+_names   = list(_cal.month_name)
+_mnum    = _names.index(month) if month in _names else datetime.date.today().month
+next_month   = _cal.month_name[(_mnum % 12) + 1]
+next_per_day = (w_this / w_days) if w_days else 0
+proj_week    = next_per_day * 7
+prev_per_day = (p_weekly / p_days) if p_days else 0
+pace_ratio   = (next_per_day / prev_per_day) if prev_per_day else 0
+show_outlook = w_days > 0 and w_this > 0 and prev_per_day > 0
+
+# ── Sinza / Uganda offer movement (counts + units + value) ────
+def _offers(hkey, rkey):
+    return _parse_offers(_garr_line(oa, hkey), _garr_line(oa, rkey))
+sz_combos_l  = _offers("sinzaComboHeaders",  "sinzaCombos")
+sz_singles_l = _offers("sinzaSinglesHeaders", "sinzaSingles")
+sz_special_l = _offers("sinzaSpecialHeaders", "sinzaSpecials")
+sz_off_units, sz_off_value, sz_off_avg = _agg_offers(sz_combos_l + sz_singles_l + sz_special_l)
+ug_combos_l  = _offers("ugComboHeaders",  "ugCombos")
+ug_singles_l = _offers("ugSinglesHeaders", "ugSingles")
+ug_off_units, ug_off_value, ug_off_avg = _agg_offers(ug_combos_l + ug_singles_l)
+
+# ── Not-on-offer stock — the dead stock marketing must move ───
+def _nested(block, key):
+    m = re.search(rf'\b{key}"?\s*:\s*(\{{.*\}}),?\s*\n', block)
+    return m.group(1) if m else ""
+_sz_pa = _nested(pa, "sinza")
+_ug_pa = _nested(pa, "uganda")
+ke_notoffer_stock = notposted                                    # s3NotPosted = not-on-offer Kenya stock
+sz_notoffer_stock = gnum(_sz_pa, "stockNotOnOffer")
+ug_notoffer_stock = gnum(_ug_pa, "stockNotOnOffer")
+ke_offer_stock    = posted                                       # s3Posted = on-offer Kenya stock
+mo_sales_no_post  = gnum(pa, "monthlySalesNoPost")              # not-on-offer sales (still posted)
 
 # ── IMPACTS (quantified, with assumptions) ────────────────────
 weeks_n         = 4
@@ -269,6 +314,38 @@ if unm_sorted:
 else:
     unm_block = ''
 
+# Looking-into-next-month outlook (Section 1)
+if show_outlook:
+    outlook_block = (
+        '<div class="row"><div class="tag" style="color:#38bdf8">Looking into ' + esc(next_month) + '</div>'
+        '<div style="background:linear-gradient(160deg,#0e2233,#141a27);border:1px solid #1e3a52;border-left:3px solid #38bdf8;border-radius:12px;padding:0.9rem 1.1rem">'
+        f'<p style="font-size:0.9rem;color:#e2e8f0"><b>{esc(next_month)} opened strong:</b> the 1st already moved <b>{fmt(w_this)} bags in a single day</b> ({fmt(next_per_day)}/day) — <b>{pace_ratio:.2f}× {esc(p_label)}\'s closing daily pace</b> ({fmt(prev_per_day)}/day).</p>'
+        f'<p style="font-size:0.88rem;color:#cbd5e1;margin-top:0.45rem">Held for a full week that is a <b>~{fmt(proj_week)}-bag week</b> — well above the {fmt(bare_min)}-bag floor. <b>Weekly Sales</b> reads this as the coming week\'s potential; <b>Weekly vs Last Month</b> ({pace_ratio:.2f}×) reads it as the ability to convert better in week 1. The job is holding that pace every day, not just the 1st.</p>'
+        '</div></div>'
+    )
+else:
+    outlook_block = ''
+
+# Sinza & Uganda offer movement (Section 3)
+sz_ug_offer_block = (
+    '<div class="row"><div class="tag insight">Sinza &amp; Uganda offers</div>'
+    f'<p><b>Sinza</b> ran <b>{len(sz_combos_l)} combos</b>, {len(sz_singles_l)} singles and {len(sz_special_l)} specials, moving <b>{fmt(sz_off_units)} bags</b> (value {fmt(sz_off_value)}) against {fmt(sz_stock)} in stock. '
+    f'<b>Uganda</b> ran <b>{len(ug_combos_l)} combos</b> and {len(ug_singles_l)} singles, moving <b>{fmt(ug_off_units)} bags</b> (value {fmt(ug_off_value)}) against {fmt(ug_stock)} in stock. '
+    'Both are clearing only a thin slice of their offer stock — the same dead-stock problem as Kenya, at smaller scale.</p></div>'
+)
+
+# Focus on moving the not-on-offer bags, across the three posting lenses (Section 4)
+notoffer_block = (
+    '<div class="row"><div class="tag rec">Focus — move the bags NOT on offer</div>'
+    '<p style="margin-bottom:0.5rem">Marketing\'s real target is the stock sitting <b>not on offer</b>. Read across the three posting lenses:</p>'
+    '<div class="recs">'
+    f'<div class="rec-item"><span class="badge" style="background:rgba(148,163,184,0.16);color:#cbd5e1;border:1px solid rgba(148,163,184,0.35)">Combined</span><span><b>Sales vs Expected (Posted &amp; Unposted)</b> — of Kenya\'s in-stock bags, {fmt(ke_offer_stock)} are on offer but <b>{fmt(ke_notoffer_stock)} sit not on offer</b>: dead stock we aren\'t even putting in front of buyers.</span></div>'
+    f'<div class="rec-item"><span class="badge start">With posting</span><span><b>Sales with Posting vs Expected</b> — where marketing posted, sales ran <b>~{posting_mult:.1f}× expected</b>. Posting demonstrably works, so aiming it at the not-on-offer pile is the lever.</span></div>'
+    f'<div class="rec-item"><span class="badge test">No posting</span><span><b>Sales with no Posting vs Opportunity if Marketed</b> — the <b>sales team</b> already moved {fmt(mo_sales_no_post)} bags with <b>zero marketing</b>; the gap up to the opportunity is what marketing leaves on the table by not posting the not-on-offer stock.</span></div>'
+    '</div>'
+    f'<p style="font-size:0.82rem;color:#94a3b8;margin-top:0.55rem">Not-on-offer stock by region: <b>Kenya {fmt(ke_notoffer_stock)}</b>, <b>Sinza {fmt(sz_notoffer_stock)}</b>, <b>Uganda {fmt(ug_notoffer_stock)}</b> — and Sinza ({pct(sz_mo_mkt)}) and Uganda ({pct(ug_mo_mkt)}) move it far slower than Kenya ({pct(ke_mo_mkt)}). Same playbook, all three regions.</p></div>'
+)
+
 body = f"""
   <div class="rpt-head">
     <span class="rpt-pill">Monthly Report</span>
@@ -312,6 +389,7 @@ body = f"""
     <div class="row"><div class="tag impact">Business Impact</div>
       <div class="impact"><p>Closing even <b>half the weekly gap (~{fmt(weekly_short/2)} bags/week)</b> across the month adds <b>~{fmt(cp_add)} bags</b> — lifting achievement from {pct(achieved)} to <b>~{pct(cp_new_pct)}</b>.</p></div>
       <div class="assump">Assumes ~{fmt(weekly_short/2)} bags/week recovered × {weeks_n} weeks; at ~KES {fmt(AVG_PRICE)}/bag that is ≈ KES {fmt(cp_revenue)} of recovered sales.</div></div>
+    {outlook_block}
   </div>
 
   <div class="sec">
@@ -340,6 +418,7 @@ body = f"""
       <p>Across <b>{combos} combos and {deals} power deals</b> (Kenya), the two offer types cleared stock very differently: <b>combos moved {fmt(combo_units)} bags</b> (KES {fmt(combo_value)}) while <b>power deals moved {fmt(deal_units)} bags</b> (KES {fmt(deal_value)}). <b>{offer_more_units.capitalize()}</b> shifted the most stock; <b>{offer_more_value}</b> made the most money.</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
       <p>It's a price-point story: combos averaged <b>KES {fmt(combo_avg)}</b> per offer vs power deals <b>KES {fmt(deal_avg)}</b>. The cheaper <b>{offer_cheaper}</b> clear more volume, so <b>dead stock moves fastest through {offer_cheaper}</b> — yet <b>{fmt(ke_stock)} bags</b> remain in Kenya offer stock (plus {fmt(sz_stock)} Sinza, {fmt(ug_stock)} Uganda), so the mix still isn't drawing inventory down fast enough.</p></div>
+    {sz_ug_offer_block}
     <div class="row"><div class="tag rec">Recommendation</div>
       <div class="recs">
         <div class="rec-item"><span class="badge start">Start</span><span>Routing the <b>slowest dead stock through {offer_cheaper}</b> (the higher-volume clearer) and keeping premium movers in <b>{offer_pricier}</b> for margin.</span></div>
@@ -360,6 +439,7 @@ body = f"""
     {unm_block}
     <div class="row"><div class="tag insight">The Insight</div>
       <p>Where we post, we sell: monthly sales on posted bags ({fmt(mo_sales_posting)}) ran <b>~{posting_mult:.1f}× the {fmt(mo_expect_posting)} expected</b>. Yet only <b>{fmt(posted)} bags were on offer/posted vs {fmt(notposted)} not</b>. Regionally the discipline collapses — Kenya {pct(ke_mo_mkt)}, <b>Sinza {pct(sz_mo_mkt)}, Uganda {pct(ug_mo_mkt)}</b> — so the biggest untapped demand is in <b>{weak_name}</b> and in unmarketed stock.</p></div>
+    {notoffer_block}
     <div class="row"><div class="tag rec">Recommendation</div>
       <div class="recs">
         <div class="rec-item"><span class="badge start">Start</span><span>Systematically <b>posting the {fmt(notposted)} unmarketed in-stock bags</b> — the single largest, cheapest lever against the {fmt(gap)}-bag target gap.</span></div>
