@@ -618,6 +618,29 @@ chart_js = r"""<script>
     ch.getDatasetMeta(0).data.forEach(function(pt,i){ c.fillText((ds.data[i]).toFixed(1)+'%', pt.x, pt.y-7); });
     c.restore();
   }};
+  // Week-on-week growth badge (last two weeks) — like the dashboard.
+  var WOW = { id:'wowBadge', afterDraw:function(ch){
+    var w = RPT.cp.weekly || []; if (w.length < 2) return;
+    var n = w.length, g = w[n-1].pct - w[n-2].pct, up = g >= 0;
+    var c = ch.ctx, ca = ch.chartArea;
+    var txt = 'Week-on-week growth: ' + (up ? '+' : '') + g.toFixed(2) + ' pts';
+    var sub = w[n-2].label + ' → ' + w[n-1].label;
+    c.save();
+    c.font = '700 0.72rem "Segoe UI", system-ui, sans-serif';
+    var bw = Math.max(c.measureText(txt).width, c.measureText(sub).width) + 24, bh = 38;
+    var x = ca.left + 6, y = ca.top + 4;
+    c.fillStyle = up ? 'rgba(16,185,129,0.16)' : 'rgba(239,68,68,0.16)';
+    c.strokeStyle = up ? '#34d399' : '#f87171'; c.lineWidth = 1;
+    c.beginPath();
+    if (c.roundRect) c.roundRect(x, y, bw, bh, 8); else c.rect(x, y, bw, bh);
+    c.fill(); c.stroke();
+    c.textAlign = 'left'; c.textBaseline = 'top';
+    c.fillStyle = up ? '#34d399' : '#f87171';
+    c.fillText((up ? '▲ ' : '▼ ') + txt, x + 10, y + 7);
+    c.fillStyle = '#94a3b8'; c.font = '600 0.6rem "Segoe UI", system-ui, sans-serif';
+    c.fillText(sub, x + 10, y + 23);
+    c.restore();
+  }};
 
   // KPI tile — Sales vs Monthly Target doughnut (was the CP chart)
   (function(){
@@ -650,7 +673,7 @@ chart_js = r"""<script>
           tooltip:{ callbacks:{ label:function(c){ return c.parsed.y.toFixed(1)+'% of target this week'; } } } },
         scales:{ y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ callback:function(v){ return v+'%'; } } },
                  x:{ grid:{display:false} } } },
-      plugins:[LINEVAL] });
+      plugins:[LINEVAL, WOW] });
   })();
 
   // 2. New Products — per product sold vs remaining (stacked)
