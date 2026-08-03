@@ -217,6 +217,9 @@ w_total         = gnum(perf, "weeklySalesTotal")
 carryover_month = gstr(perf, "carryoverMonth") or p_label
 pct_of_week     = (w_this / w_total * 100) if w_total else 0
 next_short      = next_month[:3]
+growth_pct_txt  = gstr(perf, "weeklySalesPct")    or ""   # e.g. "19.73%"
+prev_pct_txt    = gstr(perf, "previousSalesPct")  or ""   # e.g. "52.07%"
+prev_bags_txt   = gstr(perf, "previousSalesBags") or ""   # e.g. "4,584"
 
 # ── Sinza / Uganda offer movement (counts + units + value) ────
 def _offers(hkey, rkey):
@@ -406,8 +409,12 @@ body = f"""
 
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#facc15">1</div><h2>Current Performance</h2></div>
-    <div class="chart-cap">Sold vs the {fmt(gap)}-bag gap to a {fmt(total_target)} target</div>
-    <div class="chart-wrap"><canvas id="cp-chart"></canvas></div>
+    <div class="chart-cap">Sales vs monthly target</div>
+    <div class="chart-wrap" style="height:250px"><canvas id="cp-chart"></canvas></div>
+    <div style="display:flex;flex-wrap:wrap;gap:0.35rem 2rem;justify-content:center;font-size:0.8rem;color:#94a3b8;margin:-0.3rem 0 1.1rem">
+      <span>Growth % towards achieved monthly sales: <b style="color:#fbbf24">{growth_pct_txt}</b></span>
+      <span>Previous sales % achieved: <b style="color:#fbbf24">{prev_pct_txt} ({prev_bags_txt} bags)</b></span>
+    </div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
       <p>We finished {month} at <b>{pct(achieved)} of target ({fmt(total_sales)} bags)</b>, <b>{fmt(gap)} bags short</b>. Weekly output averaged about <b>{fmt(avg_weekly)} bags</b> — under the <b>{fmt(bare_min)}-bag weekly floor</b> the target requires.</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
@@ -493,7 +500,7 @@ body = f"""
 
 # ── CHART DATA + SCRIPT ───────────────────────────────────────
 _rpt = {
-    "cp":   {"sold": total_sales, "gap": gap, "target": total_target},
+    "cp":   {"sold": total_sales, "gap": gap, "target": total_target, "achievedPct": achieved},
     "np":   {"targets": [{"name": t.get("name", ""), "sold": num(t.get("sold")),
                           "remaining": max(num(t.get("remaining")), 0),
                           "posts": _np_ps.get(str(t.get("name", "")).strip().upper(), {}).get("posts", 0),
@@ -515,18 +522,27 @@ chart_js = r"""<script>
   Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
   Chart.defaults.color = INK;
 
-  // 1. Current Performance — sold vs gap to target (stacked)
+  // 1. Current Performance — sales vs monthly target (doughnut with centre %)
   (function(){
     var el = document.getElementById('cp-chart'); if (!el) return;
-    new Chart(el, { type:'bar',
-      data:{ labels:['To target'], datasets:[
-        { label:'Sold', data:[RPT.cp.sold], backgroundColor:'#34d399', borderRadius:4 },
-        { label:'Missed', data:[RPT.cp.gap], backgroundColor:'#f87171', borderRadius:4 } ] },
-      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
-          tooltip:{ callbacks:{ label:function(c){ return c.dataset.label+': '+money(c.parsed.x)+' bags'; } } } },
-        scales:{ x:{ stacked:true, grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
-                 y:{ stacked:true, grid:{display:false} } } } });
+    var centre = { id:'cpCentre', afterDraw:function(ch){
+      var a = ch.chartArea, c = ch.ctx;
+      c.save(); c.textAlign='center'; c.textBaseline='middle';
+      c.fillStyle='#f8fafc'; c.font='800 1.7rem "Segoe UI", system-ui, sans-serif';
+      c.fillText((RPT.cp.achievedPct||0).toFixed(2)+'%', (a.left+a.right)/2, (a.top+a.bottom)/2);
+      c.restore();
+    }};
+    new Chart(el, {
+      type:'doughnut',
+      data:{ labels:['Sold','Remaining'], datasets:[
+        { data:[RPT.cp.sold, RPT.cp.gap], backgroundColor:['#34d399','rgba(148,163,184,0.28)'], borderWidth:0 } ] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'70%',
+        plugins:{
+          legend:{ position:'bottom', labels:{ boxWidth:12 } },
+          tooltip:{ callbacks:{ label:function(c){ return c.label+': '+money(c.parsed)+' bags'; } } }
+        }
+      },
+      plugins:[centre] });
   })();
 
   // 2. New Products — per product sold vs remaining (stacked)

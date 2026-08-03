@@ -80,8 +80,12 @@
 
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#facc15">1</div><h2>Current Performance</h2></div>
-    <div class="chart-cap">Sold vs the 6,552-bag gap to a 23,232 target</div>
-    <div class="chart-wrap"><canvas id="cp-chart"></canvas></div>
+    <div class="chart-cap">Sales vs monthly target</div>
+    <div class="chart-wrap" style="height:250px"><canvas id="cp-chart"></canvas></div>
+    <div style="display:flex;flex-wrap:wrap;gap:0.35rem 2rem;justify-content:center;font-size:0.8rem;color:#94a3b8;margin:-0.3rem 0 1.1rem">
+      <span>Growth % towards achieved monthly sales: <b style="color:#fbbf24">19.73%</b></span>
+      <span>Previous sales % achieved: <b style="color:#fbbf24">52.07% (4,584 bags)</b></span>
+    </div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
       <p>We finished July at <b>71.8% of target (16,680 bags)</b>, <b>6,552 bags short</b>. Weekly output averaged about <b>3,270 bags</b> — under the <b>5,808-bag weekly floor</b> the target requires.</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
@@ -163,7 +167,7 @@
   <div class="foot">Denri Africa · Marketing Analytics — July 2026 report. Figures from the live dashboards (Current Performance, New Products, Offer Type Analysis, Posting Yields).</div>
 
 </div>
-<script>const RPT = {"cp": {"sold": 16680.0, "gap": 6552.0, "target": 23232.0}, "np": {"targets": [{"name": "AMORA", "sold": 1.0, "remaining": 49.0, "posts": 26.0, "stock": 55.0}, {"name": "IMANI", "sold": 6.0, "remaining": 74.0, "posts": 9.0, "stock": 174.0}, {"name": "LAMORA", "sold": 125.0, "remaining": 75.0, "posts": 104.0, "stock": 109.0}, {"name": "LOOP BP", "sold": 88.0, "remaining": 162.0, "posts": 46.0, "stock": 97.0}, {"name": "NALA", "sold": 44.0, "remaining": 56.0, "posts": 43.0, "stock": 74.0}, {"name": "TAJI", "sold": 46.0, "remaining": 54.0, "posts": 14.0, "stock": 56.0}, {"name": "ZULA", "sold": 100.0, "remaining": 50.0, "posts": 50.0, "stock": 151.0}]}, "offer": {"items": [{"name": "ELYSE / AMAYA + ZIPPED/ LUNCHSET/ NIZANA /MOON", "units": 508.0, "type": "combo"}, {"name": "ANTITHEFT+MAN BAG/NIZANA", "units": 286.0, "type": "combo"}, {"name": "SAFIRI + STANDARD/ ANTITHEFT", "units": 284.0, "type": "combo"}, {"name": "JUMBO +MEGA", "units": 216.0, "type": "combo"}, {"name": "SARAI + PIONEER/CODE 3", "units": 188.0, "type": "combo"}, {"name": "PRIME + MAN BAG / NIZANA/ MOON", "units": 150.0, "type": "combo"}, {"name": "JUMBO + FABELA/ LIAM + MAN BAG / MINI UMBRA", "units": 213.0, "type": "combo"}, {"name": "BONITA + MANBAG", "units": 118.0, "type": "combo"}, {"name": "LOLA +MINI ZURI/TRECENTO", "units": 112.0, "type": "combo"}, {"name": "BABY BAG +LIAM", "units": 84.0, "type": "combo"}, {"name": "FABELA", "units": 839.0, "type": "deal"}, {"name": "JUMBO", "units": 798.0, "type": "deal"}, {"name": "BIG MAN BAG", "units": 412.0, "type": "deal"}, {"name": "ZANE MAN", "units": 360.0, "type": "deal"}, {"name": "ARIA SLING", "units": 318.0, "type": "deal"}, {"name": "CATHY HANDBAG", "units": 280.0, "type": "deal"}, {"name": "MONAH BP", "units": 275.0, "type": "deal"}, {"name": "PIONEER", "units": 257.0, "type": "deal"}, {"name": "CLAIRE HANDBAG", "units": 206.0, "type": "deal"}, {"name": "MINI MAYA", "units": 147.0, "type": "deal"}]}, "post": {"ke": 89.7, "sz": 50.7, "ug": 19.2, "posted": 4975.0, "notposted": 5602.0, "keNotOffer": 5602.0, "szNotOffer": 439.0, "ugNotOffer": 235.0}};</script>
+<script>const RPT = {"cp": {"sold": 16680.0, "gap": 6552.0, "target": 23232.0, "achievedPct": 71.79752066115702}, "np": {"targets": [{"name": "AMORA", "sold": 1.0, "remaining": 49.0, "posts": 26.0, "stock": 55.0}, {"name": "IMANI", "sold": 6.0, "remaining": 74.0, "posts": 9.0, "stock": 174.0}, {"name": "LAMORA", "sold": 125.0, "remaining": 75.0, "posts": 104.0, "stock": 109.0}, {"name": "LOOP BP", "sold": 88.0, "remaining": 162.0, "posts": 46.0, "stock": 97.0}, {"name": "NALA", "sold": 44.0, "remaining": 56.0, "posts": 43.0, "stock": 74.0}, {"name": "TAJI", "sold": 46.0, "remaining": 54.0, "posts": 14.0, "stock": 56.0}, {"name": "ZULA", "sold": 100.0, "remaining": 50.0, "posts": 50.0, "stock": 151.0}]}, "offer": {"items": [{"name": "ELYSE / AMAYA + ZIPPED/ LUNCHSET/ NIZANA /MOON", "units": 508.0, "type": "combo"}, {"name": "ANTITHEFT+MAN BAG/NIZANA", "units": 286.0, "type": "combo"}, {"name": "SAFIRI + STANDARD/ ANTITHEFT", "units": 284.0, "type": "combo"}, {"name": "JUMBO +MEGA", "units": 216.0, "type": "combo"}, {"name": "SARAI + PIONEER/CODE 3", "units": 188.0, "type": "combo"}, {"name": "PRIME + MAN BAG / NIZANA/ MOON", "units": 150.0, "type": "combo"}, {"name": "JUMBO + FABELA/ LIAM + MAN BAG / MINI UMBRA", "units": 213.0, "type": "combo"}, {"name": "BONITA + MANBAG", "units": 118.0, "type": "combo"}, {"name": "LOLA +MINI ZURI/TRECENTO", "units": 112.0, "type": "combo"}, {"name": "BABY BAG +LIAM", "units": 84.0, "type": "combo"}, {"name": "FABELA", "units": 839.0, "type": "deal"}, {"name": "JUMBO", "units": 798.0, "type": "deal"}, {"name": "BIG MAN BAG", "units": 412.0, "type": "deal"}, {"name": "ZANE MAN", "units": 360.0, "type": "deal"}, {"name": "ARIA SLING", "units": 318.0, "type": "deal"}, {"name": "CATHY HANDBAG", "units": 280.0, "type": "deal"}, {"name": "MONAH BP", "units": 275.0, "type": "deal"}, {"name": "PIONEER", "units": 257.0, "type": "deal"}, {"name": "CLAIRE HANDBAG", "units": 206.0, "type": "deal"}, {"name": "MINI MAYA", "units": 147.0, "type": "deal"}]}, "post": {"ke": 89.7, "sz": 50.7, "ug": 19.2, "posted": 4975.0, "notposted": 5602.0, "keNotOffer": 5602.0, "szNotOffer": 439.0, "ugNotOffer": 235.0}};</script>
 <script>
 (function(){
   if (typeof Chart === 'undefined') return;
@@ -172,18 +176,27 @@
   Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
   Chart.defaults.color = INK;
 
-  // 1. Current Performance — sold vs gap to target (stacked)
+  // 1. Current Performance — sales vs monthly target (doughnut with centre %)
   (function(){
     var el = document.getElementById('cp-chart'); if (!el) return;
-    new Chart(el, { type:'bar',
-      data:{ labels:['To target'], datasets:[
-        { label:'Sold', data:[RPT.cp.sold], backgroundColor:'#34d399', borderRadius:4 },
-        { label:'Missed', data:[RPT.cp.gap], backgroundColor:'#f87171', borderRadius:4 } ] },
-      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
-          tooltip:{ callbacks:{ label:function(c){ return c.dataset.label+': '+money(c.parsed.x)+' bags'; } } } },
-        scales:{ x:{ stacked:true, grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
-                 y:{ stacked:true, grid:{display:false} } } } });
+    var centre = { id:'cpCentre', afterDraw:function(ch){
+      var a = ch.chartArea, c = ch.ctx;
+      c.save(); c.textAlign='center'; c.textBaseline='middle';
+      c.fillStyle='#f8fafc'; c.font='800 1.7rem "Segoe UI", system-ui, sans-serif';
+      c.fillText((RPT.cp.achievedPct||0).toFixed(2)+'%', (a.left+a.right)/2, (a.top+a.bottom)/2);
+      c.restore();
+    }};
+    new Chart(el, {
+      type:'doughnut',
+      data:{ labels:['Sold','Remaining'], datasets:[
+        { data:[RPT.cp.sold, RPT.cp.gap], backgroundColor:['#34d399','rgba(148,163,184,0.28)'], borderWidth:0 } ] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'70%',
+        plugins:{
+          legend:{ position:'bottom', labels:{ boxWidth:12 } },
+          tooltip:{ callbacks:{ label:function(c){ return c.label+': '+money(c.parsed)+' bags'; } } }
+        }
+      },
+      plugins:[centre] });
   })();
 
   // 2. New Products — per product sold vs remaining (stacked)
