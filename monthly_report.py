@@ -81,6 +81,21 @@ pa   = read_block("POSTING (SALES YIELDS FROM ACCURATE POSTING).html", "<!-- POS
 month = gstr(proj, "projMonth") or datetime.date.today().strftime("%B")
 year  = datetime.date.today().year
 
+# ── FINALIZED (FROZEN) MONTHS ─────────────────────────────────
+# A finalized month's report is STATIC — never regenerated. Its report HTML,
+# dated archive and history entry stay exactly as saved, so a later run (or a
+# change in the live dashboards) can't overwrite it. Once the reporting month
+# rolls forward, the next run generates that new month as a fresh report.
+# July 2026 is frozen with its final figures.
+FINALIZED_MONTHS = {"2026-07"}
+import calendar as _cal_fin
+_fin_num = (list(_cal_fin.month_name).index(month)
+            if month in list(_cal_fin.month_name) else datetime.date.today().month)
+if f"{year}-{_fin_num:02d}" in FINALIZED_MONTHS:
+    print(f"Monthly report: {month} {year} is finalized (static) — left unchanged.")
+    print("  The next reporting month (e.g. August) will generate as a new report.")
+    raise SystemExit(0)
+
 # Current performance
 total_target = num(gstr(proj, "totalTarget"))
 total_sales  = num(gstr(proj, "totalSales"))

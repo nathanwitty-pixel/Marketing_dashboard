@@ -119,159 +119,184 @@
       "combos": 10,
       "powerDeals": 10,
       "kenya": {
-        "comboUnits": 125.0,
-        "comboValue": 89982.0,
-        "comboAvg": 4999.0,
-        "dealUnits": 210.0,
-        "dealValue": 229600.0,
+        "comboUnits": 2159.0,
+        "comboValue": 9344041.0,
+        "comboAvg": 4439.0,
+        "dealUnits": 3892.0,
+        "dealValue": 7452800.0,
         "dealAvg": 1800.0
       },
       "sinza": {
-        "units": 8.0,
-        "value": 0.0,
-        "cleared": 1.3,
+        "units": 206.0,
+        "value": 983844.0,
+        "cleared": 32.5,
         "offers": [
           {
-            "name": "SAFIRI + STANDARD",
-            "units": 3.0,
+            "name": "JUMBO + MEGA",
+            "units": 50.0,
             "type": "combo"
           },
           {
-            "name": "BONITA + ZELUS",
+            "name": "SARAI + ANTITHEFT +WASHBAG",
+            "units": 51.0,
+            "type": "combo"
+          },
+          {
+            "name": "BONITA + REMI",
+            "units": 31.0,
+            "type": "combo"
+          },
+          {
+            "name": "AURORA + AVANNA + MOONBAG",
+            "units": 12.0,
+            "type": "combo"
+          },
+          {
+            "name": "STANDARD + MANBAG",
+            "units": 4.0,
+            "type": "combo"
+          },
+          {
+            "name": "ALPHA  + DOUBLEPRESS",
+            "units": 2.0,
+            "type": "combo"
+          },
+          {
+            "name": "GYMBAG + FANNYPACK",
+            "units": 2.0,
+            "type": "combo"
+          },
+          {
+            "name": "JAMELA + LUNCHSET",
+            "units": 2.0,
+            "type": "combo"
+          },
+          {
+            "name": "SCHOOL BAG + SCHOOL BAG",
+            "units": 2.0,
+            "type": "combo"
+          },
+          {
+            "name": "CESS + MINIZURI",
             "units": 0.0,
             "type": "combo"
           },
           {
-            "name": "ELYSE + MINIZURI",
-            "units": 0.0,
-            "type": "combo"
+            "name": "FANNY PACK",
+            "units": 18.0,
+            "type": "single"
           },
           {
-            "name": "FABELA + AMAYA",
-            "units": 0.0,
-            "type": "combo"
+            "name": "JADE",
+            "units": 11.0,
+            "type": "single"
           },
           {
-            "name": "GYMBAG + ARIA SLING",
-            "units": 0.0,
-            "type": "combo"
+            "name": "BONITA",
+            "units": 5.0,
+            "type": "single"
           },
           {
-            "name": "JUMBO + CODE 3 + MAN BAG",
-            "units": 0.0,
-            "type": "combo"
+            "name": "ELYSE",
+            "units": 4.0,
+            "type": "single"
           },
           {
-            "name": "MOON BAG + BELT BAG",
-            "units": 0.0,
-            "type": "combo"
+            "name": "FABELA",
+            "units": 4.0,
+            "type": "single"
           },
           {
-            "name": "REO + AVANNA",
-            "units": 0.0,
-            "type": "combo"
+            "name": "WASHBAG",
+            "units": 4.0,
+            "type": "single"
           },
           {
-            "name": "SARAI + BIG MAN",
-            "units": 0.0,
-            "type": "combo"
+            "name": "MEGA",
+            "units": 2.0,
+            "type": "single"
           },
           {
-            "name": "STANDARD + JADE",
-            "units": 0.0,
-            "type": "combo"
-          },
-          {
-            "name": "CODE 3",
+            "name": "AURORA",
             "units": 1.0,
             "type": "single"
           },
           {
-            "name": "GYM BAG",
+            "name": "LEGACY",
             "units": 1.0,
             "type": "single"
           },
           {
-            "name": "LUNA",
-            "units": 1.0,
-            "type": "single"
-          },
-          {
-            "name": "SARAI",
-            "units": 1.0,
-            "type": "single"
-          },
-          {
-            "name": "SLEEVE 1",
-            "units": 1.0,
-            "type": "single"
-          },
-          {
-            "name": "BIG MAN BAG",
-            "units": 0.0,
-            "type": "single"
-          },
-          {
-            "name": "KATE",
-            "units": 0.0,
-            "type": "single"
-          },
-          {
-            "name": "MINI UMBRA",
-            "units": 0.0,
-            "type": "single"
-          },
-          {
-            "name": "MINI ZURI",
-            "units": 0.0,
-            "type": "single"
-          },
-          {
-            "name": "MONAH BP",
+            "name": "IMANI",
             "units": 0.0,
             "type": "single"
           }
         ]
       },
       "uganda": {
-        "units": 5.0,
-        "value": 391000.0,
-        "cleared": 1.2,
+        "units": 89.0,
+        "value": 6550000.0,
+        "cleared": 21.9,
         "offers": [
           {
-            "name": "JUMBO",
-            "units": 2.0,
-            "stock": 10.0
-          },
-          {
-            "name": "KAYLA",
-            "units": 2.0,
-            "stock": 4.0
-          },
-          {
-            "name": "SATCHEL",
-            "units": 1.0,
-            "stock": 17.0
-          },
-          {
             "name": "ANTITHEFT",
-            "units": 0.0,
+            "units": 18.0,
             "stock": 12.0
           },
           {
-            "name": "AVANA HB",
-            "units": 0.0,
-            "stock": 8.0
-          },
-          {
-            "name": "BIG MAN BAG",
-            "units": 0.0,
-            "stock": 14.0
+            "name": "JUMBO",
+            "units": 15.0,
+            "stock": 10.0
           },
           {
             "name": "KAI",
-            "units": 0.0,
+            "units": 15.0,
             "stock": 13.0
+          },
+          {
+            "name": "SATCHEL",
+            "units": 12.0,
+            "stock": 17.0
+          },
+          {
+            "name": "MINI ZURI",
+            "units": 8.0,
+            "stock": 12.0
+          },
+          {
+            "name": "KAYLA",
+            "units": 7.0,
+            "stock": 4.0
+          },
+          {
+            "name": "NEO MAN",
+            "units": 6.0,
+            "stock": 18.0
+          },
+          {
+            "name": "AVANA HB",
+            "units": 2.0,
+            "stock": 8.0
+          },
+          {
+            "name": "MINI SCHOOL",
+            "units": 2.0,
+            "stock": 13.0
+          },
+          {
+            "name": "SKYE HB",
+            "units": 2.0,
+            "stock": 7.0
+          },
+          {
+            "name": "BIG MAN BAG",
+            "units": 1.0,
+            "stock": 14.0
+          },
+          {
+            "name": "NIZANA",
+            "units": 1.0,
+            "stock": 11.0
           },
           {
             "name": "MANDY HB",
@@ -279,39 +304,14 @@
             "stock": 5.0
           },
           {
-            "name": "MINI SCHOOL",
-            "units": 0.0,
-            "stock": 13.0
-          },
-          {
-            "name": "MINI ZURI",
-            "units": 0.0,
-            "stock": 12.0
-          },
-          {
             "name": "MOON BAG",
             "units": 0.0,
             "stock": 7.0
           },
           {
-            "name": "NEO MAN",
-            "units": 0.0,
-            "stock": 18.0
-          },
-          {
-            "name": "NIZANA",
-            "units": 0.0,
-            "stock": 11.0
-          },
-          {
             "name": "PIONEER",
             "units": 0.0,
             "stock": 5.0
-          },
-          {
-            "name": "SKYE HB",
-            "units": 0.0,
-            "stock": 7.0
           },
           {
             "name": "zane man",
@@ -322,19 +322,19 @@
       }
     },
     "postingYields": {
-      "kenyaPct": 52.1,
-      "sinzaPct": 0.0,
-      "ugandaPct": 0.0,
-      "postedStock": 4805.0,
-      "unpostedStock": 5772.0,
-      "postsMade": 190.0,
+      "kenyaPct": 89.7,
+      "sinzaPct": 50.7,
+      "ugandaPct": 19.2,
+      "postedStock": 4975.0,
+      "unpostedStock": 5602.0,
+      "postsMade": 785.0,
       "notOnOffer": {
-        "kenya": 5772.0,
-        "sinza": 0.0,
-        "uganda": 0.0
+        "kenya": 5602.0,
+        "sinza": 439.0,
+        "uganda": 235.0
       },
-      "salesFromPosting": 215.0,
-      "expectedFromPosting": 428.0
+      "salesFromPosting": 6925.0,
+      "expectedFromPosting": 1766.0
     }
   }
 }
