@@ -113,6 +113,16 @@ np_outside = num(gstr(np_, "monthlyOutside"))
 np_posts   = num(gstr(np_, "mpostKenya")) + num(gstr(np_, "mpostOutside"))
 np_names   = garr(np_, "productNames")
 np_targets = garr(np_, "productTargets")   # [{name, target, sold, remaining}, ...]
+# Per-new-product posts + current stock — colour rows aggregated up to bag type.
+np_combined = garr(np_, "monthlyCombined")
+_np_ps = {}
+for _r in np_combined:
+    _bt = str(_r.get("bagType") or "").strip().upper()
+    if not _bt:
+        continue
+    _e = _np_ps.setdefault(_bt, {"posts": 0.0, "stock": 0.0})
+    _e["posts"] += num(_r.get("mpostKenya")) + num(_r.get("mpostOutside"))
+    _e["stock"] += num(_r.get("sKenya")) + num(_r.get("sOutside"))
 
 # Offer type analysis
 combos    = int(gnum(oa, "comboCount"))
@@ -148,17 +158,19 @@ def _parse_offers(headers, rows):
             continue
         price = num(r[iprice]) if 0 <= iprice < len(r) else 0
         units = num(r[itotal]) if 0 <= itotal < len(r) else 0
-        out.append((units, price))
+        out.append({"name": name, "units": units, "price": price})
     return out
 
 def _agg_offers(offers):
-    units = sum(u for u, _ in offers)
-    value = sum(u * p for u, p in offers)
-    priced = [p for _, p in offers if p > 0]
+    units = sum(o["units"] for o in offers)
+    value = sum(o["units"] * o["price"] for o in offers)
+    priced = [o["price"] for o in offers if o["price"] > 0]
     return units, value, (sum(priced) / len(priced) if priced else 0)
 
-combo_units, combo_value, combo_avg = _agg_offers(_parse_offers(_garr_line(oa, "juneComboHeaders"), _garr_line(oa, "juneCombos")))
-deal_units, deal_value, deal_avg = _agg_offers(_parse_offers(_garr_line(oa, "powerDealHeaders"), _garr_line(oa, "powerDeals")))
+combo_offers = _parse_offers(_garr_line(oa, "juneComboHeaders"), _garr_line(oa, "juneCombos"))
+deal_offers  = _parse_offers(_garr_line(oa, "powerDealHeaders"), _garr_line(oa, "powerDeals"))
+combo_units, combo_value, combo_avg = _agg_offers(combo_offers)
+deal_units, deal_value, deal_avg = _agg_offers(deal_offers)
 offer_more_units = "combos" if combo_units >= deal_units else "power deals"
 offer_more_value = "combos" if combo_value >= deal_value else "power deals"
 offer_cheaper    = "power deals" if deal_avg <= combo_avg else "combos"
@@ -415,6 +427,8 @@ body = f"""
     <div class="sec-head"><div class="sec-num" style="background:#22d3ee">2</div><h2>New Products</h2></div>
     <div class="chart-cap">Each new product — sold vs remaining to target</div>
     <div class="chart-wrap"><canvas id="np-chart"></canvas></div>
+    <div class="chart-cap">Each new product — posts done vs current stock (the dead-stock read)</div>
+    <div class="chart-wrap"><canvas id="np-stock-chart"></canvas></div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
       <p>The {np_count} new products ({names_txt}) reached only <b>{pct(np_pct)} of their {fmt(np_target)}-bag target ({fmt(np_sales)} sold)</b> — a <b>{fmt(np_deficit)}-bag deficit</b>.</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
@@ -431,8 +445,8 @@ body = f"""
 
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#a78bfa">3</div><h2>Offer Type Analysis</h2></div>
-    <div class="chart-cap">Combos vs power deals — units moved &amp; value (KES)</div>
-    <div class="chart-wrap"><canvas id="offer-chart"></canvas></div>
+    <div class="chart-cap">Each offer — units moved (amber = combo, violet = power deal)</div>
+    <div class="chart-wrap" style="height:420px"><canvas id="offer-chart"></canvas></div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
       <p>Across <b>{combos} combos and {deals} power deals</b> (Kenya), the two offer types cleared stock very differently: <b>combos moved {fmt(combo_units)} bags</b> (KES {fmt(combo_value)}) while <b>power deals moved {fmt(deal_units)} bags</b> (KES {fmt(deal_value)}). <b>{offer_more_units.capitalize()}</b> shifted the most stock; <b>{offer_more_value}</b> made the most money.</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
@@ -459,6 +473,8 @@ body = f"""
     <div class="row"><div class="tag insight">The Insight</div>
       <p>Where we post, we sell: monthly sales on posted bags ({fmt(mo_sales_posting)}) ran <b>~{posting_mult:.1f}× the {fmt(mo_expect_posting)} expected</b>. Yet only <b>{fmt(posted)} bags were on offer/posted vs {fmt(notposted)} not</b>. Regionally the discipline collapses — Kenya {pct(ke_mo_mkt)}, <b>Sinza {pct(sz_mo_mkt)}, Uganda {pct(ug_mo_mkt)}</b> — so the biggest untapped demand is in <b>{weak_name}</b> and in unmarketed stock.</p></div>
     {notoffer_block}
+    <div class="chart-cap">Bags NOT on offer, by region — the dead stock marketing must move</div>
+    <div class="chart-wrap"><canvas id="notoffer-chart"></canvas></div>
     <div class="row"><div class="tag rec">Recommendation</div>
       <div class="recs">
         <div class="rec-item"><span class="badge start">Start</span><span>Systematically <b>posting the {fmt(notposted)} unmarketed in-stock bags</b> — the single largest, cheapest lever against the {fmt(gap)}-bag target gap.</span></div>
@@ -479,11 +495,15 @@ body = f"""
 _rpt = {
     "cp":   {"sold": total_sales, "gap": gap, "target": total_target},
     "np":   {"targets": [{"name": t.get("name", ""), "sold": num(t.get("sold")),
-                          "remaining": max(num(t.get("remaining")), 0)} for t in np_targets]},
-    "offer": {"comboUnits": combo_units, "dealUnits": deal_units,
-              "comboVal": combo_value, "dealVal": deal_value},
+                          "remaining": max(num(t.get("remaining")), 0),
+                          "posts": _np_ps.get(str(t.get("name", "")).strip().upper(), {}).get("posts", 0),
+                          "stock": _np_ps.get(str(t.get("name", "")).strip().upper(), {}).get("stock", 0)}
+                         for t in np_targets]},
+    "offer": {"items": [{"name": o["name"], "units": o["units"], "type": "combo"} for o in combo_offers]
+                     + [{"name": o["name"], "units": o["units"], "type": "deal"} for o in deal_offers]},
     "post": {"ke": ke_mo_mkt, "sz": sz_mo_mkt, "ug": ug_mo_mkt,
-             "posted": posted, "notposted": notposted},
+             "posted": posted, "notposted": notposted,
+             "keNotOffer": ke_notoffer_stock, "szNotOffer": sz_notoffer_stock, "ugNotOffer": ug_notoffer_stock},
 }
 chart_data = "<script>const RPT = " + json.dumps(_rpt) + ";</script>\n"
 
@@ -522,20 +542,34 @@ chart_js = r"""<script>
         scales:{ x:{ stacked:true, grid:{color:GRID} }, y:{ stacked:true, grid:{display:false} } } } });
   })();
 
-  // 3. Offer Type — combos vs power deals: units (left) + value (right label via tooltip)
+  // 2b. New Products — posts done vs current stock per product (grouped)
+  (function(){
+    var el = document.getElementById('np-stock-chart'); if (!el) return;
+    var t = RPT.np.targets || []; if (!t.length){ el.parentNode.style.display='none'; return; }
+    new Chart(el, { type:'bar',
+      data:{ labels:t.map(function(x){return x.name;}), datasets:[
+        { label:'Stock available', data:t.map(function(x){return x.stock;}), backgroundColor:'#a78bfa', borderRadius:3 },
+        { label:'Posts done', data:t.map(function(x){return x.posts;}), backgroundColor:'#22d3ee', borderRadius:3 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
+          tooltip:{ callbacks:{ label:function(c){ return c.dataset.label+': '+money(c.parsed.x); } } } },
+        scales:{ x:{ grid:{color:GRID} }, y:{ grid:{display:false} } } } });
+  })();
+
+  // 3. Offer Type — each individual offer, units moved, coloured by type
   (function(){
     var el = document.getElementById('offer-chart'); if (!el) return;
-    if (!(RPT.offer.comboUnits || RPT.offer.dealUnits)){ el.parentNode.style.display='none'; return; }
-    var vals = [RPT.offer.comboVal, RPT.offer.dealVal];
+    var items = (RPT.offer.items || []).slice().sort(function(a,b){ return b.units - a.units; });
+    if (!items.length){ el.parentNode.style.display='none'; return; }
     new Chart(el, { type:'bar',
-      data:{ labels:['Combos','Power Deals'], datasets:[
-        { label:'Units moved', data:[RPT.offer.comboUnits, RPT.offer.dealUnits],
-          backgroundColor:['#f59e0b','#a78bfa'], borderRadius:4 } ] },
-      options:{ responsive:true, maintainAspectRatio:false,
+      data:{ labels:items.map(function(x){return x.name;}), datasets:[
+        { label:'Units moved', data:items.map(function(x){return x.units;}),
+          backgroundColor:items.map(function(x){ return x.type === 'combo' ? '#f59e0b' : '#a78bfa'; }), borderRadius:3 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
         plugins:{ legend:{display:false},
-          tooltip:{ callbacks:{ afterLabel:function(c){ return 'Value: KES '+money(vals[c.dataIndex]); } } } },
-        scales:{ y:{ grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
-                 x:{ grid:{display:false} } } } });
+          tooltip:{ callbacks:{ label:function(c){ return money(c.parsed.x)+' units ('+(items[c.dataIndex].type === 'combo' ? 'combo' : 'power deal')+')'; } } } },
+        scales:{ x:{ grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
+                 y:{ grid:{display:false}, ticks:{ font:{size:10} } } } } });
   })();
 
   // 4a. Posting — sales-achieved % by region
@@ -566,6 +600,21 @@ chart_js = r"""<script>
         }
       }
     });
+  })();
+
+  // 4c. Posting — bags NOT on offer, by region
+  (function(){
+    var el = document.getElementById('notoffer-chart'); if (!el) return;
+    var d = [RPT.post.keNotOffer, RPT.post.szNotOffer, RPT.post.ugNotOffer];
+    if (!(d[0] || d[1] || d[2])){ el.parentNode.style.display='none'; return; }
+    new Chart(el, { type:'bar',
+      data:{ labels:['Kenya','Sinza','Uganda'], datasets:[
+        { label:'Not-on-offer stock', data:d, backgroundColor:['#f87171','#fb923c','#facc15'], borderRadius:4 } ] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ label:function(c){ return money(c.parsed.y)+' bags not on offer'; } } } },
+        scales:{ y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
+                 x:{ grid:{display:false} } } } });
   })();
 })();
 </script>

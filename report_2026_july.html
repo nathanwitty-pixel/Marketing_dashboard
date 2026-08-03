@@ -101,6 +101,8 @@
     <div class="sec-head"><div class="sec-num" style="background:#22d3ee">2</div><h2>New Products</h2></div>
     <div class="chart-cap">Each new product — sold vs remaining to target</div>
     <div class="chart-wrap"><canvas id="np-chart"></canvas></div>
+    <div class="chart-cap">Each new product — posts done vs current stock (the dead-stock read)</div>
+    <div class="chart-wrap"><canvas id="np-stock-chart"></canvas></div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
       <p>The 7 new products (AMORA, IMANI, LAMORA, LOOP BP, NALA, TAJI, ZULA) reached only <b>44.1% of their 930-bag target (410 sold)</b> — a <b>520-bag deficit</b>.</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
@@ -117,8 +119,8 @@
 
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#a78bfa">3</div><h2>Offer Type Analysis</h2></div>
-    <div class="chart-cap">Combos vs power deals — units moved &amp; value (KES)</div>
-    <div class="chart-wrap"><canvas id="offer-chart"></canvas></div>
+    <div class="chart-cap">Each offer — units moved (amber = combo, violet = power deal)</div>
+    <div class="chart-wrap" style="height:420px"><canvas id="offer-chart"></canvas></div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
       <p>Across <b>10 combos and 10 power deals</b> (Kenya), the two offer types cleared stock very differently: <b>combos moved 2,159 bags</b> (KES 9,344,041) while <b>power deals moved 3,892 bags</b> (KES 7,452,800). <b>Power deals</b> shifted the most stock; <b>combos</b> made the most money.</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
@@ -145,6 +147,8 @@
     <div class="row"><div class="tag insight">The Insight</div>
       <p>Where we post, we sell: monthly sales on posted bags (6,925) ran <b>~3.9× the 1,766 expected</b>. Yet only <b>4,975 bags were on offer/posted vs 5,602 not</b>. Regionally the discipline collapses — Kenya 89.7%, <b>Sinza 50.7%, Uganda 19.2%</b> — so the biggest untapped demand is in <b>Uganda</b> and in unmarketed stock.</p></div>
     <div class="row"><div class="tag rec">Focus — move the bags NOT on offer</div><p style="margin-bottom:0.5rem">Marketing's real target is the stock sitting <b>not on offer</b>. Read across the three posting lenses:</p><div class="recs"><div class="rec-item"><span class="badge" style="background:rgba(148,163,184,0.16);color:#cbd5e1;border:1px solid rgba(148,163,184,0.35)">Combined</span><span><b>Sales vs Expected (Posted &amp; Unposted)</b> — of Kenya's in-stock bags, 4,975 are on offer but <b>5,602 sit not on offer</b>: dead stock we aren't even putting in front of buyers.</span></div><div class="rec-item"><span class="badge start">With posting</span><span><b>Sales with Posting vs Expected</b> — where marketing posted, sales ran <b>~3.9× expected</b>. Posting demonstrably works, so aiming it at the not-on-offer pile is the lever.</span></div><div class="rec-item"><span class="badge test">No posting</span><span><b>Sales with no Posting vs Opportunity if Marketed</b> — the <b>sales team</b> already moved 1,873 bags with <b>zero marketing</b>; the gap up to the opportunity is what marketing leaves on the table by not posting the not-on-offer stock.</span></div></div><p style="font-size:0.82rem;color:#94a3b8;margin-top:0.55rem">Not-on-offer stock by region: <b>Kenya 5,602</b>, <b>Sinza 439</b>, <b>Uganda 235</b> — and Sinza (50.7%) and Uganda (19.2%) move it far slower than Kenya (89.7%). Same playbook, all three regions.</p></div>
+    <div class="chart-cap">Bags NOT on offer, by region — the dead stock marketing must move</div>
+    <div class="chart-wrap"><canvas id="notoffer-chart"></canvas></div>
     <div class="row"><div class="tag rec">Recommendation</div>
       <div class="recs">
         <div class="rec-item"><span class="badge start">Start</span><span>Systematically <b>posting the 5,602 unmarketed in-stock bags</b> — the single largest, cheapest lever against the 6,552-bag target gap.</span></div>
@@ -159,7 +163,7 @@
   <div class="foot">Denri Africa · Marketing Analytics — July 2026 report. Figures from the live dashboards (Current Performance, New Products, Offer Type Analysis, Posting Yields).</div>
 
 </div>
-<script>const RPT = {"cp": {"sold": 16680.0, "gap": 6552.0, "target": 23232.0}, "np": {"targets": [{"name": "AMORA", "sold": 1.0, "remaining": 49.0}, {"name": "IMANI", "sold": 6.0, "remaining": 74.0}, {"name": "LAMORA", "sold": 125.0, "remaining": 75.0}, {"name": "LOOP BP", "sold": 88.0, "remaining": 162.0}, {"name": "NALA", "sold": 44.0, "remaining": 56.0}, {"name": "TAJI", "sold": 46.0, "remaining": 54.0}, {"name": "ZULA", "sold": 100.0, "remaining": 50.0}]}, "offer": {"comboUnits": 2159.0, "dealUnits": 3892.0, "comboVal": 9344041.0, "dealVal": 7452800.0}, "post": {"ke": 89.7, "sz": 50.7, "ug": 19.2, "posted": 4975.0, "notposted": 5602.0}};</script>
+<script>const RPT = {"cp": {"sold": 16680.0, "gap": 6552.0, "target": 23232.0}, "np": {"targets": [{"name": "AMORA", "sold": 1.0, "remaining": 49.0, "posts": 26.0, "stock": 55.0}, {"name": "IMANI", "sold": 6.0, "remaining": 74.0, "posts": 9.0, "stock": 174.0}, {"name": "LAMORA", "sold": 125.0, "remaining": 75.0, "posts": 104.0, "stock": 109.0}, {"name": "LOOP BP", "sold": 88.0, "remaining": 162.0, "posts": 46.0, "stock": 97.0}, {"name": "NALA", "sold": 44.0, "remaining": 56.0, "posts": 43.0, "stock": 74.0}, {"name": "TAJI", "sold": 46.0, "remaining": 54.0, "posts": 14.0, "stock": 56.0}, {"name": "ZULA", "sold": 100.0, "remaining": 50.0, "posts": 50.0, "stock": 151.0}]}, "offer": {"items": [{"name": "ELYSE / AMAYA + ZIPPED/ LUNCHSET/ NIZANA /MOON", "units": 508.0, "type": "combo"}, {"name": "ANTITHEFT+MAN BAG/NIZANA", "units": 286.0, "type": "combo"}, {"name": "SAFIRI + STANDARD/ ANTITHEFT", "units": 284.0, "type": "combo"}, {"name": "JUMBO +MEGA", "units": 216.0, "type": "combo"}, {"name": "SARAI + PIONEER/CODE 3", "units": 188.0, "type": "combo"}, {"name": "PRIME + MAN BAG / NIZANA/ MOON", "units": 150.0, "type": "combo"}, {"name": "JUMBO + FABELA/ LIAM + MAN BAG / MINI UMBRA", "units": 213.0, "type": "combo"}, {"name": "BONITA + MANBAG", "units": 118.0, "type": "combo"}, {"name": "LOLA +MINI ZURI/TRECENTO", "units": 112.0, "type": "combo"}, {"name": "BABY BAG +LIAM", "units": 84.0, "type": "combo"}, {"name": "FABELA", "units": 839.0, "type": "deal"}, {"name": "JUMBO", "units": 798.0, "type": "deal"}, {"name": "BIG MAN BAG", "units": 412.0, "type": "deal"}, {"name": "ZANE MAN", "units": 360.0, "type": "deal"}, {"name": "ARIA SLING", "units": 318.0, "type": "deal"}, {"name": "CATHY HANDBAG", "units": 280.0, "type": "deal"}, {"name": "MONAH BP", "units": 275.0, "type": "deal"}, {"name": "PIONEER", "units": 257.0, "type": "deal"}, {"name": "CLAIRE HANDBAG", "units": 206.0, "type": "deal"}, {"name": "MINI MAYA", "units": 147.0, "type": "deal"}]}, "post": {"ke": 89.7, "sz": 50.7, "ug": 19.2, "posted": 4975.0, "notposted": 5602.0, "keNotOffer": 5602.0, "szNotOffer": 439.0, "ugNotOffer": 235.0}};</script>
 <script>
 (function(){
   if (typeof Chart === 'undefined') return;
@@ -195,20 +199,34 @@
         scales:{ x:{ stacked:true, grid:{color:GRID} }, y:{ stacked:true, grid:{display:false} } } } });
   })();
 
-  // 3. Offer Type — combos vs power deals: units (left) + value (right label via tooltip)
+  // 2b. New Products — posts done vs current stock per product (grouped)
+  (function(){
+    var el = document.getElementById('np-stock-chart'); if (!el) return;
+    var t = RPT.np.targets || []; if (!t.length){ el.parentNode.style.display='none'; return; }
+    new Chart(el, { type:'bar',
+      data:{ labels:t.map(function(x){return x.name;}), datasets:[
+        { label:'Stock available', data:t.map(function(x){return x.stock;}), backgroundColor:'#a78bfa', borderRadius:3 },
+        { label:'Posts done', data:t.map(function(x){return x.posts;}), backgroundColor:'#22d3ee', borderRadius:3 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
+          tooltip:{ callbacks:{ label:function(c){ return c.dataset.label+': '+money(c.parsed.x); } } } },
+        scales:{ x:{ grid:{color:GRID} }, y:{ grid:{display:false} } } } });
+  })();
+
+  // 3. Offer Type — each individual offer, units moved, coloured by type
   (function(){
     var el = document.getElementById('offer-chart'); if (!el) return;
-    if (!(RPT.offer.comboUnits || RPT.offer.dealUnits)){ el.parentNode.style.display='none'; return; }
-    var vals = [RPT.offer.comboVal, RPT.offer.dealVal];
+    var items = (RPT.offer.items || []).slice().sort(function(a,b){ return b.units - a.units; });
+    if (!items.length){ el.parentNode.style.display='none'; return; }
     new Chart(el, { type:'bar',
-      data:{ labels:['Combos','Power Deals'], datasets:[
-        { label:'Units moved', data:[RPT.offer.comboUnits, RPT.offer.dealUnits],
-          backgroundColor:['#f59e0b','#a78bfa'], borderRadius:4 } ] },
-      options:{ responsive:true, maintainAspectRatio:false,
+      data:{ labels:items.map(function(x){return x.name;}), datasets:[
+        { label:'Units moved', data:items.map(function(x){return x.units;}),
+          backgroundColor:items.map(function(x){ return x.type === 'combo' ? '#f59e0b' : '#a78bfa'; }), borderRadius:3 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
         plugins:{ legend:{display:false},
-          tooltip:{ callbacks:{ afterLabel:function(c){ return 'Value: KES '+money(vals[c.dataIndex]); } } } },
-        scales:{ y:{ grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
-                 x:{ grid:{display:false} } } } });
+          tooltip:{ callbacks:{ label:function(c){ return money(c.parsed.x)+' units ('+(items[c.dataIndex].type === 'combo' ? 'combo' : 'power deal')+')'; } } } },
+        scales:{ x:{ grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
+                 y:{ grid:{display:false}, ticks:{ font:{size:10} } } } } });
   })();
 
   // 4a. Posting — sales-achieved % by region
@@ -239,6 +257,21 @@
         }
       }
     });
+  })();
+
+  // 4c. Posting — bags NOT on offer, by region
+  (function(){
+    var el = document.getElementById('notoffer-chart'); if (!el) return;
+    var d = [RPT.post.keNotOffer, RPT.post.szNotOffer, RPT.post.ugNotOffer];
+    if (!(d[0] || d[1] || d[2])){ el.parentNode.style.display='none'; return; }
+    new Chart(el, { type:'bar',
+      data:{ labels:['Kenya','Sinza','Uganda'], datasets:[
+        { label:'Not-on-offer stock', data:d, backgroundColor:['#f87171','#fb923c','#facc15'], borderRadius:4 } ] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ label:function(c){ return money(c.parsed.y)+' bags not on offer'; } } } },
+        scales:{ y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
+                 x:{ grid:{display:false} } } } });
   })();
 })();
 </script>
