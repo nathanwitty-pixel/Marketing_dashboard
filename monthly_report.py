@@ -823,9 +823,59 @@ archive = os.path.join(BASE, f"report_{year}_{month.lower()}.html")
 with open(archive, "w", encoding="utf-8") as f:
     f.write(_full)
 
+# ── HISTORICAL SNAPSHOT (JSON) ────────────────────────────────
+# Freeze this month's report figures, keyed by YYYY-MM, so past months (e.g.
+# the July report) are preserved even after the live dashboards roll into the
+# next month. Accumulates all months in monthly_report_history.json.
+_month_num = list(_cal.month_name).index(month) if month in list(_cal.month_name) else datetime.date.today().month
+_key = f"{year}-{_month_num:02d}"
+_snapshot = {
+    "month": month, "year": year, "key": _key,
+    "generatedOn": datetime.date.today().isoformat(),
+    "currentPerformance": {
+        "achievedPct": round(achieved, 2), "totalSales": total_sales, "totalTarget": total_target,
+        "gap": gap, "bareMinimum": bare_min, "avgWeekly": avg_weekly, "corporate": corporate,
+        "forecast": forecast, "weekly": wk_series,
+    },
+    "newProducts": {
+        "count": np_count, "target": np_target, "sales": np_sales, "deficit": np_deficit,
+        "kenya": np_kenya, "outside": np_outside, "posts": np_posts,
+        "names": np_names, "products": _rpt["np"]["targets"],
+    },
+    "offerType": {
+        "combos": combos, "powerDeals": deals,
+        "kenya": {"comboUnits": combo_units, "comboValue": combo_value, "comboAvg": round(combo_avg, 1),
+                  "dealUnits": deal_units, "dealValue": deal_value, "dealAvg": round(deal_avg, 1)},
+        "sinza": {"units": sz_off_units, "value": sz_off_value, "cleared": round(sz_cleared, 1),
+                  "offers": _rpt["offer"]["sinza"]},
+        "uganda": {"units": ug_off_units, "value": ug_off_value, "cleared": round(ug_cleared, 1),
+                   "offers": _rpt["offer"]["uganda"]},
+    },
+    "postingYields": {
+        "kenyaPct": ke_mo_mkt, "sinzaPct": sz_mo_mkt, "ugandaPct": ug_mo_mkt,
+        "postedStock": posted, "unpostedStock": notposted, "postsMade": mo_posts_made,
+        "notOnOffer": {"kenya": ke_notoffer_stock, "sinza": sz_notoffer_stock, "uganda": ug_notoffer_stock},
+        "salesFromPosting": mo_sales_posting, "expectedFromPosting": mo_expect_posting,
+    },
+}
+HISTORY_FILE = os.path.join(BASE, "monthly_report_history.json")
+_hist = {}
+if os.path.exists(HISTORY_FILE):
+    try:
+        with open(HISTORY_FILE, encoding="utf-8") as f:
+            _hist = json.load(f)
+    except (ValueError, OSError):
+        _hist = {}
+if not isinstance(_hist, dict):
+    _hist = {}
+_hist[_key] = _snapshot
+with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+    json.dump(_hist, f, indent=2, ensure_ascii=False)
+
 print(f"monthly_report.html built for {month} {year}.")
 print(f"  Target achieved : {pct(achieved)}  ({fmt(total_sales)}/{fmt(total_target)})")
 print(f"  Missed by       : {fmt(gap)} bags")
 print(f"  Unposted stock  : {fmt(notposted)} ({pct(unposted_pct)})")
 print(f"  Weakest region  : {weak_name} ({pct(weak_val)})")
 print(f"  Archive         : report_{year}_{month.lower()}.html")
+print(f"  History JSON     : monthly_report_history.json [{_key}]  ({len(_hist)} month(s) stored)")
