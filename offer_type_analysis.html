@@ -333,6 +333,16 @@
               <option value="">All</option>
             </select>
           </div>
+          <div style="display:flex;align-items:center;gap:0.4rem">
+            <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Stock</span>
+            <select id="og-stock" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
+              <option value="">All stock</option>
+              <option value="in">In stock</option>
+              <option value="high">High (&ge;100)</option>
+              <option value="low">Low (1&ndash;99)</option>
+              <option value="out">Out of stock</option>
+            </select>
+          </div>
         </div>
       </div>
       <p id="og-intro" style="font-size:0.75rem;color:#64748b;margin:0 0 0.6rem"></p>
@@ -390,6 +400,16 @@
             <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Product</span>
             <select id="ug-product" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none;max-width:240px">
               <option value="">All</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.4rem">
+            <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Stock</span>
+            <select id="ug-stock" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
+              <option value="">All stock</option>
+              <option value="in">In stock</option>
+              <option value="high">High (&ge;100)</option>
+              <option value="low">Low (1&ndash;99)</option>
+              <option value="out">Out of stock</option>
             </select>
           </div>
         </div>
@@ -455,6 +475,16 @@
             <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Product</span>
             <select id="sz-product" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none;max-width:240px">
               <option value="">All</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.4rem">
+            <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Stock</span>
+            <select id="sz-stock" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
+              <option value="">All stock</option>
+              <option value="in">In stock</option>
+              <option value="high">High (&ge;100)</option>
+              <option value="low">Low (1&ndash;99)</option>
+              <option value="out">Out of stock</option>
             </select>
           </div>
         </div>
@@ -613,6 +643,7 @@ function buildGuidance(cfg) {
   var typeEl  = document.getElementById(cfg.type);
   var prodEl  = document.getElementById(cfg.product);
   var sortEl  = document.getElementById(cfg.sort);
+  var stockEl = document.getElementById(cfg.stock);
   var introEl = document.getElementById(cfg.intro);
   if (!wrap) return;
   var trendChart = null;   // per-region trend line chart (stock / weekly gain / remaining)
@@ -797,6 +828,19 @@ function buildGuidance(cfg) {
     var prodFilter = prodEl ? prodEl.value : '';
     var shown = prodFilter ? rows.filter(function(r){ return r[0] === prodFilter; }) : rows.slice();
 
+    // Stock-level filter: keep offers whose total (across all their bags) stock falls in the chosen band.
+    var stockVal = stockEl ? stockEl.value : '';
+    if (stockVal) {
+      shown = shown.filter(function(r){
+        var s = allBags(r[0]).reduce(function(a, b){ return a + stockOf(b); }, 0);
+        if (stockVal === 'in')   return s > 0;
+        if (stockVal === 'out')  return s === 0;
+        if (stockVal === 'high') return s >= 100;
+        if (stockVal === 'low')  return s > 0 && s < 100;
+        return true;
+      });
+    }
+
     // Sort by price or by the latest week-on-week gain, ascending / descending
     var mode = sortEl ? sortEl.value : 'price-asc';
     function priceOf(r){ return parseFloat(String(r[idx.price]).replace(/,/g, '')) || 0; }
@@ -936,13 +980,14 @@ function buildGuidance(cfg) {
   if (typeEl) typeEl.addEventListener('change', function(){ populateProducts(); render(); });
   if (prodEl) prodEl.addEventListener('change', render);
   if (sortEl) sortEl.addEventListener('change', render);
+  if (stockEl) stockEl.addEventListener('change', render);
   populateTypes();
   populateProducts();
   render();
 }
 
 buildGuidance({
-  guidance: 'offer-guidance', type: 'og-type', product: 'og-product', sort: 'og-sort', intro: 'og-intro',
+  guidance: 'offer-guidance', type: 'og-type', product: 'og-product', sort: 'og-sort', stock: 'og-stock', intro: 'og-intro',
   trend: 'offer-trend-chart',
   stockData: OA.stockData, stockField: 'kenyaStock', currency: 'KES',
   types: [
@@ -952,7 +997,7 @@ buildGuidance({
 });
 
 buildGuidance({
-  guidance: 'ug-guidance', type: 'ug-type', product: 'ug-product', sort: 'ug-sort', intro: 'ug-intro',
+  guidance: 'ug-guidance', type: 'ug-type', product: 'ug-product', sort: 'ug-sort', stock: 'ug-stock', intro: 'ug-intro',
   trend: 'ug-trend-chart',
   stockData: OA.ugStockData, stockField: 'ugandaStock', currency: 'UGX', monthlyPool: 222,
   types: [
@@ -962,7 +1007,7 @@ buildGuidance({
 });
 
 buildGuidance({
-  guidance: 'sz-guidance', type: 'sz-type', product: 'sz-product', sort: 'sz-sort', intro: 'sz-intro',
+  guidance: 'sz-guidance', type: 'sz-type', product: 'sz-product', sort: 'sz-sort', stock: 'sz-stock', intro: 'sz-intro',
   trend: 'sz-trend-chart',
   stockData: OA.sinzaStockData, stockField: 'sinzaStock', currency: 'Ksh', monthlyPool: 331,
   types: [
