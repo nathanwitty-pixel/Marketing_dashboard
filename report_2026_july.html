@@ -103,6 +103,16 @@
 
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#22d3ee">2</div><h2>New Products</h2></div>
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:0.45rem;margin:0 0 0.5rem;font-size:0.72rem;color:#64748b">
+      <span style="text-transform:uppercase;letter-spacing:0.06em">Sort</span>
+      <select id="np-sort" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.28rem 0.55rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
+        <option value="sold-desc">Sold — high to low</option>
+        <option value="sold-asc">Sold — low to high</option>
+        <option value="remaining-desc">Still needed — high to low</option>
+        <option value="stock-desc">Stock — high to low</option>
+        <option value="posts-desc">Posts — high to low</option>
+      </select>
+    </div>
     <div class="chart-cap">Each new product — sold vs remaining to target</div>
     <div class="chart-wrap"><canvas id="np-chart"></canvas></div>
     <div class="chart-cap">Each new product — posts done vs current stock (the dead-stock read)</div>
@@ -286,31 +296,50 @@
       plugins:[LINEVAL, WOW] });
   })();
 
-  // 2. New Products — per product sold vs remaining (stacked)
+  // 2 + 2b. New Products — sold/remaining and posts/stock, sortable high↔low
   (function(){
-    var el = document.getElementById('np-chart'); if (!el) return;
-    var t = RPT.np.targets || []; if (!t.length){ el.parentNode.style.display='none'; return; }
-    new Chart(el, { type:'bar', plugins:[VAL],
-      data:{ labels:t.map(function(x){return x.name;}), datasets:[
-        { label:'Sold', data:t.map(function(x){return x.sold;}), backgroundColor:'#22d3ee', borderRadius:3 },
-        { label:'Remaining to target', data:t.map(function(x){return x.remaining;}), backgroundColor:'rgba(148,163,184,0.35)', borderRadius:3 } ] },
+    var el1 = document.getElementById('np-chart'), el2 = document.getElementById('np-stock-chart');
+    var base = RPT.np.targets || [];
+    if (!base.length){
+      if (el1) el1.parentNode.style.display='none';
+      if (el2) el2.parentNode.style.display='none';
+      return;
+    }
+    var sel = document.getElementById('np-sort');
+    function sorted(){
+      var v = sel ? sel.value : 'sold-desc', parts = v.split('-');
+      var key = parts[0], dir = (parts[1] === 'asc') ? 1 : -1;
+      var get = { sold:function(x){return x.sold;}, remaining:function(x){return x.remaining;},
+                  stock:function(x){return x.stock;}, posts:function(x){return x.posts;} }[key] || function(x){return x.sold;};
+      return base.slice().sort(function(a,b){ return (get(a) - get(b)) * dir; });
+    }
+    var c1 = null, c2 = null;
+    if (el1) c1 = new Chart(el1, {
+      type:'bar', plugins:[VAL],
+      data:{ labels:[], datasets:[
+        { label:'Sold', data:[], backgroundColor:'#22d3ee', borderRadius:3 },
+        { label:'Remaining to target', data:[], backgroundColor:'rgba(148,163,184,0.35)', borderRadius:3 } ] },
       options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
         plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } } },
-        scales:{ x:{ stacked:true, grid:{color:GRID} }, y:{ stacked:true, grid:{display:false} } } } });
-  })();
-
-  // 2b. New Products — posts done vs current stock per product (grouped)
-  (function(){
-    var el = document.getElementById('np-stock-chart'); if (!el) return;
-    var t = RPT.np.targets || []; if (!t.length){ el.parentNode.style.display='none'; return; }
-    new Chart(el, { type:'bar', plugins:[VAL],
-      data:{ labels:t.map(function(x){return x.name;}), datasets:[
-        { label:'Stock available', data:t.map(function(x){return x.stock;}), backgroundColor:'#a78bfa', borderRadius:3 },
-        { label:'Posts done', data:t.map(function(x){return x.posts;}), backgroundColor:'#22d3ee', borderRadius:3 } ] },
+        scales:{ x:{ stacked:true, grid:{color:GRID} }, y:{ stacked:true, grid:{display:false} } } }
+    });
+    if (el2) c2 = new Chart(el2, {
+      type:'bar', plugins:[VAL],
+      data:{ labels:[], datasets:[
+        { label:'Stock available', data:[], backgroundColor:'#a78bfa', borderRadius:3 },
+        { label:'Posts done', data:[], backgroundColor:'#22d3ee', borderRadius:3 } ] },
       options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
         plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
           tooltip:{ callbacks:{ label:function(c){ return c.dataset.label+': '+money(c.parsed.x); } } } },
-        scales:{ x:{ grid:{color:GRID} }, y:{ grid:{display:false} } } } });
+        scales:{ x:{ grid:{color:GRID} }, y:{ grid:{display:false} } } }
+    });
+    function draw(){
+      var t = sorted(), labels = t.map(function(x){return x.name;});
+      if (c1){ c1.data.labels=labels; c1.data.datasets[0].data=t.map(function(x){return x.sold;}); c1.data.datasets[1].data=t.map(function(x){return x.remaining;}); c1.update(); }
+      if (c2){ c2.data.labels=labels; c2.data.datasets[0].data=t.map(function(x){return x.stock;}); c2.data.datasets[1].data=t.map(function(x){return x.posts;}); c2.update(); }
+    }
+    if (sel) sel.addEventListener('change', draw);
+    draw();
   })();
 
   // 3. Offer Type — each individual offer, units moved, coloured by type
