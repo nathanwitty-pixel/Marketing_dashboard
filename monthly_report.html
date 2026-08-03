@@ -228,12 +228,17 @@
   // 4b. Posting — posted vs unposted stock (doughnut)
   (function(){
     var el = document.getElementById('stock-chart'); if (!el) return;
-    new Chart(el, { type:'doughnut',
+    new Chart(el, {
+      type:'doughnut',
       data:{ labels:['Posted stock','Unposted (dead) stock'], datasets:[
         { data:[RPT.post.posted, RPT.post.notposted], backgroundColor:['#34d399','#f87171'], borderWidth:0 } ] },
       options:{ responsive:true, maintainAspectRatio:false, cutout:'62%',
-        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
-          tooltip:{ callbacks:{ label:function(c){ return c.label+': '+money(c.parsed)+' bags'; } } } } });
+        plugins:{
+          legend:{ position:'bottom', labels:{ boxWidth:12 } },
+          tooltip:{ callbacks:{ label:function(c){ return c.label+': '+money(c.parsed)+' bags'; } } }
+        }
+      }
+    });
   })();
 })();
 </script>
