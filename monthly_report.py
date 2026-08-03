@@ -106,6 +106,7 @@ np_kenya   = num(gstr(np_, "monthlyKenya"))
 np_outside = num(gstr(np_, "monthlyOutside"))
 np_posts   = num(gstr(np_, "mpostKenya")) + num(gstr(np_, "mpostOutside"))
 np_names   = garr(np_, "productNames")
+np_targets = garr(np_, "productTargets")   # [{name, target, sold, remaining}, ...]
 
 # Offer type analysis
 combos    = int(num(gstr(oa, "comboCount")))
@@ -238,7 +239,10 @@ HEAD = """<!DOCTYPE html>
   .impact p { font-size: 0.88rem; color: #d1fae5; } .impact b { color: #6ee7b7; }
   .assump { font-size: 0.72rem; color: #64748b; margin-top: 0.35rem; font-style: italic; }
   .foot { font-size: 0.72rem; color: #475569; text-align: center; margin-top: 1.5rem; }
+  .chart-wrap { position: relative; height: 240px; margin: 0.2rem 0 1.2rem; }
+  .chart-cap { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; margin: 0 0 0.5rem; font-weight: 700; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -294,6 +298,8 @@ body = f"""
 
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#facc15">1</div><h2>Current Performance</h2></div>
+    <div class="chart-cap">Sold vs the {fmt(gap)}-bag gap to a {fmt(total_target)} target</div>
+    <div class="chart-wrap"><canvas id="cp-chart"></canvas></div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
       <p>We finished {month} at <b>{pct(achieved)} of target ({fmt(total_sales)} bags)</b>, <b>{fmt(gap)} bags short</b>. Weekly output averaged about <b>{fmt(avg_weekly)} bags</b> — under the <b>{fmt(bare_min)}-bag weekly floor</b> the target requires.</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
@@ -310,6 +316,8 @@ body = f"""
 
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#22d3ee">2</div><h2>New Products</h2></div>
+    <div class="chart-cap">Each new product — sold vs remaining to target</div>
+    <div class="chart-wrap"><canvas id="np-chart"></canvas></div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
       <p>The {np_count} new products ({names_txt}) reached only <b>{pct(np_pct)} of their {fmt(np_target)}-bag target ({fmt(np_sales)} sold)</b> — a <b>{fmt(np_deficit)}-bag deficit</b>.</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
@@ -326,6 +334,8 @@ body = f"""
 
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#a78bfa">3</div><h2>Offer Type Analysis</h2></div>
+    <div class="chart-cap">Combos vs power deals — units moved &amp; value (KES)</div>
+    <div class="chart-wrap"><canvas id="offer-chart"></canvas></div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
       <p>Across <b>{combos} combos and {deals} power deals</b> (Kenya), the two offer types cleared stock very differently: <b>combos moved {fmt(combo_units)} bags</b> (KES {fmt(combo_value)}) while <b>power deals moved {fmt(deal_units)} bags</b> (KES {fmt(deal_value)}). <b>{offer_more_units.capitalize()}</b> shifted the most stock; <b>{offer_more_value}</b> made the most money.</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
@@ -342,6 +352,9 @@ body = f"""
 
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#34d399">4</div><h2>Posting Yields (Sales from Accurate Posting)</h2></div>
+    <div class="chart-cap">Posting sales-achieved % by region &amp; posted vs unposted stock</div>
+    <div class="chart-wrap"><canvas id="posting-chart"></canvas></div>
+    <div class="chart-wrap"><canvas id="stock-chart"></canvas></div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
       <p>Marketing posting is our most effective lever — Kenya posted bags hit <b>{pct(ke_mo_mkt)} of expected sales monthly</b> — but <b>{pct(unposted_pct)} of in-stock bags ({fmt(notposted)}) were never posted</b>. The target gap is sitting in unmarketed stock.</p></div>
     {unm_block}
@@ -361,18 +374,109 @@ body = f"""
   <div class="foot">Denri Africa · Marketing Analytics — {month} {year} report. Figures from the live dashboards (Current Performance, New Products, Offer Type Analysis, Posting Yields).</div>
 
 </div>
-</body>
-</html>
 """
+
+# ── CHART DATA + SCRIPT ───────────────────────────────────────
+_rpt = {
+    "cp":   {"sold": total_sales, "gap": gap, "target": total_target},
+    "np":   {"targets": [{"name": t.get("name", ""), "sold": num(t.get("sold")),
+                          "remaining": max(num(t.get("remaining")), 0)} for t in np_targets]},
+    "offer": {"comboUnits": combo_units, "dealUnits": deal_units,
+              "comboVal": combo_value, "dealVal": deal_value},
+    "post": {"ke": ke_mo_mkt, "sz": sz_mo_mkt, "ug": ug_mo_mkt,
+             "posted": posted, "notposted": notposted},
+}
+chart_data = "<script>const RPT = " + json.dumps(_rpt) + ";</script>\n"
+
+chart_js = r"""<script>
+(function(){
+  if (typeof Chart === 'undefined') return;
+  var GRID = 'rgba(45,49,72,0.55)', INK = '#94a3b8';
+  function money(n){ return Math.round(n).toLocaleString(); }
+  Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+  Chart.defaults.color = INK;
+
+  // 1. Current Performance — sold vs gap to target (stacked)
+  (function(){
+    var el = document.getElementById('cp-chart'); if (!el) return;
+    new Chart(el, { type:'bar',
+      data:{ labels:['To target'], datasets:[
+        { label:'Sold', data:[RPT.cp.sold], backgroundColor:'#34d399', borderRadius:4 },
+        { label:'Missed', data:[RPT.cp.gap], backgroundColor:'#f87171', borderRadius:4 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
+          tooltip:{ callbacks:{ label:function(c){ return c.dataset.label+': '+money(c.parsed.x)+' bags'; } } } },
+        scales:{ x:{ stacked:true, grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
+                 y:{ stacked:true, grid:{display:false} } } } });
+  })();
+
+  // 2. New Products — per product sold vs remaining (stacked)
+  (function(){
+    var el = document.getElementById('np-chart'); if (!el) return;
+    var t = RPT.np.targets || []; if (!t.length){ el.parentNode.style.display='none'; return; }
+    new Chart(el, { type:'bar',
+      data:{ labels:t.map(function(x){return x.name;}), datasets:[
+        { label:'Sold', data:t.map(function(x){return x.sold;}), backgroundColor:'#22d3ee', borderRadius:3 },
+        { label:'Remaining to target', data:t.map(function(x){return x.remaining;}), backgroundColor:'rgba(148,163,184,0.35)', borderRadius:3 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } } },
+        scales:{ x:{ stacked:true, grid:{color:GRID} }, y:{ stacked:true, grid:{display:false} } } } });
+  })();
+
+  // 3. Offer Type — combos vs power deals: units (left) + value (right label via tooltip)
+  (function(){
+    var el = document.getElementById('offer-chart'); if (!el) return;
+    if (!(RPT.offer.comboUnits || RPT.offer.dealUnits)){ el.parentNode.style.display='none'; return; }
+    var vals = [RPT.offer.comboVal, RPT.offer.dealVal];
+    new Chart(el, { type:'bar',
+      data:{ labels:['Combos','Power Deals'], datasets:[
+        { label:'Units moved', data:[RPT.offer.comboUnits, RPT.offer.dealUnits],
+          backgroundColor:['#f59e0b','#a78bfa'], borderRadius:4 } ] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ afterLabel:function(c){ return 'Value: KES '+money(vals[c.dataIndex]); } } } },
+        scales:{ y:{ grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
+                 x:{ grid:{display:false} } } } });
+  })();
+
+  // 4a. Posting — sales-achieved % by region
+  (function(){
+    var el = document.getElementById('posting-chart'); if (!el) return;
+    new Chart(el, { type:'bar',
+      data:{ labels:['Kenya','Sinza','Uganda'], datasets:[
+        { label:'Sales-achieved %', data:[RPT.post.ke, RPT.post.sz, RPT.post.ug],
+          backgroundColor:['#34d399','#818cf8','#fb923c'], borderRadius:4 } ] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ label:function(c){ return c.parsed.y.toFixed(1)+'% of expected'; } } } },
+        scales:{ y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ callback:function(v){ return v+'%'; } } },
+                 x:{ grid:{display:false} } } } });
+  })();
+
+  // 4b. Posting — posted vs unposted stock (doughnut)
+  (function(){
+    var el = document.getElementById('stock-chart'); if (!el) return;
+    new Chart(el, { type:'doughnut',
+      data:{ labels:['Posted stock','Unposted (dead) stock'], datasets:[
+        { data:[RPT.post.posted, RPT.post.notposted], backgroundColor:['#34d399','#f87171'], borderWidth:0 } ] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'62%',
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
+          tooltip:{ callbacks:{ label:function(c){ return c.label+': '+money(c.parsed)+' bags'; } } } } });
+  })();
+})();
+</script>
+"""
+
+_full = head + body + chart_data + chart_js + "\n</body>\n</html>\n"
 
 out = os.path.join(BASE, "monthly_report.html")
 with open(out, "w", encoding="utf-8") as f:
-    f.write(head + body)
+    f.write(_full)
 
 # Keep a dated archive so past months are never overwritten.
 archive = os.path.join(BASE, f"report_{year}_{month.lower()}.html")
 with open(archive, "w", encoding="utf-8") as f:
-    f.write(head + body)
+    f.write(_full)
 
 print(f"monthly_report.html built for {month} {year}.")
 print(f"  Target achieved : {pct(achieved)}  ({fmt(total_sales)}/{fmt(total_target)})")

@@ -44,7 +44,10 @@
   .impact p { font-size: 0.88rem; color: #d1fae5; } .impact b { color: #6ee7b7; }
   .assump { font-size: 0.72rem; color: #64748b; margin-top: 0.35rem; font-style: italic; }
   .foot { font-size: 0.72rem; color: #475569; text-align: center; margin-top: 1.5rem; }
+  .chart-wrap { position: relative; height: 240px; margin: 0.2rem 0 1.2rem; }
+  .chart-cap { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; margin: 0 0 0.5rem; font-weight: 700; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -64,7 +67,7 @@
     <ul>
       <li><b>53.0% of Kenya stock (5,602 bags) was never posted</b> — yet posted bags sold at 89.7% of expectation. Marketing is the lever, and much of it went unused.</li>
       <li><b>Weekly output (~3,270 bags) ran below the 5,808/week floor</b> needed to hit target — the problem is consistency, not a bad month.</li>
-      <li><b>Regions are uneven:</b> Kenya posts at 89.7% sales-achieved, Sinza 50.7%, Uganda 21.2%. The Kenya playbook isn't being run elsewhere.</li>
+      <li><b>Regions are uneven:</b> Kenya posts at 89.7% sales-achieved, Sinza 50.7%, Uganda 19.2%. The Kenya playbook isn't being run elsewhere.</li>
     </ul>
   </div>
 
@@ -72,11 +75,13 @@
     <div class="kpi"><div class="k-lbl">Target Achieved</div><div class="k-val amber">71.8%</div><div class="k-sub">16,680 / 23,232 bags</div></div>
     <div class="kpi"><div class="k-lbl">Missed By</div><div class="k-val red">6,552</div><div class="k-sub">bags short of target</div></div>
     <div class="kpi"><div class="k-lbl">Unmarketed Stock</div><div class="k-val red">5,602</div><div class="k-sub">53.0% of Kenya stock not posted &middot; 0 posts made this month</div></div>
-    <div class="kpi"><div class="k-lbl">Posting Sales-Achieved</div><div class="k-val green">89.7%</div><div class="k-sub">Kenya 89.7% &middot; Sinza 50.7% &middot; Uganda 21.2% (of expected)</div></div>
+    <div class="kpi"><div class="k-lbl">Posting Sales-Achieved</div><div class="k-val green">89.7%</div><div class="k-sub">Kenya 89.7% &middot; Sinza 50.7% &middot; Uganda 19.2% (of expected)</div></div>
   </div>
 
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#facc15">1</div><h2>Current Performance</h2></div>
+    <div class="chart-cap">Sold vs the 6,552-bag gap to a 23,232 target</div>
+    <div class="chart-wrap"><canvas id="cp-chart"></canvas></div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
       <p>We finished July at <b>71.8% of target (16,680 bags)</b>, <b>6,552 bags short</b>. Weekly output averaged about <b>3,270 bags</b> — under the <b>5,808-bag weekly floor</b> the target requires.</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
@@ -93,10 +98,12 @@
 
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#22d3ee">2</div><h2>New Products</h2></div>
+    <div class="chart-cap">Each new product — sold vs remaining to target</div>
+    <div class="chart-wrap"><canvas id="np-chart"></canvas></div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
       <p>The 0 new products (AMORA, IMANI, LAMORA, LOOP BP, NALA, TAJI, ZULA) reached only <b>44.1% of their 930-bag target (410 sold)</b> — a <b>520-bag deficit</b>.</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
-      <p>New products received <b>291 marketing posts</b> but converted just 410 bags, and <b>almost all of it (406 of 410) was Kenya</b> — outside-Kenya is effectively <b>untested (4 bags)</b>. Awareness is being created; conversion and distribution are the bottleneck.</p></div>
+      <p>New products received <b>292 marketing posts</b> but converted just 410 bags, and <b>almost all of it (406 of 410) was Kenya</b> — outside-Kenya is effectively <b>untested (4 bags)</b>. Awareness is being created; conversion and distribution are the bottleneck.</p></div>
     <div class="row"><div class="tag rec">Recommendation</div>
       <div class="recs">
         <div class="rec-item"><span class="badge start">Start</span><span>A concentrated push on the <b>weakest launches</b> with price/offer support to clear the 520-bag deficit.</span></div>
@@ -104,11 +111,13 @@
       </div></div>
     <div class="row"><div class="tag impact">Business Impact</div>
       <div class="impact"><p>Recovering <b>half the deficit (~260 bags)</b> is realistic within one cycle; a working outside-Kenya channel would add a comparable second stream.</p></div>
-      <div class="assump">Assumes weak-launch recovery of 50% of the 520-bag deficit; outside-Kenya upside sized off the 291-post base.</div></div>
+      <div class="assump">Assumes weak-launch recovery of 50% of the 520-bag deficit; outside-Kenya upside sized off the 292-post base.</div></div>
   </div>
 
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#a78bfa">3</div><h2>Offer Type Analysis</h2></div>
+    <div class="chart-cap">Combos vs power deals — units moved &amp; value (KES)</div>
+    <div class="chart-wrap"><canvas id="offer-chart"></canvas></div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
       <p>Across <b>0 combos and 0 power deals</b> (Kenya), the two offer types cleared stock very differently: <b>combos moved 2,159 bags</b> (KES 9,344,041) while <b>power deals moved 3,892 bags</b> (KES 7,452,800). <b>Power deals</b> shifted the most stock; <b>combos</b> made the most money.</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
@@ -125,15 +134,18 @@
 
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#34d399">4</div><h2>Posting Yields (Sales from Accurate Posting)</h2></div>
+    <div class="chart-cap">Posting sales-achieved % by region &amp; posted vs unposted stock</div>
+    <div class="chart-wrap"><canvas id="posting-chart"></canvas></div>
+    <div class="chart-wrap"><canvas id="stock-chart"></canvas></div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
       <p>Marketing posting is our most effective lever — Kenya posted bags hit <b>89.7% of expected sales monthly</b> — but <b>53.0% of in-stock bags (5,602) were never posted</b>. The target gap is sitting in unmarketed stock.</p></div>
     <div class="row"><div class="tag insight">Which bags were never posted</div><p style="margin-bottom:.5rem">Against the month's posting, these in-stock bags carry <b>zero marketing posts</b> — the dead stock marketing moves first so the sales team can reach target:</p><div style="background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.22);border-radius:10px;padding:.5rem .85rem"><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b></b> <span style="color:#64748b">GIFT BAG A4</span></span><span style="color:#94a3b8;white-space:nowrap">178 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b></b> <span style="color:#64748b">GIFT BAG A3</span></span><span style="color:#94a3b8;white-space:nowrap">146 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b></b> <span style="color:#64748b">GIFT BAG A5</span></span><span style="color:#94a3b8;white-space:nowrap">124 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b>Green</b> <span style="color:#64748b">CODE 3 GREEN</span></span><span style="color:#94a3b8;white-space:nowrap">118 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b>Black</b> <span style="color:#64748b">TRAVEL BLACK</span></span><span style="color:#94a3b8;white-space:nowrap">114 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b>Brown</b> <span style="color:#64748b">CODE 3 BROWN</span></span><span style="color:#94a3b8;white-space:nowrap">109 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b>Brown</b> <span style="color:#64748b">JUMBO BROWN</span></span><span style="color:#94a3b8;white-space:nowrap">103 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b>Black</b> <span style="color:#64748b">CODE 3 BLACK</span></span><span style="color:#94a3b8;white-space:nowrap">97 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b>Grey</b> <span style="color:#64748b">TRAVEL GREY</span></span><span style="color:#94a3b8;white-space:nowrap">91 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b>Black</b> <span style="color:#64748b">MAN BAG BLACK</span></span><span style="color:#94a3b8;white-space:nowrap">72 in stock &middot; 0 posts</span></div></div></div>
     <div class="row"><div class="tag insight">The Insight</div>
-      <p>Where we post, we sell: monthly sales on posted bags (6,925) ran <b>~3.9× the 1,766 expected</b>. Yet only <b>4,975 bags were on offer/posted vs 5,602 not</b>. Regionally the discipline collapses — Kenya 89.7%, <b>Sinza 50.7%, Uganda 21.2%</b> — so the biggest untapped demand is in <b>Uganda</b> and in unmarketed stock.</p></div>
+      <p>Where we post, we sell: monthly sales on posted bags (6,925) ran <b>~3.9× the 1,766 expected</b>. Yet only <b>4,975 bags were on offer/posted vs 5,602 not</b>. Regionally the discipline collapses — Kenya 89.7%, <b>Sinza 50.7%, Uganda 19.2%</b> — so the biggest untapped demand is in <b>Uganda</b> and in unmarketed stock.</p></div>
     <div class="row"><div class="tag rec">Recommendation</div>
       <div class="recs">
         <div class="rec-item"><span class="badge start">Start</span><span>Systematically <b>posting the 5,602 unmarketed in-stock bags</b> — the single largest, cheapest lever against the 6,552-bag target gap.</span></div>
-        <div class="rec-item"><span class="badge test">Start testing</span><span>The <b>Kenya posting playbook in Uganda</b>, where sales-achieved is 21.2% vs Kenya's 89.7%.</span></div>
+        <div class="rec-item"><span class="badge test">Start testing</span><span>The <b>Kenya posting playbook in Uganda</b>, where sales-achieved is 19.2% vs Kenya's 89.7%.</span></div>
         <div class="rec-item"><span class="badge stop">Stop</span><span>Letting <b>in-stock bags sit unposted</b> — every unmarketed bag is a bag that reliably does not sell.</span></div>
       </div></div>
     <div class="row"><div class="tag impact">Business Impact</div>
@@ -144,5 +156,84 @@
   <div class="foot">Denri Africa · Marketing Analytics — July 2026 report. Figures from the live dashboards (Current Performance, New Products, Offer Type Analysis, Posting Yields).</div>
 
 </div>
+<script>const RPT = {"cp": {"sold": 16680.0, "gap": 6552.0, "target": 23232.0}, "np": {"targets": [{"name": "AMORA", "sold": 1.0, "remaining": 49.0}, {"name": "IMANI", "sold": 6.0, "remaining": 74.0}, {"name": "LAMORA", "sold": 125.0, "remaining": 75.0}, {"name": "LOOP BP", "sold": 88.0, "remaining": 162.0}, {"name": "NALA", "sold": 44.0, "remaining": 56.0}, {"name": "TAJI", "sold": 46.0, "remaining": 54.0}, {"name": "ZULA", "sold": 100.0, "remaining": 50.0}]}, "offer": {"comboUnits": 2159.0, "dealUnits": 3892.0, "comboVal": 9344041.0, "dealVal": 7452800.0}, "post": {"ke": 89.7, "sz": 50.7, "ug": 19.2, "posted": 4975.0, "notposted": 5602.0}};</script>
+<script>
+(function(){
+  if (typeof Chart === 'undefined') return;
+  var GRID = 'rgba(45,49,72,0.55)', INK = '#94a3b8';
+  function money(n){ return Math.round(n).toLocaleString(); }
+  Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+  Chart.defaults.color = INK;
+
+  // 1. Current Performance — sold vs gap to target (stacked)
+  (function(){
+    var el = document.getElementById('cp-chart'); if (!el) return;
+    new Chart(el, { type:'bar',
+      data:{ labels:['To target'], datasets:[
+        { label:'Sold', data:[RPT.cp.sold], backgroundColor:'#34d399', borderRadius:4 },
+        { label:'Missed', data:[RPT.cp.gap], backgroundColor:'#f87171', borderRadius:4 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
+          tooltip:{ callbacks:{ label:function(c){ return c.dataset.label+': '+money(c.parsed.x)+' bags'; } } } },
+        scales:{ x:{ stacked:true, grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
+                 y:{ stacked:true, grid:{display:false} } } } });
+  })();
+
+  // 2. New Products — per product sold vs remaining (stacked)
+  (function(){
+    var el = document.getElementById('np-chart'); if (!el) return;
+    var t = RPT.np.targets || []; if (!t.length){ el.parentNode.style.display='none'; return; }
+    new Chart(el, { type:'bar',
+      data:{ labels:t.map(function(x){return x.name;}), datasets:[
+        { label:'Sold', data:t.map(function(x){return x.sold;}), backgroundColor:'#22d3ee', borderRadius:3 },
+        { label:'Remaining to target', data:t.map(function(x){return x.remaining;}), backgroundColor:'rgba(148,163,184,0.35)', borderRadius:3 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } } },
+        scales:{ x:{ stacked:true, grid:{color:GRID} }, y:{ stacked:true, grid:{display:false} } } } });
+  })();
+
+  // 3. Offer Type — combos vs power deals: units (left) + value (right label via tooltip)
+  (function(){
+    var el = document.getElementById('offer-chart'); if (!el) return;
+    if (!(RPT.offer.comboUnits || RPT.offer.dealUnits)){ el.parentNode.style.display='none'; return; }
+    var vals = [RPT.offer.comboVal, RPT.offer.dealVal];
+    new Chart(el, { type:'bar',
+      data:{ labels:['Combos','Power Deals'], datasets:[
+        { label:'Units moved', data:[RPT.offer.comboUnits, RPT.offer.dealUnits],
+          backgroundColor:['#f59e0b','#a78bfa'], borderRadius:4 } ] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ afterLabel:function(c){ return 'Value: KES '+money(vals[c.dataIndex]); } } } },
+        scales:{ y:{ grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
+                 x:{ grid:{display:false} } } } });
+  })();
+
+  // 4a. Posting — sales-achieved % by region
+  (function(){
+    var el = document.getElementById('posting-chart'); if (!el) return;
+    new Chart(el, { type:'bar',
+      data:{ labels:['Kenya','Sinza','Uganda'], datasets:[
+        { label:'Sales-achieved %', data:[RPT.post.ke, RPT.post.sz, RPT.post.ug],
+          backgroundColor:['#34d399','#818cf8','#fb923c'], borderRadius:4 } ] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ label:function(c){ return c.parsed.y.toFixed(1)+'% of expected'; } } } },
+        scales:{ y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ callback:function(v){ return v+'%'; } } },
+                 x:{ grid:{display:false} } } } });
+  })();
+
+  // 4b. Posting — posted vs unposted stock (doughnut)
+  (function(){
+    var el = document.getElementById('stock-chart'); if (!el) return;
+    new Chart(el, { type:'doughnut',
+      data:{ labels:['Posted stock','Unposted (dead) stock'], datasets:[
+        { data:[RPT.post.posted, RPT.post.notposted], backgroundColor:['#34d399','#f87171'], borderWidth:0 } ] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'62%',
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
+          tooltip:{ callbacks:{ label:function(c){ return c.label+': '+money(c.parsed)+' bags'; } } } } });
+  })();
+})();
+</script>
+
 </body>
 </html>
