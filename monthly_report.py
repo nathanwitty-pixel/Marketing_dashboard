@@ -220,6 +220,13 @@ next_short      = next_month[:3]
 growth_pct_txt  = gstr(perf, "weeklySalesPct")    or ""   # e.g. "19.73%"
 prev_pct_txt    = gstr(perf, "previousSalesPct")  or ""   # e.g. "52.07%"
 prev_bags_txt   = gstr(perf, "previousSalesBags") or ""   # e.g. "4,584"
+# Weekly performance line: each week's OWN % of target = cumulative − previous cumulative.
+wk_series = []
+_prevc = 0.0
+for _w in garr(proj, "weeklyHistory"):
+    _cum = num(_w.get("salesPct"))
+    wk_series.append({"label": str(_w.get("label") or ""), "pct": round(_cum - _prevc, 2)})
+    _prevc = _cum
 
 # ── Sinza / Uganda offer movement (counts + units + value) ────
 def _offers(hkey, rkey):
@@ -438,7 +445,7 @@ body = f"""
   </div>
 
   <div class="kpis">
-    <div class="kpi"><div class="k-lbl">Target Achieved</div><div class="k-val amber">{pct(achieved)}</div><div class="k-sub">{fmt(total_sales)} / {fmt(total_target)} bags</div></div>
+    <div class="kpi" style="align-items:stretch"><div class="k-lbl">Sales vs Monthly Target</div><div style="position:relative;height:150px;margin-top:0.35rem"><canvas id="kpi-target-donut"></canvas></div><div class="k-sub" style="text-align:center">{fmt(total_sales)} / {fmt(total_target)} bags</div></div>
     <div class="kpi"><div class="k-lbl">Missed By</div><div class="k-val red">{fmt(gap)}</div><div class="k-sub">bags short of target</div></div>
     <div class="kpi"><div class="k-lbl">Unmarketed Stock</div><div class="k-val red">{fmt(notposted)}</div><div class="k-sub">{pct(unposted_pct)} of Kenya stock not posted &middot; {fmt(mo_posts_made)} posts made this month</div></div>
     <div class="kpi"><div class="k-lbl">Posting Sales-Achieved</div><div class="k-val green">{pct(ke_mo_mkt)}</div><div class="k-sub">Kenya {pct(ke_mo_mkt)} &middot; Sinza {pct(sz_mo_mkt)} &middot; Uganda {pct(ug_mo_mkt)} (of expected)</div></div>
@@ -446,9 +453,9 @@ body = f"""
 
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#facc15">1</div><h2>Current Performance</h2></div>
-    <div class="chart-cap">Sales vs monthly target</div>
-    <div class="chart-wrap" style="height:250px"><canvas id="cp-chart"></canvas></div>
-    <div style="display:flex;flex-wrap:wrap;gap:0.35rem 2rem;justify-content:center;font-size:0.8rem;color:#94a3b8;margin:-0.3rem 0 1.1rem">
+    <div class="chart-cap">Weekly performance — Week 1 to latest (each week's % of target)</div>
+    <div class="chart-wrap" style="height:240px"><canvas id="cp-chart"></canvas></div>
+    <div style="display:flex;flex-wrap:wrap;gap:0.35rem 2rem;justify-content:center;font-size:0.8rem;color:#94a3b8;margin:0 0 1.1rem">
       <span>Growth % towards achieved monthly sales: <b style="color:#fbbf24">{growth_pct_txt}</b></span>
       <span>Previous sales % achieved: <b style="color:#fbbf24">{prev_pct_txt} ({prev_bags_txt} bags)</b></span>
     </div>
@@ -549,7 +556,8 @@ body = f"""
 
 # ── CHART DATA + SCRIPT ───────────────────────────────────────
 _rpt = {
-    "cp":   {"sold": total_sales, "gap": gap, "target": total_target, "achievedPct": achieved},
+    "cp":   {"sold": total_sales, "gap": gap, "target": total_target, "achievedPct": achieved,
+             "weekly": wk_series},
     "np":   {"targets": [{"name": t.get("name", ""), "sold": num(t.get("sold")),
                           "remaining": max(num(t.get("remaining")), 0),
                           "posts": _np_ps.get(str(t.get("name", "")).strip().upper(), {}).get("posts", 0),
@@ -591,27 +599,58 @@ chart_js = r"""<script>
     c.restore();
   }};
 
-  // 1. Current Performance — sales vs monthly target (doughnut with centre %)
-  (function(){
-    var el = document.getElementById('cp-chart'); if (!el) return;
-    var centre = { id:'cpCentre', afterDraw:function(ch){
+  // Doughnut centre-% plugin, reused by the KPI target tile.
+  function donutCentre(sizeRem){
+    return { id:'donutCentre', afterDraw:function(ch){
       var a = ch.chartArea, c = ch.ctx;
       c.save(); c.textAlign='center'; c.textBaseline='middle';
-      c.fillStyle='#f8fafc'; c.font='800 1.7rem "Segoe UI", system-ui, sans-serif';
+      c.fillStyle='#f8fafc'; c.font='800 '+sizeRem+'rem "Segoe UI", system-ui, sans-serif';
       c.fillText((RPT.cp.achievedPct||0).toFixed(2)+'%', (a.left+a.right)/2, (a.top+a.bottom)/2);
       c.restore();
     }};
+  }
+  // Draws the % above each line point.
+  var LINEVAL = { id:'lineVals', afterDatasetsDraw:function(ch){
+    var c = ch.ctx, ds = ch.data.datasets[0]; if (!ds) return;
+    c.save(); c.font='700 0.66rem "Segoe UI", system-ui, sans-serif';
+    c.textAlign='center'; c.textBaseline='bottom'; c.fillStyle='#fde68a';
+    c.shadowColor='rgba(0,0,0,0.75)'; c.shadowBlur=3;
+    ch.getDatasetMeta(0).data.forEach(function(pt,i){ c.fillText((ds.data[i]).toFixed(1)+'%', pt.x, pt.y-7); });
+    c.restore();
+  }};
+
+  // KPI tile — Sales vs Monthly Target doughnut (was the CP chart)
+  (function(){
+    var el = document.getElementById('kpi-target-donut'); if (!el) return;
     new Chart(el, {
       type:'doughnut',
       data:{ labels:['Sold','Remaining'], datasets:[
         { data:[RPT.cp.sold, RPT.cp.gap], backgroundColor:['#34d399','rgba(148,163,184,0.28)'], borderWidth:0 } ] },
-      options:{ responsive:true, maintainAspectRatio:false, cutout:'70%',
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'66%',
         plugins:{
-          legend:{ position:'bottom', labels:{ boxWidth:12 } },
+          legend:{ display:false },
           tooltip:{ callbacks:{ label:function(c){ return c.label+': '+money(c.parsed)+' bags'; } } }
         }
       },
-      plugins:[centre] });
+      plugins:[donutCentre(1.15)] });
+  })();
+
+  // 1. Current Performance — weekly performance line (each week's % of target)
+  (function(){
+    var el = document.getElementById('cp-chart'); if (!el) return;
+    var w = RPT.cp.weekly || []; if (!w.length){ el.parentNode.style.display='none'; return; }
+    new Chart(el, {
+      type:'line',
+      data:{ labels:w.map(function(x){return x.label;}), datasets:[
+        { label:'% of target', data:w.map(function(x){return x.pct;}),
+          borderColor:'#f59e0b', backgroundColor:'rgba(245,158,11,0.15)', borderWidth:2, fill:true, tension:0.35,
+          pointRadius:4, pointBackgroundColor:'#f59e0b', pointBorderColor:'#0b0d16', pointBorderWidth:1 } ] },
+      options:{ responsive:true, maintainAspectRatio:false, layout:{ padding:{ top:16 } },
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ label:function(c){ return c.parsed.y.toFixed(1)+'% of target this week'; } } } },
+        scales:{ y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ callback:function(v){ return v+'%'; } } },
+                 x:{ grid:{display:false} } } },
+      plugins:[LINEVAL] });
   })();
 
   // 2. New Products — per product sold vs remaining (stacked)
