@@ -257,6 +257,17 @@ def _cause(region, units, cleared, posting_pct):
 sz_judge = _cause("Sinza", sz_off_units, sz_cleared, sz_mo_mkt)
 ug_judge = _cause("Uganda", ug_off_units, ug_cleared, ug_mo_mkt)
 
+# Offer-type composition — share by count and by units moved (Kenya + Sinza).
+def _share(parts):
+    tot = sum(parts) or 1
+    return [p / tot * 100 for p in parts]
+ke_c_cnt, ke_d_cnt = len(combo_offers), len(deal_offers)
+ke_cnt_pct  = _share([ke_c_cnt, ke_d_cnt])
+ke_unit_pct = _share([combo_units, deal_units])
+sz_c_cnt, sz_s_cnt, sz_sp_cnt = len(sz_combos_l), len(sz_singles_l), len(sz_special_l)
+sz_cnt_pct  = _share([sz_c_cnt, sz_s_cnt, sz_sp_cnt])
+sz_unit_pct = _share([_agg_offers(sz_combos_l)[0], _agg_offers(sz_singles_l)[0], _agg_offers(sz_special_l)[0]])
+
 # ── Not-on-offer stock — the dead stock marketing must move ───
 def _nested(block, key):
     m = re.search(rf'\b{key}"?\s*:\s*(\{{.*\}}),?\s*\n', block)
@@ -480,8 +491,16 @@ body = f"""
     <div class="sec-head"><div class="sec-num" style="background:#a78bfa">3</div><h2>Offer Type Analysis</h2></div>
     <div class="chart-cap">Kenya — each offer, units moved (amber = combo, violet = power deal)</div>
     <div class="chart-wrap" style="height:420px"><canvas id="offer-chart"></canvas></div>
+    <div style="text-align:center;font-size:0.78rem;color:#94a3b8;margin:-0.3rem 0 1.1rem">
+      <b>Offer mix</b> — by count: <b style="color:#fbbf24">Combos {ke_cnt_pct[0]:.0f}% ({ke_c_cnt})</b> vs <b style="color:#c4b5fd">Power Deals {ke_cnt_pct[1]:.0f}% ({ke_d_cnt})</b>
+      &nbsp;·&nbsp; by units moved: <b style="color:#fbbf24">Combos {ke_unit_pct[0]:.0f}%</b> vs <b style="color:#c4b5fd">Power Deals {ke_unit_pct[1]:.0f}%</b>
+    </div>
     <div class="chart-cap">Sinza — each offer, units moved (indigo = combo, cyan = single, pink = special)</div>
     <div class="chart-wrap" style="height:520px"><canvas id="offer-sinza-chart"></canvas></div>
+    <div style="text-align:center;font-size:0.78rem;color:#94a3b8;margin:-0.3rem 0 1.1rem">
+      <b>Offer mix</b> — by count: <b style="color:#818cf8">Combos {sz_cnt_pct[0]:.0f}% ({sz_c_cnt})</b> · <b style="color:#22d3ee">Singles {sz_cnt_pct[1]:.0f}% ({sz_s_cnt})</b> · <b style="color:#f472b6">Specials {sz_cnt_pct[2]:.0f}% ({sz_sp_cnt})</b>
+      &nbsp;·&nbsp; by units: <b style="color:#818cf8">Combos {sz_unit_pct[0]:.0f}%</b> · <b style="color:#22d3ee">Singles {sz_unit_pct[1]:.0f}%</b> · <b style="color:#f472b6">Specials {sz_unit_pct[2]:.0f}%</b>
+    </div>
     <div class="chart-cap">Uganda — top 5 &amp; bottom 5 movers, units moved vs stock available</div>
     <div class="chart-wrap" style="height:340px"><canvas id="offer-uganda-chart"></canvas></div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
