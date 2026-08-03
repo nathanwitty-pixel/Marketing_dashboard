@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -14,7 +14,7 @@
     ::-webkit-scrollbar-thumb:hover { background: #3d4a5c; }
     .cs-wrap { position: relative; display: inline-block; vertical-align: middle; }
     .cs-btn { background:#1e2130; border:1px solid #2d3148; color:#e2e8f0; padding:0.3rem 1.5rem 0.3rem 0.6rem; border-radius:6px; font-size:0.78rem; cursor:pointer; text-align:left; position:relative; }
-    .cs-btn::after { content:'▾'; position:absolute; right:0.55rem; top:50%; transform:translateY(-50%); color:#64748b; font-size:0.7rem; }
+    .cs-btn::after { content:'â–¾'; position:absolute; right:0.55rem; top:50%; transform:translateY(-50%); color:#64748b; font-size:0.7rem; }
     .cs-btn:hover { border-color:#10b981; }
     .cs-panel { position:absolute; top:calc(100% + 4px); left:0; min-width:100%; max-height:210px; overflow-y:auto; background:#1e2130; border:1px solid #2d3148; border-radius:8px; box-shadow:0 12px 30px rgba(0,0,0,0.5); z-index:300; display:none; }
     .cs-panel.open { display:block; }
@@ -278,7 +278,7 @@
     <button class="region-tab" data-region="uganda">Uganda</button>
   </div>
 
-  <!-- ═══ KENYA panel ═══ -->
+  <!-- â•â•â• KENYA panel â•â•â• -->
   <div class="region-panel" id="region-kenya">
 
   <!-- Offer product tags -->
@@ -305,19 +305,7 @@
     </div>
   </div>
 
-  <!-- ── Combos vs Power Deals — moving dead stock ───────────── -->
-  <div class="card-grid">
-    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div class="card-label" style="margin-bottom:0.35rem">Combos vs Power Deals — Moving Dead Stock</div>
-      <p style="font-size:0.78rem;color:#64748b;margin:0 0 0.9rem">Which offer type cleared more stock, at what price, and for how much money. Bars = units moved per offer (amber = combo, violet = power deal).</p>
-      <div id="oa-cmp-chips" style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem"></div>
-      <div style="position:relative;height:340px"><canvas id="oa-cmp-chart"></canvas></div>
-      <div id="oa-cmp-insight" style="margin-top:1.1rem"></div>
-      <div id="oa-cmp-repeated" style="margin-top:0.8rem"></div>
-    </div>
-  </div>
-
-  <!-- ── Offer Sales vs Stock Guidance (per bag) ─────────────── -->
+  <!-- â”€â”€ Offer Sales vs Stock Guidance (per bag) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <div class="card-grid">
     <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.6rem;margin-bottom:0.5rem">
@@ -333,10 +321,10 @@
           <div style="display:flex;align-items:center;gap:0.4rem">
             <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Sort</span>
             <select id="og-sort" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
-              <option value="price-asc">Price: low → high</option>
-              <option value="price-desc">Price: high → low</option>
-              <option value="gain-desc">Latest-week gain: high → low</option>
-              <option value="gain-asc">Latest-week gain: low → high</option>
+              <option value="price-asc">Price: low â†’ high</option>
+              <option value="price-desc">Price: high â†’ low</option>
+              <option value="gain-desc">Latest-week gain: high â†’ low</option>
+              <option value="gain-asc">Latest-week gain: low â†’ high</option>
             </select>
           </div>
           <div style="display:flex;align-items:center;gap:0.4rem">
@@ -354,7 +342,7 @@
   </div>
   </div><!-- /region-kenya -->
 
-  <!-- ═══ UGANDA panel ═══ -->
+  <!-- â•â•â• UGANDA panel â•â•â• -->
   <div class="region-panel" id="region-uganda" style="display:none">
 
   <!-- Offer product tags -->
@@ -379,18 +367,7 @@
     </div>
   </div>
 
-  <!-- Uganda — Dead stock movement -->
-  <div class="card-grid">
-    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div class="card-label" style="margin-bottom:0.35rem">Offer Movement — Moving Dead Stock</div>
-      <p style="font-size:0.78rem;color:#64748b;margin:0 0 0.9rem">Uganda ran one offer type — how much stock it moved, at what price, and for how much money.</p>
-      <div id="oa-cmp-chips-uganda" style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem"></div>
-      <div style="position:relative;height:300px"><canvas id="oa-cmp-chart-uganda"></canvas></div>
-      <div id="oa-cmp-insight-uganda" style="margin-top:1.1rem"></div>
-    </div>
-  </div>
-
-  <!-- Uganda — Offer Sales vs Stock Guidance -->
+  <!-- Uganda â€” Offer Sales vs Stock Guidance -->
   <div class="card-grid">
     <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.6rem;margin-bottom:0.5rem">
@@ -403,10 +380,10 @@
           <div style="display:flex;align-items:center;gap:0.4rem">
             <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Sort</span>
             <select id="ug-sort" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
-              <option value="price-asc">Price: low → high</option>
-              <option value="price-desc">Price: high → low</option>
-              <option value="gain-desc">Latest-week gain: high → low</option>
-              <option value="gain-asc">Latest-week gain: low → high</option>
+              <option value="price-asc">Price: low â†’ high</option>
+              <option value="price-desc">Price: high â†’ low</option>
+              <option value="gain-desc">Latest-week gain: high â†’ low</option>
+              <option value="gain-asc">Latest-week gain: low â†’ high</option>
             </select>
           </div>
           <div style="display:flex;align-items:center;gap:0.4rem">
@@ -425,7 +402,7 @@
 
   </div><!-- /region-uganda -->
 
-  <!-- ═══ SINZA panel ═══ -->
+  <!-- â•â•â• SINZA panel â•â•â• -->
   <div class="region-panel" id="region-sinza" style="display:none">
 
   <!-- Offer product tags -->
@@ -455,18 +432,7 @@
     </div>
   </div>
 
-  <!-- Sinza — Dead stock movement -->
-  <div class="card-grid">
-    <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
-      <div class="card-label" style="margin-bottom:0.35rem">Offer Movement — Moving Dead Stock</div>
-      <p style="font-size:0.78rem;color:#64748b;margin:0 0 0.9rem">How much stock Sinza's offers moved, at what price, and for how much money.</p>
-      <div id="oa-cmp-chips-sinza" style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem"></div>
-      <div style="position:relative;height:300px"><canvas id="oa-cmp-chart-sinza"></canvas></div>
-      <div id="oa-cmp-insight-sinza" style="margin-top:1.1rem"></div>
-    </div>
-  </div>
-
-  <!-- Sinza — Offer Sales vs Stock Guidance -->
+  <!-- Sinza â€” Offer Sales vs Stock Guidance -->
   <div class="card-grid">
     <div class="card" style="grid-column:1/-1;padding:1.2rem 1.4rem;">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.6rem;margin-bottom:0.5rem">
@@ -479,10 +445,10 @@
           <div style="display:flex;align-items:center;gap:0.4rem">
             <span style="font-size:0.68rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em">Sort</span>
             <select id="sz-sort" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
-              <option value="price-asc">Price: low → high</option>
-              <option value="price-desc">Price: high → low</option>
-              <option value="gain-desc">Latest-week gain: high → low</option>
-              <option value="gain-asc">Latest-week gain: low → high</option>
+              <option value="price-asc">Price: low â†’ high</option>
+              <option value="price-desc">Price: high â†’ low</option>
+              <option value="gain-desc">Latest-week gain: high â†’ low</option>
+              <option value="gain-asc">Latest-week gain: low â†’ high</option>
             </select>
           </div>
           <div style="display:flex;align-items:center;gap:0.4rem">
@@ -594,7 +560,7 @@ setStockOutOf('sz-kpi-sinza-stock',  STOCK_NOW.sinza,    STOCK_OUT_OF.sinza);
   lbl.className = 'offer-tag-label'; lbl.textContent = 'Offer Products:'; wrap.appendChild(lbl);
   products.forEach(function(p) {
     var s = document.createElement('span'); s.className = 'offer-tag';
-    s.textContent = p.bagType + (p.category ? '  •  ' + p.category : ''); wrap.appendChild(s);
+    s.textContent = p.bagType + (p.category ? '  â€¢  ' + p.category : ''); wrap.appendChild(s);
   });
 })();
 
@@ -623,7 +589,7 @@ function renderRegionTags(elId, rowsArrays) {
 renderRegionTags('ug-offer-tags', [OA.ugCombos, OA.ugSingles]);
 renderRegionTags('sz-offer-tags', [OA.sinzaCombos, OA.sinzaSingles, OA.sinzaSpecials]);
 
-/* Region tabs — show one region's Offer Type Analysis at a time */
+/* Region tabs â€” show one region's Offer Type Analysis at a time */
 (function() {
   var tabs   = document.querySelectorAll('.region-tab');
   var panels = {
@@ -634,14 +600,14 @@ renderRegionTags('sz-offer-tags', [OA.sinzaCombos, OA.sinzaSingles, OA.sinzaSpec
   function show(region) {
     Object.keys(panels).forEach(function(k) { if (panels[k]) panels[k].style.display = (k === region) ? 'block' : 'none'; });
     tabs.forEach(function(t) { t.classList.toggle('active', t.getAttribute('data-region') === region); });
-    // Charts built while a panel was hidden render at 0px — nudge them to resize now.
+    // Charts built while a panel was hidden render at 0px â€” nudge them to resize now.
     setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 30);
   }
   tabs.forEach(function(t) { t.addEventListener('click', function() { show(t.getAttribute('data-region')); }); });
   show('kenya');
 })();
 
-/* ── Offer Sales vs Stock Guidance (reusable per region) ────── */
+/* â”€â”€ Offer Sales vs Stock Guidance (reusable per region) â”€â”€â”€â”€â”€â”€ */
 function buildGuidance(cfg) {
   var wrap    = document.getElementById(cfg.guidance);
   var typeEl  = document.getElementById(cfg.type);
@@ -676,7 +642,7 @@ function buildGuidance(cfg) {
 
   // Locate the price + EVERY week column from the table headers (Sinza has an
   // extra "PRICE (TSH)" column, so weeks shift right by one). Weeks are picked
-  // up dynamically — Wk 1, Wk 2, Wk 3, … — so new weeks appear as the sheet
+  // up dynamically â€” Wk 1, Wk 2, Wk 3, â€¦ â€” so new weeks appear as the sheet
   // fills them in, with no code change. Falls back to columns 2/3.
   function colIdxs(headers) {
     var norm = (headers || []).map(function(h){ return String(h).toUpperCase().replace(/\s+/g, '').trim(); });
@@ -699,14 +665,14 @@ function buildGuidance(cfg) {
   function remainOf(bag) { var t = bagTargets[bag]; return t ? (t.remaining || 0) : 0; }
 
   // Match a single token to a known bag type
-  // Combo naming aliases → actual bag type (e.g. "STANDARD" is the TRAVEL bag)
+  // Combo naming aliases â†’ actual bag type (e.g. "STANDARD" is the TRAVEL bag)
   var BAG_ALIASES = { 'STANDARD': 'TRAVEL' };
   function matchBag(tok) {
     tok = tok.trim().toUpperCase();
     if (tok.length < 2) return null;
     if (BAG_ALIASES[tok]) tok = BAG_ALIASES[tok];
     if (stockMap[tok] != null) return tok;
-    var tokNS = tok.replace(/\s+/g, '');   // spacing-insensitive (GYMBAG ↔ GYM BAG)
+    var tokNS = tok.replace(/\s+/g, '');   // spacing-insensitive (GYMBAG â†” GYM BAG)
     for (var i = 0; i < bagTypes.length; i++) {
       var bt = bagTypes[i];
       if (bt === tok || bt.replace(/\s+/g, '') === tokNS ||
@@ -716,8 +682,8 @@ function buildGuidance(cfg) {
   }
 
   // Resolve the representative bag(s) for an offer name.
-  //  • single bag  -> [that bag]
-  //  • combo       -> split by "+" into groups; "/" = alternatives within a group;
+  //  â€¢ single bag  -> [that bag]
+  //  â€¢ combo       -> split by "+" into groups; "/" = alternatives within a group;
   //                   from each group pick the bag with the HIGHEST Kenya stock.
   function pickBags(name) {
     var key = name.trim().toUpperCase();
@@ -823,7 +789,7 @@ function buildGuidance(cfg) {
 
     // Pool-based targets (regions with no per-bag MONTHLY_TARGET): approximate each
     // item's target from its share of the offer's total sales across ALL weeks
-    // × the monthly pool.
+    // Ã— the monthly pool.
     function weekSum(r) { return idx.weeks.reduce(function(s, c){ return s + toNum(r[c]); }, 0); }
     var pool      = cfg.monthlyPool || 0;
     var poolDenom = pool ? rows.reduce(function(a, r){ return a + weekSum(r); }, 0) : 0;
@@ -851,7 +817,7 @@ function buildGuidance(cfg) {
       } else {
         introEl.innerHTML = 'Price, units sold per week (' + idx.labels.join(' &middot; ') + '; avg = across those weeks), stock, and a <strong style="color:#c4b5fd">weekly target</strong> ' +
           '= remaining monthly target &divide; ' + weeksLeft + ' complete week' + (weeksLeft === 1 ? '' : 's') + ' left. ' +
-          'For combos we list <strong style="color:#a5f3fc">every bag\'s stock</strong>; the target takes the <strong style="color:#a5f3fc">highest-stock bag per group</strong> (★) and is <strong style="color:#6ee7b7">halved</strong>.';
+          'For combos we list <strong style="color:#a5f3fc">every bag\'s stock</strong>; the target takes the <strong style="color:#a5f3fc">highest-stock bag per group</strong> (â˜…) and is <strong style="color:#6ee7b7">halved</strong>.';
       }
     }
 
@@ -867,9 +833,9 @@ function buildGuidance(cfg) {
       var lastV  = wkVals[wkVals.length - 1];
       var prevV  = wkVals.length > 1 ? wkVals[wkVals.length - 2] : lastV;
       var diff   = lastV - prevV;
-      var trend  = diff > 0 ? chip('▲ ' + diff + ' ' + idx.lastLabel, 'up')
-                 : diff < 0 ? chip('▼ ' + Math.abs(diff) + ' ' + idx.lastLabel, 'down')
-                 : chip('— flat', 'flat');
+      var trend  = diff > 0 ? chip('â–² ' + diff + ' ' + idx.lastLabel, 'up')
+                 : diff < 0 ? chip('â–¼ ' + Math.abs(diff) + ' ' + idx.lastLabel, 'down')
+                 : chip('â€” flat', 'flat');
 
       var allB     = allBags(name);                              // every bag in the combo (for stock)
       var picks    = pickBags(name);                             // largest per group (for target)
@@ -902,27 +868,27 @@ function buildGuidance(cfg) {
           var bg = isPick ? 'rgba(34,211,238,0.22)' : 'rgba(148,163,184,0.1)';
           var bd = isPick ? 'rgba(34,211,238,0.5)'  : 'rgba(148,163,184,0.25)';
           var cl = isPick ? '#a5f3fc' : '#94a3b8';
-          return '<span title="' + b + ': ' + stockOf(b) + ' in stock · remaining target ' + remainOf(b) + (isPick ? ' · used for target' : '') +
+          return '<span title="' + b + ': ' + stockOf(b) + ' in stock Â· remaining target ' + remainOf(b) + (isPick ? ' Â· used for target' : '') +
             '" style="display:inline-block;background:' + bg + ';border:1px solid ' + bd + ';color:' + cl + ';font-size:0.68rem;font-weight:700;padding:0.1rem 0.45rem;border-radius:5px;margin:0.1rem 0.25rem 0.1rem 0">' +
-            b + ' <strong style="color:#e2f9ff">' + stockOf(b).toLocaleString() + '</strong>' + (isPick ? ' ★' : '') + '</span>';
-        }).join('') + ' <span style="color:#64748b;font-size:0.72rem">(all bags · total ' + totalStock.toLocaleString() + ' · ★ = highest per group, used for the halved target)</span>';
+            b + ' <strong style="color:#e2f9ff">' + stockOf(b).toLocaleString() + '</strong>' + (isPick ? ' â˜…' : '') + '</span>';
+        }).join('') + ' <span style="color:#64748b;font-size:0.72rem">(all bags Â· total ' + totalStock.toLocaleString() + ' Â· â˜… = highest per group, used for the halved target)</span>';
       } else {
-        stockHtml = '<span style="color:#64748b">stock —</span>';
+        stockHtml = '<span style="color:#64748b">stock â€”</span>';
       }
 
-      // Advice — units sold trend vs weekly target
+      // Advice â€” units sold trend vs weekly target
       var advice;
-      if (totalStock === 0) advice = '<strong style="color:#f8fafc">out of stock</strong> — pause the push until restocked.';
-      else if (diff > 0)    advice = 'sales <strong style="color:#6ee7b7">rising</strong> ' + idx.prevLabel + '&rarr;' + idx.lastLabel + ' — keep the momentum, ' + weekTgt.toLocaleString() + '/wk is the goal.';
-      else if (diff < 0)    advice = 'sales <strong style="color:#fca5a5">slowing</strong> — push harder to hit ' + weekTgt.toLocaleString() + '/wk with ' + totalStock.toLocaleString() + ' in stock.';
-      else                  advice = 'sales <strong style="color:#cbd5e1">steady</strong> — hold the effort to keep ' + weekTgt.toLocaleString() + '/wk.';
+      if (totalStock === 0) advice = '<strong style="color:#f8fafc">out of stock</strong> â€” pause the push until restocked.';
+      else if (diff > 0)    advice = 'sales <strong style="color:#6ee7b7">rising</strong> ' + idx.prevLabel + '&rarr;' + idx.lastLabel + ' â€” keep the momentum, ' + weekTgt.toLocaleString() + '/wk is the goal.';
+      else if (diff < 0)    advice = 'sales <strong style="color:#fca5a5">slowing</strong> â€” push harder to hit ' + weekTgt.toLocaleString() + '/wk with ' + totalStock.toLocaleString() + ' in stock.';
+      else                  advice = 'sales <strong style="color:#cbd5e1">steady</strong> â€” hold the effort to keep ' + weekTgt.toLocaleString() + '/wk.';
 
       // plain-text version of the advice for the trend-chart hover
       var adviceText;
-      if (totalStock === 0) adviceText = 'Out of stock — pause the push until restocked.';
-      else if (diff > 0)    adviceText = 'Sales rising ' + idx.prevLabel + '→' + idx.lastLabel + ' — keep the momentum, ' + weekTgt.toLocaleString() + '/wk is the goal.';
-      else if (diff < 0)    adviceText = 'Sales slowing — push harder to hit ' + weekTgt.toLocaleString() + '/wk with ' + totalStock.toLocaleString() + ' in stock.';
-      else                  adviceText = 'Sales steady — hold the effort to keep ' + weekTgt.toLocaleString() + '/wk.';
+      if (totalStock === 0) adviceText = 'Out of stock â€” pause the push until restocked.';
+      else if (diff > 0)    adviceText = 'Sales rising ' + idx.prevLabel + 'â†’' + idx.lastLabel + ' â€” keep the momentum, ' + weekTgt.toLocaleString() + '/wk is the goal.';
+      else if (diff < 0)    adviceText = 'Sales slowing â€” push harder to hit ' + weekTgt.toLocaleString() + '/wk with ' + totalStock.toLocaleString() + ' in stock.';
+      else                  adviceText = 'Sales steady â€” hold the effort to keep ' + weekTgt.toLocaleString() + '/wk.';
       trendItems.push({ name: name, stock: totalStock, gain: diff, rem: totalRem, advice: adviceText });
 
       html += row(
@@ -946,7 +912,7 @@ function buildGuidance(cfg) {
       );
     });
     wrap.innerHTML = html;
-    trendItems.gainLabel = idx.prevLabel + '→' + idx.lastLabel;   // legend text for the gain line
+    trendItems.gainLabel = idx.prevLabel + 'â†’' + idx.lastLabel;   // legend text for the gain line
     renderTrend(trendItems);
   }
 
@@ -1006,7 +972,7 @@ buildGuidance({
   ]
 });
 
-/* ── Deal tables (Combo + Power) ────────────────────────────── */
+/* â”€â”€ Deal tables (Combo + Power) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function buildDealTable(headers, rows, theadId, tbodyId, badgeId, sortState) {
   var thead = document.getElementById(theadId);
   var tbody = document.getElementById(tbodyId);
@@ -1019,7 +985,7 @@ function buildDealTable(headers, rows, theadId, tbodyId, badgeId, sortState) {
     th.setAttribute('data-col', i);
     if (i === headers.length - 1) th.style.textAlign = 'right';
     var txt = document.createElement('span'); txt.textContent = h;
-    var ico = document.createElement('span'); ico.className = 'sort-icon'; ico.textContent = ' ⇅';
+    var ico = document.createElement('span'); ico.className = 'sort-icon'; ico.textContent = ' â‡…';
     th.appendChild(txt); th.appendChild(ico);
     th.addEventListener('click', (function(col) {
       return function() {
@@ -1053,10 +1019,10 @@ function renderDealTable(headers, rows, theadId, tbodyId, badgeId, sortState) {
       var ci = parseInt(th.getAttribute('data-col'));
       if (!ico) return;
       if (ci === sortState.col) {
-        ico.textContent = sortState.dir === 'asc' ? ' ↑' : ' ↓';
+        ico.textContent = sortState.dir === 'asc' ? ' â†‘' : ' â†“';
         ico.style.color = '#facc15'; ico.style.opacity = '1';
       } else {
-        ico.textContent = ' ⇅'; ico.style.color = ''; ico.style.opacity = '0.35';
+        ico.textContent = ' â‡…'; ico.style.color = ''; ico.style.opacity = '0.35';
       }
     });
   }
@@ -1112,7 +1078,7 @@ function renderDealTable(headers, rows, theadId, tbodyId, badgeId, sortState) {
   });
 }
 
-/* ── UGANDA ─────────────────────────────────────────────────── */
+/* â”€â”€ UGANDA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 set('ug-kpi-combos',       OA.ugComboCount);
 set('ug-kpi-singles',      OA.ugSinglesCount);
 set('ug-kpi-stock-rows',   OA.ugStockRowCount);
@@ -1179,10 +1145,10 @@ function renderUgandaStock() {
     var ico = sth.querySelector('.sort-icon');
     if (ico) {
       if (ugStockState.col === 'ugandaStock') {
-        ico.textContent = ugStockState.dir === 'asc' ? ' ↑' : ' ↓';
+        ico.textContent = ugStockState.dir === 'asc' ? ' â†‘' : ' â†“';
         ico.style.color = '#fb923c'; ico.style.opacity = '1';
       } else {
-        ico.textContent = ' ⇅'; ico.style.color = ''; ico.style.opacity = '0.35';
+        ico.textContent = ' â‡…'; ico.style.color = ''; ico.style.opacity = '0.35';
       }
     }
   }
@@ -1209,10 +1175,10 @@ function renderUgandaStock() {
   sorted.forEach(function(r) {
     var tr = document.createElement('tr');
     function cell(cls, v) { var c = document.createElement('td'); c.className = cls; c.textContent = v; tr.appendChild(c); }
-    cell('col-plain',    r.colour      || '—');
-    cell('col-plain',    r.category    || '—');
-    cell('col-name',     r.productName || '—');
-    cell('col-plain',    r.bagType     || '—');
+    cell('col-plain',    r.colour      || 'â€”');
+    cell('col-plain',    r.category    || 'â€”');
+    cell('col-name',     r.productName || 'â€”');
+    cell('col-plain',    r.bagType     || 'â€”');
     cell('col-ug-stock', fmt(r.ugandaStock || 0));
     tbody.appendChild(tr);
   });
@@ -1240,7 +1206,7 @@ if (ugStockSortTh) ugStockSortTh.addEventListener('click', function() {
 
 renderUgandaStock();
 
-/* ── SINZA ──────────────────────────────────────────────────── */
+/* â”€â”€ SINZA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 set('sz-kpi-combos',      OA.sinzaComboCount);
 set('sz-kpi-singles',     OA.sinzaSinglesCount);
 set('sz-kpi-specials',    OA.sinzaSpecialsCount);
@@ -1309,10 +1275,10 @@ function renderSinzaStock() {
     var ico = sth.querySelector('.sort-icon');
     if (ico) {
       if (szStockState.col === 'sinzaStock') {
-        ico.textContent = szStockState.dir === 'asc' ? ' ↑' : ' ↓';
+        ico.textContent = szStockState.dir === 'asc' ? ' â†‘' : ' â†“';
         ico.style.color = '#818cf8'; ico.style.opacity = '1';
       } else {
-        ico.textContent = ' ⇅'; ico.style.color = ''; ico.style.opacity = '0.35';
+        ico.textContent = ' â‡…'; ico.style.color = ''; ico.style.opacity = '0.35';
       }
     }
   }
@@ -1339,10 +1305,10 @@ function renderSinzaStock() {
   sorted.forEach(function(r) {
     var tr = document.createElement('tr');
     function cell(cls, v) { var c = document.createElement('td'); c.className = cls; c.textContent = v; tr.appendChild(c); }
-    cell('col-plain',   r.colour      || '—');
-    cell('col-plain',   r.category    || '—');
-    cell('col-name',    r.productName || '—');
-    cell('col-plain',   r.bagType     || '—');
+    cell('col-plain',   r.colour      || 'â€”');
+    cell('col-plain',   r.category    || 'â€”');
+    cell('col-name',    r.productName || 'â€”');
+    cell('col-plain',   r.bagType     || 'â€”');
     cell('col-sz-stock', fmt(r.sinzaStock || 0));
     tbody.appendChild(tr);
   });
@@ -1414,7 +1380,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
     if (OA.ugComboTitle) {
       var ugT = document.getElementById('ug-combo-title');
-      if (ugT) ugT.textContent = 'Uganda · ' + OA.ugComboTitle;
+      if (ugT) ugT.textContent = 'Uganda Â· ' + OA.ugComboTitle;
     }
   }
 </script>
@@ -1458,125 +1424,6 @@ window.addEventListener('DOMContentLoaded', function() {
 })();
 </script>
 
-<!-- ── Offer Type Comparison: combos vs power deals, dead-stock movement ── -->
-<script>
-(function(){
-  if (typeof OA === 'undefined') return;
-  function num(v){ return parseFloat(String(v==null?'':v).replace(/[^0-9.\-]/g,'')) || 0; }
-  function fmt(n){ return Math.round(n).toLocaleString(); }
-  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-  function parseOffers(headers, rows){
-    headers = headers || []; rows = rows || [];
-    var lower = headers.map(function(h){ return String(h).toLowerCase().trim(); });
-    var iPrice = lower.findIndex(function(h){ return h.indexOf('price') >= 0 && h.indexOf('tsh') < 0; });
-    if (iPrice < 0) iPrice = lower.findIndex(function(h){ return h.indexOf('price') >= 0; });
-    var iTotal = lower.findIndex(function(h){ return h === 'total'; });
-    if (iTotal < 0) iTotal = lower.length - 1;
-    var out = [];
-    rows.forEach(function(r){
-      if (!r) return;
-      var name = String(r[0] || '').trim();
-      if (!name || /total/i.test(name)) return;
-      out.push({ name: name, price: iPrice >= 0 ? num(r[iPrice]) : 0, units: iTotal >= 0 ? num(r[iTotal]) : 0 });
-    });
-    return out;
-  }
-  function agg(list){
-    var units = 0, val = 0, np = 0, ps = 0;
-    list.forEach(function(o){ units += o.units; val += o.price * o.units; if (o.price > 0){ np++; ps += o.price; } });
-    return { n: list.length, units: units, value: val, avgPrice: np ? ps / np : 0 };
-  }
-  function chip(label, value, color){
-    return '<div style="background:#161922;border:1px solid #2d3148;border-radius:10px;padding:0.5rem 0.8rem;min-width:104px">' +
-      '<div style="font-size:0.58rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b">' + label + '</div>' +
-      '<div style="font-size:1.1rem;font-weight:800;color:' + (color || '#f8fafc') + ';font-variant-numeric:tabular-nums">' + value + '</div></div>';
-  }
-  function barChart(canvasId, items){
-    var el = document.getElementById(canvasId);
-    if (!el || typeof Chart === 'undefined' || !items.length) return;
-    items = items.slice().sort(function(a,b){ return b.units - a.units; }).slice(0, 12);
-    new Chart(el, {
-      type: 'bar',
-      data: { labels: items.map(function(i){ return i.name; }),
-        datasets: [{ label: 'Units moved', data: items.map(function(i){ return i.units; }),
-          backgroundColor: items.map(function(i){ return i.color; }), borderRadius: 4, maxBarThickness: 20 }] },
-      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false },
-          tooltip: { callbacks: { label: function(c){ var it = items[c.dataIndex];
-            return [fmt(it.units) + ' units moved', 'Price: ' + fmt(it.price), 'Value: ' + fmt(it.price * it.units)]; } } } },
-        scales: { x: { grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: '#94a3b8' } },
-          y: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 11 } } } } }
-    });
-  }
-
-  var COMBO = '#f59e0b', DEAL = '#a78bfa';
-
-  // ── Kenya: Combos vs Power Deals ──
-  (function(){
-    var combos = parseOffers(OA.juneComboHeaders, OA.juneCombos);
-    var deals  = parseOffers(OA.powerDealHeaders, OA.powerDeals);
-    if (!combos.length && !deals.length) return;
-    var cA = agg(combos), dA = agg(deals);
-    var chips = document.getElementById('oa-cmp-chips');
-    if (chips) chips.innerHTML =
-      chip('Combos', cA.n, COMBO) + chip('Combo units', fmt(cA.units), COMBO) + chip('Combo value (KES)', fmt(cA.value), COMBO) + chip('Combo avg price', fmt(cA.avgPrice), COMBO) +
-      chip('Power Deals', dA.n, DEAL) + chip('Deal units', fmt(dA.units), DEAL) + chip('Deal value (KES)', fmt(dA.value), DEAL) + chip('Deal avg price', fmt(dA.avgPrice), DEAL);
-    var items = combos.map(function(o){ o.color = COMBO; return o; }).concat(deals.map(function(o){ o.color = DEAL; return o; }));
-    barChart('oa-cmp-chart', items);
-
-    var moreUnits = cA.units >= dA.units ? 'Combos' : 'Power Deals';
-    var moreVal   = cA.value >= dA.value ? 'Combos' : 'Power Deals';
-    var ins = document.getElementById('oa-cmp-insight');
-    if (ins) ins.innerHTML =
-      '<div style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.22);border-radius:10px;padding:0.9rem 1rem;font-size:0.85rem;color:#cbd5e1;line-height:1.55">' +
-      '<b style="color:#f8fafc">' + moreUnits + '</b> moved more stock (' + fmt(Math.max(cA.units, dA.units)) + ' vs ' + fmt(Math.min(cA.units, dA.units)) + ' units) and <b style="color:#f8fafc">' + moreVal + '</b> brought in more money. ' +
-      'Combos averaged <b style="color:#fbbf24">' + fmt(cA.avgPrice) + '</b>/offer vs power deals <b style="color:#c4b5fd">' + fmt(dA.avgPrice) + '</b> — ' +
-      (cA.avgPrice < dA.avgPrice ? 'the cheaper combos are the easier lever for clearing dead stock, so route slow bags there where price is less of a barrier.' : 'power deals price lower, so push slow dead stock through them to move it.') +
-      ' Weight the offer type that clears the most stock; per-bag posting effort is on the Posting Yields page.</div>';
-
-    var norm = function(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); };
-    var dealNames = {}; deals.forEach(function(o){ dealNames[norm(o.name)] = o; });
-    var rep = []; combos.forEach(function(o){ var d = dealNames[norm(o.name)]; if (d) rep.push({ name: o.name, combo: o.units, deal: d.units }); });
-    var repEl = document.getElementById('oa-cmp-repeated');
-    if (repEl) {
-      repEl.innerHTML = rep.length
-        ? '<div style="font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;margin-bottom:0.3rem">Ran as both a combo and a power deal</div>' +
-          rep.map(function(r){ var better = r.combo >= r.deal ? 'combo' : 'power deal';
-            return '<div style="font-size:0.82rem;color:#94a3b8;padding:0.22rem 0;border-top:1px solid rgba(148,163,184,0.12)"><strong style="color:#e2e8f0">' + esc(r.name) + '</strong> — combo ' + fmt(r.combo) + ' vs power deal ' + fmt(r.deal) + ' → moved better as a <strong style="color:#f8fafc">' + better + '</strong></div>'; }).join('')
-        : '<div style="font-size:0.78rem;color:#64748b">No single offer ran as both a combo and a power deal this month — the two are distinct sets.</div>';
-    }
-  })();
-
-  // ── Single-offer regions (Sinza, Uganda) ──
-  function renderSingle(cfg){
-    var offers = [];
-    cfg.sources.forEach(function(s){ offers = offers.concat(parseOffers(s.headers, s.rows)); });
-    if (!offers.length) return;
-    var a = agg(offers), stock = num(cfg.stock);
-    var chips = document.getElementById(cfg.chips);
-    if (chips) chips.innerHTML =
-      chip('Offers', a.n, cfg.color) + chip('Units moved', fmt(a.units), cfg.color) + chip('Value', fmt(a.value), cfg.color) +
-      chip('Avg price', fmt(a.avgPrice), cfg.color) + chip('Stock', fmt(stock), '#22d3ee') +
-      chip('Cleared', (stock > 0 ? (a.units / stock * 100).toFixed(1) : '0') + '%', '#34d399');
-    offers.forEach(function(o){ o.color = cfg.color; });
-    barChart(cfg.chart, offers);
-    var ins = document.getElementById(cfg.insight);
-    if (ins) ins.innerHTML =
-      '<div style="background:rgba(34,211,238,0.06);border:1px solid rgba(34,211,238,0.2);border-radius:10px;padding:0.9rem 1rem;font-size:0.85rem;color:#cbd5e1;line-height:1.55">' +
-      cfg.region + '\'s offers moved <b style="color:#f8fafc">' + fmt(a.units) + ' units</b> for a value of <b style="color:#f8fafc">' + fmt(a.value) + '</b> against <b>' + fmt(stock) + '</b> in stock' +
-      (stock > 0 ? ' (<b style="color:#34d399">' + (a.units / stock * 100).toFixed(1) + '%</b> of stock cleared)' : '') + '. ' +
-      (stock > 0 && a.units < stock * 0.2 ? 'Most stock is still sitting — the offers aren\'t clearing dead stock fast enough; push the movers harder or revisit price.' : 'Keep the movers running and feed slow dead stock into the offer that clears fastest.') +
-      '</div>';
-  }
-  renderSingle({ region: 'Sinza', color: '#818cf8', stock: OA.totalSinzaStock,
-    sources: [{ headers: OA.sinzaComboHeaders, rows: OA.sinzaCombos }, { headers: OA.sinzaSinglesHeaders, rows: OA.sinzaSingles }, { headers: OA.sinzaSpecialHeaders, rows: OA.sinzaSpecials }],
-    chips: 'oa-cmp-chips-sinza', chart: 'oa-cmp-chart-sinza', insight: 'oa-cmp-insight-sinza' });
-  renderSingle({ region: 'Uganda', color: '#fb923c', stock: OA.totalUgandaStock,
-    sources: [{ headers: OA.ugComboHeaders, rows: OA.ugCombos }, { headers: OA.ugSinglesHeaders, rows: OA.ugSingles }],
-    chips: 'oa-cmp-chips-uganda', chart: 'oa-cmp-chart-uganda', insight: 'oa-cmp-insight-uganda' });
-})();
-</script>
 
 </body>
 </html>

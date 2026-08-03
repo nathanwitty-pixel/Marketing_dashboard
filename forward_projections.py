@@ -243,6 +243,16 @@ def update_weekly_history():
     weeks = [w for w in weeks if w.get("weekStart") != entry["weekStart"]]
     weeks.append(entry)
     weeks.sort(key=lambda w: w.get("weekStart", ""))
+    # Drop hollow weeks: a later week whose cumulative salesBags did not advance
+    # past the previous week carries no new data (a new calendar week ran on a
+    # stale sheet, e.g. "Wk 2 Aug" duplicating Wk 1's total). Keep only weeks that
+    # actually moved the cumulative forward; the week reappears once real data lands.
+    _clean = []
+    for w in weeks:
+        if _clean and w.get("salesBags", 0) <= _clean[-1].get("salesBags", 0):
+            continue
+        _clean.append(w)
+    weeks = _clean
     weeks = weeks[-16:]
     # Number the weeks 1..N within each month, in date order, so the opening
     # (partial) week is Wk 1 — even when it starts in the previous calendar month

@@ -201,6 +201,41 @@ if prev_month_rec and prev_month_rec.get("recorded_on") and prev_month_weekly:
     except ValueError:
         straddling = False
 
+# Stale-sheet guard: keep the straddle split alive when the calendar has moved
+# past the straddle week but the sheet's weekly total is UNCHANGED — i.e. no new
+# week's data has arrived yet, so all we still have is the straddle week (e.g.
+# data through Aug 1 while the clock already says Aug 3). Anchored in the boundary
+# file so the Weekly-vs-Last-Month split and per-day framing don't collapse.
+_boundary = {}
+try:
+    with open(MONTH_BOUNDARY_FILE) as _bf:
+        _boundary = json.load(_bf)
+except (ValueError, OSError):
+    _boundary = {}
+_anchor = _boundary.get("straddle_anchor") or {}
+
+if straddling:
+    _anchor = {"week_total": weekly_sales_total,
+               "data_date":  _data_date.isoformat(),
+               "prev_month_weekly": prev_month_weekly}
+elif (_anchor and prev_month_weekly
+      and _anchor.get("week_total") == weekly_sales_total
+      and weekly_sales_total > prev_month_weekly):
+    straddling = True
+    try:
+        _data_date = datetime.date.fromisoformat(_anchor["data_date"])
+    except (ValueError, KeyError):
+        pass
+else:
+    _anchor = {}   # a new week's data has replaced the straddle week → drop the anchor
+
+_boundary["straddle_anchor"] = _anchor
+try:
+    with open(MONTH_BOUNDARY_FILE, "w") as _bf:
+        json.dump(_boundary, _bf, indent=2)
+except OSError:
+    pass
+
 if straddling:
     carryover_bags    = prev_month_weekly                              # last month's part of this week
     carryover_date    = prev_month_rec.get("recorded_on", "")
