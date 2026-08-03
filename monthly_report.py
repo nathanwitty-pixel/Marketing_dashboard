@@ -232,6 +232,20 @@ ug_combos_l  = _offers("ugComboHeaders",  "ugCombos")
 ug_singles_l = _offers("ugSinglesHeaders", "ugSingles")
 ug_off_units, ug_off_value, ug_off_avg = _agg_offers(ug_combos_l + ug_singles_l)
 
+# Judgment: was movement dead-stock clearance (offer/price) or marketing posting?
+# posting_pct = the region's posting sales-achieved %; cleared = units moved / stock.
+sz_cleared = (sz_off_units / sz_stock * 100) if sz_stock else 0
+ug_cleared = (ug_off_units / ug_stock * 100) if ug_stock else 0
+def _cause(region, units, cleared, posting_pct):
+    lead = "marketing posting" if posting_pct >= cleared else "the offer/price clearing dead stock"
+    tail = (" — but both are modest, so plenty of dead stock is still stuck."
+            if (cleared < 40 and posting_pct < 60) else ".")
+    return (f"<b>{region}</b> moved <b>{fmt(units)} bags</b> — <b>{cleared:.1f}% of its stock</b> cleared, "
+            f"with posting sales-achieved at <b>{pct(posting_pct)}</b>. The bigger lever was "
+            f"<b>{lead}</b>{tail}")
+sz_judge = _cause("Sinza", sz_off_units, sz_cleared, sz_mo_mkt)
+ug_judge = _cause("Uganda", ug_off_units, ug_cleared, ug_mo_mkt)
+
 # ── Not-on-offer stock — the dead stock marketing must move ───
 def _nested(block, key):
     m = re.search(rf'\b{key}"?\s*:\s*(\{{.*\}}),?\s*\n', block)
@@ -365,7 +379,8 @@ sz_ug_offer_block = (
     '<div class="row"><div class="tag insight">Sinza &amp; Uganda offers</div>'
     f'<p><b>Sinza</b> ran <b>{len(sz_combos_l)} combos</b>, {len(sz_singles_l)} singles and {len(sz_special_l)} specials, moving <b>{fmt(sz_off_units)} bags</b> (value {fmt(sz_off_value)}) against {fmt(sz_stock)} in stock. '
     f'<b>Uganda</b> ran <b>{len(ug_combos_l)} combos</b> and {len(ug_singles_l)} singles, moving <b>{fmt(ug_off_units)} bags</b> (value {fmt(ug_off_value)}) against {fmt(ug_stock)} in stock. '
-    'Both are clearing only a thin slice of their offer stock — the same dead-stock problem as Kenya, at smaller scale.</p></div>'
+    'Both are clearing only a thin slice of their offer stock — the same dead-stock problem as Kenya, at smaller scale.</p>'
+    f'<p style="font-size:0.84rem;color:#cbd5e1;margin-top:0.5rem"><b style="color:#a78bfa">Dead stock or marketing?</b> {sz_judge} {ug_judge}</p></div>'
 )
 
 # Focus on moving the not-on-offer bags, across the three posting lenses (Section 4)
@@ -452,8 +467,12 @@ body = f"""
 
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#a78bfa">3</div><h2>Offer Type Analysis</h2></div>
-    <div class="chart-cap">Each offer — units moved (amber = combo, violet = power deal)</div>
+    <div class="chart-cap">Kenya — each offer, units moved (amber = combo, violet = power deal)</div>
     <div class="chart-wrap" style="height:420px"><canvas id="offer-chart"></canvas></div>
+    <div class="chart-cap">Sinza — each offer, units moved (indigo = combo, cyan = single, pink = special)</div>
+    <div class="chart-wrap" style="height:300px"><canvas id="offer-sinza-chart"></canvas></div>
+    <div class="chart-cap">Uganda — best vs least-moving offer</div>
+    <div class="chart-wrap" style="height:190px"><canvas id="offer-uganda-chart"></canvas></div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
       <p>Across <b>{combos} combos and {deals} power deals</b> (Kenya), the two offer types cleared stock very differently: <b>combos moved {fmt(combo_units)} bags</b> (KES {fmt(combo_value)}) while <b>power deals moved {fmt(deal_units)} bags</b> (KES {fmt(deal_value)}). <b>{offer_more_units.capitalize()}</b> shifted the most stock; <b>{offer_more_value}</b> made the most money.</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
@@ -507,7 +526,11 @@ _rpt = {
                           "stock": _np_ps.get(str(t.get("name", "")).strip().upper(), {}).get("stock", 0)}
                          for t in np_targets]},
     "offer": {"items": [{"name": o["name"], "units": o["units"], "type": "combo"} for o in combo_offers]
-                     + [{"name": o["name"], "units": o["units"], "type": "deal"} for o in deal_offers]},
+                     + [{"name": o["name"], "units": o["units"], "type": "deal"} for o in deal_offers],
+              "sinza": [{"name": o["name"], "units": o["units"], "type": "combo"} for o in sz_combos_l]
+                     + [{"name": o["name"], "units": o["units"], "type": "single"} for o in sz_singles_l]
+                     + [{"name": o["name"], "units": o["units"], "type": "special"} for o in sz_special_l],
+              "uganda": [{"name": o["name"], "units": o["units"]} for o in (ug_combos_l + ug_singles_l)]},
     "post": {"ke": ke_mo_mkt, "sz": sz_mo_mkt, "ug": ug_mo_mkt,
              "posted": posted, "notposted": notposted,
              "keNotOffer": ke_notoffer_stock, "szNotOffer": sz_notoffer_stock, "ugNotOffer": ug_notoffer_stock},
@@ -602,6 +625,39 @@ chart_js = r"""<script>
           tooltip:{ callbacks:{ label:function(c){ return money(c.parsed.x)+' units ('+(items[c.dataIndex].type === 'combo' ? 'combo' : 'power deal')+')'; } } } },
         scales:{ x:{ grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
                  y:{ grid:{display:false}, ticks:{ font:{size:10} } } } } });
+  })();
+
+  // 3b. Offer Type — Sinza, each offer coloured by type (compare within Sinza)
+  (function(){
+    var el = document.getElementById('offer-sinza-chart'); if (!el) return;
+    var items = ((RPT.offer.sinza)||[]).slice().sort(function(a,b){ return b.units - a.units; });
+    if (!items.length){ el.parentNode.style.display='none'; return; }
+    var col = { combo:'#818cf8', single:'#22d3ee', special:'#f472b6' };
+    new Chart(el, { type:'bar', plugins:[VAL],
+      data:{ labels:items.map(function(x){return x.name;}), datasets:[
+        { label:'Units moved', data:items.map(function(x){return x.units;}),
+          backgroundColor:items.map(function(x){ return col[x.type] || '#818cf8'; }), borderRadius:3 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ label:function(c){ return money(c.parsed.x)+' units ('+items[c.dataIndex].type+')'; } } } },
+        scales:{ x:{ grid:{color:GRID} }, y:{ grid:{display:false}, ticks:{ font:{size:10} } } } } });
+  })();
+
+  // 3c. Offer Type — Uganda, best vs least-moving offer
+  (function(){
+    var el = document.getElementById('offer-uganda-chart'); if (!el) return;
+    var items = ((RPT.offer.uganda)||[]).slice().filter(function(x){ return x.units > 0; }).sort(function(a,b){ return b.units - a.units; });
+    if (!items.length){ el.parentNode.style.display='none'; return; }
+    var rows = (items.length > 1) ? [items[0], items[items.length-1]] : [items[0]];
+    new Chart(el, { type:'bar', plugins:[VAL],
+      data:{ labels:rows.map(function(x){return x.name;}), datasets:[
+        { label:'Units moved', data:rows.map(function(x){return x.units;}),
+          backgroundColor:rows.map(function(x,i){ return i===0 ? '#34d399' : '#f87171'; }), borderRadius:3 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ label:function(c){ return money(c.parsed.x)+' units'; },
+            afterLabel:function(c){ return c.dataIndex===0 ? 'Best mover' : 'Least mover'; } } } },
+        scales:{ x:{ grid:{color:GRID} }, y:{ grid:{display:false}, ticks:{ font:{size:10} } } } } });
   })();
 
   // 4a. Posting — sales-achieved % by region

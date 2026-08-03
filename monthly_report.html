@@ -123,13 +123,17 @@
 
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#a78bfa">3</div><h2>Offer Type Analysis</h2></div>
-    <div class="chart-cap">Each offer — units moved (amber = combo, violet = power deal)</div>
+    <div class="chart-cap">Kenya — each offer, units moved (amber = combo, violet = power deal)</div>
     <div class="chart-wrap" style="height:420px"><canvas id="offer-chart"></canvas></div>
+    <div class="chart-cap">Sinza — each offer, units moved (indigo = combo, cyan = single, pink = special)</div>
+    <div class="chart-wrap" style="height:300px"><canvas id="offer-sinza-chart"></canvas></div>
+    <div class="chart-cap">Uganda — best vs least-moving offer</div>
+    <div class="chart-wrap" style="height:190px"><canvas id="offer-uganda-chart"></canvas></div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
       <p>Across <b>10 combos and 10 power deals</b> (Kenya), the two offer types cleared stock very differently: <b>combos moved 2,159 bags</b> (KES 9,344,041) while <b>power deals moved 3,892 bags</b> (KES 7,452,800). <b>Power deals</b> shifted the most stock; <b>combos</b> made the most money.</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
       <p>It's a price-point story: combos averaged <b>KES 4,439</b> per offer vs power deals <b>KES 1,800</b>. The cheaper <b>power deals</b> clear more volume, so <b>dead stock moves fastest through power deals</b> — yet <b>4,975 bags</b> remain in Kenya offer stock (plus 633 Sinza, 407 Uganda), so the mix still isn't drawing inventory down fast enough.</p></div>
-    <div class="row"><div class="tag insight">Sinza &amp; Uganda offers</div><p><b>Sinza</b> ran <b>10 combos</b>, 10 singles and 0 specials, moving <b>206 bags</b> (value 983,844) against 633 in stock. <b>Uganda</b> ran <b>16 combos</b> and 0 singles, moving <b>89 bags</b> (value 6,550,000) against 407 in stock. Both are clearing only a thin slice of their offer stock — the same dead-stock problem as Kenya, at smaller scale.</p></div>
+    <div class="row"><div class="tag insight">Sinza &amp; Uganda offers</div><p><b>Sinza</b> ran <b>10 combos</b>, 10 singles and 0 specials, moving <b>206 bags</b> (value 983,844) against 633 in stock. <b>Uganda</b> ran <b>16 combos</b> and 0 singles, moving <b>89 bags</b> (value 6,550,000) against 407 in stock. Both are clearing only a thin slice of their offer stock — the same dead-stock problem as Kenya, at smaller scale.</p><p style="font-size:0.84rem;color:#cbd5e1;margin-top:0.5rem"><b style="color:#a78bfa">Dead stock or marketing?</b> <b>Sinza</b> moved <b>206 bags</b> — <b>32.5% of its stock</b> cleared, with posting sales-achieved at <b>50.7%</b>. The bigger lever was <b>marketing posting</b> — but both are modest, so plenty of dead stock is still stuck. <b>Uganda</b> moved <b>89 bags</b> — <b>21.9% of its stock</b> cleared, with posting sales-achieved at <b>19.2%</b>. The bigger lever was <b>the offer/price clearing dead stock</b> — but both are modest, so plenty of dead stock is still stuck.</p></div>
     <div class="row"><div class="tag rec">Recommendation</div>
       <div class="recs">
         <div class="rec-item"><span class="badge start">Start</span><span>Routing the <b>slowest dead stock through power deals</b> (the higher-volume clearer) and keeping premium movers in <b>combos</b> for margin.</span></div>
@@ -167,7 +171,7 @@
   <div class="foot">Denri Africa · Marketing Analytics — July 2026 report. Figures from the live dashboards (Current Performance, New Products, Offer Type Analysis, Posting Yields).</div>
 
 </div>
-<script>const RPT = {"cp": {"sold": 16680.0, "gap": 6552.0, "target": 23232.0, "achievedPct": 71.79752066115702}, "np": {"targets": [{"name": "AMORA", "sold": 1.0, "remaining": 49.0, "posts": 26.0, "stock": 55.0}, {"name": "IMANI", "sold": 6.0, "remaining": 74.0, "posts": 9.0, "stock": 174.0}, {"name": "LAMORA", "sold": 125.0, "remaining": 75.0, "posts": 104.0, "stock": 109.0}, {"name": "LOOP BP", "sold": 88.0, "remaining": 162.0, "posts": 46.0, "stock": 97.0}, {"name": "NALA", "sold": 44.0, "remaining": 56.0, "posts": 43.0, "stock": 74.0}, {"name": "TAJI", "sold": 46.0, "remaining": 54.0, "posts": 14.0, "stock": 56.0}, {"name": "ZULA", "sold": 100.0, "remaining": 50.0, "posts": 50.0, "stock": 151.0}]}, "offer": {"items": [{"name": "ELYSE / AMAYA + ZIPPED/ LUNCHSET/ NIZANA /MOON", "units": 508.0, "type": "combo"}, {"name": "ANTITHEFT+MAN BAG/NIZANA", "units": 286.0, "type": "combo"}, {"name": "SAFIRI + STANDARD/ ANTITHEFT", "units": 284.0, "type": "combo"}, {"name": "JUMBO +MEGA", "units": 216.0, "type": "combo"}, {"name": "SARAI + PIONEER/CODE 3", "units": 188.0, "type": "combo"}, {"name": "PRIME + MAN BAG / NIZANA/ MOON", "units": 150.0, "type": "combo"}, {"name": "JUMBO + FABELA/ LIAM + MAN BAG / MINI UMBRA", "units": 213.0, "type": "combo"}, {"name": "BONITA + MANBAG", "units": 118.0, "type": "combo"}, {"name": "LOLA +MINI ZURI/TRECENTO", "units": 112.0, "type": "combo"}, {"name": "BABY BAG +LIAM", "units": 84.0, "type": "combo"}, {"name": "FABELA", "units": 839.0, "type": "deal"}, {"name": "JUMBO", "units": 798.0, "type": "deal"}, {"name": "BIG MAN BAG", "units": 412.0, "type": "deal"}, {"name": "ZANE MAN", "units": 360.0, "type": "deal"}, {"name": "ARIA SLING", "units": 318.0, "type": "deal"}, {"name": "CATHY HANDBAG", "units": 280.0, "type": "deal"}, {"name": "MONAH BP", "units": 275.0, "type": "deal"}, {"name": "PIONEER", "units": 257.0, "type": "deal"}, {"name": "CLAIRE HANDBAG", "units": 206.0, "type": "deal"}, {"name": "MINI MAYA", "units": 147.0, "type": "deal"}]}, "post": {"ke": 89.7, "sz": 50.7, "ug": 19.2, "posted": 4975.0, "notposted": 5602.0, "keNotOffer": 5602.0, "szNotOffer": 439.0, "ugNotOffer": 235.0}};</script>
+<script>const RPT = {"cp": {"sold": 16680.0, "gap": 6552.0, "target": 23232.0, "achievedPct": 71.79752066115702}, "np": {"targets": [{"name": "AMORA", "sold": 1.0, "remaining": 49.0, "posts": 26.0, "stock": 55.0}, {"name": "IMANI", "sold": 6.0, "remaining": 74.0, "posts": 9.0, "stock": 174.0}, {"name": "LAMORA", "sold": 125.0, "remaining": 75.0, "posts": 104.0, "stock": 109.0}, {"name": "LOOP BP", "sold": 88.0, "remaining": 162.0, "posts": 46.0, "stock": 97.0}, {"name": "NALA", "sold": 44.0, "remaining": 56.0, "posts": 43.0, "stock": 74.0}, {"name": "TAJI", "sold": 46.0, "remaining": 54.0, "posts": 14.0, "stock": 56.0}, {"name": "ZULA", "sold": 100.0, "remaining": 50.0, "posts": 50.0, "stock": 151.0}]}, "offer": {"items": [{"name": "ELYSE / AMAYA + ZIPPED/ LUNCHSET/ NIZANA /MOON", "units": 508.0, "type": "combo"}, {"name": "ANTITHEFT+MAN BAG/NIZANA", "units": 286.0, "type": "combo"}, {"name": "SAFIRI + STANDARD/ ANTITHEFT", "units": 284.0, "type": "combo"}, {"name": "JUMBO +MEGA", "units": 216.0, "type": "combo"}, {"name": "SARAI + PIONEER/CODE 3", "units": 188.0, "type": "combo"}, {"name": "PRIME + MAN BAG / NIZANA/ MOON", "units": 150.0, "type": "combo"}, {"name": "JUMBO + FABELA/ LIAM + MAN BAG / MINI UMBRA", "units": 213.0, "type": "combo"}, {"name": "BONITA + MANBAG", "units": 118.0, "type": "combo"}, {"name": "LOLA +MINI ZURI/TRECENTO", "units": 112.0, "type": "combo"}, {"name": "BABY BAG +LIAM", "units": 84.0, "type": "combo"}, {"name": "FABELA", "units": 839.0, "type": "deal"}, {"name": "JUMBO", "units": 798.0, "type": "deal"}, {"name": "BIG MAN BAG", "units": 412.0, "type": "deal"}, {"name": "ZANE MAN", "units": 360.0, "type": "deal"}, {"name": "ARIA SLING", "units": 318.0, "type": "deal"}, {"name": "CATHY HANDBAG", "units": 280.0, "type": "deal"}, {"name": "MONAH BP", "units": 275.0, "type": "deal"}, {"name": "PIONEER", "units": 257.0, "type": "deal"}, {"name": "CLAIRE HANDBAG", "units": 206.0, "type": "deal"}, {"name": "MINI MAYA", "units": 147.0, "type": "deal"}], "sinza": [{"name": "JUMBO + MEGA", "units": 50.0, "type": "combo"}, {"name": "SARAI + ANTITHEFT +WASHBAG", "units": 51.0, "type": "combo"}, {"name": "BONITA + REMI", "units": 31.0, "type": "combo"}, {"name": "AURORA + AVANNA + MOONBAG", "units": 12.0, "type": "combo"}, {"name": "STANDARD + MANBAG", "units": 4.0, "type": "combo"}, {"name": "ALPHA  + DOUBLEPRESS", "units": 2.0, "type": "combo"}, {"name": "GYMBAG + FANNYPACK", "units": 2.0, "type": "combo"}, {"name": "JAMELA + LUNCHSET", "units": 2.0, "type": "combo"}, {"name": "SCHOOL BAG + SCHOOL BAG", "units": 2.0, "type": "combo"}, {"name": "CESS + MINIZURI", "units": 0.0, "type": "combo"}, {"name": "FANNY PACK", "units": 18.0, "type": "single"}, {"name": "JADE", "units": 11.0, "type": "single"}, {"name": "BONITA", "units": 5.0, "type": "single"}, {"name": "ELYSE", "units": 4.0, "type": "single"}, {"name": "FABELA", "units": 4.0, "type": "single"}, {"name": "WASHBAG", "units": 4.0, "type": "single"}, {"name": "MEGA", "units": 2.0, "type": "single"}, {"name": "AURORA", "units": 1.0, "type": "single"}, {"name": "LEGACY", "units": 1.0, "type": "single"}, {"name": "IMANI", "units": 0.0, "type": "single"}], "uganda": [{"name": "ANTITHEFT", "units": 18.0}, {"name": "JUMBO", "units": 15.0}, {"name": "KAI", "units": 15.0}, {"name": "SATCHEL", "units": 12.0}, {"name": "MINI ZURI", "units": 8.0}, {"name": "KAYLA", "units": 7.0}, {"name": "NEO MAN", "units": 6.0}, {"name": "AVANA HB", "units": 2.0}, {"name": "MINI SCHOOL", "units": 2.0}, {"name": "SKYE HB", "units": 2.0}, {"name": "BIG MAN BAG", "units": 1.0}, {"name": "NIZANA", "units": 1.0}, {"name": "MANDY HB", "units": 0.0}, {"name": "MOON BAG", "units": 0.0}, {"name": "PIONEER", "units": 0.0}, {"name": "zane man", "units": 0.0}]}, "post": {"ke": 89.7, "sz": 50.7, "ug": 19.2, "posted": 4975.0, "notposted": 5602.0, "keNotOffer": 5602.0, "szNotOffer": 439.0, "ugNotOffer": 235.0}};</script>
 <script>
 (function(){
   if (typeof Chart === 'undefined') return;
@@ -256,6 +260,39 @@
           tooltip:{ callbacks:{ label:function(c){ return money(c.parsed.x)+' units ('+(items[c.dataIndex].type === 'combo' ? 'combo' : 'power deal')+')'; } } } },
         scales:{ x:{ grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
                  y:{ grid:{display:false}, ticks:{ font:{size:10} } } } } });
+  })();
+
+  // 3b. Offer Type — Sinza, each offer coloured by type (compare within Sinza)
+  (function(){
+    var el = document.getElementById('offer-sinza-chart'); if (!el) return;
+    var items = ((RPT.offer.sinza)||[]).slice().sort(function(a,b){ return b.units - a.units; });
+    if (!items.length){ el.parentNode.style.display='none'; return; }
+    var col = { combo:'#818cf8', single:'#22d3ee', special:'#f472b6' };
+    new Chart(el, { type:'bar', plugins:[VAL],
+      data:{ labels:items.map(function(x){return x.name;}), datasets:[
+        { label:'Units moved', data:items.map(function(x){return x.units;}),
+          backgroundColor:items.map(function(x){ return col[x.type] || '#818cf8'; }), borderRadius:3 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ label:function(c){ return money(c.parsed.x)+' units ('+items[c.dataIndex].type+')'; } } } },
+        scales:{ x:{ grid:{color:GRID} }, y:{ grid:{display:false}, ticks:{ font:{size:10} } } } } });
+  })();
+
+  // 3c. Offer Type — Uganda, best vs least-moving offer
+  (function(){
+    var el = document.getElementById('offer-uganda-chart'); if (!el) return;
+    var items = ((RPT.offer.uganda)||[]).slice().filter(function(x){ return x.units > 0; }).sort(function(a,b){ return b.units - a.units; });
+    if (!items.length){ el.parentNode.style.display='none'; return; }
+    var rows = (items.length > 1) ? [items[0], items[items.length-1]] : [items[0]];
+    new Chart(el, { type:'bar', plugins:[VAL],
+      data:{ labels:rows.map(function(x){return x.name;}), datasets:[
+        { label:'Units moved', data:rows.map(function(x){return x.units;}),
+          backgroundColor:rows.map(function(x,i){ return i===0 ? '#34d399' : '#f87171'; }), borderRadius:3 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ label:function(c){ return money(c.parsed.x)+' units'; },
+            afterLabel:function(c){ return c.dataIndex===0 ? 'Best mover' : 'Least mover'; } } } },
+        scales:{ x:{ grid:{color:GRID} }, y:{ grid:{display:false}, ticks:{ font:{size:10} } } } } });
   })();
 
   // 4a. Posting — sales-achieved % by region
