@@ -24,6 +24,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PORT     = 8765
 
 SCRIPTS = [
+    # Refresh the real weekly bags from Postgres FIRST — current_performance.py
+    # reads weekly_sales_db.json. No-ops safely if the DB is unreachable.
+    ("Weekly Sales (Postgres)", "weekly_sales.py"),
     ("Current Performance",    "current_performance.py"),
     ("Forward Projections",    "forward_projections.py"),
     ("New Products Analytics", "new_products.py"),
@@ -140,7 +143,8 @@ def start_daily_snapshot():
 # refresh also re-runs forward_projections.py — this picks up manual edits
 # to corporate_bags / bare_minimum at the top of that script.
 SCRIPT_MAP = {
-    "current_performance.html":                             ["current_performance.py",
+    "current_performance.html":                             ["weekly_sales.py",
+                                                             "current_performance.py",
                                                              "forward_projections.py"],
     "forward_projections.html":                             ["forward_projections.py"],
     "new_products.html":                                    ["new_products.py"],
