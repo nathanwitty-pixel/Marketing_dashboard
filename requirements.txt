@@ -1,3 +1,9 @@
 gspread>=6.0.0
 google-auth>=2.20.0
 google-auth-oauthlib>=1.0.0
+
+# Postgres source of truth (migrating the dashboard off Google Sheets, weekly first)
+SQLAlchemy>=2.0
+psycopg2-binary>=2.9
+pandas>=2.0
+python-dotenv>=1.0
