@@ -70,6 +70,23 @@ def week_start_of(d):
     """Sunday that starts the Sun–Sat sales week containing d."""
     return d - datetime.timedelta(days=(d.weekday() + 1) % 7)
 
+def weekly_from_db(sheet_value):
+    """Prefer the real current-week bags from Postgres (weekly_sales_db.json,
+    written by weekly_sales.py) over the WEEKLY_SALES sheet tab, which has been
+    unreliable (whole-month totals). Falls back to the sheet if the file is
+    missing/unreadable or is for a different week."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "weekly_sales_db.json")
+    if not os.path.exists(path):
+        return sheet_value
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        if data.get("weekStart", "") == week_start_of(datetime.date.today()).isoformat():
+            return int(round(float(data.get("weeklyBags", sheet_value))))
+    except (ValueError, OSError, KeyError, TypeError):
+        pass
+    return sheet_value
+
 def update_month_boundary(weekly_total):
     """Update the rolling snapshot.
     Returns (carryover_bags | None, captured_on, prev_month_record)."""
@@ -181,6 +198,9 @@ def fetch_monthly_target():
 print("Fetching data from Google Sheets...")
 print(f"  Previous snapshot    : {previous_sales_bags:,} bags")
 total_target, total_sales, total_deficit, weekly_sales_total = fetch_monthly_target()
+# Real current-week bags from Postgres when available (see weekly_sales.py);
+# falls back to the WEEKLY_SALES sheet tab otherwise.
+weekly_sales_total = weekly_from_db(weekly_sales_total)
 
 # Month-boundary handling: split the straddling week's total by month.
 carryover_bags, carryover_date, prev_month_rec = update_month_boundary(weekly_sales_total)

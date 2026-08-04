@@ -1,60 +1,56 @@
-"""lib/queries.py — SQL for the Postgres source of truth.
+"""lib/queries.py — SQL for the Litmus Postgres source of truth (Odoo POS).
 
-WEEKLY_BAGS_SOLD below is a TEMPLATE. It encodes the "bags sold" rules the
-Streamlit report already uses, but the table/column names are placeholders,
-because the schema lives in your Streamlit project, not here. To finish the
-weekly fix, do ONE of:
+Bags sold come from pos_order_line (the tills). The rules match the Streamlit
+report so figures agree:
+  • bags  = SUM(qty). POS refunds are negative qty lines, so this nets refunds.
+  • value = SUM(price_subtotal_incl), tax-inclusive.
+  • combos/bundles excluded: native is_combo_line / sub_product_line flags AND
+    any product name containing '+'.
+  • program-reward (free) lines excluded.
+  • Gift Bag, delivery, customisation and straps excluded by name.
+  • order states done / invoiced / paid (cancelled orders never counted).
+  • dates bucketed in Africa/Nairobi local time (date_order is stored UTC).
 
-  (a) paste your real query here (e.g. the weekly slice of BAGS_SOLD_REPORT /
-      PRODUCT_LINE_ITEMS from your lib/queries.py), or
-  (b) tell me the sale-line table + column names and I'll fill the template.
-
-The rules baked in (matching your report, so the weekly figure agrees with it):
-  • bags sold = summed line quantity, NET of refunds (returns count negative)
-  • combos/bundles excluded  (product name contains '+')
-  • Gift Bag, delivery/customisation charges, straps/spares excluded
-  • only lines with a real product record
-  • date filter is on the sale/order date, inclusive of both ends
+NOTE (basis): value is each order's own currency total (Sinza/Uganda not yet
+converted to KES); the BAGS figure is currency-agnostic and is what the weekly
+card uses. Master-list-only scoping isn't applied yet — that lands when we
+migrate the rest of the dashboard.
 """
 
-# ── EDIT ME: point at your real sale-line table & columns ─────
-# Placeholders are wrapped in {{ }} so they're easy to find:
-#   {{sale_line}}   the per-line sales table          (e.g. sale_order_line, pos_order_line)
-#   {{qty}}         units on the line                 (e.g. qty, quantity, product_uom_qty)
-#   {{value}}       line total incl. tax in KES       (e.g. price_total, total)
-#   {{product}}     product display name              (e.g. p.name, product_name)
-#   {{sale_date}}   the date to filter/bucket on      (e.g. o.date_order::date)
-WEEKLY_BAGS_SOLD = """
-SELECT
-    {{sale_date}}                          AS sale_date,
-    {{product}}                            AS product,
-    SUM({{qty}})::numeric                   AS bags,
-    SUM({{value}})::numeric                 AS value
-FROM {{sale_line}}
-WHERE {{sale_date}} BETWEEN :start_date AND :end_date
-  AND {{product}} IS NOT NULL
-  AND {{product}} NOT ILIKE '%+%'                      -- combos/bundles excluded
-  AND {{product}} NOT ILIKE 'gift bag%'                -- gift bag excluded
-  AND {{product}} NOT ILIKE '%delivery%'
-  AND {{product}} NOT ILIKE '%customi%'
-  AND {{product}} NOT ILIKE '%strap%'
-GROUP BY 1, 2
+# Shared WHERE body so TOTAL and the per-product detail can't drift apart.
+_BAGS_WHERE = """
+    (o.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date
+        BETWEEN :start_date AND :end_date
+  AND o.state IN ('done', 'invoiced', 'paid')
+  AND l.product_id IS NOT NULL
+  AND COALESCE(l.is_combo_line, false)      = false
+  AND COALESCE(l.sub_product_line, false)   = false
+  AND COALESCE(l.is_program_reward, false)  = false
+  AND l.full_product_name NOT ILIKE '%+%'
+  AND l.full_product_name NOT ILIKE 'gift bag%'
+  AND l.full_product_name NOT ILIKE '%delivery%'
+  AND l.full_product_name NOT ILIKE '%customi%'
+  AND l.full_product_name NOT ILIKE '%strap%'
+"""
+
+# One number: the week's total bags + value (used by the Weekly Sales card).
+WEEKLY_BAGS_TOTAL = f"""
+SELECT COALESCE(SUM(l.qty), 0)::numeric              AS bags,
+       COALESCE(SUM(l.price_subtotal_incl), 0)::numeric AS value,
+       COUNT(*)                                       AS lines
+FROM pos_order_line l
+JOIN pos_order o ON o.id = l.order_id
+WHERE {_BAGS_WHERE}
+"""
+
+# Per-product detail for the same window (bags + value per product name).
+WEEKLY_BAGS_SOLD = f"""
+SELECT l.full_product_name                            AS product,
+       SUM(l.qty)::numeric                            AS bags,
+       SUM(l.price_subtotal_incl)::numeric            AS value
+FROM pos_order_line l
+JOIN pos_order o ON o.id = l.order_id
+WHERE {_BAGS_WHERE}
+GROUP BY l.full_product_name
 ORDER BY bags DESC
-"""
-
-# A one-number version — the same rules, just the weekly total (used by the
-# dashboard's Weekly Sales card). Kept separate so the detail query can grow.
-WEEKLY_BAGS_TOTAL = """
-SELECT
-    COALESCE(SUM({{qty}}), 0)::numeric      AS bags,
-    COALESCE(SUM({{value}}), 0)::numeric    AS value,
-    COUNT(*)                                AS lines
-FROM {{sale_line}}
-WHERE {{sale_date}} BETWEEN :start_date AND :end_date
-  AND {{product}} IS NOT NULL
-  AND {{product}} NOT ILIKE '%+%'
-  AND {{product}} NOT ILIKE 'gift bag%'
-  AND {{product}} NOT ILIKE '%delivery%'
-  AND {{product}} NOT ILIKE '%customi%'
-  AND {{product}} NOT ILIKE '%strap%'
 """

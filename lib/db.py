@@ -21,38 +21,50 @@ from functools import lru_cache
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import URL, Engine
 
 load_dotenv()
 
 
-def _dsn() -> str | None:
-    """Build a SQLAlchemy DSN from the environment, or return None if unset."""
-    url = os.getenv("DATABASE_URL")
-    if url:
-        # accept plain postgres:// and normalise to the psycopg2 driver
-        if url.startswith("postgres://"):
-            url = "postgresql+psycopg2://" + url[len("postgres://"):]
-        elif url.startswith("postgresql://"):
-            url = "postgresql+psycopg2://" + url[len("postgresql://"):]
-        return url
-    host = os.getenv("PGHOST")
+def _env(*names: str, default: str | None = None) -> str | None:
+    for n in names:
+        v = os.getenv(n)
+        if v:
+            return v
+    return default
+
+
+def _url():
+    """Build a SQLAlchemy URL from the environment, or None if unset.
+    Accepts DATABASE_URL, or the individual PG*/DB_* pieces (DB_* matches the
+    Streamlit app's .env). URL.create handles any special chars in the password."""
+    dsn = os.getenv("DATABASE_URL")
+    if dsn:
+        if dsn.startswith("postgres://"):
+            dsn = "postgresql+psycopg2://" + dsn[len("postgres://"):]
+        elif dsn.startswith("postgresql://") and "+psycopg2" not in dsn:
+            dsn = "postgresql+psycopg2://" + dsn[len("postgresql://"):]
+        return dsn
+    host = _env("PGHOST", "DB_HOST")
     if not host:
         return None
-    port = os.getenv("PGPORT", "5432")
-    name = os.getenv("PGDATABASE", "")
-    user = os.getenv("PGUSER", "")
-    pwd = os.getenv("PGPASSWORD", "")
-    return f"postgresql+psycopg2://{user}:{pwd}@{host}:{port}/{name}"
+    return URL.create(
+        "postgresql+psycopg2",
+        username=_env("PGUSER", "DB_USER", default=""),
+        password=_env("PGPASSWORD", "DB_PASSWORD", default=""),
+        host=host,
+        port=int(_env("PGPORT", "DB_PORT", default="5432")),
+        database=_env("PGDATABASE", "DB_NAME", default=""),
+    )
 
 
 @lru_cache(maxsize=1)
 def get_engine() -> Engine | None:
-    dsn = _dsn()
-    if not dsn:
+    url = _url()
+    if url is None:
         return None
     # pool_pre_ping avoids stale-connection errors on a long-lived generator run
-    return create_engine(dsn, pool_pre_ping=True, future=True)
+    return create_engine(url, pool_pre_ping=True, future=True)
 
 
 def check_connection() -> tuple[bool, str]:
