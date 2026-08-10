@@ -96,6 +96,24 @@ if f"{year}-{_fin_num:02d}" in FINALIZED_MONTHS:
     print("  The next reporting month (e.g. August) will generate as a new report.")
     raise SystemExit(0)
 
+# Previous month's weekly climb, for the History-style comparison overlay on the
+# Current Performance chart (this month solid, last month dashed).
+_prev_weekly, _prev_label = [], ""
+try:
+    _pm_num = _fin_num - 1 if _fin_num > 1 else 12
+    _pm_year = year if _fin_num > 1 else year - 1
+    _pm_key = f"{_pm_year}-{_pm_num:02d}"
+    _hist_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              "monthly_report_history.json")
+    with open(_hist_path, encoding="utf-8") as _pf:
+        _pm_snap = json.load(_pf).get(_pm_key)
+    if _pm_snap:
+        _prev_weekly = [{"label": w.get("label", ""), "pct": num(w.get("pct"))}
+                        for w in _pm_snap.get("currentPerformance", {}).get("weekly", [])]
+        _prev_label = f"{_pm_snap.get('month', '')} {_pm_snap.get('year', '')}".strip()
+except (ValueError, OSError):
+    pass
+
 # Current performance
 total_target = num(gstr(proj, "totalTarget"))
 total_sales  = num(gstr(proj, "totalSales"))
@@ -585,7 +603,8 @@ body = f"""
 # ── CHART DATA + SCRIPT ───────────────────────────────────────
 _rpt = {
     "cp":   {"sold": total_sales, "gap": gap, "target": total_target, "achievedPct": achieved,
-             "weekly": wk_series},
+             "weekly": wk_series, "prevWeekly": _prev_weekly, "prevLabel": _prev_label,
+             "curLabel": f"{month} {year}"},
     "np":   {"targets": [{"name": t.get("name", ""), "sold": num(t.get("sold")),
                           "remaining": max(num(t.get("remaining")), 0),
                           "posts": _np_ps.get(str(t.get("name", "")).strip().upper(), {}).get("posts", 0),
@@ -690,23 +709,36 @@ chart_js = r"""<script>
   (function(){
     var el = document.getElementById('cp-chart'); if (!el) return;
     var w = RPT.cp.weekly || []; if (!w.length){ el.parentNode.style.display='none'; return; }
+    var series = w.map(function(x){return x.pct;});
+    var pw = RPT.cp.prevWeekly || [];
+    var hasPrev = pw.length > 0;
+    var labels = w.map(function(x){return x.label;});
+    if (pw.length > labels.length) labels = pw.map(function(x){return x.label;});
+    var dsets = [
+      { label: RPT.cp.curLabel || '% of target', data: series,
+        borderColor:'#f59e0b', backgroundColor:'rgba(245,158,11,0.15)', borderWidth:2, fill:true, tension:0.35,
+        pointRadius:4, pointBackgroundColor:'#f59e0b', pointBorderColor:'#0b0d16', pointBorderWidth:1, order:1 } ];
+    if (hasPrev) dsets.push(
+      { label: RPT.cp.prevLabel, data: pw.map(function(x){return x.pct;}),
+        borderColor:'rgba(148,163,184,0.9)', backgroundColor:'transparent', borderWidth:2, borderDash:[5,4],
+        fill:false, tension:0.35, pointRadius:3, pointBackgroundColor:'#94a3b8', pointBorderColor:'#0b0d16', pointBorderWidth:1, order:2 });
     new Chart(el, {
       type:'line',
-      data:{ labels:w.map(function(x){return x.label;}), datasets:[
-        { label:'% of target', data:w.map(function(x){return x.pct;}),
-          borderColor:'#f59e0b', backgroundColor:'rgba(245,158,11,0.15)', borderWidth:2, fill:true, tension:0.35,
-          pointRadius:4, pointBackgroundColor:'#f59e0b', pointBorderColor:'#0b0d16', pointBorderWidth:1 } ] },
+      data:{ labels:labels, datasets:dsets },
       options:{ responsive:true, maintainAspectRatio:false, layout:{ padding:{ top:16 } },
-        plugins:{ legend:{display:false},
+        plugins:{ legend:{ display:hasPrev, labels:{ usePointStyle:true, boxWidth:8, color:'#94a3b8' } },
           tooltip:{ callbacks:{
-            label:function(c){ return 'This week: ' + w[c.dataIndex].pct.toFixed(2) + '% of monthly target'; },
-            afterBody:function(items){ var x = w[items[0].dataIndex];
+            label:function(c){ return c.dataset.label + ': ' + Number(c.parsed.y).toFixed(2) + '% of target'; },
+            afterBody:function(items){ if(!items.length || items[0].datasetIndex!==0) return '';
+              var x = w[items[0].dataIndex]; if(!x) return '';
               return ['Weekly sales: ' + money(x.bags) + ' bags',
-                      'Cumulative to date: ' + x.cum.toFixed(1) + '% of target',
-                      'Remaining to target: ' + Math.max(100 - x.cum, 0).toFixed(1) + ' pts']; } } } },
+                      'Cumulative to date: ' + x.cum.toFixed(1) + '% of target']; },
+            footer:function(){ if(w.length<2) return '';
+              var n=w.length, g=w[n-1].pct-w[n-2].pct;
+              return (g>=0?'▲ +':'▼ ')+g.toFixed(2)+' pts week-on-week ('+w[n-2].label+' → '+w[n-1].label+')'; } } } },
         scales:{ y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ callback:function(v){ return v+'%'; } } },
                  x:{ grid:{display:false} } } },
-      plugins:[LINEVAL, WOW] });
+      plugins:[LINEVAL] });
   })();
 
   // 2 + 2b. New Products — sold/remaining and posts/stock, sortable high↔low
