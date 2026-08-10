@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>History — Denri Africa Marketing Dashboard</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1117; color: #e2e8f0; padding: 2rem; line-height: 1.55; }
+  .wrap { width: 100%; max-width: 960px; margin: 0 auto; }
+
+  /* Header + month switcher */
+  .rpt-head { margin-bottom: 1.4rem; }
+  .rpt-pill { display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg,#10b981,#06b6d4); color: #fff; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.32rem 0.8rem; border-radius: 999px; margin-bottom: 0.7rem; }
+  .rpt-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: #d1fae5; box-shadow: 0 0 0 0 rgba(255,255,255,0.6); animation: pulse 1.9s ease-out infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); } 70% { box-shadow: 0 0 0 6px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
+  .rpt-head h1 { font-size: 1.85rem; font-weight: 800; color: #f8fafc; letter-spacing: -0.01em; }
+  .rpt-head .dek { font-size: 0.9rem; color: #94a3b8; margin-top: 0.35rem; }
+
+  .switcher { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 1.1rem 0 0.4rem; }
+  .switcher .lbl { font-size: 0.64rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; margin-right: 0.2rem; }
+  .mbtn { background: #171a27; border: 1px solid #2d3148; color: #cbd5e1; font-size: 0.8rem; font-weight: 600; padding: 0.4rem 0.85rem; border-radius: 9px; cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
+  .mbtn:hover { border-color: #3d4a5c; color: #f8fafc; }
+  .mbtn.active { background: linear-gradient(135deg,#10b981,#06b6d4); border-color: transparent; color: #fff; }
+  .src-note { font-size: 0.72rem; color: #475569; margin-top: 0.3rem; }
+  .src-note b { color: #6ee7b7; }
+
+  /* Exec headline */
+  .exec { background: linear-gradient(160deg, #1b2333, #171a27); border: 1px solid #2d3148; border-left: 4px solid #34d399; border-radius: 16px; padding: 1.4rem 1.5rem; margin: 1rem 0 1.8rem; }
+  .exec .lbl { font-size: 0.66rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: #6ee7b7; margin-bottom: 0.5rem; }
+  .exec .headline { font-size: 1.12rem; font-weight: 700; color: #f8fafc; }
+  .exec .headline b { color: #facc15; }
+  .exec .as-of { font-size: 0.72rem; color: #64748b; margin-top: 0.7rem; padding-top: 0.6rem; border-top: 1px solid #2d3148; }
+  .exec .as-of b { color: #94a3b8; }
+
+  /* KPI tiles */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 0.8rem; margin-bottom: 1.8rem; }
+  .kpi { background: #1e2130; border: 1px solid #2d3148; border-radius: 12px; padding: 0.9rem 1rem; }
+  .kpi .k-lbl { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #64748b; }
+  .kpi .k-val { font-size: 1.6rem; font-weight: 800; color: #f8fafc; line-height: 1.1; margin-top: 0.2rem; font-variant-numeric: tabular-nums; }
+  .kpi .k-sub { font-size: 0.72rem; color: #94a3b8; margin-top: 0.2rem; }
+  .k-val.amber { color: #fbbf24; } .k-val.red { color: #f87171; } .k-val.green { color: #34d399; } .k-val.cyan { color: #22d3ee; }
+
+  /* Sections */
+  .sec { background: #1e2130; border: 1px solid #2d3148; border-radius: 16px; padding: 1.4rem 1.5rem; margin-bottom: 1.4rem; }
+  .sec.flush { padding: 0; overflow: hidden; }
+  .sec-head { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.4rem; }
+  .sec.flush .sec-head { padding: 1.4rem 1.5rem 0; }
+  .sec-num { width: 30px; height: 30px; flex-shrink: 0; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; color: #0b0d16; }
+  .sec-head h2 { font-size: 1.12rem; font-weight: 700; color: #f8fafc; }
+  .sec-sub { font-size: 0.82rem; color: #94a3b8; margin-bottom: 0.9rem; }
+  .sec.flush .sec-sub { padding: 0 1.5rem; }
+  .sec-sub b { color: #e2e8f0; }
+
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap: 1rem; }
+  .chart-cap { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; margin: 0.8rem 0 0.4rem; font-weight: 700; }
+  .chart-wrap { position: relative; height: 240px; margin: 0.1rem 0 0.4rem; }
+  .chart-wrap.tall { height: 340px; }
+
+  /* Weekly performance table (mirrors the live Current Performance card) */
+  .wp-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; white-space: nowrap; }
+  .wp-table th { text-align: right; padding: 0.55rem 1.5rem; color: #64748b; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 1px solid #2d3148; }
+  .wp-table th:first-child { text-align: left; }
+  .wp-table td { padding: 0.6rem 1.5rem; border-top: 1px solid #2d3148; text-align: right; font-variant-numeric: tabular-nums; }
+  .wp-table td:first-child { text-align: left; }
+  .legend-note { padding: 0.7rem 1.5rem 1.1rem; font-size: 0.72rem; color: #64748b; border-top: 1px solid #2d3148; }
+  .legend-note b { color: #94a3b8; } .legend-note .g { color: #34d399; } .legend-note .r { color: #f87171; }
+
+  .minis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: 0.7rem; margin: 0.4rem 0 0.2rem; }
+  .mini { position: relative; background: #171a27; border: 1px solid #2d3148; border-radius: 13px; padding: 1rem 1.1rem; overflow: hidden; }
+  .mini .bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .mini .m-lbl { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #64748b; }
+  .mini .m-val { font-size: 1.7rem; font-weight: 800; color: #f8fafc; line-height: 1.15; margin: 0.2rem 0 0.15rem; font-variant-numeric: tabular-nums; }
+  .mini .m-sub { font-size: 0.76rem; color: #93c5fd; }
+
+  .sortbar { display: flex; justify-content: flex-end; align-items: center; gap: 0.45rem; margin: 0 0 0.5rem; font-size: 0.72rem; color: #64748b; }
+  .sortbar span { text-transform: uppercase; letter-spacing: 0.06em; }
+  .sortbar select { background: #1e2130; border: 1px solid #2d3148; color: #e2e8f0; padding: 0.28rem 0.55rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer; outline: none; }
+
+  .offer-mix { font-size: 0.75rem; color: #64748b; text-align: center; margin-top: 0.7rem; }
+  .offer-mix b { color: #94a3b8; } .offer-mix b.c { color: #fbbf24; } .offer-mix b.p { color: #c4b5fd; }
+
+  .foot { font-size: 0.72rem; color: #475569; text-align: center; margin-top: 1.4rem; }
+  .empty { background: #1e2130; border: 1px dashed #2d3148; border-radius: 16px; padding: 3rem 2rem; text-align: center; color: #64748b; }
+  .empty h3 { color: #cbd5e1; font-size: 1rem; margin-bottom: 0.4rem; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="rpt-head">
+    <span class="rpt-pill"><span class="dot"></span>History · Stored in Supabase</span>
+    <h1>Reporting History</h1>
+    <div class="dek">Every month backed up to the database — Current Performance, Offer Type Analysis (all locations), New Products &amp; Posting.</div>
+    <div class="switcher" id="switcher"></div>
+    <div class="src-note" id="src-note"></div>
+  </div>
+
+  <div id="report"></div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<!-- HISTORY_DATA_START -->
+<script id="history-data" type="application/json">
+{
+"source": "Supabase",
+"generatedOn": "2026-08-10",
+"months": [
+{
+"key": "2026-08",
+"month": "August",
+"year": 2026,
+"generatedOn": "2026-08-10",
+"monthly": {
+"year": 2026,
+"achieved_pct": 21.59,
+"total_sales": 5015,
+"total_target": 23232,
+"gap": 18217,
+"bare_minimum": 5808,
+"avg_weekly": 1671.67,
+"corporate": 312,
+"forecast": "78.98%",
+"np_count": 7,
+"np_target": 930,
+"np_sales": 118,
+"np_deficit": 812,
+"np_kenya": 126,
+"np_outside": 3,
+"np_posts": 219,
+"combos": 10,
+"power_deals": 10,
+"kenya_combo_units": 893,
+"kenya_combo_value": 3983207,
+"kenya_combo_avg": 4399,
+"kenya_deal_units": 1100,
+"kenya_deal_value": 2372300,
+"kenya_deal_avg": 1970,
+"sinza_units": 80,
+"sinza_value": 367939,
+"sinza_cleared": 14.8,
+"uganda_units": 16,
+"uganda_value": 1211500,
+"uganda_cleared": 2.4,
+"posting_kenya_pct": 80.2,
+"posting_sinza_pct": 7.1,
+"posting_uganda_pct": 2.4,
+"posted_stock": 5075,
+"unposted_stock": 5738,
+"posts_made": 215,
+"notoffer_kenya": 5738,
+"notoffer_sinza": 388,
+"notoffer_uganda": 470,
+"sales_from_posting": 1021,
+"expected_from_posting": 484
+},
+"weekly": [
+{
+"seq": 1,
+"label": "Wk 1",
+"pct": 3.57,
+"cum": 3.57,
+"bags": 830,
+"week_month": null,
+"target_to_beat": null,
+"declined_by": null
+},
+{
+"seq": 2,
+"label": "Wk 2",
+"pct": 17.16,
+"cum": 20.73,
+"bags": 3986,
+"week_month": null,
+"target_to_beat": null,
+"declined_by": null
+},
+{
+"seq": 3,
+"label": "Wk 3",
+"pct": 0.86,
+"cum": 21.59,
+"bags": 199,
+"week_month": null,
+"target_to_beat": null,
+"declined_by": null
+}
+],
+"newProducts": [
+{
+"name": "ZULA",
+"sold": 34,
+"remaining": 116,
+"posts": 54,
+"stock": 218
+},
+{
+"name": "LAMORA",
+"sold": 29,
+"remaining": 171,
+"posts": 54,
+"stock": 129
+},
+{
+"name": "LOOP BP",
+"sold": 26,
+"remaining": 224,
+"posts": 21,
+"stock": 99
+},
+{
+"name": "NALA",
+"sold": 16,
+"remaining": 84,
+"posts": 33,
+"stock": 81
+},
+{
+"name": "TAJI",
+"sold": 10,
+"remaining": 90,
+"posts": 42,
+"stock": 102
+},
+{
+"name": "IMANI",
+"sold": 3,
+"remaining": 77,
+"posts": 0,
+"stock": 179
+},
+{
+"name": "AMORA",
+"sold": 0,
+"remaining": 50,
+"posts": 15,
+"stock": 55
+}
+],
+"offers": [
+{
+"region": "Kenya",
+"name": "Jumbo",
+"offer_type": "deal",
+"units": 343,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "Amaya + Zipped/Lunchset/ Nizana / Moon",
+"offer_type": "combo",
+"units": 171,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "Jumbo + standard/Liam + Pioneer/Antitheft",
+"offer_type": "combo",
+"units": 127,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "FABELA",
+"offer_type": "deal",
+"units": 126,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "REO TRAVEL",
+"offer_type": "deal",
+"units": 123,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "SAFIRI + STANDARD/ ANTITHEFT",
+"offer_type": "combo",
+"units": 123,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "Sarai + Prime",
+"offer_type": "combo",
+"units": 105,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "PRIME",
+"offer_type": "deal",
+"units": 100,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "Mega + Man Bag/ Mini Umbra / Neo man",
+"offer_type": "combo",
+"units": 91,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "Fabela + Laptop backpack / Big man",
+"offer_type": "combo",
+"units": 89,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "AVANA HB",
+"offer_type": "deal",
+"units": 73,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "MINI MAYA",
+"offer_type": "deal",
+"units": 73,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "CATHY HANDBAG",
+"offer_type": "deal",
+"units": 70,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "MINI ZURI",
+"offer_type": "deal",
+"units": 66,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "MONAH BP",
+"offer_type": "deal",
+"units": 66,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "Bonita + Zane / Mini Umbra / Nizana /Neo Man",
+"offer_type": "combo",
+"units": 64,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "GYM BAG",
+"offer_type": "deal",
+"units": 60,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "Standard / liam + Laptop backpack",
+"offer_type": "combo",
+"units": 56,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "Moon/ Nizana / Oval+ Zane/Manbag",
+"offer_type": "combo",
+"units": 52,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "Baby Bag + Liam/Standard",
+"offer_type": "combo",
+"units": 15,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "JUMBO + CODE 3 + MAN BAG",
+"offer_type": "combo",
+"units": 32,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "SARAI + BIG MAN",
+"offer_type": "combo",
+"units": 15,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "STANDARD + JADE",
+"offer_type": "combo",
+"units": 6,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "SLEEVE 1",
+"offer_type": "single",
+"units": 6,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "LUNA",
+"offer_type": "single",
+"units": 4,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "GYMBAG + ARIA SLING",
+"offer_type": "combo",
+"units": 3,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "BONITA + ZELUS",
+"offer_type": "combo",
+"units": 3,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "CODE 3",
+"offer_type": "single",
+"units": 3,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "SAFIRI + STANDARD",
+"offer_type": "combo",
+"units": 2,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "GYM BAG",
+"offer_type": "single",
+"units": 2,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "SARAI",
+"offer_type": "single",
+"units": 2,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "BIG MAN BAG",
+"offer_type": "single",
+"units": 1,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "MONAH BP",
+"offer_type": "single",
+"units": 1,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "FABELA + AMAYA",
+"offer_type": "combo",
+"units": 0,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "ELYSE + MINIZURI",
+"offer_type": "combo",
+"units": 0,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "KATE",
+"offer_type": "single",
+"units": 0,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "MINI UMBRA",
+"offer_type": "single",
+"units": 0,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "MINI ZURI",
+"offer_type": "single",
+"units": 0,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "REO + AVANNA",
+"offer_type": "combo",
+"units": 0,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "MOON BAG + BELT BAG",
+"offer_type": "combo",
+"units": 0,
+"value": null,
+"stock": null
+},
+{
+"region": "Uganda",
+"name": "SATCHEL",
+"offer_type": null,
+"units": 5,
+"value": null,
+"stock": 15
+},
+{
+"region": "Uganda",
+"name": "ANTITHEFT",
+"offer_type": null,
+"units": 4,
+"value": null,
+"stock": 26
+},
+{
+"region": "Uganda",
+"name": "JUMBO",
+"offer_type": null,
+"units": 3,
+"value": null,
+"stock": 27
+},
+{
+"region": "Uganda",
+"name": "KAYLA",
+"offer_type": null,
+"units": 2,
+"value": null,
+"stock": 4
+},
+{
+"region": "Uganda",
+"name": "MINI ZURI",
+"offer_type": null,
+"units": 1,
+"value": null,
+"stock": 11
+},
+{
+"region": "Uganda",
+"name": "NEO MAN",
+"offer_type": null,
+"units": 1,
+"value": null,
+"stock": 17
+},
+{
+"region": "Uganda",
+"name": "BIG MAN BAG",
+"offer_type": null,
+"units": 0,
+"value": null,
+"stock": 14
+},
+{
+"region": "Uganda",
+"name": "KAI",
+"offer_type": null,
+"units": 0,
+"value": null,
+"stock": 18
+},
+{
+"region": "Uganda",
+"name": "MANDY HB",
+"offer_type": null,
+"units": 0,
+"value": null,
+"stock": 5
+},
+{
+"region": "Uganda",
+"name": "MINI SCHOOL",
+"offer_type": null,
+"units": 0,
+"value": null,
+"stock": 13
+},
+{
+"region": "Uganda",
+"name": "SKYE HB",
+"offer_type": null,
+"units": 0,
+"value": null,
+"stock": 7
+},
+{
+"region": "Uganda",
+"name": "zane man",
+"offer_type": null,
+"units": 0,
+"value": null,
+"stock": 21
+},
+{
+"region": "Uganda",
+"name": "MOON BAG",
+"offer_type": null,
+"units": 0,
+"value": null,
+"stock": 7
+},
+{
+"region": "Uganda",
+"name": "NIZANA",
+"offer_type": null,
+"units": 0,
+"value": null,
+"stock": 11
+},
+{
+"region": "Uganda",
+"name": "PIONEER",
+"offer_type": null,
+"units": 0,
+"value": null,
+"stock": 5
+},
+{
+"region": "Uganda",
+"name": "AVANA HB",
+"offer_type": null,
+"units": 0,
+"value": null,
+"stock": 8
+}
+]
+},
+{
+"key": "2026-07",
+"month": "July",
+"year": 2026,
+"generatedOn": "2026-08-03",
+"monthly": {
+"year": 2026,
+"achieved_pct": 71.8,
+"total_sales": 16680,
+"total_target": 23232,
+"gap": 6552,
+"bare_minimum": 5808,
+"avg_weekly": 3270.5,
+"corporate": 312,
+"forecast": "73.14%",
+"np_count": 7,
+"np_target": 930,
+"np_sales": 410,
+"np_deficit": 520,
+"np_kenya": 406,
+"np_outside": 4,
+"np_posts": 292,
+"combos": 10,
+"power_deals": 10,
+"kenya_combo_units": 2159,
+"kenya_combo_value": 9344041,
+"kenya_combo_avg": 4439,
+"kenya_deal_units": 3892,
+"kenya_deal_value": 7452800,
+"kenya_deal_avg": 1800,
+"sinza_units": 206,
+"sinza_value": 983844,
+"sinza_cleared": 32.5,
+"uganda_units": 89,
+"uganda_value": 6550000,
+"uganda_cleared": 21.9,
+"posting_kenya_pct": 89.7,
+"posting_sinza_pct": 50.7,
+"posting_uganda_pct": 19.2,
+"posted_stock": 4975,
+"unposted_stock": 5602,
+"posts_made": 785,
+"notoffer_kenya": 5602,
+"notoffer_sinza": 439,
+"notoffer_uganda": 235,
+"sales_from_posting": 6925,
+"expected_from_posting": 1766
+},
+"weekly": [
+{
+"seq": 1,
+"label": "Wk 1",
+"pct": 10.52,
+"cum": 10.52,
+"bags": 2445,
+"week_month": "Jul",
+"target_to_beat": 4824,
+"declined_by": -2379
+},
+{
+"seq": 2,
+"label": "Wk 2",
+"pct": 16.16,
+"cum": 26.68,
+"bags": 3754,
+"week_month": "Jul",
+"target_to_beat": 6133,
+"declined_by": -2379
+},
+{
+"seq": 3,
+"label": "Wk 3",
+"pct": 15.34,
+"cum": 42.02,
+"bags": 3510,
+"week_month": "Jul",
+"target_to_beat": 5808,
+"declined_by": -2298
+},
+{
+"seq": 4,
+"label": "Wk 4",
+"pct": 13.65,
+"cum": 55.67,
+"bags": 3373,
+"week_month": "Jul",
+"target_to_beat": 5808,
+"declined_by": -2435
+},
+{
+"seq": 5,
+"label": "Wk 1",
+"pct": 16.13,
+"cum": 71.8,
+"bags": 4584,
+"week_month": "Aug",
+"target_to_beat": 5808,
+"declined_by": -1224
+}
+],
+"newProducts": [
+{
+"name": "LAMORA",
+"sold": 125,
+"remaining": 75,
+"posts": 104,
+"stock": 109
+},
+{
+"name": "ZULA",
+"sold": 100,
+"remaining": 50,
+"posts": 50,
+"stock": 151
+},
+{
+"name": "LOOP BP",
+"sold": 88,
+"remaining": 162,
+"posts": 46,
+"stock": 97
+},
+{
+"name": "TAJI",
+"sold": 46,
+"remaining": 54,
+"posts": 14,
+"stock": 56
+},
+{
+"name": "NALA",
+"sold": 44,
+"remaining": 56,
+"posts": 43,
+"stock": 74
+},
+{
+"name": "IMANI",
+"sold": 6,
+"remaining": 74,
+"posts": 9,
+"stock": 174
+},
+{
+"name": "AMORA",
+"sold": 1,
+"remaining": 49,
+"posts": 26,
+"stock": 55
+}
+],
+"offers": [
+{
+"region": "Kenya",
+"name": "FABELA",
+"offer_type": "deal",
+"units": 839,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "JUMBO",
+"offer_type": "deal",
+"units": 798,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "ELYSE / AMAYA + ZIPPED/ LUNCHSET/ NIZANA /MOON",
+"offer_type": "combo",
+"units": 508,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "BIG MAN BAG",
+"offer_type": "deal",
+"units": 412,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "ZANE MAN",
+"offer_type": "deal",
+"units": 360,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "ARIA SLING",
+"offer_type": "deal",
+"units": 318,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "ANTITHEFT+MAN BAG/NIZANA",
+"offer_type": "combo",
+"units": 286,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "SAFIRI + STANDARD/ ANTITHEFT",
+"offer_type": "combo",
+"units": 284,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "CATHY HANDBAG",
+"offer_type": "deal",
+"units": 280,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "MONAH BP",
+"offer_type": "deal",
+"units": 275,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "PIONEER",
+"offer_type": "deal",
+"units": 257,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "JUMBO +MEGA",
+"offer_type": "combo",
+"units": 216,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "JUMBO + FABELA/ LIAM + MAN BAG / MINI UMBRA",
+"offer_type": "combo",
+"units": 213,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "CLAIRE HANDBAG",
+"offer_type": "deal",
+"units": 206,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "SARAI + PIONEER/CODE 3",
+"offer_type": "combo",
+"units": 188,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "PRIME + MAN BAG / NIZANA/ MOON",
+"offer_type": "combo",
+"units": 150,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "MINI MAYA",
+"offer_type": "deal",
+"units": 147,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "BONITA + MANBAG",
+"offer_type": "combo",
+"units": 118,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "LOLA +MINI ZURI/TRECENTO",
+"offer_type": "combo",
+"units": 112,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "BABY BAG +LIAM",
+"offer_type": "combo",
+"units": 84,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "SARAI + ANTITHEFT +WASHBAG",
+"offer_type": "combo",
+"units": 51,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "JUMBO + MEGA",
+"offer_type": "combo",
+"units": 50,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "BONITA + REMI",
+"offer_type": "combo",
+"units": 31,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "FANNY PACK",
+"offer_type": "single",
+"units": 18,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "AURORA + AVANNA + MOONBAG",
+"offer_type": "combo",
+"units": 12,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "JADE",
+"offer_type": "single",
+"units": 11,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "BONITA",
+"offer_type": "single",
+"units": 5,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "WASHBAG",
+"offer_type": "single",
+"units": 4,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "STANDARD + MANBAG",
+"offer_type": "combo",
+"units": 4,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "ELYSE",
+"offer_type": "single",
+"units": 4,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "FABELA",
+"offer_type": "single",
+"units": 4,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "JAMELA + LUNCHSET",
+"offer_type": "combo",
+"units": 2,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "GYMBAG + FANNYPACK",
+"offer_type": "combo",
+"units": 2,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "ALPHA  + DOUBLEPRESS",
+"offer_type": "combo",
+"units": 2,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "MEGA",
+"offer_type": "single",
+"units": 2,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "SCHOOL BAG + SCHOOL BAG",
+"offer_type": "combo",
+"units": 2,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "AURORA",
+"offer_type": "single",
+"units": 1,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "LEGACY",
+"offer_type": "single",
+"units": 1,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "CESS + MINIZURI",
+"offer_type": "combo",
+"units": 0,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "IMANI",
+"offer_type": "single",
+"units": 0,
+"value": null,
+"stock": null
+},
+{
+"region": "Uganda",
+"name": "ANTITHEFT",
+"offer_type": null,
+"units": 18,
+"value": null,
+"stock": 12
+},
+{
+"region": "Uganda",
+"name": "JUMBO",
+"offer_type": null,
+"units": 15,
+"value": null,
+"stock": 10
+},
+{
+"region": "Uganda",
+"name": "KAI",
+"offer_type": null,
+"units": 15,
+"value": null,
+"stock": 13
+},
+{
+"region": "Uganda",
+"name": "SATCHEL",
+"offer_type": null,
+"units": 12,
+"value": null,
+"stock": 17
+},
+{
+"region": "Uganda",
+"name": "MINI ZURI",
+"offer_type": null,
+"units": 8,
+"value": null,
+"stock": 12
+},
+{
+"region": "Uganda",
+"name": "KAYLA",
+"offer_type": null,
+"units": 7,
+"value": null,
+"stock": 4
+},
+{
+"region": "Uganda",
+"name": "NEO MAN",
+"offer_type": null,
+"units": 6,
+"value": null,
+"stock": 18
+},
+{
+"region": "Uganda",
+"name": "AVANA HB",
+"offer_type": null,
+"units": 2,
+"value": null,
+"stock": 8
+},
+{
+"region": "Uganda",
+"name": "MINI SCHOOL",
+"offer_type": null,
+"units": 2,
+"value": null,
+"stock": 13
+},
+{
+"region": "Uganda",
+"name": "SKYE HB",
+"offer_type": null,
+"units": 2,
+"value": null,
+"stock": 7
+},
+{
+"region": "Uganda",
+"name": "BIG MAN BAG",
+"offer_type": null,
+"units": 1,
+"value": null,
+"stock": 14
+},
+{
+"region": "Uganda",
+"name": "NIZANA",
+"offer_type": null,
+"units": 1,
+"value": null,
+"stock": 11
+},
+{
+"region": "Uganda",
+"name": "MANDY HB",
+"offer_type": null,
+"units": 0,
+"value": null,
+"stock": 5
+},
+{
+"region": "Uganda",
+"name": "MOON BAG",
+"offer_type": null,
+"units": 0,
+"value": null,
+"stock": 7
+},
+{
+"region": "Uganda",
+"name": "zane man",
+"offer_type": null,
+"units": 0,
+"value": null,
+"stock": 21
+},
+{
+"region": "Uganda",
+"name": "PIONEER",
+"offer_type": null,
+"units": 0,
+"value": null,
+"stock": 5
+}
+]
+}
+]
+}
+</script>
+<!-- HISTORY_DATA_END -->
+
+<script>
+/* ── Palette (matches theme.py) ──────────────────────────── */
+var C = {
+  emerald:'#34d399', cyan:'#22d3ee', violet:'#a78bfa', indigo:'#818cf8',
+  amber:'#f59e0b', orange:'#fb923c', pink:'#f472b6', red:'#f87171',
+  ink:'#e2e8f0', muted:'#94a3b8', dim:'#64748b',
+  grid:'rgba(45,49,72,0.55)', track:'rgba(148,163,184,0.35)'
+};
+var GRID = C.grid;
+function nf(n){ return (n==null||isNaN(n)) ? '—' : Math.round(Number(n)).toLocaleString('en-US'); }
+function money(n){ return Math.round(Number(n)||0).toLocaleString('en-US'); }
+function pf(n){ return (n==null||isNaN(n)) ? '—' : Number(n).toFixed(1)+'%'; }
+function fmtDate(s){ if(!s) return '—'; var p=String(s).split('-'); if(p.length<3) return s;
+  var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return Number(p[2])+' '+(mo[Number(p[1])-1]||p[1])+' '+p[0]; }
+
+/* ── Plugins ported from the live report ─────────────────── */
+Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+Chart.defaults.color = C.muted;
+
+// Draws each bar's value on the bar (stacked segments + grouped bars).
+var VAL = { id:'valLabels', afterDatasetsDraw:function(ch){
+  var c = ch.ctx; c.save();
+  c.font='700 0.64rem "Segoe UI", system-ui, sans-serif';
+  c.textAlign='center'; c.textBaseline='middle';
+  c.shadowColor='rgba(0,0,0,0.85)'; c.shadowBlur=3; c.fillStyle='#f8fafc';
+  ch.data.datasets.forEach(function(ds, di){
+    var meta = ch.getDatasetMeta(di); if (meta.hidden) return;
+    meta.data.forEach(function(bar, i){
+      var v = ds.data[i]; if (v == null || v < 1) return;
+      c.fillText(money(v), (bar.x + bar.base) / 2, bar.y);
+    });
+  });
+  c.restore();
+}};
+
+function donutCentre(txt){
+  return { id:'donutCentre', afterDraw:function(ch){
+    var a = ch.chartArea, c = ch.ctx;
+    c.save(); c.textAlign='center'; c.textBaseline='middle';
+    c.fillStyle='#f8fafc'; c.font='800 1.4rem "Segoe UI", system-ui, sans-serif';
+    c.fillText(txt, (a.left+a.right)/2, (a.top+a.bottom)/2);
+    c.restore();
+  }};
+}
+
+var charts = [];
+function clearCharts(){ charts.forEach(function(c){ try{c.destroy();}catch(e){} }); charts = []; }
+function mk(id, cfg){ var el=document.getElementById(id); if(!el) return null; var c=new Chart(el.getContext('2d'), cfg); charts.push(c); return c; }
+
+/* ── Data ────────────────────────────────────────────────── */
+var DATA = JSON.parse(document.getElementById('history-data').textContent);
+var MONTHS = DATA.months || [];
+
+/* ── Render one month ────────────────────────────────────── */
+function render(idx){
+  clearCharts();
+  var m = MONTHS[idx];
+  var d = m.monthly;
+  var achieved = d.achieved_pct;
+
+  /* Weekly performance table rows (mirrors the live Current Performance card) */
+  var wk = m.weekly.slice().sort(function(a,b){ return a.seq-b.seq; });
+  var prevM = MONTHS[idx+1] || null;   // previous (older) month in history — compared on the chart
+  var rows = wk.map(function(w){
+    var bagsV = Number(w.bags)||0;
+    var dv = Number(w.declined_by)||0;
+    var targetV = (w.target_to_beat!=null) ? Number(w.target_to_beat) : (bagsV - dv);
+    var beat = bagsV >= targetV;
+    var dCol = dv < 0 ? '#f87171' : '#34d399';
+    var bCol = beat ? '#34d399' : '#f87171';
+    return '<tr>'
+      + '<td><strong style="color:#e2e8f0">'+w.label+'</strong> <span style="color:#64748b">'+(w.week_month||'')+'</span></td>'
+      + '<td style="color:#facc15">'+Number(w.pct).toFixed(2)+'%</td>'
+      + '<td style="color:'+bCol+'">'+(beat?'▲ ':'')+nf(bagsV)+' bags</td>'
+      + '<td style="color:#94a3b8">'+nf(targetV)+' bags</td>'
+      + '<td style="color:'+dCol+'">'+(dv>0?'+':'')+nf(dv)+'</td>'
+      + '</tr>';
+  }).join('');
+
+  // Kenya offer mix — by count and by units moved (mirrors the live report footer).
+  var _cC = Number(d.combos)||0, _pC = Number(d.power_deals)||0, _tC = _cC+_pC;
+  var _cU = Number(d.kenya_combo_units)||0, _pU = Number(d.kenya_deal_units)||0, _tU = _cU+_pU;
+  var keMix = 'Offer mix — by count: <b class="c">Combos '+(_tC?Math.round(_cC/_tC*100):0)+'% ('+_cC+')</b> vs '
+    + '<b class="p">Power Deals '+(_tC?Math.round(_pC/_tC*100):0)+'% ('+_pC+')</b> · by units moved: '
+    + '<b class="c">Combos '+(_tU?Math.round(_cU/_tU*100):0)+'%</b> vs <b class="p">Power Deals '+(_tU?Math.round(_pU/_tU*100):0)+'%</b>';
+
+  // Sinza offer mix — by count and by units, split combo/single/special (mirrors the live report).
+  var _szO = m.offers.filter(function(o){ return o.region==='Sinza'; });
+  var _szg = { combo:{n:0,u:0}, single:{n:0,u:0}, special:{n:0,u:0} };
+  _szO.forEach(function(o){ var t=(_szg[o.offer_type]?o.offer_type:'combo'); _szg[t].n++; _szg[t].u+=Number(o.units)||0; });
+  var _szN = _szO.length, _szU = _szg.combo.u+_szg.single.u+_szg.special.u;
+  function _pc(x,t){ return t?Math.round(x/t*100):0; }
+  var szMix = '<b>Offer mix</b> — by count: '
+    + '<b style="color:#818cf8">Combos '+_pc(_szg.combo.n,_szN)+'% ('+_szg.combo.n+')</b> · '
+    + '<b style="color:#22d3ee">Singles '+_pc(_szg.single.n,_szN)+'% ('+_szg.single.n+')</b> · '
+    + '<b style="color:#f472b6">Specials '+_pc(_szg.special.n,_szN)+'% ('+_szg.special.n+')</b>'
+    + ' &nbsp;·&nbsp; by units: '
+    + '<b style="color:#818cf8">Combos '+_pc(_szg.combo.u,_szU)+'%</b> · '
+    + '<b style="color:#22d3ee">Singles '+_pc(_szg.single.u,_szU)+'%</b> · '
+    + '<b style="color:#f472b6">Specials '+_pc(_szg.special.u,_szU)+'%</b>';
+
+  var html = ''
+    + '<div class="exec"><div class="lbl">'+m.month+' '+m.year+' — the bottom line</div>'
+    + '<div class="headline">Closed at <b>'+pf(achieved)+' of target</b> — '+nf(d.total_sales)+' of '+nf(d.total_target)+' bags'
+    + (d.gap!=null ? ', missing by <b>'+nf(d.gap)+' bags</b>.' : '.') + '</div>'
+    + '<div class="as-of">Data as of <b>'+fmtDate(m.generatedOn)+'</b> · last synced from Supabase '+fmtDate(DATA.generatedOn)+'</div></div>'
+
+    /* KPIs */
+    + '<div class="kpis">'
+    +   '<div class="kpi"><div class="k-lbl">Sales vs Target</div><div style="position:relative;height:120px;margin-top:0.3rem"><canvas id="kpiDonut"></canvas></div><div class="k-sub" style="text-align:center">'+nf(d.total_sales)+' / '+nf(d.total_target)+' bags</div></div>'
+    +   '<div class="kpi"><div class="k-lbl">Missed By</div><div class="k-val red">'+nf(d.gap)+'</div><div class="k-sub">bags short of target</div></div>'
+    +   '<div class="kpi"><div class="k-lbl">Avg Weekly Sales</div><div class="k-val cyan">'+nf(d.avg_weekly)+'</div><div class="k-sub">'+(wk.length)+' weeks recorded</div></div>'
+    +   '<div class="kpi"><div class="k-lbl">Posting Sales-Achieved</div><div class="k-val green">'+pf(d.posting_kenya_pct)+'</div><div class="k-sub">Kenya '+pf(d.posting_kenya_pct)+' · Sinza '+pf(d.posting_sinza_pct)+' · Uganda '+pf(d.posting_uganda_pct)+'</div></div>'
+    + '</div>'
+
+    /* 1 · Current Performance — live Weekly Performance card */
+    + '<div class="sec flush"><div class="sec-head"><div class="sec-num" style="background:#facc15">1</div><h2>Current Performance</h2></div>'
+    + '<div class="sec-sub">Weekly Performance — Week 1 to latest'
+    +   (prevM ? ' <span style="color:#94a3b8">· compared with ' + prevM.month + ' ' + prevM.year + '</span>' : '')
+    +   '.</div>'
+    + '<div style="padding:0.3rem 1.4rem 0"><div class="chart-wrap" style="height:230px"><canvas id="cpChart"></canvas></div></div>'
+    + '<div style="overflow-x:auto"><table class="wp-table"><thead><tr>'
+    +   '<th>Week</th><th>Sales % Achieved</th><th>Sales Bags</th><th>Target to Beat</th><th>Declined By</th>'
+    + '</tr></thead><tbody>'+rows+'</tbody></table></div>'
+    + '<div class="legend-note"><span class="g">▲ green</span> = the week cleared its <b>target to beat</b> (the bare-minimum floor); '
+    +   '<span class="r">red</span> = it fell short. Beat the floor every week and the next month’s <b>Forward Projection</b> lifts with it — each week above the line pulls the month past target.</div>'
+    + '</div>'
+
+    /* 2 · New Products — live report charts + sort */
+    + (m.newProducts.length ? (
+        '<div class="sec"><div class="sec-head"><div class="sec-num" style="background:#22d3ee">2</div><h2>New Products</h2></div>'
+      + '<div class="sec-sub"><b>'+nf(d.np_count)+'</b> launched · '+nf(d.np_sales)+' of '+nf(d.np_target)+' target sold'+(d.np_deficit!=null?' · '+nf(d.np_deficit)+' short':'')+'.</div>'
+      + '<div class="sortbar"><span>Sort</span><select id="np-sort">'
+      +   '<option value="sold-desc">Sold — high to low</option>'
+      +   '<option value="sold-asc">Sold — low to high</option>'
+      +   '<option value="remaining-desc">Still needed — high to low</option>'
+      +   '<option value="stock-desc">Stock — high to low</option>'
+      +   '<option value="posts-desc">Posts — high to low</option>'
+      + '</select></div>'
+      + '<div class="chart-cap">Each new product — sold vs remaining to target</div>'
+      + '<div class="chart-wrap tall"><canvas id="npChart"></canvas></div>'
+      + '<div class="chart-cap">Each new product — posts done vs current stock (the dead-stock read)</div>'
+      + '<div class="chart-wrap tall"><canvas id="npStockChart"></canvas></div>'
+      + '</div>') : '')
+
+    /* 3 · Offer Type Analysis — all locations */
+    + '<div class="sec"><div class="sec-head"><div class="sec-num" style="background:#a78bfa">3</div><h2>Offer Type Analysis — All Locations</h2></div>'
+    + '<div class="sec-sub">Kenya combos vs power deals, plus every Sinza &amp; Uganda offer stored for the month.</div>'
+    + '<div class="minis">'
+    +   '<div class="mini"><div class="bar" style="background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div><div class="m-lbl">Kenya · Combos</div><div class="m-val">'+nf(d.kenya_combo_units)+'</div><div class="m-sub">KES '+nf(d.kenya_combo_value)+(d.kenya_combo_avg!=null?' · avg '+nf(d.kenya_combo_avg):'')+'</div></div>'
+    +   '<div class="mini"><div class="bar" style="background:linear-gradient(90deg,#a78bfa,#8b5cf6)"></div><div class="m-lbl">Kenya · Power Deals</div><div class="m-val">'+nf(d.kenya_deal_units)+'</div><div class="m-sub">KES '+nf(d.kenya_deal_value)+(d.kenya_deal_avg!=null?' · avg '+nf(d.kenya_deal_avg):'')+'</div></div>'
+    +   '<div class="mini"><div class="bar" style="background:linear-gradient(90deg,#818cf8,#22d3ee)"></div><div class="m-lbl">Sinza · Cleared</div><div class="m-val">'+pf(d.sinza_cleared)+'</div><div class="m-sub">'+nf(d.sinza_units)+' units · KES '+nf(d.sinza_value)+'</div></div>'
+    +   '<div class="mini"><div class="bar" style="background:linear-gradient(90deg,#34d399,#a78bfa)"></div><div class="m-lbl">Uganda · Cleared</div><div class="m-val">'+pf(d.uganda_cleared)+'</div><div class="m-sub">'+nf(d.uganda_units)+' units · KES '+nf(d.uganda_value)+'</div></div>'
+    + '</div>'
+    + '<div class="chart-cap">Kenya — each offer, units moved (amber = combo, violet = power deal)</div>'
+    + '<div class="chart-wrap" style="height:440px"><canvas id="keChart"></canvas></div>'
+    + '<div class="offer-mix">'+keMix+'</div>'
+    + '<div class="chart-cap" style="margin-top:1.1rem">Sinza — each offer, units moved (indigo = combo, cyan = single, pink = special)</div>'
+    + '<div class="chart-wrap" style="height:520px"><canvas id="szChart"></canvas></div>'
+    + '<div class="offer-mix">'+szMix+'</div>'
+    + '<div class="chart-cap" style="margin-top:1.1rem">Uganda — top 5 &amp; bottom 5 movers, units moved vs stock available</div><div class="chart-wrap tall"><canvas id="ugChart"></canvas></div>'
+    + '</div>'
+
+    /* 4 · Posting Yields */
+    + '<div class="sec"><div class="sec-head"><div class="sec-num" style="background:#fb923c">4</div><h2>Posting Yields</h2></div>'
+    + '<div class="sec-sub"><b>'+nf(d.posts_made)+'</b> posts made · '+nf(d.posted_stock)+' posted vs '+nf(d.unposted_stock)+' unposted stock.</div>'
+    + '<div class="grid2">'
+    +   '<div><div class="chart-cap">Sales-achieved from posting, by region</div><div class="chart-wrap"><canvas id="pyChart"></canvas></div></div>'
+    +   '<div><div class="chart-cap">Stock posted vs never posted</div><div class="chart-wrap"><canvas id="pyDonut"></canvas></div></div>'
+    + '</div></div>';
+
+  document.getElementById('report').innerHTML = html;
+  buildCharts(m, wk, prevM);
+}
+
+function buildCharts(m, wk, prevM){
+  var d = m.monthly;
+
+  /* KPI donut */
+  var ach = Number(d.achieved_pct)||0;
+  mk('kpiDonut', {
+    type:'doughnut',
+    data:{ labels:['Achieved','Remaining'], datasets:[{ data:[ach, Math.max(0,100-ach)], backgroundColor:[C.emerald, rgba('#94a3b8',0.18)], borderWidth:0 }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'70%', plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(c){ return c.label+': '+c.parsed.toFixed(1)+'%'; } } } } },
+    plugins:[ donutCentre(pf(ach)) ]
+  });
+
+  /* 1 · Current Performance — amber line, point labels + WoW badge */
+  var series = wk.map(function(w){ return Number(w.pct)||0; });
+  var LINEVAL = { id:'lineVals', afterDatasetsDraw:function(ch){
+    var c = ch.ctx; c.save(); c.font='700 0.66rem "Segoe UI", system-ui, sans-serif';
+    c.textAlign='center'; c.textBaseline='bottom'; c.fillStyle='#fde68a';
+    c.shadowColor='rgba(0,0,0,0.75)'; c.shadowBlur=3;
+    ch.getDatasetMeta(0).data.forEach(function(pt,i){ c.fillText(series[i].toFixed(1)+'%', pt.x, pt.y-7); });
+    c.restore();
+  }};
+  // Week-on-week growth now shows on HOVER (tooltip footer) instead of being
+  // painted on the chart — so the compared month's line underneath stays visible.
+  var cpEl = document.getElementById('cpChart');
+  if (cpEl) {
+    var cx = cpEl.getContext('2d');
+    var grad = cx.createLinearGradient(0,0,0,230);
+    grad.addColorStop(0,'rgba(245,158,11,0.30)'); grad.addColorStop(1,'rgba(245,158,11,0.02)');
+    var hasPrev = !!(prevM && prevM.weekly && prevM.weekly.length);
+    var _labels = wk.map(function(w){ return w.label; });
+    var _dsets = [
+      { label: m.month + ' ' + m.year, data: series, borderColor: C.amber, backgroundColor: grad,
+        borderWidth: 2, fill: true, tension: 0.35, pointRadius: 4, pointBackgroundColor: C.amber,
+        pointBorderColor: '#0b0d16', pointBorderWidth: 1, order: 1 }
+    ];
+    if (hasPrev) {
+      var _pw = prevM.weekly.slice().sort(function(a, b){ return a.seq - b.seq; });
+      var _ps = _pw.map(function(w){ return Number(w.pct) || 0; });
+      if (_pw.length > _labels.length) _labels = _pw.map(function(w){ return w.label; });
+      _dsets.push({ label: prevM.month + ' ' + prevM.year, data: _ps, borderColor: rgba('#94a3b8', 0.9),
+        backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 4], fill: false, tension: 0.35,
+        pointRadius: 3, pointBackgroundColor: '#94a3b8', pointBorderColor: '#0b0d16', pointBorderWidth: 1, order: 2 });
+    }
+    charts.push(new Chart(cx, {
+      type:'line',
+      data:{ labels:_labels, datasets:_dsets },
+      options:{ responsive:true, maintainAspectRatio:false, layout:{ padding:{ top:22 } },
+        plugins:{ legend:{ display: hasPrev, labels:{ usePointStyle:true, boxWidth:8, color:C.muted } },
+          tooltip:{ callbacks:{
+            label:function(c){ return c.dataset.label+': '+Number(c.parsed.y).toFixed(2)+'% of target'; },
+            afterBody:function(items){ if(!items.length || items[0].datasetIndex!==0) return '';
+              var x = wk[items[0].dataIndex]; if(!x) return '';
+              return ['Weekly sales: '+money(x.bags)+' bags',
+                      'Cumulative to date: '+Number(x.cum).toFixed(1)+'% of target']; },
+            footer:function(){ if(wk.length<2) return '';
+              var n=wk.length, g=series[n-1]-series[n-2];
+              return (g>=0?'▲ +':'▼ ')+g.toFixed(2)+' pts week-on-week ('+wk[n-2].label+' → '+wk[n-1].label+')'; }
+          } } },
+        scales:{ y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ callback:function(v){ return v+'%'; } } },
+                 x:{ grid:{display:false} } } },
+      plugins:[LINEVAL] }));
+  }
+
+  /* 2 · New Products — sold/remaining stacked, posts/stock grouped, sortable */
+  if (m.newProducts.length){
+    var base = m.newProducts.slice();
+    var sel = document.getElementById('np-sort');
+    function sorted(){
+      var v = sel ? sel.value : 'sold-desc', parts = v.split('-');
+      var key = parts[0], dir = (parts[1]==='asc') ? 1 : -1;
+      var get = { sold:function(x){return x.sold;}, remaining:function(x){return x.remaining;},
+                  stock:function(x){return x.stock;}, posts:function(x){return x.posts;} }[key] || function(x){return x.sold;};
+      return base.slice().sort(function(a,b){ return ((get(a)||0)-(get(b)||0))*dir; });
+    }
+    var c1 = mk('npChart', {
+      type:'bar', plugins:[VAL],
+      data:{ labels:[], datasets:[
+        { label:'Sold', data:[], backgroundColor:'#22d3ee', borderRadius:3 },
+        { label:'Remaining to target', data:[], backgroundColor:'rgba(148,163,184,0.35)', borderRadius:3 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } } },
+        scales:{ x:{ stacked:true, grid:{color:GRID} }, y:{ stacked:true, grid:{display:false} } } }
+    });
+    var c2 = mk('npStockChart', {
+      type:'bar', plugins:[VAL],
+      data:{ labels:[], datasets:[
+        { label:'Stock available', data:[], backgroundColor:'#a78bfa', borderRadius:3 },
+        { label:'Posts done', data:[], backgroundColor:'#22d3ee', borderRadius:3 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
+          tooltip:{ callbacks:{ label:function(c){ return c.dataset.label+': '+money(c.parsed.x); } } } },
+        scales:{ x:{ grid:{color:GRID} }, y:{ grid:{display:false} } } }
+    });
+    function draw(){
+      var t = sorted(), labels = t.map(function(x){return x.name;});
+      if (c1){ c1.data.labels=labels; c1.data.datasets[0].data=t.map(function(x){return x.sold;}); c1.data.datasets[1].data=t.map(function(x){return x.remaining;}); c1.update(); }
+      if (c2){ c2.data.labels=labels; c2.data.datasets[0].data=t.map(function(x){return x.stock;}); c2.data.datasets[1].data=t.map(function(x){return x.posts;}); c2.update(); }
+    }
+    if (sel) sel.addEventListener('change', draw);
+    draw();
+  }
+
+  /* 3 · Offer Type — all locations */
+  // Kenya: each individual offer, coloured by type (amber combo, violet deal)
+  var ke = m.offers.filter(function(o){ return o.region==='Kenya'; }).sort(function(a,b){ return b.units-a.units; });
+  mk('keChart', {
+    type:'bar',
+    data:{ labels:ke.map(function(o){return o.name;}), datasets:[{ label:'Units moved',
+      data:ke.map(function(o){return o.units;}),
+      backgroundColor:ke.map(function(o){ return o.offer_type==='combo' ? '#f59e0b' : '#a78bfa'; }), borderRadius:3 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{ callbacks:{ label:function(c){ return money(c.parsed.x)+' units ('+(ke[c.dataIndex].offer_type==='combo'?'combo':'power deal')+')'; } } } },
+      scales:{ x:{ grid:{color:GRID} }, y:{ grid:{display:false}, ticks:{ autoSkip:false, font:{size:10}, color:'#cbd5e1' } } } }
+  });
+  // Sinza: every offer, coloured by type
+  var sz = m.offers.filter(function(o){ return o.region==='Sinza'; }).sort(function(a,b){ return b.units-a.units; });
+  var szCol = { combo:'#818cf8', single:'#22d3ee', special:'#f472b6' };
+  mk('szChart', {
+    type:'bar', plugins:[VAL],
+    data:{ labels:sz.map(function(o){return o.name;}), datasets:[{ label:'Units moved',
+      data:sz.map(function(o){return o.units;}),
+      backgroundColor:sz.map(function(o){ return szCol[o.offer_type] || '#818cf8'; }), borderRadius:3 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{ callbacks:{ label:function(c){ return money(c.parsed.x)+' units ('+(sz[c.dataIndex].offer_type||'offer')+')'; } } } },
+      scales:{ x:{ grid:{color:GRID} }, y:{ grid:{display:false}, ticks:{ autoSkip:false, font:{size:11}, color:'#cbd5e1' } } } }
+  });
+  // Uganda: top 5 + bottom 5 movers, units vs stock
+  var ugAll = m.offers.filter(function(o){ return o.region==='Uganda'; }).sort(function(a,b){ return b.units-a.units; });
+  var ug = (ugAll.length <= 10) ? ugAll : ugAll.slice(0,5).concat(ugAll.slice(-5));
+  mk('ugChart', {
+    type:'bar', plugins:[VAL],
+    data:{ labels:ug.map(function(o){return o.name;}), datasets:[
+      { label:'Units moved', data:ug.map(function(o){return o.units;}), backgroundColor:'#34d399', borderRadius:3 },
+      { label:'Stock available', data:ug.map(function(o){return o.stock;}), backgroundColor:'#a78bfa', borderRadius:3 } ] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
+        tooltip:{ callbacks:{ label:function(c){ return c.dataset.label+': '+money(c.parsed.x); },
+          afterLabel:function(c){ return (ugAll.length>10 && c.dataIndex<5) ? 'Top mover' : (ugAll.length>10 ? 'Least mover' : ''); } } } },
+      scales:{ x:{ grid:{color:GRID} }, y:{ grid:{display:false}, ticks:{ autoSkip:false, font:{size:11}, color:'#cbd5e1' } } } }
+  });
+
+  /* 4 · Posting */
+  mk('pyChart', {
+    type:'bar',
+    data:{ labels:['Kenya','Sinza','Uganda'], datasets:[{ label:'Sales-achieved %',
+      data:[d.posting_kenya_pct, d.posting_sinza_pct, d.posting_uganda_pct],
+      backgroundColor:['#34d399','#818cf8','#fb923c'], borderRadius:4 }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{ callbacks:{ label:function(c){ return Number(c.parsed.y).toFixed(1)+'% of expected'; } } } },
+      scales:{ y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ callback:function(v){ return v+'%'; } } }, x:{ grid:{display:false} } } }
+  });
+  var posted = Number(d.posted_stock)||0, unposted = Number(d.unposted_stock)||0, tot = posted+unposted;
+  mk('pyDonut', {
+    type:'doughnut',
+    data:{ labels:['Posted stock','Unposted (dead) stock'], datasets:[{ data:[posted, unposted], backgroundColor:['#34d399','#f87171'], borderWidth:0 }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'62%',
+      plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
+        tooltip:{ callbacks:{ label:function(c){ return c.label+': '+money(c.parsed)+' bags'; } } } } },
+    plugins:[ donutCentre(tot?Math.round(posted/tot*100)+'%':'—') ]
+  });
+}
+
+function rgba(hex,a){ var h=hex.replace('#',''); return 'rgba('+parseInt(h.slice(0,2),16)+','+parseInt(h.slice(2,4),16)+','+parseInt(h.slice(4,6),16)+','+a+')'; }
+
+/* ── Boot ────────────────────────────────────────────────── */
+(function(){
+  var sw = document.getElementById('switcher');
+  var srcNote = document.getElementById('src-note');
+  var foot = document.getElementById('foot');
+
+  if(!MONTHS.length){
+    document.getElementById('report').innerHTML =
+      '<div class="empty"><h3>No months stored yet</h3>'
+      + 'Run <b>python push_to_supabase.py</b> to back a month up, then <b>python history.py</b> to load it here.</div>';
+    return;
+  }
+
+  sw.innerHTML = '<span class="lbl">Month</span>' + MONTHS.map(function(m,i){
+    return '<button class="mbtn'+(i===0?' active':'')+'" data-i="'+i+'">'+m.month+' '+m.year+'</button>';
+  }).join('');
+  srcNote.innerHTML = 'Source: <b>Supabase</b> · '+MONTHS.length+' month'+(MONTHS.length>1?'s':'')+' stored'
+    + (DATA.generatedOn?' · last synced '+fmtDate(DATA.generatedOn):'');
+  foot.textContent = 'Denri Africa · Marketing Dashboard — history read live from Supabase.';
+
+  sw.addEventListener('click', function(e){
+    var b = e.target.closest('.mbtn'); if(!b) return;
+    sw.querySelectorAll('.mbtn').forEach(function(x){ x.classList.remove('active'); });
+    b.classList.add('active');
+    render(Number(b.dataset.i));
+  });
+
+  render(0);
+})();
+</script>
+
+</body>
+</html>

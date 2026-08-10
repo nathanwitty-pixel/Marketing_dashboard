@@ -18,7 +18,7 @@ Reads live from Google Sheets (five sheets):
 ─────────────────────────────────────────────────────────────────
 """
 
-import re, webbrowser, os, pathlib, json
+import re, webbrowser, os, pathlib, json, calendar
 from datetime import date, timedelta
 
 # ── SPREADSHEET ───────────────────────────────────────────────
@@ -54,6 +54,44 @@ def fmt_int(n):
 
 def fmt_pct(p):
     return f"{p:.2f}%"
+
+
+# ── ODOO SALES (source of truth for new-product sold) ─────────
+def odoo_month_product_bags():
+    """Current month's bags per product from Odoo (Postgres), or None if the DB
+    isn't reachable. Product list still comes from MONTHLY_TARGET; only the SOLD
+    figure is sourced here."""
+    try:
+        from lib import db, queries
+    except Exception:
+        return None
+    ok, _ = db.check_connection()
+    if not ok:
+        return None
+    today = date.today()
+    start = today.replace(day=1)
+    end   = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+    df = db.run_query(queries.WEEKLY_BAGS_SOLD,   # grouped by full_product_name
+                      {"start_date": start.isoformat(), "end_date": end.isoformat()})
+    if df is None:
+        return None
+    if df.empty:
+        return []
+    return [(str(r["product"]), int(round(float(r["bags"] or 0)))) for _, r in df.iterrows()]
+
+
+def match_odoo_bags(bag_type, odoo_list):
+    """Sum Odoo bags whose product name is the new product's — matched by name
+    prefix so 'AMORA' picks up 'AMORA …' variants without catching 'LAMORA'.
+    Returns (bags, [matched Odoo names])."""
+    b = str(bag_type).upper().strip()
+    total, hits = 0, []
+    for name, bags in odoo_list:
+        p = str(name).upper().strip()
+        if p == b or p.startswith(b + " ") or p.startswith(b + "-"):
+            total += bags
+            hits.append(name)
+    return total, hits
 
 
 # ── FETCH ─────────────────────────────────────────────────────
@@ -99,6 +137,25 @@ def fetch_new_products_data():
             })
 
     names_upper = {n.upper() for n in new_product_names}
+
+    # ── SALES from Odoo (source of truth) ─────────────────────
+    # The product LIST + TARGET stay from MONTHLY_TARGET; the SOLD figure now
+    # comes from Odoo (this month's bags for that product). Falls back to the
+    # sheet's SALES column if Postgres isn't reachable.
+    odoo_list = odoo_month_product_bags()
+    if odoo_list is not None:
+        total_sales = 0
+        print("  Sales source          : Odoo (this month)")
+        for p in product_targets:
+            sold, hits = match_odoo_bags(p["name"], odoo_list)
+            p["sold"]      = sold
+            p["remaining"] = max(p["target"] - sold, 0)
+            total_sales   += sold
+            tag = ("← " + ", ".join(hits)) if hits else "(no Odoo match)"
+            print(f"    - {p['name']:<16} {sold:>5} sold  {tag}")
+        total_deficit = sum(p["remaining"] for p in product_targets)
+    else:
+        print("  Sales source          : sheet (Odoo unreachable)")
 
     print(f"  New products found    : {len(new_product_names)}")
     for name in new_product_names:

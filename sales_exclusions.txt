@@ -1,0 +1,27 @@
+# ─────────────────────────────────────────────────────────────
+# Products NOT counted as bag sales (Total Sales / Current Performance).
+# One product name per line, exactly as it appears in Odoo (case-insensitive).
+# Blank lines and anything after a '#' are ignored.
+#
+# This is ON TOP OF the always-on rules: combo wrappers ('+'), delivery,
+# customisation, straps, KES discounts, POS-category lines, refunds and
+# unpaid/cancelled orders are already excluded automatically.
+#
+# Add or remove names here anytime, then hit Refresh (or run python main.py).
+# ─────────────────────────────────────────────────────────────
+
+300.0 KES discount on total amount
+Antibacterial Wipes
+Foam Cleaner
+Classic Wipes
+Flushable Water Wipes
+Test Product
+
+# Bag styles we are deliberately not counting in sales
+Mini Brief Case Black
+Mini Brief Case Spice
+Enzo Beige/Red
+Enzo Maroon/Red
+Custom Thigh Bag Green
+Handled Laptop Sleeve Choco TT
+Phoenix Backpack Black

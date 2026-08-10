@@ -63,8 +63,15 @@ def get_engine() -> Engine | None:
     url = _url()
     if url is None:
         return None
-    # pool_pre_ping avoids stale-connection errors on a long-lived generator run
-    return create_engine(url, pool_pre_ping=True, future=True)
+    # pool_pre_ping avoids stale-connection errors on a long-lived generator run.
+    # create_engine imports the DB driver (psycopg2) eagerly — if it isn't
+    # installed in whichever Python runs the dashboard, return None so callers
+    # fall back to the sheet instead of the whole refresh crashing.
+    try:
+        return create_engine(url, pool_pre_ping=True, future=True)
+    except ImportError as e:   # psycopg2 missing in this Python, etc.
+        print(f"  DB driver not installed ({e}) — falling back to sheet data.")
+        return None
 
 
 def check_connection() -> tuple[bool, str]:

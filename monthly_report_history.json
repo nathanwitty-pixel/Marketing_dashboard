@@ -16,33 +16,48 @@
       "weekly": [
         {
           "label": "Wk 1",
+          "month": "Jul",
           "pct": 10.52,
           "cum": 10.52,
-          "bags": 2445.0
+          "bags": 2445.0,
+          "targetToBeat": 4824.0,
+          "declinedBy": -2379.0
         },
         {
           "label": "Wk 2",
+          "month": "Jul",
           "pct": 16.16,
           "cum": 26.68,
-          "bags": 3754.0
+          "bags": 3754.0,
+          "targetToBeat": 6133.0,
+          "declinedBy": -2379.0
         },
         {
           "label": "Wk 3",
+          "month": "Jul",
           "pct": 15.34,
           "cum": 42.02,
-          "bags": 3510.0
+          "bags": 3510.0,
+          "targetToBeat": 5808.0,
+          "declinedBy": -2298.0
         },
         {
           "label": "Wk 4",
+          "month": "Jul",
           "pct": 13.65,
           "cum": 55.67,
-          "bags": 3373.0
+          "bags": 3373.0,
+          "targetToBeat": 5808.0,
+          "declinedBy": -2435.0
         },
         {
           "label": "Wk 1",
+          "month": "Aug",
           "pct": 16.13,
           "cum": 71.8,
-          "bags": 4584.0
+          "bags": 4584.0,
+          "targetToBeat": 5808.0,
+          "declinedBy": -1224.0
         }
       ]
     },
@@ -124,7 +139,109 @@
         "comboAvg": 4439.0,
         "dealUnits": 3892.0,
         "dealValue": 7452800.0,
-        "dealAvg": 1800.0
+        "dealAvg": 1800.0,
+        "offers": [
+          {
+            "name": "ELYSE / AMAYA + ZIPPED/ LUNCHSET/ NIZANA /MOON",
+            "units": 508.0,
+            "type": "combo"
+          },
+          {
+            "name": "ANTITHEFT+MAN BAG/NIZANA",
+            "units": 286.0,
+            "type": "combo"
+          },
+          {
+            "name": "SAFIRI + STANDARD/ ANTITHEFT",
+            "units": 284.0,
+            "type": "combo"
+          },
+          {
+            "name": "JUMBO +MEGA",
+            "units": 216.0,
+            "type": "combo"
+          },
+          {
+            "name": "SARAI + PIONEER/CODE 3",
+            "units": 188.0,
+            "type": "combo"
+          },
+          {
+            "name": "PRIME + MAN BAG / NIZANA/ MOON",
+            "units": 150.0,
+            "type": "combo"
+          },
+          {
+            "name": "JUMBO + FABELA/ LIAM + MAN BAG / MINI UMBRA",
+            "units": 213.0,
+            "type": "combo"
+          },
+          {
+            "name": "BONITA + MANBAG",
+            "units": 118.0,
+            "type": "combo"
+          },
+          {
+            "name": "LOLA +MINI ZURI/TRECENTO",
+            "units": 112.0,
+            "type": "combo"
+          },
+          {
+            "name": "BABY BAG +LIAM",
+            "units": 84.0,
+            "type": "combo"
+          },
+          {
+            "name": "FABELA",
+            "units": 839.0,
+            "type": "deal"
+          },
+          {
+            "name": "JUMBO",
+            "units": 798.0,
+            "type": "deal"
+          },
+          {
+            "name": "BIG MAN BAG",
+            "units": 412.0,
+            "type": "deal"
+          },
+          {
+            "name": "ZANE MAN",
+            "units": 360.0,
+            "type": "deal"
+          },
+          {
+            "name": "ARIA SLING",
+            "units": 318.0,
+            "type": "deal"
+          },
+          {
+            "name": "CATHY HANDBAG",
+            "units": 280.0,
+            "type": "deal"
+          },
+          {
+            "name": "MONAH BP",
+            "units": 275.0,
+            "type": "deal"
+          },
+          {
+            "name": "PIONEER",
+            "units": 257.0,
+            "type": "deal"
+          },
+          {
+            "name": "CLAIRE HANDBAG",
+            "units": 206.0,
+            "type": "deal"
+          },
+          {
+            "name": "MINI MAYA",
+            "units": 147.0,
+            "type": "deal"
+          }
+        ]
       },
       "sinza": {
         "units": 206.0,
@@ -335,6 +452,434 @@
       },
       "salesFromPosting": 6925.0,
       "expectedFromPosting": 1766.0
+    }
+  },
+  "2026-08": {
+    "month": "August",
+    "year": 2026,
+    "key": "2026-08",
+    "generatedOn": "2026-08-10",
+    "currentPerformance": {
+      "achievedPct": 21.59,
+      "totalSales": 5015.0,
+      "totalTarget": 23232.0,
+      "gap": 18217.0,
+      "bareMinimum": 5808.0,
+      "avgWeekly": 1671.6666666666667,
+      "corporate": 312.0,
+      "forecast": "78.98%",
+      "weekly": [
+        {
+          "label": "Wk 1",
+          "pct": 3.57,
+          "cum": 3.57,
+          "bags": 830.0
+        },
+        {
+          "label": "Wk 2",
+          "pct": 17.16,
+          "cum": 20.73,
+          "bags": 3986.0
+        },
+        {
+          "label": "Wk 3",
+          "pct": 0.86,
+          "cum": 21.59,
+          "bags": 199.0
+        }
+      ]
+    },
+    "newProducts": {
+      "count": 7,
+      "target": 930.0,
+      "sales": 118.0,
+      "deficit": 812.0,
+      "kenya": 126.0,
+      "outside": 3.0,
+      "posts": 219.0,
+      "names": [
+        "AMORA",
+        "IMANI",
+        "LAMORA",
+        "LOOP BP",
+        "NALA",
+        "TAJI",
+        "ZULA"
+      ],
+      "products": [
+        {
+          "name": "AMORA",
+          "sold": 0.0,
+          "remaining": 50.0,
+          "posts": 15.0,
+          "stock": 55.0
+        },
+        {
+          "name": "IMANI",
+          "sold": 3.0,
+          "remaining": 77.0,
+          "posts": 0.0,
+          "stock": 179.0
+        },
+        {
+          "name": "LAMORA",
+          "sold": 29.0,
+          "remaining": 171.0,
+          "posts": 54.0,
+          "stock": 129.0
+        },
+        {
+          "name": "LOOP BP",
+          "sold": 26.0,
+          "remaining": 224.0,
+          "posts": 21.0,
+          "stock": 99.0
+        },
+        {
+          "name": "NALA",
+          "sold": 16.0,
+          "remaining": 84.0,
+          "posts": 33.0,
+          "stock": 81.0
+        },
+        {
+          "name": "TAJI",
+          "sold": 10.0,
+          "remaining": 90.0,
+          "posts": 42.0,
+          "stock": 102.0
+        },
+        {
+          "name": "ZULA",
+          "sold": 34.0,
+          "remaining": 116.0,
+          "posts": 54.0,
+          "stock": 218.0
+        }
+      ]
+    },
+    "offerType": {
+      "combos": 10,
+      "powerDeals": 10,
+      "kenya": {
+        "comboUnits": 893.0,
+        "comboValue": 3983207.0,
+        "comboAvg": 4399.0,
+        "dealUnits": 1100.0,
+        "dealValue": 2372300.0,
+        "dealAvg": 1970.0,
+        "offers": [
+          {
+            "name": "Amaya + Zipped/Lunchset/ Nizana / Moon",
+            "units": 171.0,
+            "type": "combo"
+          },
+          {
+            "name": "SAFIRI + STANDARD/ ANTITHEFT",
+            "units": 123.0,
+            "type": "combo"
+          },
+          {
+            "name": "Sarai + Prime",
+            "units": 105.0,
+            "type": "combo"
+          },
+          {
+            "name": "Fabela + Laptop backpack / Big man",
+            "units": 89.0,
+            "type": "combo"
+          },
+          {
+            "name": "Jumbo + standard/Liam + Pioneer/Antitheft",
+            "units": 127.0,
+            "type": "combo"
+          },
+          {
+            "name": "Mega + Man Bag/ Mini Umbra / Neo man",
+            "units": 91.0,
+            "type": "combo"
+          },
+          {
+            "name": "Bonita + Zane / Mini Umbra / Nizana /Neo Man",
+            "units": 64.0,
+            "type": "combo"
+          },
+          {
+            "name": "Standard / liam + Laptop backpack",
+            "units": 56.0,
+            "type": "combo"
+          },
+          {
+            "name": "Moon/ Nizana / Oval+ Zane/Manbag",
+            "units": 52.0,
+            "type": "combo"
+          },
+          {
+            "name": "Baby Bag + Liam/Standard",
+            "units": 15.0,
+            "type": "combo"
+          },
+          {
+            "name": "Jumbo",
+            "units": 343.0,
+            "type": "deal"
+          },
+          {
+            "name": "FABELA",
+            "units": 126.0,
+            "type": "deal"
+          },
+          {
+            "name": "REO TRAVEL",
+            "units": 123.0,
+            "type": "deal"
+          },
+          {
+            "name": "PRIME",
+            "units": 100.0,
+            "type": "deal"
+          },
+          {
+            "name": "MINI MAYA",
+            "units": 73.0,
+            "type": "deal"
+          },
+          {
+            "name": "CATHY HANDBAG",
+            "units": 70.0,
+            "type": "deal"
+          },
+          {
+            "name": "MINI ZURI",
+            "units": 66.0,
+            "type": "deal"
+          },
+          {
+            "name": "GYM BAG",
+            "units": 60.0,
+            "type": "deal"
+          },
+          {
+            "name": "MONAH BP",
+            "units": 66.0,
+            "type": "deal"
+          },
+          {
+            "name": "AVANA HB",
+            "units": 73.0,
+            "type": "deal"
+          }
+        ]
+      },
+      "sinza": {
+        "units": 80.0,
+        "value": 367939.0,
+        "cleared": 14.8,
+        "offers": [
+          {
+            "name": "JUMBO + CODE 3 + MAN BAG",
+            "units": 32.0,
+            "type": "combo"
+          },
+          {
+            "name": "SARAI + BIG MAN",
+            "units": 15.0,
+            "type": "combo"
+          },
+          {
+            "name": "STANDARD + JADE",
+            "units": 6.0,
+            "type": "combo"
+          },
+          {
+            "name": "BONITA + ZELUS",
+            "units": 3.0,
+            "type": "combo"
+          },
+          {
+            "name": "GYMBAG + ARIA SLING",
+            "units": 3.0,
+            "type": "combo"
+          },
+          {
+            "name": "ELYSE + MINIZURI",
+            "units": 0.0,
+            "type": "combo"
+          },
+          {
+            "name": "FABELA + AMAYA",
+            "units": 0.0,
+            "type": "combo"
+          },
+          {
+            "name": "MOON BAG + BELT BAG",
+            "units": 0.0,
+            "type": "combo"
+          },
+          {
+            "name": "REO + AVANNA",
+            "units": 0.0,
+            "type": "combo"
+          },
+          {
+            "name": "SAFIRI + STANDARD",
+            "units": 2.0,
+            "type": "combo"
+          },
+          {
+            "name": "SLEEVE 1",
+            "units": 6.0,
+            "type": "single"
+          },
+          {
+            "name": "LUNA",
+            "units": 4.0,
+            "type": "single"
+          },
+          {
+            "name": "CODE 3",
+            "units": 3.0,
+            "type": "single"
+          },
+          {
+            "name": "BIG MAN BAG",
+            "units": 1.0,
+            "type": "single"
+          },
+          {
+            "name": "GYM BAG",
+            "units": 2.0,
+            "type": "single"
+          },
+          {
+            "name": "MONAH BP",
+            "units": 1.0,
+            "type": "single"
+          },
+          {
+            "name": "SARAI",
+            "units": 2.0,
+            "type": "single"
+          },
+          {
+            "name": "KATE",
+            "units": 0.0,
+            "type": "single"
+          },
+          {
+            "name": "MINI UMBRA",
+            "units": 0.0,
+            "type": "single"
+          },
+          {
+            "name": "MINI ZURI",
+            "units": 0.0,
+            "type": "single"
+          }
+        ]
+      },
+      "uganda": {
+        "units": 16.0,
+        "value": 1211500.0,
+        "cleared": 2.4,
+        "offers": [
+          {
+            "name": "ANTITHEFT",
+            "units": 4.0,
+            "stock": 26.0
+          },
+          {
+            "name": "SATCHEL",
+            "units": 5.0,
+            "stock": 15.0
+          },
+          {
+            "name": "JUMBO",
+            "units": 3.0,
+            "stock": 27.0
+          },
+          {
+            "name": "MINI ZURI",
+            "units": 1.0,
+            "stock": 11.0
+          },
+          {
+            "name": "NEO MAN",
+            "units": 1.0,
+            "stock": 17.0
+          },
+          {
+            "name": "AVANA HB",
+            "units": 0.0,
+            "stock": 8.0
+          },
+          {
+            "name": "BIG MAN BAG",
+            "units": 0.0,
+            "stock": 14.0
+          },
+          {
+            "name": "KAI",
+            "units": 0.0,
+            "stock": 18.0
+          },
+          {
+            "name": "KAYLA",
+            "units": 2.0,
+            "stock": 4.0
+          },
+          {
+            "name": "MANDY HB",
+            "units": 0.0,
+            "stock": 5.0
+          },
+          {
+            "name": "MINI SCHOOL",
+            "units": 0.0,
+            "stock": 13.0
+          },
+          {
+            "name": "MOON BAG",
+            "units": 0.0,
+            "stock": 7.0
+          },
+          {
+            "name": "NIZANA",
+            "units": 0.0,
+            "stock": 11.0
+          },
+          {
+            "name": "PIONEER",
+            "units": 0.0,
+            "stock": 5.0
+          },
+          {
+            "name": "SKYE HB",
+            "units": 0.0,
+            "stock": 7.0
+          },
+          {
+            "name": "zane man",
+            "units": 0.0,
+            "stock": 21.0
+          }
+        ]
+      }
+    },
+    "postingYields": {
+      "kenyaPct": 80.2,
+      "sinzaPct": 7.1,
+      "ugandaPct": 2.4,
+      "postedStock": 5075.0,
+      "unpostedStock": 5738.0,
+      "postsMade": 215.0,
+      "notOnOffer": {
+        "kenya": 5738.0,
+        "sinza": 388.0,
+        "uganda": 470.0
+      },
+      "salesFromPosting": 1021.0,
+      "expectedFromPosting": 484.0
     }
   }
 }

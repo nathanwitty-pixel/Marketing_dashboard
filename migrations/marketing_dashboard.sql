@@ -51,13 +51,20 @@ create table if not exists denri_mkt_monthly (
 );
 
 create table if not exists denri_mkt_weekly (
-  month_key  text references denri_mkt_monthly(month_key) on delete cascade,
-  seq        int,
-  label      text,
-  pct        numeric,
-  cum        numeric,
-  bags       numeric
+  month_key      text references denri_mkt_monthly(month_key) on delete cascade,
+  seq            int,
+  label          text,
+  week_month     text,
+  pct            numeric,
+  cum            numeric,
+  bags           numeric,
+  target_to_beat numeric,
+  declined_by    numeric
 );
+-- Backfill the richer weekly columns on tables created before they existed.
+alter table denri_mkt_weekly add column if not exists week_month     text;
+alter table denri_mkt_weekly add column if not exists target_to_beat numeric;
+alter table denri_mkt_weekly add column if not exists declined_by    numeric;
 
 create table if not exists denri_mkt_new_products (
   month_key  text references denri_mkt_monthly(month_key) on delete cascade,
@@ -86,11 +93,11 @@ on conflict (month_key) do update set month = excluded.month, year = excluded.ye
 delete from denri_mkt_weekly       where month_key = '2026-07';
 delete from denri_mkt_new_products where month_key = '2026-07';
 delete from denri_mkt_offers       where month_key = '2026-07';
-insert into denri_mkt_weekly (month_key, seq, label, pct, cum, bags) values ('2026-07', 1, 'Wk 1', 10.52, 10.52, 2445);
-insert into denri_mkt_weekly (month_key, seq, label, pct, cum, bags) values ('2026-07', 2, 'Wk 2', 16.16, 26.68, 3754);
-insert into denri_mkt_weekly (month_key, seq, label, pct, cum, bags) values ('2026-07', 3, 'Wk 3', 15.34, 42.02, 3510);
-insert into denri_mkt_weekly (month_key, seq, label, pct, cum, bags) values ('2026-07', 4, 'Wk 4', 13.65, 55.67, 3373);
-insert into denri_mkt_weekly (month_key, seq, label, pct, cum, bags) values ('2026-07', 5, 'Wk 1', 16.13, 71.8, 4584);
+insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-07', 1, 'Wk 1', 'Jul', 10.52, 10.52, 2445, 4824, -2379);
+insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-07', 2, 'Wk 2', 'Jul', 16.16, 26.68, 3754, 6133, -2379);
+insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-07', 3, 'Wk 3', 'Jul', 15.34, 42.02, 3510, 5808, -2298);
+insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-07', 4, 'Wk 4', 'Jul', 13.65, 55.67, 3373, 5808, -2435);
+insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-07', 5, 'Wk 1', 'Aug', 16.13, 71.8, 4584, 5808, -1224);
 insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-07', 'AMORA', 1, 49, 26, 55);
 insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-07', 'IMANI', 6, 74, 9, 174);
 insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-07', 'LAMORA', 125, 75, 104, 109);
@@ -98,8 +105,26 @@ insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, sto
 insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-07', 'NALA', 44, 56, 43, 74);
 insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-07', 'TAJI', 46, 54, 14, 56);
 insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-07', 'ZULA', 100, 50, 50, 151);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'Combos', 'combo', 2159, 9344041, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'Power Deals', 'deal', 3892, 7452800, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'ELYSE / AMAYA + ZIPPED/ LUNCHSET/ NIZANA /MOON', 'combo', 508, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'ANTITHEFT+MAN BAG/NIZANA', 'combo', 286, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'SAFIRI + STANDARD/ ANTITHEFT', 'combo', 284, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'JUMBO +MEGA', 'combo', 216, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'SARAI + PIONEER/CODE 3', 'combo', 188, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'PRIME + MAN BAG / NIZANA/ MOON', 'combo', 150, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'JUMBO + FABELA/ LIAM + MAN BAG / MINI UMBRA', 'combo', 213, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'BONITA + MANBAG', 'combo', 118, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'LOLA +MINI ZURI/TRECENTO', 'combo', 112, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'BABY BAG +LIAM', 'combo', 84, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'FABELA', 'deal', 839, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'JUMBO', 'deal', 798, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'BIG MAN BAG', 'deal', 412, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'ZANE MAN', 'deal', 360, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'ARIA SLING', 'deal', 318, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'CATHY HANDBAG', 'deal', 280, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'MONAH BP', 'deal', 275, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'PIONEER', 'deal', 257, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'CLAIRE HANDBAG', 'deal', 206, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Kenya', 'MINI MAYA', 'deal', 147, NULL, NULL);
 insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Sinza', 'JUMBO + MEGA', 'combo', 50, NULL, NULL);
 insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Sinza', 'SARAI + ANTITHEFT +WASHBAG', 'combo', 51, NULL, NULL);
 insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Sinza', 'BONITA + REMI', 'combo', 31, NULL, NULL);
@@ -136,3 +161,77 @@ insert into denri_mkt_offers (month_key, region, name, offer_type, units, value,
 insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Uganda', 'MOON BAG', NULL, 0, NULL, 7);
 insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Uganda', 'PIONEER', NULL, 0, NULL, 5);
 insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Uganda', 'zane man', NULL, 0, NULL, 21);
+
+-- ══ August 2026 (2026-08) ══
+insert into denri_mkt_monthly (month_key, month, year, generated_on, achieved_pct, total_sales, total_target, gap, bare_minimum, avg_weekly, corporate, forecast, np_count, np_target, np_sales, np_deficit, np_kenya, np_outside, np_posts, combos, power_deals, kenya_combo_units, kenya_combo_value, kenya_combo_avg, kenya_deal_units, kenya_deal_value, kenya_deal_avg, sinza_units, sinza_value, sinza_cleared, uganda_units, uganda_value, uganda_cleared, posting_kenya_pct, posting_sinza_pct, posting_uganda_pct, posted_stock, unposted_stock, posts_made, notoffer_kenya, notoffer_sinza, notoffer_uganda, sales_from_posting, expected_from_posting)
+values ('2026-08', 'August', 2026, '2026-08-10', 21.59, 5015, 23232, 18217, 5808, 1671.6666666666667, 312, '78.98%', 7, 930, 118, 812, 126, 3, 219, 10, 10, 893, 3983207, 4399, 1100, 2372300, 1970, 80, 367939, 14.8, 16, 1211500, 2.4, 80.2, 7.1, 2.4, 5075, 5738, 215, 5738, 388, 470, 1021, 484)
+on conflict (month_key) do update set month = excluded.month, year = excluded.year, generated_on = excluded.generated_on, achieved_pct = excluded.achieved_pct, total_sales = excluded.total_sales, total_target = excluded.total_target, gap = excluded.gap, bare_minimum = excluded.bare_minimum, avg_weekly = excluded.avg_weekly, corporate = excluded.corporate, forecast = excluded.forecast, np_count = excluded.np_count, np_target = excluded.np_target, np_sales = excluded.np_sales, np_deficit = excluded.np_deficit, np_kenya = excluded.np_kenya, np_outside = excluded.np_outside, np_posts = excluded.np_posts, combos = excluded.combos, power_deals = excluded.power_deals, kenya_combo_units = excluded.kenya_combo_units, kenya_combo_value = excluded.kenya_combo_value, kenya_combo_avg = excluded.kenya_combo_avg, kenya_deal_units = excluded.kenya_deal_units, kenya_deal_value = excluded.kenya_deal_value, kenya_deal_avg = excluded.kenya_deal_avg, sinza_units = excluded.sinza_units, sinza_value = excluded.sinza_value, sinza_cleared = excluded.sinza_cleared, uganda_units = excluded.uganda_units, uganda_value = excluded.uganda_value, uganda_cleared = excluded.uganda_cleared, posting_kenya_pct = excluded.posting_kenya_pct, posting_sinza_pct = excluded.posting_sinza_pct, posting_uganda_pct = excluded.posting_uganda_pct, posted_stock = excluded.posted_stock, unposted_stock = excluded.unposted_stock, posts_made = excluded.posts_made, notoffer_kenya = excluded.notoffer_kenya, notoffer_sinza = excluded.notoffer_sinza, notoffer_uganda = excluded.notoffer_uganda, sales_from_posting = excluded.sales_from_posting, expected_from_posting = excluded.expected_from_posting;
+delete from denri_mkt_weekly       where month_key = '2026-08';
+delete from denri_mkt_new_products where month_key = '2026-08';
+delete from denri_mkt_offers       where month_key = '2026-08';
+insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-08', 1, 'Wk 1', NULL, 3.57, 3.57, 830, NULL, NULL);
+insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-08', 2, 'Wk 2', NULL, 17.16, 20.73, 3986, NULL, NULL);
+insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-08', 3, 'Wk 3', NULL, 0.86, 21.59, 199, NULL, NULL);
+insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'AMORA', 0, 50, 15, 55);
+insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'IMANI', 3, 77, 0, 179);
+insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'LAMORA', 29, 171, 54, 129);
+insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'LOOP BP', 26, 224, 21, 99);
+insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'NALA', 16, 84, 33, 81);
+insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'TAJI', 10, 90, 42, 102);
+insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'ZULA', 34, 116, 54, 218);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Amaya + Zipped/Lunchset/ Nizana / Moon', 'combo', 171, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'SAFIRI + STANDARD/ ANTITHEFT', 'combo', 123, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Sarai + Prime', 'combo', 105, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Fabela + Laptop backpack / Big man', 'combo', 89, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Jumbo + standard/Liam + Pioneer/Antitheft', 'combo', 127, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Mega + Man Bag/ Mini Umbra / Neo man', 'combo', 91, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Bonita + Zane / Mini Umbra / Nizana /Neo Man', 'combo', 64, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Standard / liam + Laptop backpack', 'combo', 56, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Moon/ Nizana / Oval+ Zane/Manbag', 'combo', 52, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Baby Bag + Liam/Standard', 'combo', 15, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Jumbo', 'deal', 343, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'FABELA', 'deal', 126, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'REO TRAVEL', 'deal', 123, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'PRIME', 'deal', 100, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'MINI MAYA', 'deal', 73, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'CATHY HANDBAG', 'deal', 70, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'MINI ZURI', 'deal', 66, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'GYM BAG', 'deal', 60, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'MONAH BP', 'deal', 66, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'AVANA HB', 'deal', 73, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'JUMBO + CODE 3 + MAN BAG', 'combo', 32, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'SARAI + BIG MAN', 'combo', 15, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'STANDARD + JADE', 'combo', 6, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'BONITA + ZELUS', 'combo', 3, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'GYMBAG + ARIA SLING', 'combo', 3, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'ELYSE + MINIZURI', 'combo', 0, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'FABELA + AMAYA', 'combo', 0, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'MOON BAG + BELT BAG', 'combo', 0, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'REO + AVANNA', 'combo', 0, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'SAFIRI + STANDARD', 'combo', 2, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'SLEEVE 1', 'single', 6, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'LUNA', 'single', 4, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'CODE 3', 'single', 3, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'BIG MAN BAG', 'single', 1, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'GYM BAG', 'single', 2, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'MONAH BP', 'single', 1, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'SARAI', 'single', 2, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'KATE', 'single', 0, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'MINI UMBRA', 'single', 0, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'MINI ZURI', 'single', 0, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'ANTITHEFT', NULL, 4, NULL, 26);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'SATCHEL', NULL, 5, NULL, 15);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'JUMBO', NULL, 3, NULL, 27);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'MINI ZURI', NULL, 1, NULL, 11);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'NEO MAN', NULL, 1, NULL, 17);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'AVANA HB', NULL, 0, NULL, 8);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'BIG MAN BAG', NULL, 0, NULL, 14);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'KAI', NULL, 0, NULL, 18);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'KAYLA', NULL, 2, NULL, 4);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'MANDY HB', NULL, 0, NULL, 5);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'MINI SCHOOL', NULL, 0, NULL, 13);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'MOON BAG', NULL, 0, NULL, 7);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'NIZANA', NULL, 0, NULL, 11);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'PIONEER', NULL, 0, NULL, 5);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'SKYE HB', NULL, 0, NULL, 7);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'zane man', NULL, 0, NULL, 21);

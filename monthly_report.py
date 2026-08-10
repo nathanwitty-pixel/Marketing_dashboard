@@ -889,7 +889,8 @@ _snapshot = {
     "offerType": {
         "combos": combos, "powerDeals": deals,
         "kenya": {"comboUnits": combo_units, "comboValue": combo_value, "comboAvg": round(combo_avg, 1),
-                  "dealUnits": deal_units, "dealValue": deal_value, "dealAvg": round(deal_avg, 1)},
+                  "dealUnits": deal_units, "dealValue": deal_value, "dealAvg": round(deal_avg, 1),
+                  "offers": _rpt["offer"]["items"]},   # individual Kenya offers (combo/deal), stored like Sinza/Uganda
         "sinza": {"units": sz_off_units, "value": sz_off_value, "cleared": round(sz_cleared, 1),
                   "offers": _rpt["offer"]["sinza"]},
         "uganda": {"units": ug_off_units, "value": ug_off_value, "cleared": round(ug_cleared, 1),

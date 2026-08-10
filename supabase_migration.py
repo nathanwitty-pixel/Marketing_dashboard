@@ -93,13 +93,20 @@ create table if not exists denri_mkt_monthly (
 );
 
 create table if not exists denri_mkt_weekly (
-  month_key  text references denri_mkt_monthly(month_key) on delete cascade,
-  seq        int,
-  label      text,
-  pct        numeric,
-  cum        numeric,
-  bags       numeric
+  month_key      text references denri_mkt_monthly(month_key) on delete cascade,
+  seq            int,
+  label          text,
+  week_month     text,
+  pct            numeric,
+  cum            numeric,
+  bags           numeric,
+  target_to_beat numeric,
+  declined_by    numeric
 );
+-- Backfill the richer weekly columns on tables created before they existed.
+alter table denri_mkt_weekly add column if not exists week_month     text;
+alter table denri_mkt_weekly add column if not exists target_to_beat numeric;
+alter table denri_mkt_weekly add column if not exists declined_by    numeric;
 
 create table if not exists denri_mkt_new_products (
   month_key  text references denri_mkt_monthly(month_key) on delete cascade,
@@ -187,8 +194,11 @@ def month_block(key: str, s: dict) -> str:
 
     for i, w in enumerate(cp.get("weekly", []), start=1):
         out.append(
-            "insert into denri_mkt_weekly (month_key, seq, label, pct, cum, bags) values ("
-            f"{q(key)}, {i}, {q(w.get('label'))}, {num(w.get('pct'))}, {num(w.get('cum'))}, {num(w.get('bags'))});"
+            "insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, "
+            "target_to_beat, declined_by) values ("
+            f"{q(key)}, {i}, {q(w.get('label'))}, {q(w.get('month'))}, {num(w.get('pct'))}, "
+            f"{num(w.get('cum'))}, {num(w.get('bags'))}, {num(w.get('targetToBeat'))}, "
+            f"{num(w.get('declinedBy'))});"
         )
     for p in np_.get("products", []):
         out.append(
@@ -196,11 +206,16 @@ def month_block(key: str, s: dict) -> str:
             f"{q(key)}, {q(p.get('name'))}, {num(p.get('sold'))}, {num(p.get('remaining'))}, "
             f"{num(p.get('posts'))}, {num(p.get('stock'))});"
         )
-    # Kenya combos/power deals as two aggregate offer rows, then Sinza & Uganda per-offer.
-    offer_rows = [
-        ("Kenya", "Combos", "combo", ke.get("comboUnits"), ke.get("comboValue"), None),
-        ("Kenya", "Power Deals", "deal", ke.get("dealUnits"), ke.get("dealValue"), None),
-    ]
+    # Kenya per-offer (falls back to the two aggregates if no per-offer list),
+    # then Sinza & Uganda per-offer.
+    offer_rows = []
+    ke_offers = ke.get("offers", [])
+    if ke_offers:
+        for o in ke_offers:
+            offer_rows.append(("Kenya", o.get("name"), o.get("type"), o.get("units"), None, None))
+    else:
+        offer_rows.append(("Kenya", "Combos", "combo", ke.get("comboUnits"), ke.get("comboValue"), None))
+        offer_rows.append(("Kenya", "Power Deals", "deal", ke.get("dealUnits"), ke.get("dealValue"), None))
     for o in sz.get("offers", []):
         offer_rows.append(("Sinza", o.get("name"), o.get("type"), o.get("units"), None, o.get("stock")))
     for o in ug.get("offers", []):

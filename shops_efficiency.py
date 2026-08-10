@@ -495,6 +495,177 @@ def update_history():
         json.dump({"points": points}, f, indent=2)
     return points
 
+# ── LIVE dispatch & receiving from Odoo (shops_dispatch.py) ───
+# Distributed-In per shop ("the in for the shops") and the receiving
+# breakdown/score. Optional: if the file isn't there (DB unreachable when
+# shops_dispatch.py ran), the page just hides those sections.
+def load_dispatch():
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "shops_dispatch_db.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (ValueError, OSError):
+        return None
+
+dispatch = load_dispatch()
+
+
+def _metric(period, name):
+    for m in period["metrics"]:
+        if m["metric"] == name:
+            return m
+    return None
+
+
+def apply_odoo(period, disp_period, bags_target, buffer_stock):
+    """Replace the dispatch-driven metrics with the live Odoo figures, at shop
+    level: NO. OF BAGS DISPATCHED = distributed-in, TOTAL BAGS SOLD = Odoo POS,
+    and STOCKS REMAINING AFTER DISPATCH = max(in - sold, 0). Sell-through still
+    uses the sheet's NO. OF BAGS AT THE SHOP (stock on hand). Rebuilds the
+    metrics, the summary Target-vs-Actual, and the per-shop performance."""
+    if not disp_period:
+        return
+    di   = disp_period.get("distributedIn", {})
+    sold = disp_period.get("sold", {})
+    shops = period["shops"]
+    at_shop = _metric(period, "NO. OF BAGS AT THE SHOP")["byShop"]   # keep from sheet (stock)
+
+    dispatched = {s: int(di.get(s, 0)) for s in shops}
+    sold_total = {s: int(sold.get(s, 0)) for s in shops}
+    with_dispatch    = {s: min(sold_total[s], dispatched[s]) for s in shops}   # sold covered by dispatch
+    remaining        = {s: max(dispatched[s] - sold_total[s], 0) for s in shops}
+    without_dispatch = {s: max(sold_total[s] - dispatched[s], 0) for s in shops}  # sold beyond dispatch
+
+    for name, by in (("TOTAL BAGS SOLD", sold_total),
+                     ("NO. OF BAGS DISPATCHED", dispatched),
+                     ("BAGS SOLD FROM DISPATCH HELP", with_dispatch),
+                     ("STOCKS REMAINING AFTER DISPATCH", remaining),
+                     ("CLEARED BAGS WITHOUT DISPATCH", without_dispatch)):
+        m = _metric(period, name)
+        if m:
+            m["byShop"] = by
+            m["total"] = sum(by.values())
+
+    t_sold, t_dispatched = sum(sold_total.values()), sum(dispatched.values())
+    t_with, t_remaining, t_without = (sum(with_dispatch.values()),
+                                      sum(remaining.values()), sum(without_dispatch.values()))
+    dispatch_conv_target = round(t_dispatched * DISPATCH_CONVERSION_TARGET_PCT / 100)
+    remaining_target     = round(t_dispatched * STOCK_REMAINING_TARGET_PCT / 100)
+    clearance_target     = round(buffer_stock * BUFFER_CLEARANCE_TARGET_PCT / 100)
+
+    period["summary"] = [
+        {"metric": "TOTAL BAGS SOLD", "actual": t_sold, "target": bags_target,
+         "targetPct": "100.00%", "actualPct": fmt_pct(pct(t_sold, bags_target)),
+         "desc": "should reach 100% — sold from Odoo POS", "currentPct": fmt_pct(pct(t_sold, bags_target)),
+         "tone": "sold"},
+        {"metric": "NO. OF BAGS DISPATCHED", "actual": t_dispatched, "target": None,
+         "targetPct": "—", "actualPct": "—", "desc": "distributed in to shops (Odoo)",
+         "currentPct": "—", "tone": "info"},
+        {"metric": "BAGS SOLD FROM DISPATCH HELP", "actual": t_with, "target": dispatch_conv_target,
+         "targetPct": fmt_pct(DISPATCH_CONVERSION_TARGET_PCT), "actualPct": fmt_pct(pct(t_with, dispatch_conv_target)),
+         "desc": "sold that dispatch could cover", "currentPct": fmt_pct(pct(t_with, t_sold)), "tone": "good"},
+        {"metric": "STOCKS REMAINING AFTER DISPATCH", "actual": t_remaining, "target": remaining_target,
+         "targetPct": fmt_pct(STOCK_REMAINING_TARGET_PCT), "actualPct": fmt_pct(pct(t_remaining, t_dispatched)),
+         "desc": "distributed-in not yet sold — to be reduced",
+         "currentPct": fmt_pct(pct(t_remaining, t_dispatched)), "tone": "warn"},
+        {"metric": "CLEARED BAGS WITHOUT DISPATCH HELP", "actual": t_without, "target": clearance_target,
+         "targetPct": fmt_pct(BUFFER_CLEARANCE_TARGET_PCT), "actualPct": fmt_pct(pct(t_without, clearance_target)),
+         "desc": "sold beyond what was distributed (own buffer)",
+         "currentPct": fmt_pct(pct(t_without, t_sold)), "tone": "good"},
+    ]
+
+    performance = []
+    for shop in shops:
+        a, c, d = at_shop.get(shop, 0), sold_total[shop], dispatched[shop]
+        wd, rm, solo = with_dispatch[shop], remaining[shop], without_dispatch[shop]
+        sell_through = pct(c, a)
+        disp_conv = pct(wd, d) if d else None
+        rem_rate  = pct(rm, d) if d else None
+        st_capped = min(sell_through, 100)
+        score = (0.6 * st_capped + 0.4 * min(disp_conv or 0, 100)) if d else st_capped
+        performance.append({
+            "name": shop, "shop": shop, "atShop": a, "sold": c, "dispatched": d,
+            "soldFromDispatch": wd, "remaining": rm, "selfCleared": solo,
+            "sellThrough": round(sell_through, 1),
+            "dispatchConv": (round(disp_conv, 1) if disp_conv is not None else None),
+            "remainingRate": (round(rem_rate, 1) if rem_rate is not None else None),
+            "score": round(score, 1),
+        })
+    performance.sort(key=lambda p: -p["score"])
+    for i, p in enumerate(performance):
+        p["rank"] = i + 1
+    period["performance"] = performance
+    period["totals"] = {"remaining": t_remaining, "cleared": t_without}
+
+    # ── Region view: SAME groupings (SHOP_REGION_MAP), numbers from Odoo ──
+    region_of = {s: REGION_MAP_UP.get(s) for s in shops}
+    order = []
+    for s in shops:
+        r = region_of[s]
+        if r and r not in order:
+            order.append(r)
+    z = lambda: {r: 0 for r in order}
+    at_r, sold_r, disp_r, wd_r, rem_r, solo_r = z(), z(), z(), z(), z(), z()
+    for s in shops:
+        r = region_of[s]
+        if not r:
+            continue
+        at_r[r]   += at_shop.get(s, 0)
+        sold_r[r] += sold_total[s]
+        disp_r[r] += dispatched[s]
+        wd_r[r]   += with_dispatch[s]
+        rem_r[r]  += remaining[s]
+        solo_r[r] += without_dispatch[s]
+    regions = [r for r in order
+               if any([at_r[r], sold_r[r], disp_r[r], wd_r[r], rem_r[r], solo_r[r]])]
+
+    def by(d):
+        return {r: d[r] for r in regions}
+
+    r_metrics = [
+        {"metric": "NO. OF BAGS AT THE SHOP",         "byRegion": by(at_r)},
+        {"metric": "TOTAL BAGS SOLD",                 "byRegion": by(sold_r)},
+        {"metric": "NO. OF BAGS DISPATCHED",          "byRegion": by(disp_r)},
+        {"metric": "BAGS SOLD FROM DISPATCH HELP",    "byRegion": by(wd_r)},
+        {"metric": "STOCKS REMAINING AFTER DISPATCH", "byRegion": by(rem_r)},
+        {"metric": "CLEARED BAGS WITHOUT DISPATCH",   "byRegion": by(solo_r)},
+    ]
+    for m in r_metrics:
+        m["total"] = sum(m["byRegion"].values())
+
+    r_perf = []
+    for r in regions:
+        a, c, d = at_r[r], sold_r[r], disp_r[r]
+        w, rm_, so = wd_r[r], rem_r[r], solo_r[r]
+        sell_through = pct(c, a)
+        disp_conv = pct(w, d) if d else None
+        rem_rate  = pct(rm_, d) if d else None
+        st_capped = min(sell_through, 100)
+        score = (0.6 * st_capped + 0.4 * min(disp_conv or 0, 100)) if d else st_capped
+        r_perf.append({
+            "name": r, "atShop": a, "sold": c, "dispatched": d,
+            "soldFromDispatch": w, "remaining": rm_, "selfCleared": so,
+            "sellThrough": round(sell_through, 1),
+            "dispatchConv": (round(disp_conv, 1) if disp_conv is not None else None),
+            "remainingRate": (round(rem_rate, 1) if rem_rate is not None else None),
+            "score": round(score, 1),
+        })
+    r_perf.sort(key=lambda p: -p["score"])
+    for i, p in enumerate(r_perf):
+        p["rank"] = i + 1
+
+    period["regions"] = {
+        "names": regions, "metrics": r_metrics, "performance": r_perf,
+        "remainingByRegion": by(rem_r), "clearedByRegion": by(solo_r),
+    }
+
+
+if dispatch:
+    apply_odoo(weekly,  dispatch.get("weekly"),  WK_BAGS_TARGET, WK_BUFFER_STOCK)
+    apply_odoo(monthly, dispatch.get("monthly"), MO_BAGS_TARGET, MO_BUFFER_STOCK)
+
+# Snapshot the trend AFTER the Odoo override, so remaining/cleared history
+# matches what the page now shows.
 history = update_history()
 
 SE = {
@@ -503,6 +674,7 @@ SE = {
     "weekly":       weekly,
     "monthly":      monthly,
     "history":      history,
+    "dispatch":     dispatch,   # {computedOn, shops, weekly:{distributedIn,receiving}, monthly:{...}}
 }
 
 

@@ -27,6 +27,7 @@ SCRIPTS = [
     # Refresh the real weekly bags from Postgres FIRST — current_performance.py
     # reads weekly_sales_db.json. No-ops safely if the DB is unreachable.
     ("Weekly Sales (Postgres)", "weekly_sales.py"),
+    ("Monthly Sales (Postgres)", "monthly_sales.py"),
     ("Current Performance",    "current_performance.py"),
     ("Forward Projections",    "forward_projections.py"),
     ("New Products Analytics", "new_products.py"),
@@ -34,10 +35,15 @@ SCRIPTS = [
     ("Bags Selection Analytics", "bags_selection.py"),
     ("Offer Type Analysis",    "offer_type_analysis.py"),
     ("Posting Yields",         "POSTING (SALES YIELDS FROM ACCURATE POSTING).py"),
+    # Live dispatch/receiving from Odoo — shops_efficiency.py reads its JSON.
+    ("Shops Dispatch (Postgres)", "shops_dispatch.py"),
     ("Shops Efficiency",       "shops_efficiency.py"),
     # These read the data the scripts above injected — keep them LAST.
     ("Dashboard Insights",     "generate_insights.py"),
     ("Monthly Report",         "monthly_report.py"),
+    # Reads the frozen months back from Supabase for the History page.
+    # No-ops safely if Supabase is unreachable.
+    ("History (Supabase)",     "history.py"),
 ]
 
 
@@ -48,12 +54,23 @@ SCRIPT_GAP = 8
 # reset, then retry the script once.
 QUOTA_WAIT = 65
 
+# Most scripts are a quick sheet read; a few run heavy Postgres queries and
+# legitimately take longer. Give those more headroom before calling it a timeout.
+DEFAULT_TIMEOUT = 120
+SCRIPT_TIMEOUTS = {
+    "shops_dispatch.py": 300,   # combined-distribution + receiving + sold, weekly & monthly
+}
+
+
+def _timeout_for(script, default):
+    return SCRIPT_TIMEOUTS.get(os.path.basename(script), default)
+
 
 def _run_one(path):
     return subprocess.run(
         [sys.executable, path],
         cwd=BASE_DIR,
-        timeout=120,
+        timeout=_timeout_for(path, DEFAULT_TIMEOUT),
         capture_output=True,
         text=True,
         encoding='utf-8',
@@ -65,6 +82,15 @@ def _run_one(path):
 def _is_quota_error(result):
     blob = (result.stderr or "") + (result.stdout or "")
     return "429" in blob or "Quota exceeded" in blob or "RATE_LIMIT" in blob
+
+
+def _is_transient(result):
+    """A one-off network hiccup worth an immediate retry — a Google Sheets read
+    timeout, a dropped connection, etc. (Not a quota error; that waits instead.)"""
+    blob = (result.stderr or "") + (result.stdout or "")
+    return ("ReadTimeout" in blob or "Read timed out" in blob or "timed out" in blob
+            or "ConnectionError" in blob or "Connection aborted" in blob
+            or "Max retries exceeded" in blob)
 
 
 def run_scripts():
@@ -83,6 +109,11 @@ def run_scripts():
                 print(f"quota hit, waiting {QUOTA_WAIT}s to retry...", end=" ", flush=True)
                 time.sleep(QUOTA_WAIT)
                 result = _run_one(path)
+            # Or once, immediately, on a transient network hiccup (Sheets read timeout, etc.)
+            elif result.returncode != 0 and _is_transient(result):
+                print("network hiccup, retrying...", end=" ", flush=True)
+                time.sleep(3)
+                result = _run_one(path)
 
             if result.returncode == 0:
                 print("OK", flush=True)
@@ -91,7 +122,7 @@ def run_scripts():
                 short = err[-1][:100] if err else "unknown error"
                 print(f"FAIL  {short}", flush=True)
         except subprocess.TimeoutExpired:
-            print("FAIL  timed out after 120 s", flush=True)
+            print(f"FAIL  timed out after {_timeout_for(path, DEFAULT_TIMEOUT)} s", flush=True)
         except Exception as exc:
             print(f"FAIL  {exc}", flush=True)
 
@@ -144,6 +175,7 @@ def start_daily_snapshot():
 # to corporate_bags / bare_minimum at the top of that script.
 SCRIPT_MAP = {
     "current_performance.html":                             ["weekly_sales.py",
+                                                             "monthly_sales.py",
                                                              "current_performance.py",
                                                              "forward_projections.py"],
     "forward_projections.html":                             ["forward_projections.py"],
@@ -152,9 +184,11 @@ SCRIPT_MAP = {
     "bags_selection.html":                                  ["bags_selection.py"],
     "offer_type_analysis.html":                             ["offer_type_analysis.py"],
     "POSTING (SALES YIELDS FROM ACCURATE POSTING).html":   ["POSTING (SALES YIELDS FROM ACCURATE POSTING).py"],
-    "shops_efficiency.html":                                ["shops_efficiency.py"],
+    "shops_efficiency.html":                                ["shops_dispatch.py",
+                                                             "shops_efficiency.py"],
     "insights.html":                                        ["generate_insights.py"],
     "monthly_report.html":                                  ["monthly_report.py"],
+    "history.html":                                         ["history.py"],
 }
 
 
@@ -164,6 +198,28 @@ def start_server():
     class DashHandler(http.server.SimpleHTTPRequestHandler):
         def log_message(self, *args):
             pass
+
+        # A browser that navigates away / reloads mid-download aborts the
+        # connection while we're still streaming the file. On Windows that
+        # surfaces as WinError 10053/10054 and http.server prints a noisy
+        # traceback. These are harmless — swallow them so the console stays clean.
+        def handle_one_request(self):
+            try:
+                super().handle_one_request()
+            except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
+                self.close_connection = True
+
+        def copyfile(self, source, outputfile):
+            try:
+                super().copyfile(source, outputfile)
+            except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
+                pass
+
+        def finish(self):
+            try:
+                super().finish()
+            except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
+                pass
 
         def end_headers(self):
             # Never let the browser cache dashboard HTML — always serve fresh data
@@ -251,24 +307,30 @@ def start_server():
                 if not os.path.exists(script_path):
                     self._json(404, {"ok": False, "error": f"Script not found: {script}"})
                     return
-                try:
-                    result = subprocess.run(
-                        [sys.executable, script_path],
+                def _run_ref(sp):
+                    return subprocess.run(
+                        [sys.executable, sp],
                         cwd=BASE_DIR,
-                        timeout=90,
+                        timeout=_timeout_for(sp, 180),
                         capture_output=True,
                         text=True,
                         encoding='utf-8',
                         errors='replace',
                         env={**os.environ, "PYTHONIOENCODING": "utf-8", "DENRI_LAUNCHER": "1"},
                     )
+                try:
+                    result = _run_ref(script_path)
+                    # One immediate retry on a transient network hiccup (Sheets read timeout, etc.)
+                    if result.returncode != 0 and _is_transient(result):
+                        result = _run_ref(script_path)
                     if result.returncode != 0:
                         lines = result.stderr.strip().splitlines()
                         msg = lines[-1][:200] if lines else "unknown error"
                         self._json(500, {"ok": False, "error": f"{script}: {msg}"})
                         return
                 except subprocess.TimeoutExpired:
-                    self._json(500, {"ok": False, "error": f"{script} timed out after 90s"})
+                    self._json(500, {"ok": False,
+                                     "error": f"{script} timed out after {_timeout_for(script_path, 180)}s"})
                     return
                 except Exception as exc:
                     self._json(500, {"ok": False, "error": str(exc)})

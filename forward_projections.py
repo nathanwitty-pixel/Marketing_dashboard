@@ -117,6 +117,32 @@ print("Fetching data from Google Sheets...")
 total_target, total_sales, weekly_sales_total = fetch_sheet_data()
 
 
+# ── Prefer LIVE Odoo figures over the sheet (same as current_performance.py) ──
+# Target stays from the sheet (planning number). Sales & weekly come from
+# Postgres when available, so the projections match the Current Performance
+# cards instead of the sheet's SALES / WEEKLY_SALES columns.
+def _live_bags(filename, key_field, key_value, bags_field):
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
+    try:
+        with open(path, encoding="utf-8") as f:
+            d = json.load(f)
+        if d.get(key_field, "") == key_value:
+            return int(round(float(d.get(bags_field))))
+    except (ValueError, OSError, KeyError, TypeError):
+        pass
+    return None
+
+_today  = date.today()
+_sunday = _today - timedelta(days=(_today.weekday() + 1) % 7)
+_live_month = _live_bags("monthly_sales_db.json", "monthKey",  _today.strftime("%Y-%m"), "monthlyBags")
+_live_week  = _live_bags("weekly_sales_db.json",  "weekStart", _sunday.isoformat(),      "weeklyBags")
+sales_is_live = _live_month is not None
+if sales_is_live:
+    total_sales = _live_month
+if _live_week is not None:
+    weekly_sales_total = _live_week
+
+
 # ── DATE (auto-calculated) ────────────────────────────────────
 # Sales are entered in the sheet the same evening, so by today the data
 # covers every complete day through YESTERDAY. Complete days = yesterday's
@@ -133,7 +159,7 @@ proj_ref        = yesterday
 # nonsense projection (2225%). If the projection would be wildly over target this
 # early, the data is still last month's — so project the PREVIOUS, completed
 # month at 1× pace until the new month's data actually starts coming in.
-if (current_day <= 6 and days_in_month and total_target
+if (not sales_is_live and current_day <= 6 and days_in_month and total_target
         and (total_sales * days_in_month / current_day) > total_target * 1.5):
     proj_ref      = yesterday.replace(day=1) - timedelta(days=1)   # last day of previous month
     current_day   = calendar.monthrange(proj_ref.year, proj_ref.month)[1]
@@ -200,7 +226,69 @@ def _perfect_week_index(d):
         ws += timedelta(days=7)
     return idx
 
+def odoo_weekly_breakdown():
+    """Current month's Weekly Performance, live from Odoo.
+
+    Cuts the month into Sun–Sat weeks (the opening partial week — e.g. Aug 1
+    alone — is Wk 1, the first full Sun–Sat is Wk 2, …, matching how weeks are
+    counted here) and asks Postgres for each week's bags. Cumulative bags drive
+    the % climb; each week's own bags drive Weekly Sales / Declined By.
+
+    Returns the weekly_history entries (current month only) or None if the DB
+    isn't reachable, in which case the caller keeps the sheet-based fallback."""
+    try:
+        from lib import db, queries
+    except Exception:
+        return None
+    ok, _ = db.check_connection()
+    if not ok:
+        return None
+
+    today   = date.today()
+    m_start = today.replace(day=1)
+    m_end   = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+    ws      = m_start - timedelta(days=(m_start.weekday() + 1) % 7)   # Sunday of the week holding the 1st
+
+    entries, idx, cum = [], 0, 0
+    while ws <= m_end:
+        we        = ws + timedelta(days=6)                # Saturday
+        seg_start = max(ws, m_start)
+        seg_end   = min(we, m_end)
+        if seg_start <= seg_end:                          # this Sun–Sat week has in-month days
+            idx += 1
+            if seg_start <= today:                        # …and it has already started
+                df = db.run_query(queries.BAGS_SOLD_TOTAL,   # same total definition as monthly Sales
+                                  {"start_date": seg_start.isoformat(),
+                                   "end_date":   seg_end.isoformat(),
+                                   "excluded":   queries.excluded_products()})
+                bags = int(round(float(df.iloc[0]["bags"]))) if df is not None and not df.empty else 0
+                prev_cum = cum
+                cum += bags
+                entries.append({
+                    "weekStart":    seg_start.isoformat(),
+                    "label":        "Wk " + str(idx),
+                    "month":        today.strftime("%b"),
+                    "salesPct":     round((cum / total_target * 100) if total_target else 0, 2),
+                    "salesBags":    cum,
+                    "prevSalesPct": round((prev_cum / total_target * 100) if total_target else 0, 2),
+                    "prevSalesBags": prev_cum,
+                    "weeklySales":  bags,
+                    "declinedBy":   bags - bare_minimum,
+                })
+        ws += timedelta(days=7)
+    return entries or None
+
+
 def update_weekly_history():
+    # Prefer the live Odoo per-week breakdown for the CURRENT month (starts fresh
+    # at Wk 1 each month). Falls back to the incremental sheet-based history below
+    # when Postgres isn't reachable.
+    live = odoo_weekly_breakdown()
+    if live is not None:
+        with open(WEEKLY_HISTORY_FILE, "w") as f:
+            json.dump({"weeks": live}, f, indent=2)
+        return live
+
     ref = date.today() - timedelta(days=1)       # data covers through yesterday
     ws  = _week_start(ref)
     wk_idx = _perfect_week_index(ref)
@@ -337,8 +425,8 @@ if not os.environ.get("DENRI_LAUNCHER"):
 print("forward_projections data injected; dashboard updated.")
 print(f"  Data through          : {yesterday.strftime('%d %b %Y')}  (day {current_day} of {days_in_month})")
 print(f"  Velocity factor       : {velocity_factor:.2f}x")
-print(f"  Total Target (col C)  : {fmt_int(total_target)}")
-print(f"  Total Sales  (col D)  : {fmt_int(total_sales)}")
+print(f"  Total Target (sheet)  : {fmt_int(total_target)}")
+print(f"  Total Sales  ({'Odoo' if sales_is_live else 'sheet'})  : {fmt_int(total_sales)}")
 print(f"  Standard Proj.        : {fmt_pct(standard_projection_pct)}")
 print(f"  Forecasted Proj.      : {fmt_pct(forecasted_projection_pct)}  (incl. {fmt_int(corporate_bags)} corporate)")
 print(f"  Perfect weeks / month : {perfect_weeks}")

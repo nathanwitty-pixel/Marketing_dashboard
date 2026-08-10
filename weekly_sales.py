@@ -40,7 +40,7 @@ def main() -> None:
     if not ok:
         print(f"Postgres not reachable — {detail}")
         return
-    if not _query_ready(queries.WEEKLY_BAGS_TOTAL):
+    if not _query_ready(queries.BAGS_SOLD_TOTAL):
         print("lib/queries.py still has {{placeholders}}.")
         print("Fill in your sale-line table/columns (or paste your real BAGS_SOLD")
         print("SQL) and re-run — see the comments at the top of lib/queries.py.")
@@ -48,8 +48,9 @@ def main() -> None:
 
     start, end = week_window()
     df = db.run_query(
-        queries.WEEKLY_BAGS_TOTAL,
-        {"start_date": start.isoformat(), "end_date": end.isoformat()},
+        queries.BAGS_SOLD_TOTAL,   # same "bags sold" definition as the monthly total, so they reconcile
+        {"start_date": start.isoformat(), "end_date": end.isoformat(),
+         "excluded": queries.excluded_products()},
     )
     if df is None or df.empty:
         print(f"No sales rows for {start} → {end}.")

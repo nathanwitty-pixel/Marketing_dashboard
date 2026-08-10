@@ -17,6 +17,46 @@ card uses. Master-list-only scoping isn't applied yet — that lands when we
 migrate the rest of the dashboard.
 """
 
+import os as _os
+
+_SQL_DIR = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "sql")
+
+
+def _load_sql(name):
+    with open(_os.path.join(_SQL_DIR, name), encoding="utf-8") as _f:
+        return _f.read()
+
+
+# Editable list of product names that are NOT counted as bag sales — see
+# sales_exclusions.txt at the project root. Maintained by the user; read fresh
+# each run so edits take effect on the next refresh.
+_EXCLUSIONS_FILE = _os.path.join(_os.path.dirname(_SQL_DIR), "sales_exclusions.txt")
+
+
+def excluded_products():
+    """Lower-cased product names to drop from Total Sales. Returns a sentinel
+    when the list is empty so `<> ALL(:excluded)` stays a valid text[]."""
+    names = []
+    try:
+        with open(_EXCLUSIONS_FILE, encoding="utf-8") as _f:
+            for line in _f:
+                s = line.split("#", 1)[0].strip()
+                if s:
+                    names.append(s.lower())
+    except OSError:
+        pass
+    return names or ["~~no~exclusions~~"]
+
+
+# TOTAL BAGS SOLD — the headline "total sales" figure. Matches the Product Sales
+# report's GRAND TOTAL exactly: counts every individual bag sold (including bags
+# inside combos, and gift bags), dropping only the combo WRAPPER ('+' name),
+# delivery, customisation and straps. This is the number the dashboard's
+# Current Performance "Sales", the Weekly Sales card and the weekly-performance
+# breakdown all use, so they reconcile. Params :start_date / :end_date.
+BAGS_SOLD_TOTAL = _load_sql("bags_sold_total.sql")
+
+
 # Shared WHERE body so TOTAL and the per-product detail can't drift apart.
 _BAGS_WHERE = """
     (o.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date
@@ -42,6 +82,12 @@ FROM pos_order_line l
 JOIN pos_order o ON o.id = l.order_id
 WHERE {_BAGS_WHERE}
 """
+
+# Monthly total — the SAME bags query, just fed a whole-month date window
+# (first→last day of the month). Used by monthly_sales.py for the current
+# month's Sales / target-achievement figure. Kept as its own name so callers
+# read clearly, but the SQL is identical because _BAGS_WHERE is window-driven.
+MONTHLY_BAGS_TOTAL = WEEKLY_BAGS_TOTAL
 
 # Per-product detail for the same window (bags + value per product name).
 WEEKLY_BAGS_SOLD = f"""

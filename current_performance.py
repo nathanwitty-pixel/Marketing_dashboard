@@ -87,6 +87,23 @@ def weekly_from_db(sheet_value):
         pass
     return sheet_value
 
+def monthly_from_db(sheet_value):
+    """Prefer the CURRENT month's real bags from Postgres (monthly_sales_db.json,
+    written by monthly_sales.py) over the MONTHLY_TARGET sheet's SALES column.
+    Applies only when the file is for the current month; otherwise (a past/frozen
+    month, or the DB unreachable) falls back to the sheet value unchanged."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "monthly_sales_db.json")
+    if not os.path.exists(path):
+        return sheet_value
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        if data.get("monthKey", "") == datetime.date.today().strftime("%Y-%m"):
+            return int(round(float(data.get("monthlyBags", sheet_value))))
+    except (ValueError, OSError, KeyError, TypeError):
+        pass
+    return sheet_value
+
 def update_month_boundary(weekly_total):
     """Update the rolling snapshot.
     Returns (carryover_bags | None, captured_on, prev_month_record)."""
@@ -202,6 +219,11 @@ total_target, total_sales, total_deficit, weekly_sales_total = fetch_monthly_tar
 # falls back to the WEEKLY_SALES sheet tab otherwise.
 weekly_sales_total = weekly_from_db(weekly_sales_total)
 
+# Real current-MONTH bags from Postgres when available (see monthly_sales.py);
+# this is the total sales we've done in the month. Falls back to the sheet's
+# SALES column for past months or when the DB/file isn't there.
+total_sales = monthly_from_db(total_sales)
+
 # Month-boundary handling: split the straddling week's total by month.
 carryover_bags, carryover_date, prev_month_rec = update_month_boundary(weekly_sales_total)
 prev_month_weekly = prev_month_rec.get("final_weekly_sales", 0) if prev_month_rec else 0
@@ -296,8 +318,11 @@ if straddling and prev_month_rec and prev_month_rec.get("recorded_on"):
 
 # 1. Remaining Target
 #    The number of bags still needed to reach the full target.
-#    Taken directly from column E (DEFICIT) sum.
-remaining_target = total_deficit
+#    Target comes from the sheet (col C); sales is the Odoo month total, so
+#    remaining = sheet target − Odoo sales (floored at 0). This replaces the
+#    sheet's col-E deficit, which was computed off the sheet's own sales and
+#    would ignore the Postgres figure.
+remaining_target = max(total_target - total_sales, 0)
 
 # 2. Sales % Achieved
 #    How much of the target has been sold so far, as a percentage.
@@ -418,10 +443,10 @@ with open(html_path, "w", encoding="utf-8") as f:
 
 save_snapshot(weekly_sales_total, previous_sales_bags)
 print("current_performance.html updated.")
-print(f"  Total Target (col C) : {fmt_int(total_target)}")
-print(f"  Total Sales  (col D) : {fmt_int(total_sales)}")
-print(f"  Total Deficit (col E): {fmt_int(total_deficit)}")
-print(f"  Remaining Target     : {fmt_int(remaining_target)}")
+print(f"  Total Target (sheet) : {fmt_int(total_target)}")
+print(f"  Total Sales  (Odoo)  : {fmt_int(total_sales)}")
+print(f"  Sheet Deficit (col E): {fmt_int(total_deficit)}")
+print(f"  Remaining (tgt-sales): {fmt_int(remaining_target)}")
 print(f"  Sales % Achieved     : {fmt_pct(sales_pct_achieved)}")
 print(f"  Sales                : {fmt_int(sales)}")
 print(f"  Previous Sales %     : {fmt_pct(previous_sales_pct)}")
