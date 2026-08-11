@@ -48,6 +48,36 @@ def excluded_products():
     return names or ["~~no~exclusions~~"]
 
 
+import re as _re
+
+_MASTER_FILE = _os.path.join(_os.path.dirname(_SQL_DIR), "master_products.txt")
+
+
+def _norm_name(s):
+    """Match the SQL normalisation: lower-case, '.'→space, collapse whitespace."""
+    return _re.sub(r"\s+", " ", str(s).lower().replace(".", " ")).strip()
+
+
+def master_products():
+    """Normalised, de-duplicated master catalogue names (master_products.txt),
+    for the 'Net Bags Sold (catalogue)' KPI. Sentinel when empty so `= ANY()`
+    stays a valid text[]."""
+    names = set()
+    try:
+        with open(_MASTER_FILE, encoding="utf-8") as _f:
+            for line in _f:
+                s = line.split("#", 1)[0].strip()
+                if s:
+                    names.add(_norm_name(s))
+    except OSError:
+        pass
+    return sorted(names) or ["~~no~master~~"]
+
+
+# Net bags sold for master-catalogue products only (see master_products.txt).
+MASTER_BAGS_SOLD = _load_sql("master_bags_sold.sql")
+
+
 # TOTAL BAGS SOLD — the headline "total sales" figure. Matches the Product Sales
 # report's GRAND TOTAL exactly: counts every individual bag sold (including bags
 # inside combos, and gift bags), dropping only the combo WRAPPER ('+' name),

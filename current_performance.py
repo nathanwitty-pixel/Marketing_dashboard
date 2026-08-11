@@ -104,6 +104,22 @@ def monthly_from_db(sheet_value):
         pass
     return sheet_value
 
+def master_from_db():
+    """Current month's NET catalogue bags from Postgres (monthly_sales_db.json,
+    written by monthly_sales.py). None if unavailable or not the current month."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "monthly_sales_db.json")
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        if data.get("monthKey", "") == datetime.date.today().strftime("%Y-%m"):
+            mb = data.get("masterBags")
+            return int(mb) if mb is not None else None
+    except (ValueError, OSError, KeyError, TypeError):
+        pass
+    return None
+
 def update_month_boundary(weekly_total):
     """Update the rolling snapshot.
     Returns (carryover_bags | None, captured_on, prev_month_record)."""
@@ -223,6 +239,9 @@ weekly_sales_total = weekly_from_db(weekly_sales_total)
 # this is the total sales we've done in the month. Falls back to the sheet's
 # SALES column for past months or when the DB/file isn't there.
 total_sales = monthly_from_db(total_sales)
+
+# Net catalogue bags (master-list products only) for the KPI card.
+master_bags = master_from_db()
 
 # Month-boundary handling: split the straddling week's total by month.
 carryover_bags, carryover_date, prev_month_rec = update_month_boundary(weekly_sales_total)
@@ -401,6 +420,7 @@ inline_script = (
     f'  remainingTarget:    "{fmt_int(remaining_target)}",\n'
     f'  salesPctAchieved:   "{fmt_pct(sales_pct_achieved)}",\n'
     f'  sales:              "{fmt_int(sales)}",\n'
+    f'  masterBags:         "{fmt_int(master_bags) if master_bags is not None else "—"}",\n'
     f'  previousSalesPct:   "{fmt_pct(previous_sales_pct)}",\n'
     f'  previousSalesBags:  "{fmt_int(previous_sales_bags)}",\n'
     f'  wowSalesPct:        "{fmt_signed_pct(wow_sales_pct)}",\n'

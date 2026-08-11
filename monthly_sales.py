@@ -63,6 +63,14 @@ def main() -> None:
     value = float(r.get("value") or 0)
     lines = int(r.get("lines") or 0)
 
+    # Net bags sold for master-catalogue products only (KPI on both pages).
+    master_bags = None
+    mdf = db.run_query(queries.MASTER_BAGS_SOLD,
+                       {"start_date": start.isoformat(), "end_date": end.isoformat(),
+                        "master": queries.master_products()})
+    if mdf is not None and not mdf.empty:
+        master_bags = int(round(float(mdf.iloc[0].get("bags") or 0)))
+
     payload = {
         "monthKey":     start.strftime("%Y-%m"),
         "monthLabel":   start.strftime("%B %Y"),
@@ -70,6 +78,7 @@ def main() -> None:
         "monthEnd":     end.isoformat(),
         "monthlyBags":  round(bags),
         "monthlyValue": round(value),
+        "masterBags":   master_bags,
         "lines":        lines,
         "computedOn":   datetime.date.today().isoformat(),
     }

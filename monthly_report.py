@@ -114,6 +114,20 @@ try:
 except (ValueError, OSError):
     pass
 
+# Net bags sold for master-catalogue products only (KPI), live from Odoo.
+_master_bags = None
+try:
+    from lib import db as _mdb, queries as _mq
+    _mw_start = datetime.date(year, _fin_num, 1)
+    _mw_end = datetime.date(year, _fin_num, _cal_fin.monthrange(year, _fin_num)[1])
+    _mdf = _mdb.run_query(_mq.MASTER_BAGS_SOLD,
+                          {"start_date": _mw_start.isoformat(), "end_date": _mw_end.isoformat(),
+                           "master": _mq.master_products()})
+    if _mdf is not None and not _mdf.empty:
+        _master_bags = int(round(float(_mdf.iloc[0]["bags"] or 0)))
+except Exception:                                             # noqa: BLE001 — KPI is optional
+    _master_bags = None
+
 # Current performance
 total_target = num(gstr(proj, "totalTarget"))
 total_sales  = num(gstr(proj, "totalSales"))
@@ -485,6 +499,7 @@ body = f"""
     <div class="kpi"><div class="k-lbl">Missed By</div><div class="k-val red">{fmt(gap)}</div><div class="k-sub">bags short of target</div></div>
     <div class="kpi"><div class="k-lbl">Unmarketed Stock</div><div class="k-val red">{fmt(notposted)}</div><div class="k-sub">{pct(unposted_pct)} of Kenya stock not posted &middot; {fmt(mo_posts_made)} posts made this month</div></div>
     <div class="kpi"><div class="k-lbl">Posting Sales-Achieved</div><div class="k-val green">{pct(ke_mo_mkt)}</div><div class="k-sub">Kenya {pct(ke_mo_mkt)} &middot; Sinza {pct(sz_mo_mkt)} &middot; Uganda {pct(ug_mo_mkt)} (of expected)</div></div>
+    <div class="kpi"><div class="k-lbl">Net Bags Sold &middot; Catalogue</div><div class="k-val cyan">{fmt(_master_bags) if _master_bags is not None else '&mdash;'}</div><div class="k-sub">net of refunds &middot; master-list products only</div></div>
   </div>
 
   <div class="sec">
@@ -600,6 +615,41 @@ body = f"""
 </div>
 """
 
+# ── Per-bag stock lookup (for the combo hover — which components hold most stock) ──
+_ke_stock_by_bag = {}
+for _s in garr(oa, "stockData"):
+    _bt = str(_s.get("bagType", "")).strip().upper()
+    if _bt:
+        _ke_stock_by_bag[_bt] = _ke_stock_by_bag.get(_bt, 0) + num(_s.get("kenyaStock"))
+_sz_stock_by_bag = {}
+for _s in garr(oa, "sinzaStockData"):
+    _bt = str(_s.get("bagType", "")).strip().upper()
+    if _bt:
+        _sz_stock_by_bag[_bt] = _sz_stock_by_bag.get(_bt, 0) + num(_s.get("sinzaStock"))
+
+
+def _bag_stock(part, smap):
+    pu = str(part).strip().upper()
+    if pu in smap:
+        return smap[pu]
+    for _k, _v in smap.items():                 # prefix match, e.g. "STANDARD" ~ "STANDARD TRAVEL"
+        if _k.startswith(pu) or pu.startswith(_k):
+            return _v
+    return None
+
+
+def _combo_bags(name, smap):
+    """Component bags of an offer, each with its stock, sorted most-stock first."""
+    seen, out = set(), []
+    for p in [x.strip() for x in re.split(r"[/+&]", str(name)) if x.strip()]:
+        if p.upper() in seen:
+            continue
+        seen.add(p.upper())
+        out.append({"name": p, "stock": _bag_stock(p, smap)})
+    out.sort(key=lambda x: (x["stock"] is None, -(x["stock"] or 0)))
+    return out
+
+
 # ── CHART DATA + SCRIPT ───────────────────────────────────────
 _rpt = {
     "cp":   {"sold": total_sales, "gap": gap, "target": total_target, "achievedPct": achieved,
@@ -610,11 +660,11 @@ _rpt = {
                           "posts": _np_ps.get(str(t.get("name", "")).strip().upper(), {}).get("posts", 0),
                           "stock": _np_ps.get(str(t.get("name", "")).strip().upper(), {}).get("stock", 0)}
                          for t in np_targets]},
-    "offer": {"items": [{"name": o["name"], "units": o["units"], "type": "combo"} for o in combo_offers]
-                     + [{"name": o["name"], "units": o["units"], "type": "deal"} for o in deal_offers],
-              "sinza": [{"name": o["name"], "units": o["units"], "type": "combo"} for o in sz_combos_l]
-                     + [{"name": o["name"], "units": o["units"], "type": "single"} for o in sz_singles_l]
-                     + [{"name": o["name"], "units": o["units"], "type": "special"} for o in sz_special_l],
+    "offer": {"items": [{"name": o["name"], "units": o["units"], "type": "combo", "bags": _combo_bags(o["name"], _ke_stock_by_bag)} for o in combo_offers]
+                     + [{"name": o["name"], "units": o["units"], "type": "deal", "bags": _combo_bags(o["name"], _ke_stock_by_bag)} for o in deal_offers],
+              "sinza": [{"name": o["name"], "units": o["units"], "type": "combo", "bags": _combo_bags(o["name"], _sz_stock_by_bag)} for o in sz_combos_l]
+                     + [{"name": o["name"], "units": o["units"], "type": "single", "bags": _combo_bags(o["name"], _sz_stock_by_bag)} for o in sz_singles_l]
+                     + [{"name": o["name"], "units": o["units"], "type": "special", "bags": _combo_bags(o["name"], _sz_stock_by_bag)} for o in sz_special_l],
               "uganda": [{"name": o["name"], "units": o["units"], "stock": _ug_stock_for(o["name"])} for o in (ug_combos_l + ug_singles_l)]},
     "post": {"ke": ke_mo_mkt, "sz": sz_mo_mkt, "ug": ug_mo_mkt,
              "posted": posted, "notposted": notposted,
@@ -798,7 +848,11 @@ chart_js = r"""<script>
           backgroundColor:items.map(function(x){ return x.type === 'combo' ? '#f59e0b' : '#a78bfa'; }), borderRadius:3 } ] },
       options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
         plugins:{ legend:{display:false},
-          tooltip:{ callbacks:{ label:function(c){ return money(c.parsed.x)+' units ('+(items[c.dataIndex].type === 'combo' ? 'combo' : 'power deal')+')'; } } } },
+          tooltip:{ callbacks:{
+            label:function(c){ var o=items[c.dataIndex]; return money(c.parsed.x)+' units moved · '+(o.type==='combo'?'combo':'power deal'); },
+            afterBody:function(t){ var o=items[t[0].dataIndex], b=o.bags||[]; if(!b.length) return [];
+              return [(o.type==='combo'?'Bags — most stock first:':'Stock:')].concat(
+                b.map(function(x){ return '  ' + x.name + (x.stock!=null ? ' — ' + money(x.stock) + ' in stock' : ' — stock n/a'); })); } } } },
         scales:{ x:{ grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
                  y:{ grid:{display:false}, ticks:{ font:{size:10} } } } } });
   })();
@@ -815,7 +869,11 @@ chart_js = r"""<script>
           backgroundColor:items.map(function(x){ return col[x.type] || '#818cf8'; }), borderRadius:3 } ] },
       options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
         plugins:{ legend:{display:false},
-          tooltip:{ callbacks:{ label:function(c){ return money(c.parsed.x)+' units ('+items[c.dataIndex].type+')'; } } } },
+          tooltip:{ callbacks:{
+            label:function(c){ var o=items[c.dataIndex]; return money(c.parsed.x)+' units moved · '+o.type; },
+            afterBody:function(t){ var o=items[t[0].dataIndex], b=o.bags||[]; if(!b.length) return [];
+              return [(o.type==='combo'?'Bags — most stock first:':'Stock:')].concat(
+                b.map(function(x){ return '  ' + x.name + (x.stock!=null ? ' — ' + money(x.stock) + ' in stock' : ' — stock n/a'); })); } } } },
         scales:{ x:{ grid:{color:GRID} },
                  y:{ grid:{display:false}, ticks:{ autoSkip:false, font:{size:11}, color:'#cbd5e1' } } } } });
   })();
