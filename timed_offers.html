@@ -61,6 +61,35 @@
 
     <div class="grid" id="to-kpis"></div>
 
+    <div class="panel" id="to-lift-panel" style="display:none">
+      <h2>Did the offer lift sales?</h2>
+      <div class="cap" id="to-lift-cap"></div>
+      <div class="grid" id="to-lift-kpis" style="margin-bottom:1rem"></div>
+      <div class="chart-wrap"><canvas id="to-lift-chart"></canvas></div>
+    </div>
+
+    <div class="panel" id="to-weekly-panel" style="display:none">
+      <h2>Week by week — the 6 bags</h2>
+      <div class="cap" id="to-weekly-cap"></div>
+      <div class="chart-wrap"><canvas id="to-weekly-chart"></canvas></div>
+    </div>
+
+    <div class="panel" id="to-why-panel" style="display:none">
+      <h2>Why these bags — and was it a good move?</h2>
+      <div class="cap"><b>Avg price</b> = the bag's realised selling price per unit during the offer (Odoo POS Kenya, KES incl. — value sold ÷ units). <b>On offer?</b> compares it to the pre-offer average (a genuine cut vs already at that price). <b>Sales lift</b> = the bag's own units/day during vs before the offer.</div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>Bag</th><th class="r">Sold</th><th class="r">In stock</th>
+            <th class="r">Avg price</th><th>On offer?</th><th class="r">Sales lift</th><th>Category</th>
+          </tr></thead>
+          <tbody id="to-why-tbody"></tbody>
+        </table>
+      </div>
+      <div id="to-why-insights" style="margin-top:1rem"></div>
+      <div id="to-why-verdict" style="margin-top:0.9rem;padding:0.9rem 1rem;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.28);border-radius:10px;font-size:0.9rem;color:#e2e8f0;line-height:1.55"></div>
+    </div>
+
     <div class="panel">
       <h2>Bags sold per bag</h2>
       <div class="cap" id="to-chart-cap">Kenya POS · offer window</div>
@@ -90,7 +119,7 @@
 
 <!-- TIMED_DATA_START -->
 <script>
-const TO = {"market": "Kenya", "startDate": "2026-08-17", "endDate": "2026-08-21", "windowLabel": "17–21 Aug 2026", "salesLive": true, "bags": [{"name": "Code 3", "sold": 225, "posts": 7, "perPost": 32.1}, {"name": "Antitheft", "sold": 204, "posts": 0, "perPost": null}, {"name": "School bag", "sold": 106, "posts": 0, "perPost": null}, {"name": "Kai", "sold": 80, "posts": 6, "perPost": 13.3}, {"name": "Pioneer", "sold": 55, "posts": 8, "perPost": 6.9}, {"name": "Double Press", "sold": 25, "posts": 0, "perPost": null}], "totalSold": 695, "totalPosts": 21, "perPost": 33.1, "bestName": "Code 3", "bestSold": 225, "mostPName": "Pioneer", "mostPosts": 8};
+const TO = {"name": "Back to School Edition", "market": "Kenya", "startDate": "2026-08-17", "endDate": "2026-08-21", "windowLabel": "17–21 Aug 2026", "lift": {"baseStart": "2026-08-01", "baseEnd": "2026-08-16", "baseDays": 16, "baseTotal": 1240, "basePerDay": 77.5, "offerDays": 5, "offerTotal": 695, "offerPerDay": 139.0, "liftPct": 79, "daily": [{"date": "2026-08-01", "bags": 85, "off": false}, {"date": "2026-08-02", "bags": 27, "off": false}, {"date": "2026-08-03", "bags": 91, "off": false}, {"date": "2026-08-04", "bags": 81, "off": false}, {"date": "2026-08-05", "bags": 81, "off": false}, {"date": "2026-08-06", "bags": 88, "off": false}, {"date": "2026-08-07", "bags": 92, "off": false}, {"date": "2026-08-08", "bags": 103, "off": false}, {"date": "2026-08-09", "bags": 29, "off": false}, {"date": "2026-08-10", "bags": 93, "off": false}, {"date": "2026-08-11", "bags": 91, "off": false}, {"date": "2026-08-12", "bags": 95, "off": false}, {"date": "2026-08-13", "bags": 85, "off": false}, {"date": "2026-08-14", "bags": 77, "off": false}, {"date": "2026-08-15", "bags": 100, "off": false}, {"date": "2026-08-16", "bags": 22, "off": false}, {"date": "2026-08-17", "bags": 111, "off": true}, {"date": "2026-08-18", "bags": 130, "off": true}, {"date": "2026-08-19", "bags": 134, "off": true}, {"date": "2026-08-20", "bags": 153, "off": true}, {"date": "2026-08-21", "bags": 167, "off": true}], "weekly": [{"label": "Wk 1", "start": "2026-08-01", "end": "2026-08-01", "total": 85, "days": 1, "perDay": 85.0, "off": false}, {"label": "Wk 2", "start": "2026-08-02", "end": "2026-08-08", "total": 563, "days": 7, "perDay": 80.4, "off": false}, {"label": "Wk 3", "start": "2026-08-09", "end": "2026-08-15", "total": 570, "days": 7, "perDay": 81.4, "off": false}, {"label": "Wk 4", "start": "2026-08-16", "end": "2026-08-22", "total": 849, "days": 7, "perDay": 121.3, "off": true}, {"label": "Wk 5", "start": "2026-08-23", "end": "2026-08-24", "total": 51, "days": 2, "perDay": 25.5, "off": false}]}, "why": {"catalogAvg": 1737, "totalStock": 1160, "categories": ["BACKPACK", "SCHOOL BAG"], "nodiscShare": 70, "discDrove": false, "bags": [{"name": "Code 3", "sold": 225, "posts": 7, "stock": 292, "avgPrice": 1444, "prePrice": 1473, "offerPrice": 1444, "discountPct": -2, "discounted": false, "prePerDay": 28.8, "offerPerDay": 45.0, "bagLift": 56, "category": "BACKPACK", "cheaper": true}, {"name": "Antitheft", "sold": 204, "posts": 0, "stock": 325, "avgPrice": 1812, "prePrice": 1757, "offerPrice": 1812, "discountPct": 3, "discounted": false, "prePerDay": 30.7, "offerPerDay": 40.8, "bagLift": 33, "category": "BACKPACK", "cheaper": false}, {"name": "School bag", "sold": 106, "posts": 0, "stock": 131, "avgPrice": 1711, "prePrice": 1976, "offerPrice": 1711, "discountPct": -13, "discounted": true, "prePerDay": 3.2, "offerPerDay": 21.2, "bagLift": 562, "category": "SCHOOL BAG", "cheaper": true}, {"name": "Kai", "sold": 80, "posts": 6, "stock": 152, "avgPrice": 2335, "prePrice": 2430, "offerPrice": 2335, "discountPct": -4, "discounted": true, "prePerDay": 9.7, "offerPerDay": 16.0, "bagLift": 65, "category": "BACKPACK", "cheaper": false}, {"name": "Pioneer", "sold": 55, "posts": 8, "stock": 92, "avgPrice": 1955, "prePrice": 1726, "offerPrice": 1955, "discountPct": 13, "discounted": false, "prePerDay": 3.6, "offerPerDay": 11.0, "bagLift": 206, "category": "BACKPACK", "cheaper": false}, {"name": "Double Press", "sold": 25, "posts": 0, "stock": 168, "avgPrice": 2000, "prePrice": 2279, "offerPrice": 2000, "discountPct": -12, "discounted": true, "prePerDay": 1.6, "offerPerDay": 5.0, "bagLift": 212, "category": "BACKPACK", "cheaper": false}], "insights": [{"tag": "Discount check", "text": "<b>Not really the discount.</b> Code 3 and Antitheft — the top seller(s) — held a <b>flat or higher</b> price during the window, and <b>70% of all volume sold at (near) full price</b>. The genuine markdowns (School bag -13%, Kai -4%, Double Press -12%) were the mid/low-volume bags. So the offer price wasn't what pulled buyers on the bulk of sales."}, {"tag": "On offer?", "text": "<b>Actually on offer (price truly cut):</b> School bag (-13% price, own pace +562%); Kai (-4% price, own pace +65%); Double Press (-12% price, own pace +212%). The cut sold <b>School bag and Kai and Double Press</b> faster than before the offer. "}, {"tag": "Stock", "text": "Mostly backpacks with real inventory behind them — <b>1,160 still in Kenya stock</b> even after the push (led by Antitheft at 325). Putting them on offer draws down a genuine stock position, not a token one."}, {"tag": "Season", "text": "All six sit in <b>Backpack, School Bag</b> — school categories — and the step-up landed in the offer week as schools opened. Antitheft and School bag even sold on zero marketing posts (pure demand). The timing lines up with schools opening, which fits the sales pattern better than the price cut does."}], "verdict": "<b>Good move — but credit the timing, not the discount.</b> Sales rose <b>+79%</b> per day, yet <b>70% of volume sold at (near) full price</b> — the lift tracks <b>back-to-school demand for high-stock school bags</b>, not the markdown. Keep running these bags this season; the offer framing helps, but you likely don't need to give away margin on the top sellers (Code 3, Antitheft)."}, "salesLive": true, "bags": [{"name": "Code 3", "sold": 225, "posts": 7, "perPost": 32.1}, {"name": "Antitheft", "sold": 204, "posts": 0, "perPost": null}, {"name": "School bag", "sold": 106, "posts": 0, "perPost": null}, {"name": "Kai", "sold": 80, "posts": 6, "perPost": 13.3}, {"name": "Pioneer", "sold": 55, "posts": 8, "perPost": 6.9}, {"name": "Double Press", "sold": 25, "posts": 0, "perPost": null}], "totalSold": 695, "totalPosts": 21, "perPost": 33.1, "bestName": "Code 3", "bestSold": 225, "mostPName": "Pioneer", "mostPosts": 8};
 </script>
 <!-- TIMED_DATA_END -->
 
@@ -99,11 +128,11 @@ const TO = {"market": "Kenya", "startDate": "2026-08-17", "endDate": "2026-08-21
   var fmt = function(n){ return Number(n||0).toLocaleString(); };
   var set = function(id, txt){ var el = document.getElementById(id); if (el) el.textContent = txt; };
 
-  set('to-title', 'Timed Offer · ' + (TO.windowLabel || ''));
-  set('to-sub', '');
+  set('to-title', TO.name || 'Timed Offer');
   var sub = document.getElementById('to-sub');
-  if (sub) sub.innerHTML = TO.bags.length + ' bags · <b>' + (TO.market || 'Kenya') + '</b> market · '
-    + 'sales <b>live from Odoo POS</b> for the exact window · posting = <b>last week (Kenya)</b>'
+  if (sub) sub.innerHTML = '<b>' + (TO.windowLabel || '') + '</b> · ' + TO.bags.length + ' bags · <b>'
+    + (TO.market || 'Kenya') + '</b> market · sales <b>live from Odoo POS</b> for the exact window · '
+    + 'posting = <b>last week (Kenya)</b>'
     + (TO.salesLive ? '' : ' · <span style="color:#f87171">DB unreachable — sales showing 0</span>');
   var cap = document.getElementById('to-chart-cap');
   if (cap) cap.textContent = 'Kenya POS · ' + (TO.windowLabel || 'offer window');
@@ -122,6 +151,117 @@ const TO = {"market": "Kenya", "startDate": "2026-08-17", "endDate": "2026-08-21
          + '<div class="k-val ' + k[2] + '">' + k[3] + '</div>'
          + '<div class="k-sub">' + k[4] + '</div></div>';
   }).join('');
+
+  // ── Lift: did the offer improve sales? (before vs during) ──
+  var L = TO.lift;
+  if (L && L.basePerDay != null) {
+    var panel = document.getElementById('to-lift-panel');
+    if (panel) panel.style.display = '';
+    var up = (L.liftPct || 0) >= 0;
+    set('to-lift-cap', 'Same 6 bags, Kenya · offer window (' + L.offerDays + ' days) vs the '
+      + L.baseDays + ' pre-offer days this month (' + L.baseStart + ' → ' + L.baseEnd + '), per day.');
+    var lk = [
+      ['', 'Sales Lift', (up ? 'green' : ''), (up ? '+' : '') + (L.liftPct != null ? L.liftPct : 0) + '%',
+        'offer vs pre-offer, per day'],
+      ['c', 'Before (per day)', 'cyan',  (L.basePerDay).toFixed(1),  L.baseTotal + ' over ' + L.baseDays + ' days'],
+      ['g', 'During (per day)', 'green', (L.offerPerDay).toFixed(1), L.offerTotal + ' over ' + L.offerDays + ' days']
+    ];
+    var lg = document.getElementById('to-lift-kpis');
+    if (lg) lg.innerHTML = lk.map(function(k){
+      return '<div class="card ' + k[0] + '"><div class="k-lbl">' + k[1] + '</div>'
+           + '<div class="k-val ' + k[2] + '">' + k[3] + '</div><div class="k-sub">' + k[4] + '</div></div>';
+    }).join('');
+
+    var lel = document.getElementById('to-lift-chart');
+    if (lel && typeof Chart !== 'undefined' && (L.daily || []).length) {
+      var dd = L.daily;
+      // dashed baseline (pre-offer per-day average) to see the jump
+      var BASE = { id:'baseline', afterDatasetsDraw:function(ch){
+        var y = ch.scales.y.getPixelForValue(L.basePerDay); if (!isFinite(y)) return;
+        var c = ch.ctx, a = ch.chartArea; c.save();
+        c.strokeStyle='#f59e0b'; c.setLineDash([5,4]); c.lineWidth=1.5;
+        c.beginPath(); c.moveTo(a.left,y); c.lineTo(a.right,y); c.stroke();
+        c.setLineDash([]); c.fillStyle='#fbbf24'; c.font='700 0.62rem "Segoe UI",system-ui,sans-serif';
+        c.textAlign='right'; c.fillText('pre-offer avg ' + L.basePerDay.toFixed(0) + '/day', a.right-4, y-6);
+        c.restore();
+      }};
+      new Chart(lel, { type:'bar', plugins:[BASE],
+        data:{ labels: dd.map(function(x){ return x.date.slice(8); }),   // day-of-month
+          datasets:[{ label:'Bags sold', data: dd.map(function(x){ return x.bags; }),
+            backgroundColor: dd.map(function(x){ return x.off ? '#10b981' : '#3b4256'; }),
+            borderRadius:3 }] },
+        options:{ responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{ display:false },
+            tooltip:{ backgroundColor:'#1e2130', borderColor:'#2d3148', borderWidth:1,
+              titleColor:'#f8fafc', bodyColor:'#94a3b8', padding:10, cornerRadius:6,
+              callbacks:{ title:function(t){ return dd[t[0].dataIndex].date; },
+                label:function(c){ var x = dd[c.dataIndex];
+                  return x.bags + ' bags' + (x.off ? '  · OFFER' : '  · pre-offer'); } } } },
+          scales:{ x:{ grid:{ display:false }, ticks:{ color:'#94a3b8', font:{ size:10 } },
+                       title:{ display:true, text:'Day of ' + (L.baseStart.slice(0,7) || 'month'), color:'#64748b', font:{ size:10 } } },
+                   y:{ beginAtZero:true, grid:{ color:'rgba(45,49,72,0.55)' }, ticks:{ color:'#94a3b8' } } } } });
+    }
+
+    // ── Week by week ──
+    var wk = L.weekly || [];
+    if (wk.length) {
+      var wp = document.getElementById('to-weekly-panel'); if (wp) wp.style.display = '';
+      set('to-weekly-cap', 'Bags/day for the 6 bags, week by week (offer week in green). Steady ≈'
+        + (L.basePerDay).toFixed(0) + '/day, then the offer week jumps.');
+      var wel = document.getElementById('to-weekly-chart');
+      if (wel && typeof Chart !== 'undefined') {
+        new Chart(wel, { type:'bar',
+          data:{ labels: wk.map(function(w){ return w.label; }),
+            datasets:[{ label:'Bags/day', data: wk.map(function(w){ return w.perDay; }),
+              backgroundColor: wk.map(function(w){ return w.off ? '#10b981' : '#3b4256'; }), borderRadius:4 }] },
+          options:{ responsive:true, maintainAspectRatio:false,
+            plugins:{ legend:{ display:false },
+              tooltip:{ backgroundColor:'#1e2130', borderColor:'#2d3148', borderWidth:1, titleColor:'#f8fafc', bodyColor:'#94a3b8', padding:10, cornerRadius:6,
+                callbacks:{ title:function(t){ var w=wk[t[0].dataIndex]; return w.label+' ('+w.start+' → '+w.end+')'; },
+                  label:function(c){ var w=wk[c.dataIndex]; return [w.perDay+' bags/day', w.total+' bags over '+w.days+' days'+(w.off?' · OFFER week':'')]; } } } },
+            scales:{ x:{ grid:{ display:false }, ticks:{ color:'#94a3b8' } },
+                     y:{ beginAtZero:true, grid:{ color:'rgba(45,49,72,0.55)' }, ticks:{ color:'#94a3b8' },
+                         title:{ display:true, text:'bags / day', color:'#64748b', font:{ size:10 } } } } } });
+      }
+    }
+  }
+
+  // ── Why these bags? (stock · price · season · discount check) ──
+  var W = TO.why;
+  if (W && (W.bags || []).length) {
+    var wpn = document.getElementById('to-why-panel'); if (wpn) wpn.style.display = '';
+    var wtb = document.getElementById('to-why-tbody');
+    if (wtb) wtb.innerHTML = W.bags.map(function(b){
+      var price = b.avgPrice != null ? 'KES ' + fmt(b.avgPrice) : '—';
+      // On offer? — genuine cut (green) vs same/higher (grey)
+      var offer;
+      if (b.discountPct == null) offer = '<span style="color:#64748b">—</span>';
+      else if (b.discounted) offer = '<span style="color:#34d399;font-weight:700">Cut ' + b.discountPct + '%</span>';
+      else if (b.discountPct > 0) offer = '<span style="color:#94a3b8">+' + b.discountPct + '% · no cut</span>';
+      else offer = '<span style="color:#94a3b8">≈ same (' + b.discountPct + '%)</span>';
+      // Sales lift — the bag's own pace change (green up / red down)
+      var lift;
+      if (b.bagLift == null) lift = '<span style="color:#64748b">—</span>';
+      else { var up = b.bagLift >= 0;
+        lift = '<span style="color:' + (up ? '#34d399' : '#f87171') + ';font-weight:700">' + (up ? '+' : '') + b.bagLift + '%</span>'; }
+      return '<tr><td class="name">' + b.name + '</td>'
+        + '<td class="r">' + fmt(b.sold) + '</td>'
+        + '<td class="r">' + fmt(b.stock) + '</td>'
+        + '<td class="r">' + price + '</td>'
+        + '<td>' + offer + '</td>'
+        + '<td class="r">' + lift + '</td>'
+        + '<td>' + (b.category || '') + '</td></tr>';
+    }).join('');
+    var ins = document.getElementById('to-why-insights');
+    if (ins) ins.innerHTML = (W.insights || []).map(function(x){
+      return '<div style="display:flex;gap:0.6rem;align-items:flex-start;padding:0.55rem 0;border-top:1px solid #262a3d">'
+        + '<span style="flex-shrink:0;font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;'
+        + 'color:#fbbf24;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:5px;padding:0.12rem 0.5rem">'
+        + x.tag + '</span><span style="font-size:0.86rem;color:#cbd5e1;line-height:1.55">' + x.text + '</span></div>';
+    }).join('');
+    var vd = document.getElementById('to-why-verdict');
+    if (vd) vd.innerHTML = W.verdict || '';
+  }
 
   // ── Table ──
   var tb = document.getElementById('to-tbody');

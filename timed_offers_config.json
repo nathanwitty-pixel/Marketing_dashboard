@@ -1,5 +1,6 @@
 {
-  "_help": "Timed-offer campaign. Sales come LIVE from Odoo POS for the exact window (startDate..endDate, end-of-day inclusive), scoped to the market. Posting is the last week's Kenya marketing posting (WEEKLY_MARKETING_POST, col E) for the listed bags. market: 'Kenya' excludes the Sinza/Dar/Uganda tills. bags: bag-type names, matched to Odoo product names by prefix.",
+  "_help": "Timed-offer campaign. name: the campaign's real name (shown everywhere). Sales come LIVE from Odoo POS for the exact window (startDate..endDate, end-of-day inclusive), scoped to the market. Posting is the last week's Kenya marketing posting (WEEKLY_MARKETING_POST, col E) for the listed bags. Lift = offer-window bags/day vs the pre-offer month-to-date bags/day for the same bags. market: 'Kenya' excludes the Sinza/Dar/Uganda tills. bags: bag-type names, matched to Odoo product names by prefix.",
+  "name": "Back to School Edition",
   "market": "Kenya",
   "startDate": "2026-08-17",
   "endDate": "2026-08-21",

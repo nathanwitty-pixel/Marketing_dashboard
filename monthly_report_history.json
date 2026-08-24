@@ -460,14 +460,14 @@
     "key": "2026-08",
     "generatedOn": "2026-08-24",
     "currentPerformance": {
-      "achievedPct": 55.14,
-      "totalSales": 12811.0,
+      "achievedPct": 55.3,
+      "totalSales": 12848.0,
       "totalTarget": 23232.0,
-      "gap": 10421.0,
+      "gap": 10384.0,
       "bareMinimum": 5808.0,
-      "avgWeekly": 2562.2,
+      "avgWeekly": 2570.0,
       "corporate": 9.0,
-      "forecast": "74.38%",
+      "forecast": "74.59%",
       "weekly": [
         {
           "label": "Wk 1",
@@ -495,18 +495,18 @@
         },
         {
           "label": "Wk 5",
-          "pct": 1.02,
-          "cum": 55.14,
-          "bags": 237.0
+          "pct": 1.19,
+          "cum": 55.31,
+          "bags": 276.0
         }
       ]
     },
     "newProducts": {
       "count": 7,
       "target": 930.0,
-      "sales": 284.0,
-      "deficit": 646.0,
-      "kenya": 291.0,
+      "sales": 286.0,
+      "deficit": 644.0,
+      "kenya": 297.0,
       "outside": 4.0,
       "posts": 299.0,
       "names": [
@@ -538,14 +538,14 @@
           "sold": 57.0,
           "remaining": 143.0,
           "posts": 73.0,
-          "stock": 108.0
+          "stock": 107.0
         },
         {
           "name": "LOOP BP",
-          "sold": 76.0,
-          "remaining": 174.0,
+          "sold": 77.0,
+          "remaining": 173.0,
           "posts": 27.0,
-          "stock": 96.0
+          "stock": 95.0
         },
         {
           "name": "NALA",
@@ -559,14 +559,14 @@
           "sold": 31.0,
           "remaining": 69.0,
           "posts": 64.0,
-          "stock": 105.0
+          "stock": 106.0
         },
         {
           "name": "ZULA",
-          "sold": 84.0,
-          "remaining": 66.0,
+          "sold": 85.0,
+          "remaining": 65.0,
           "posts": 66.0,
-          "stock": 213.0
+          "stock": 211.0
         }
       ]
     },
@@ -588,15 +588,15 @@
             "bags": [
               {
                 "name": "Antitheft",
-                "stock": 339.0
+                "stock": 325.0
               },
               {
                 "name": "Liam",
-                "stock": 248.0
+                "stock": 247.0
               },
               {
                 "name": "Jumbo",
-                "stock": 209.0
+                "stock": 199.0
               },
               {
                 "name": "Pioneer",
@@ -615,11 +615,11 @@
             "bags": [
               {
                 "name": "Big man",
-                "stock": 288.0
+                "stock": 283.0
               },
               {
                 "name": "Fabela",
-                "stock": 103.0
+                "stock": 100.0
               },
               {
                 "name": "Laptop backpack",
@@ -634,15 +634,15 @@
             "bags": [
               {
                 "name": "Amaya",
-                "stock": 216.0
+                "stock": 214.0
               },
               {
                 "name": "Moon",
-                "stock": 186.0
+                "stock": 182.0
               },
               {
                 "name": "Nizana",
-                "stock": 141.0
+                "stock": 138.0
               },
               {
                 "name": "Zipped",
@@ -650,7 +650,7 @@
               },
               {
                 "name": "Lunchset",
-                "stock": 63.0
+                "stock": 62.0
               }
             ]
           },
@@ -661,15 +661,15 @@
             "bags": [
               {
                 "name": "Man Bag",
-                "stock": 218.0
+                "stock": 217.0
               },
               {
                 "name": "Mini Umbra",
-                "stock": 147.0
+                "stock": 143.0
               },
               {
                 "name": "Mega",
-                "stock": 126.0
+                "stock": 122.0
               },
               {
                 "name": "Neo man",
@@ -684,7 +684,7 @@
             "bags": [
               {
                 "name": "ANTITHEFT",
-                "stock": 339.0
+                "stock": 325.0
               },
               {
                 "name": "SAFIRI",
@@ -703,7 +703,7 @@
             "bags": [
               {
                 "name": "liam",
-                "stock": 248.0
+                "stock": 247.0
               },
               {
                 "name": "Standard",
@@ -722,11 +722,11 @@
             "bags": [
               {
                 "name": "Sarai",
-                "stock": 76.0
+                "stock": 73.0
               },
               {
                 "name": "Prime",
-                "stock": 64.0
+                "stock": 62.0
               }
             ]
           },
@@ -737,19 +737,19 @@
             "bags": [
               {
                 "name": "Manbag",
-                "stock": 218.0
+                "stock": 217.0
               },
               {
                 "name": "Moon",
-                "stock": 186.0
+                "stock": 182.0
               },
               {
                 "name": "Nizana",
-                "stock": 141.0
+                "stock": 138.0
               },
               {
                 "name": "Zane",
-                "stock": 92.0
+                "stock": 89.0
               },
               {
                 "name": "Oval",
@@ -764,11 +764,11 @@
             "bags": [
               {
                 "name": "Liam",
-                "stock": 248.0
+                "stock": 247.0
               },
               {
                 "name": "Baby Bag",
-                "stock": 84.0
+                "stock": 83.0
               },
               {
                 "name": "Standard",
@@ -783,19 +783,19 @@
             "bags": [
               {
                 "name": "Mini Umbra",
-                "stock": 147.0
+                "stock": 143.0
               },
               {
                 "name": "Nizana",
-                "stock": 141.0
+                "stock": 138.0
               },
               {
                 "name": "Bonita",
-                "stock": 131.0
+                "stock": 128.0
               },
               {
                 "name": "Zane",
-                "stock": 92.0
+                "stock": 89.0
               },
               {
                 "name": "Neo Man",
@@ -810,7 +810,7 @@
             "bags": [
               {
                 "name": "Jumbo",
-                "stock": 209.0
+                "stock": 199.0
               }
             ]
           },
@@ -821,7 +821,7 @@
             "bags": [
               {
                 "name": "MINI MAYA",
-                "stock": 79.0
+                "stock": 77.0
               }
             ]
           },
@@ -832,7 +832,7 @@
             "bags": [
               {
                 "name": "PRIME",
-                "stock": 64.0
+                "stock": 62.0
               }
             ]
           },
@@ -854,7 +854,7 @@
             "bags": [
               {
                 "name": "FABELA",
-                "stock": 103.0
+                "stock": 100.0
               }
             ]
           },
@@ -865,7 +865,7 @@
             "bags": [
               {
                 "name": "CATHY HANDBAG",
-                "stock": 151.0
+                "stock": 148.0
               }
             ]
           },
@@ -887,7 +887,7 @@
             "bags": [
               {
                 "name": "MONAH BP",
-                "stock": 80.0
+                "stock": 81.0
               }
             ]
           },
@@ -918,7 +918,7 @@
       "sinza": {
         "units": 162.0,
         "value": 635799.0,
-        "cleared": 23.5,
+        "cleared": 24.5,
         "offers": [
           {
             "name": "JUMBO + CODE 3 + MAN BAG",
@@ -927,15 +927,15 @@
             "bags": [
               {
                 "name": "MAN BAG",
-                "stock": 20.0
+                "stock": 16.0
               },
               {
                 "name": "JUMBO",
-                "stock": 18.0
+                "stock": 15.0
               },
               {
                 "name": "CODE 3",
-                "stock": 6.0
+                "stock": 3.0
               }
             ]
           },
@@ -946,11 +946,11 @@
             "bags": [
               {
                 "name": "BONITA",
-                "stock": 19.0
+                "stock": 16.0
               },
               {
                 "name": "ZELUS",
-                "stock": 7.0
+                "stock": 5.0
               }
             ]
           },
@@ -965,7 +965,7 @@
               },
               {
                 "name": "ARIA SLING",
-                "stock": 13.0
+                "stock": 12.0
               }
             ]
           },
@@ -995,7 +995,7 @@
               },
               {
                 "name": "SARAI",
-                "stock": 21.0
+                "stock": 20.0
               }
             ]
           },
@@ -1025,7 +1025,7 @@
               },
               {
                 "name": "AMAYA",
-                "stock": 4.0
+                "stock": 2.0
               }
             ]
           },
@@ -1066,7 +1066,7 @@
             "bags": [
               {
                 "name": "JADE",
-                "stock": 12.0
+                "stock": 10.0
               },
               {
                 "name": "STANDARD",
@@ -1114,7 +1114,7 @@
             "bags": [
               {
                 "name": "CODE 3",
-                "stock": 6.0
+                "stock": 3.0
               }
             ]
           },
@@ -1136,7 +1136,7 @@
             "bags": [
               {
                 "name": "SARAI",
-                "stock": 21.0
+                "stock": 20.0
               }
             ]
           },
@@ -1189,12 +1189,12 @@
       "uganda": {
         "units": 61.0,
         "value": 3971000.0,
-        "cleared": 11.7,
+        "cleared": 11.8,
         "offers": [
           {
             "name": "ANTITHEFT",
             "units": 17.0,
-            "stock": 10.0
+            "stock": 11.0
           },
           {
             "name": "MANDY HB",
@@ -1209,7 +1209,7 @@
           {
             "name": "AVANA HB",
             "units": 2.0,
-            "stock": 10.0
+            "stock": 9.0
           },
           {
             "name": "JUMBO",
@@ -1239,7 +1239,7 @@
           {
             "name": "NIZANA",
             "units": 1.0,
-            "stock": 14.0
+            "stock": 13.0
           },
           {
             "name": "SATCHEL",
@@ -1269,25 +1269,25 @@
           {
             "name": "PIONEER",
             "units": 0.0,
-            "stock": 5.0
+            "stock": 4.0
           }
         ]
       }
     },
     "postingYields": {
-      "kenyaPct": 86.6,
-      "sinzaPct": 13.9,
-      "ugandaPct": 8.8,
-      "postedStock": 4737.0,
-      "unpostedStock": 5360.0,
-      "postsMade": 411.0,
+      "kenyaPct": 86.8,
+      "sinzaPct": 15.3,
+      "ugandaPct": 9.6,
+      "postedStock": 4652.0,
+      "unpostedStock": 5321.0,
+      "postsMade": 427.0,
       "notOnOffer": {
-        "kenya": 5360.0,
-        "sinza": 407.0,
-        "uganda": 364.0
+        "kenya": 5321.0,
+        "sinza": 394.0,
+        "uganda": 358.0
       },
-      "salesFromPosting": 3302.0,
-      "expectedFromPosting": 925.0
+      "salesFromPosting": 3390.0,
+      "expectedFromPosting": 961.0
     }
   }
 }

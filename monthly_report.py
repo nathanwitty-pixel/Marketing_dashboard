@@ -171,6 +171,32 @@ for _r in np_combined:
     _e["posts"] += num(_r.get("mpostKenya")) + num(_r.get("mpostOutside"))
     _e["stock"] += num(_r.get("sKenya")) + num(_r.get("sOutside"))
 
+# ── Timed offers (rendered as their own section after New Products) ──
+# Read the campaign payload the Timed Offers page injects (const TO = {...}).
+# Kept as a LIST so "every timed offer" can be shown; only campaigns whose
+# window falls in THIS report month are included.
+def _read_timed_offers():
+    blk = read_block("timed_offers.html", "<!-- TIMED_DATA_START -->", "<!-- TIMED_DATA_END -->")
+    m = re.search(r"const\s+TO\s*=\s*(\{.*\}|\[.*\])\s*;", blk, re.DOTALL)
+    if not m:
+        return []
+    try:
+        data = json.loads(m.group(1))
+    except (ValueError, TypeError):
+        return []
+    camps = data if isinstance(data, list) else [data]
+    month_key = f"{year}-{_fin_num:02d}"
+    out = []
+    for c in camps:
+        if not isinstance(c, dict) or not c.get("bags"):
+            continue
+        if str(c.get("startDate", ""))[:7] != month_key:   # only this month's campaigns
+            continue
+        out.append(c)
+    return out
+
+timed_offers = _read_timed_offers()
+
 # Offer type analysis
 combos    = int(gnum(oa, "comboCount"))
 deals     = int(gnum(oa, "powerDealCount"))
@@ -474,6 +500,94 @@ notoffer_block = (
     f'<p style="font-size:0.82rem;color:#94a3b8;margin-top:0.55rem">Not-on-offer stock by region: <b>Kenya {fmt(ke_notoffer_stock)}</b>, <b>Sinza {fmt(sz_notoffer_stock)}</b>, <b>Uganda {fmt(ug_notoffer_stock)}</b> — and Sinza ({pct(sz_mo_mkt)}) and Uganda ({pct(ug_mo_mkt)}) move it far slower than Kenya ({pct(ke_mo_mkt)}). Same playbook, all three regions.</p></div>'
 )
 
+# ── Timed Offers section (inserted after New Products) ────────
+def _pp_txt(v):
+    return f"{v:.1f}" if isinstance(v, (int, float)) else "—"
+
+timed_offers_section = ""
+if timed_offers:
+    _to_parts = []
+    for _i, _c in enumerate(timed_offers):
+        _bags   = _c.get("bags", [])
+        _sold   = int(num(_c.get("totalSold")))
+        _posts  = int(num(_c.get("totalPosts")))
+        _pp     = _pp_txt(_c.get("perPost"))
+        _win    = esc(_c.get("windowLabel", ""))
+        _mkt    = esc(_c.get("market", "Kenya"))
+        _best   = esc(_c.get("bestName", ""))
+        _bsold  = int(num(_c.get("bestSold")))
+        _name   = esc(_c.get("name", "")) or "Timed Offer"
+        _lift   = _c.get("lift") or {}
+        _lpct   = _lift.get("liftPct")
+        _lup    = isinstance(_lpct, (int, float)) and _lpct >= 0
+        _lift_kpi = (
+            f'<span><b style="color:{"#34d399" if _lup else "#f87171"};font-size:1.15rem">'
+            f'{"+" if _lup else ""}{_lpct}%</b> sales lift</span>'
+            if _lpct is not None else '')
+        _lift_block = ""
+        if _lift.get("daily"):
+            _lift_block = (
+                f'<div class="chart-cap" style="margin-top:1rem">Did it lift sales? Daily bags — pre-offer (grey) vs offer window (green), '
+                f'{_lift.get("basePerDay")}/day → {_lift.get("offerPerDay")}/day</div>'
+                f'<div class="chart-wrap" style="height:230px"><canvas id="to-lift-{_i}"></canvas></div>')
+        _week_block = ""
+        if _lift.get("weekly"):
+            _week_block = (
+                '<div class="chart-cap" style="margin-top:1rem">Week by week — bags/day for the 6 bags (offer week in green)</div>'
+                f'<div class="chart-wrap" style="height:220px"><canvas id="to-week-{_i}"></canvas></div>')
+        _why    = _c.get("why") or {}
+        _wins   = _why.get("insights", [])
+        _verdict = _why.get("verdict", "")
+        _why_rows = "".join(
+            f'<div class="row"><div class="tag insight">{esc(x.get("tag",""))}</div><p>{x.get("text","")}</p></div>'
+            for x in _wins)
+        _verdict_box = (
+            '<div style="margin-top:0.6rem;padding:0.85rem 1rem;background:rgba(245,158,11,0.08);'
+            'border:1px solid rgba(245,158,11,0.28);border-radius:10px;color:#e2e8f0;font-size:0.9rem;line-height:1.55">'
+            f'{_verdict}</div>' if _verdict else '')
+        _zeros  = [esc(b.get("name", "")) for b in _bags
+                   if not b.get("posts") and num(b.get("sold")) > 0]
+        _rows = "".join(
+            f'<tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">{esc(b.get("name",""))}</td>'
+            f'<td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">{fmt(num(b.get("sold")))}</td>'
+            f'<td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:{"#f87171" if not b.get("posts") else "#e2e8f0"};font-weight:{"700" if not b.get("posts") else "400"}">{fmt(num(b.get("posts")))}</td>'
+            f'<td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">{_pp_txt(b.get("perPost"))}</td></tr>'
+            for b in _bags)
+        _insight = (f'<b>{" and ".join(_zeros)}</b> sold with <b>0 recorded posts</b> — moving without marketing. '
+                    if _zeros else '')
+        _to_parts.append(f"""
+    <div style="font-size:1.05rem;font-weight:700;color:#fbbf24;margin:0.2rem 0 0.15rem">{_name}</div>
+    <div class="chart-cap">{_win} · {_mkt} · sales from Odoo (exact window) · posting = last week (Kenya)</div>
+    <div style="display:flex;gap:1.6rem;flex-wrap:wrap;margin:0 0 0.9rem;font-size:0.9rem;color:#cbd5e1">
+      <span><b style="color:#34d399;font-size:1.15rem">{fmt(_sold)}</b> bags sold</span>
+      <span><b style="color:#22d3ee;font-size:1.15rem">{fmt(_posts)}</b> Kenya posts</span>
+      <span><b style="color:#a78bfa;font-size:1.15rem">{_pp}</b> bags/post</span>
+      {_lift_kpi}
+      <span>Top seller: <b>{_best}</b> ({fmt(_bsold)})</span>
+    </div>
+    {_lift_block}
+    {_week_block}
+    <div class="chart-cap">Each bag — bags sold (Odoo, {_win})</div>
+    <div class="chart-wrap" style="height:300px"><canvas id="to-chart-{_i}"></canvas></div>
+    <table style="width:100%;border-collapse:collapse;font-size:0.84rem;margin-top:0.6rem">
+      <thead><tr>
+        <th style="text-align:left;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Bag</th>
+        <th style="text-align:right;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Bags sold</th>
+        <th style="text-align:right;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Posts</th>
+        <th style="text-align:right;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Sold/post</th>
+      </tr></thead>
+      <tbody>{_rows}</tbody>
+    </table>
+    <div style="margin-top:0.9rem"></div>
+    {_why_rows}
+    {_verdict_box}""")
+    timed_offers_section = (
+        '\n  <div class="sec">\n'
+        '    <div class="sec-head"><div class="sec-num" style="background:#f59e0b">★</div><h2>Timed Offers</h2></div>'
+        + "".join(_to_parts) +
+        '\n  </div>'
+    )
+
 body = f"""
   <div class="rpt-head">
     <span class="rpt-pill">Monthly Report</span>
@@ -554,7 +668,7 @@ body = f"""
       <div class="impact"><p>Recovering <b>half the deficit (~{fmt(np_recover)} bags)</b> is realistic within one cycle; a working outside-Kenya channel would add a comparable second stream.</p></div>
       <div class="assump">Assumes weak-launch recovery of 50% of the {fmt(np_deficit)}-bag deficit; outside-Kenya upside sized off the {fmt(np_posts)}-post base.</div></div>
   </div>
-
+{timed_offers_section}
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#a78bfa">3</div><h2>Offer Type Analysis</h2></div>
     <div class="chart-cap">Kenya — each offer, units moved (amber = combo, violet = power deal)</div>
@@ -678,6 +792,7 @@ _rpt = {
     "post": {"ke": ke_mo_mkt, "sz": sz_mo_mkt, "ug": ug_mo_mkt,
              "posted": posted, "notposted": notposted,
              "keNotOffer": ke_notoffer_stock, "szNotOffer": sz_notoffer_stock, "ugNotOffer": ug_notoffer_stock},
+    "timed": timed_offers,
 }
 chart_data = "<script>const RPT = " + json.dumps(_rpt) + ";</script>\n"
 
@@ -845,6 +960,73 @@ chart_js = r"""<script>
     if (sel) sel.addEventListener('change', draw);
     draw();
   })();
+
+  // 2c. Timed Offers — daily lift trend + bags sold per bag (per campaign)
+  (RPT.timed || []).forEach(function(camp, ci){
+    // Lift trend: daily bags, offer window highlighted, dashed pre-offer average
+    var L = camp.lift;
+    var lel = document.getElementById('to-lift-' + ci);
+    if (lel && L && (L.daily || []).length){
+      var dd = L.daily;
+      var BASE = { id:'tobase'+ci, afterDatasetsDraw:function(ch){
+        var y = ch.scales.y.getPixelForValue(L.basePerDay); if(!isFinite(y)) return;
+        var c = ch.ctx, a = ch.chartArea; c.save();
+        c.strokeStyle='#f59e0b'; c.setLineDash([5,4]); c.lineWidth=1.5;
+        c.beginPath(); c.moveTo(a.left,y); c.lineTo(a.right,y); c.stroke(); c.setLineDash([]);
+        c.fillStyle='#fbbf24'; c.font='700 0.6rem "Segoe UI",system-ui,sans-serif'; c.textAlign='right';
+        c.fillText('pre-offer avg ' + Math.round(L.basePerDay) + '/day', a.right-4, y-6); c.restore();
+      }};
+      new Chart(lel, { type:'bar', plugins:[BASE],
+        data:{ labels: dd.map(function(x){ return x.date.slice(8); }),
+          datasets:[{ label:'Bags', data: dd.map(function(x){ return x.bags; }),
+            backgroundColor: dd.map(function(x){ return x.off ? '#10b981' : '#3b4256'; }), borderRadius:3 }] },
+        options:{ responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false},
+            tooltip:{ callbacks:{ title:function(t){ return dd[t[0].dataIndex].date; },
+              label:function(c){ var x=dd[c.dataIndex]; return x.bags + ' bags' + (x.off?' · OFFER':' · pre-offer'); } } } },
+          scales:{ x:{ grid:{display:false}, ticks:{ color:INK, font:{size:9} } },
+                   y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ color:INK } } } } });
+    }
+    // Weekly view: bags/day per week, offer week highlighted
+    var wel = document.getElementById('to-week-' + ci);
+    if (wel && L && (L.weekly || []).length){
+      var wk = L.weekly;
+      new Chart(wel, { type:'bar',
+        data:{ labels: wk.map(function(w){ return w.label; }),
+          datasets:[{ label:'Bags/day', data: wk.map(function(w){ return w.perDay; }),
+            backgroundColor: wk.map(function(w){ return w.off ? '#10b981' : '#3b4256'; }), borderRadius:4 }] },
+        options:{ responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false},
+            tooltip:{ callbacks:{ title:function(t){ var w=wk[t[0].dataIndex]; return w.label+' ('+w.start+' → '+w.end+')'; },
+              label:function(c){ var w=wk[c.dataIndex]; return [w.perDay+' bags/day', w.total+' over '+w.days+' days'+(w.off?' · OFFER':'')]; } } } },
+          scales:{ x:{ grid:{display:false}, ticks:{ color:INK } },
+                   y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ color:INK }, title:{display:true,text:'bags/day',color:'#64748b',font:{size:10}} } } } });
+    }
+    var el = document.getElementById('to-chart-' + ci); if (!el) return;
+    var rows = (camp.bags || []).slice();
+    if (!rows.length){ el.parentNode.style.display='none'; return; }
+    var VAL = { id:'toval'+ci, afterDatasetsDraw:function(ch){
+      var c = ch.ctx, m = ch.getDatasetMeta(0); c.save();
+      c.font='700 0.64rem "Segoe UI", system-ui, sans-serif'; c.fillStyle='#f8fafc';
+      c.textAlign='left'; c.textBaseline='middle';
+      m.data.forEach(function(bar,i){ var v = rows[i].sold; if (v==null) return; c.fillText(money(v), bar.x + 6, bar.y); });
+      c.restore();
+    }};
+    new Chart(el, { type:'bar', plugins:[VAL],
+      data:{ labels: rows.map(function(r){ return r.name; }),
+        datasets:[{ label:'Bags sold', data: rows.map(function(r){ return r.sold; }),
+          backgroundColor:'#10b981', borderRadius:4, maxBarThickness:30 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        layout:{ padding:{ right:42 } },
+        interaction:{ mode:'index', axis:'y', intersect:false },
+        plugins:{ legend:{ display:false },
+          tooltip:{ callbacks:{ label:function(c){ var r = rows[c.dataIndex];
+            return [ money(r.sold) + ' bags sold',
+                     (r.posts>0 ? r.posts + ' posts · ' + (r.perPost!=null?r.perPost.toFixed(1):'—') + ' sold/post'
+                                : '0 posts — sold without marketing') ]; } } } },
+        scales:{ x:{ beginAtZero:true, grid:{ color:GRID }, ticks:{ color:INK } },
+                 y:{ grid:{ display:false }, ticks:{ color:'#cbd5e1', font:{ size:12 } } } } } });
+  });
 
   // 3. Offer Type — each individual offer, units moved, coloured by type
   (function(){
