@@ -1,6 +1,7 @@
 {
-  "_help": "shops: \"ALL\" or a list of shop names exactly as in the sheet headers. startDate/endDate: YYYY-MM-DD; snapshots record only while today is inside this window.",
-  "shops": "ALL",
-  "startDate": "2026-07-17",
-  "endDate": "2026-07-19"
+  "_help": "Timed-offer campaign. Sales come LIVE from Odoo POS for the exact window (startDate..endDate, end-of-day inclusive), scoped to the market. Posting is the last week's Kenya marketing posting (WEEKLY_MARKETING_POST, col E) for the listed bags. market: 'Kenya' excludes the Sinza/Dar/Uganda tills. bags: bag-type names, matched to Odoo product names by prefix.",
+  "market": "Kenya",
+  "startDate": "2026-08-17",
+  "endDate": "2026-08-21",
+  "bags": ["Kai", "Pioneer", "Double Press", "Antitheft", "Code 3", "School bag"]
 }

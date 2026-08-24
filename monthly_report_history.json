@@ -458,16 +458,16 @@
     "month": "August",
     "year": 2026,
     "key": "2026-08",
-    "generatedOn": "2026-08-23",
+    "generatedOn": "2026-08-24",
     "currentPerformance": {
-      "achievedPct": 54.83,
-      "totalSales": 12737.0,
+      "achievedPct": 55.14,
+      "totalSales": 12811.0,
       "totalTarget": 23232.0,
-      "gap": 10495.0,
+      "gap": 10421.0,
       "bareMinimum": 5808.0,
-      "avgWeekly": 2547.4,
+      "avgWeekly": 2562.2,
       "corporate": 9.0,
-      "forecast": "77.31%",
+      "forecast": "74.38%",
       "weekly": [
         {
           "label": "Wk 1",
@@ -483,21 +483,21 @@
         },
         {
           "label": "Wk 3",
-          "pct": 16.5,
-          "cum": 37.23,
-          "bags": 3833.0
+          "pct": 16.49,
+          "cum": 37.22,
+          "bags": 3831.0
         },
         {
           "label": "Wk 4",
-          "pct": 16.91,
-          "cum": 54.14,
-          "bags": 3929.0
+          "pct": 16.9,
+          "cum": 54.12,
+          "bags": 3927.0
         },
         {
           "label": "Wk 5",
-          "pct": 0.69,
-          "cum": 54.83,
-          "bags": 159.0
+          "pct": 1.02,
+          "cum": 55.14,
+          "bags": 237.0
         }
       ]
     },
@@ -736,6 +736,10 @@
             "type": "combo",
             "bags": [
               {
+                "name": "Manbag",
+                "stock": 218.0
+              },
+              {
                 "name": "Moon",
                 "stock": 186.0
               },
@@ -749,10 +753,6 @@
               },
               {
                 "name": "Oval",
-                "stock": null
-              },
-              {
-                "name": "Manbag",
                 "stock": null
               }
             ]
@@ -960,12 +960,12 @@
             "type": "combo",
             "bags": [
               {
-                "name": "ARIA SLING",
+                "name": "GYMBAG",
                 "stock": 13.0
               },
               {
-                "name": "GYMBAG",
-                "stock": null
+                "name": "ARIA SLING",
+                "stock": 13.0
               }
             ]
           },
@@ -1005,12 +1005,12 @@
             "type": "combo",
             "bags": [
               {
-                "name": "ELYSE",
-                "stock": 8.0
+                "name": "MINIZURI",
+                "stock": 15.0
               },
               {
-                "name": "MINIZURI",
-                "stock": null
+                "name": "ELYSE",
+                "stock": 8.0
               }
             ]
           },

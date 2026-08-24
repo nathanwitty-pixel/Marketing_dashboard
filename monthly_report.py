@@ -628,12 +628,21 @@ for _s in garr(oa, "sinzaStockData"):
         _sz_stock_by_bag[_bt] = _sz_stock_by_bag.get(_bt, 0) + num(_s.get("sinzaStock"))
 
 
+def _norm_bag(s):
+    """Space/punctuation-insensitive key so 'MINIZURI' matches 'MINI ZURI'."""
+    return re.sub(r"[^a-z0-9]", "", str(s).lower())
+
+
 def _bag_stock(part, smap):
     pu = str(part).strip().upper()
     if pu in smap:
         return smap[pu]
-    for _k, _v in smap.items():                 # prefix match, e.g. "STANDARD" ~ "STANDARD TRAVEL"
-        if _k.startswith(pu) or pu.startswith(_k):
+    pn = _norm_bag(part)
+    if not pn:
+        return None
+    for _k, _v in smap.items():                 # match ignoring spacing/punctuation,
+        kn = _norm_bag(_k)                       # then prefix (e.g. "STANDARD" ~ "STANDARD TRAVEL")
+        if kn == pn or kn.startswith(pn) or pn.startswith(kn):
             return _v
     return None
 
@@ -868,11 +877,17 @@ chart_js = r"""<script>
         { label:'Units moved', data:items.map(function(x){return x.units;}),
           backgroundColor:items.map(function(x){ return col[x.type] || '#818cf8'; }), borderRadius:3 } ] },
       options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        // axis:'y' + intersect:false makes the WHOLE row hoverable, so zero-length
+        // (non-selling) offers still pop their tooltip showing the stock sitting.
+        interaction:{ mode:'index', axis:'y', intersect:false },
         plugins:{ legend:{display:false},
           tooltip:{ callbacks:{
             label:function(c){ var o=items[c.dataIndex]; return money(c.parsed.x)+' units moved · '+o.type; },
             afterBody:function(t){ var o=items[t[0].dataIndex], b=o.bags||[]; if(!b.length) return [];
-              return [(o.type==='combo'?'Bags — most stock first:':'Stock:')].concat(
+              var head = (Number(o.units)||0)===0
+                ? 'Dead stock — 0 moved, ' + money(b.reduce(function(a,x){return a+(Number(x.stock)||0);},0)) + ' in stock:'
+                : (o.type==='combo'?'Bags — most stock first:':'Stock:');
+              return [head].concat(
                 b.map(function(x){ return '  ' + x.name + (x.stock!=null ? ' — ' + money(x.stock) + ' in stock' : ' — stock n/a'); })); } } } },
         scales:{ x:{ grid:{color:GRID} },
                  y:{ grid:{display:false}, ticks:{ autoSkip:false, font:{size:11}, color:'#cbd5e1' } } } } });

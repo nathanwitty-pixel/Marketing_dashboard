@@ -1,34 +1,28 @@
-﻿"""
+"""
 timed_offers.py
 ─────────────────────────────────────────────────────────────────
-Reads live from Google Sheets (five sheets):
+Timed-offer campaign report (Kenya).
 
-  MONTHLY_TARGET        → new product names + KPIs (target/sales/deficit)
-                          col A=bag, col C=target, col D=sales, col E=deficit, col L=flag
-  MONTHLY_MARKETING_POST→ col D=BAG TYPE, col E=KENYA posts, col H=OUTSIDE KENYA posts
-  STOCK_LEVELS          → col D=BAG TYPE, col A=COLOUR
-                          col Y=KENYA, col Z=OUTSIDE KENYA, col AA=RESTOCK
-  WEEKLY_MARKETING_POST → col A=COLOUR, col D=BAG TYPE
-                          col E=KENYA posts, col H=OUTSIDE KENYA posts
-  WEEKLY_SALES          → col A=COLOUR, col B=CATEGORY, col C=PRODUCT NAME
-                          col D=BAG TYPE, col X=weekly bags sold
+  • Sales  : LIVE from Odoo POS for the EXACT window (startDate..endDate,
+             end-of-day inclusive), scoped to the market (Kenya = every till
+             except the Sinza/Dar/Uganda ones), per bag type.
+             Combo wrappers / delivery / customisation / straps / samples /
+             POS-category lines are excluded (same rules as Total Sales).
+  • Posting: last week's Kenya marketing posting (WEEKLY_MARKETING_POST col E),
+             per bag type — "borrowed" alongside the sales.
+  • Config : timed_offers_config.json (market, startDate, endDate, bags[]).
 
-  monthly_combined: bag-type level rows (target/sales/deficit + posts + stock)
-  weekly_combined:  colour-level rows merging WEEKLY_SALES + posts + stock
+Injects the campaign payload (const TO) into timed_offers.html between the
+<!-- TIMED_DATA_START --> / <!-- TIMED_DATA_END --> markers.
 ─────────────────────────────────────────────────────────────────
 """
 
-import re, webbrowser, os, pathlib, json
-from datetime import date, timedelta
-
-# ── SPREADSHEET ───────────────────────────────────────────────
+import re, os, json, webbrowser, pathlib
+from datetime import date
 
 SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-
-# ── GOOGLE SHEETS AUTH ────────────────────────────────────────
-
-# Shared auth: service account (permanent) or self-healing OAuth — see google_auth.py
 from google_auth import get_gspread_client
 
 
@@ -40,574 +34,194 @@ def safe_int(val):
     except (ValueError, TypeError):
         return 0
 
-def is_checked(val):
-    v = str(val).strip()
-    return (
-        '✅' in v or   # ✅
-        '✔' in v or   # ✔
-        '✓' in v or   # ✓
-        v.upper() in ('TRUE', '1', 'YES')
-    )
-
 def fmt_int(n):
     return f"{n:,}"
 
-def fmt_pct(p):
-    return f"{p:.2f}%"
 
+# ── CONFIG ────────────────────────────────────────────────────
 
-# ── TIMED-OFFER CAMPAIGN CONFIG ───────────────────────────────
-# Which shops the offer runs on + the window we record snapshots from.
-# Edit timed_offers_config.json (shops: "ALL" or a list; dates YYYY-MM-DD).
-CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "timed_offers_config.json")
+CONFIG_FILE = os.path.join(BASE_DIR, "timed_offers_config.json")
 
-def load_offer_config():
-    cfg = {"shops": "ALL", "startDate": "", "endDate": ""}
-    if os.path.exists(CONFIG_FILE):
-        try:
-            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-                raw = json.load(f)
-            cfg["shops"]     = raw.get("shops", "ALL")
-            cfg["startDate"] = str(raw.get("startDate", "") or "").strip()
-            cfg["endDate"]   = str(raw.get("endDate", "") or "").strip()
-        except (ValueError, OSError):
-            pass
+def load_config():
+    cfg = {"market": "Kenya", "startDate": "", "endDate": "",
+           "bags": ["Kai", "Pioneer", "Double Press", "Antitheft", "Code 3", "School bag"]}
+    try:
+        with open(CONFIG_FILE, encoding="utf-8") as f:
+            raw = json.load(f)
+        cfg["market"]    = str(raw.get("market", "Kenya") or "Kenya").strip()
+        cfg["startDate"] = str(raw.get("startDate", "") or "").strip()
+        cfg["endDate"]   = str(raw.get("endDate", "") or "").strip()
+        if isinstance(raw.get("bags"), list) and raw["bags"]:
+            cfg["bags"] = [str(b).strip() for b in raw["bags"] if str(b).strip()]
+    except (ValueError, OSError):
+        pass
     return cfg
 
-OFFER_CONFIG = load_offer_config()
-
-def _scoped_total(rows, names_upper, shops):
-    """Sum the chosen shops' columns for rows whose BAG TYPE is a timed offer.
-    Columns are located by header name so it works across sheet layouts."""
-    if not rows:
-        return 0
-    header_up = [str(h).strip().upper() for h in rows[0]]
-    def col_of(name):
-        try:
-            return header_up.index(name)
-        except ValueError:
-            return None
-    bag_c = col_of("BAG TYPE")
-    if bag_c is None:
-        return 0
-    shop_cols = [c for c in (col_of(str(s).strip().upper()) for s in shops) if c is not None]
-    if not shop_cols:
-        return 0
-    total = 0
-    for row in rows[1:]:
-        if len(row) <= bag_c:
-            continue
-        bag = str(row[bag_c]).strip()
-        if not bag or bag.upper() in ("SUM TOTAL", "TOTAL", "GRAND TOTAL"):
-            continue
-        if bag.upper() not in names_upper:
-            continue
-        for c in shop_cols:
-            if len(row) > c:
-                total += safe_int(row[c])
-    return total
+CFG = load_config()
+BAGS = CFG["bags"]
+_BAGS_UP = [b.upper() for b in BAGS]
 
 
-# ── FETCH ─────────────────────────────────────────────────────
+def _bucket(name):
+    """Which configured bag (if any) an Odoo/​sheet product name belongs to,
+    by longest-prefix match so 'Double Press' wins over a shorter overlap."""
+    n = str(name).strip().upper()
+    best = None
+    for b in sorted(_BAGS_UP, key=len, reverse=True):
+        if n == b or n.startswith(b):
+            best = b
+            break
+    return best
 
-def fetch_new_products_data():
+
+# ── SALES: live from Odoo POS, exact window, Kenya market ─────
+
+def odoo_window_sales(bags, start, end, market):
+    """{BAG_UPPER: bags_sold} for the window, Kenya market (excludes Sinza/Dar/
+    Uganda tills). Returns ({}, False) if Postgres isn't reachable."""
+    out = {b: 0 for b in _BAGS_UP}
+    try:
+        from lib import db
+        ok, _ = db.check_connection()
+        if not ok:
+            return out, False
+    except Exception:
+        return out, False
+
+    # Kenya = every till except the non-Kenya markets.
+    non_kenya = "('sinza','dar-es-alam','uganda')"
+    like_clauses = " OR ".join(
+        [f'pt."name" ILIKE :bag{i}' for i in range(len(bags))])
+    params = {"s": start, "e": end}
+    for i, b in enumerate(bags):
+        params[f"bag{i}"] = b + "%"
+
+    q = f"""
+    SELECT pt."name" AS product, SUM(pl.qty)::int AS bags
+    FROM pos_order p
+    JOIN pos_order_line pl ON pl.order_id = p.id
+    LEFT JOIN pos_session ps ON p.session_id = ps.id
+    LEFT JOIN pos_config pc ON ps.config_id = pc.id
+    LEFT JOIN product_product pp ON pl.product_id = pp.id
+    LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
+    LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
+    WHERE p.date_order::date BETWEEN CAST(:s AS date) AND CAST(:e AS date)
+      AND p.state IN ('done','paid') AND pl.qty > 0
+      AND lower(COALESCE(pc."name",'')) NOT IN {non_kenya}
+      AND COALESCE(pt."name",'') NOT LIKE '%+%'
+      AND COALESCE(pt."name",'') NOT ILIKE '%delivery%'
+      AND COALESCE(pt."name",'') NOT ILIKE '%customization%'
+      AND COALESCE(pt."name",'') NOT ILIKE '%strap%'
+      AND COALESCE(pt."name",'') NOT ILIKE '%sample%'
+      AND COALESCE(pcat."name",'') NOT ILIKE '%Pos%'
+      AND ({like_clauses})
+    GROUP BY pt."name"
+    """
+    df = db.run_query(q, params)
+    if df is None or df.empty:
+        return out, True
+    for _, r in df.iterrows():
+        b = _bucket(r["product"])
+        if b:
+            out[b] += int(r["bags"] or 0)
+    return out, True
+
+
+# ── POSTING: last week's Kenya posts (WEEKLY_MARKETING_POST col E) ─
+
+def weekly_kenya_posts(bags):
+    """{BAG_UPPER: kenya_posts} from WEEKLY_MARKETING_POST col D=bag type,
+    col E (idx 4) = Kenya posts."""
+    out = {b: 0 for b in _BAGS_UP}
     gc = get_gspread_client()
     sh = gc.open_by_key(SPREADSHEET_ID)
-
-    # ── MONTHLY_TARGET ────────────────────────────────────────
-    # col A (idx 0) = bag type / name
-    # col C (idx 2) = TARGET
-    # col D (idx 3) = SALES
-    # col E (idx 4) = DEFICIT
-    # col L (idx 11) = TIMED OFFERS flag
-
-    mt      = sh.worksheet("MONTHLY_TARGET")
-    mt_rows = mt.get_all_values()
-
-    new_product_names = []
-    total_target      = 0
-    total_sales       = 0
-    total_deficit     = 0
-    category_lookup   = {}   # bag_upper -> CATEGORY (col B of MONTHLY_TARGET)
-    product_targets   = []   # per-product {name, target, sold, remaining}
-
-    for row in mt_rows[1:]:
-        if len(row) < 1:
+    rows = sh.worksheet("WEEKLY_MARKETING_POST").get_all_values()
+    for row in rows[1:]:
+        if len(row) < 5:
             continue
-        bag = str(row[0]).strip()
-        if bag and len(row) > 1:
-            category_lookup[bag.upper()] = str(row[1]).strip()
-        if len(row) < 12 or not is_checked(row[11]):
-            continue
-        t = safe_int(row[2]); s = safe_int(row[3]); dfc = safe_int(row[4])
-        total_target  += t
-        total_sales   += s
-        total_deficit += dfc
-        if bag:
-            new_product_names.append(bag)
-            product_targets.append({
-                "name": bag, "target": t, "sold": s,
-                "remaining": max(t - s, 0),
-            })
-
-    names_upper = {n.upper() for n in new_product_names}
-
-    print(f"  Timed offers found    : {len(new_product_names)}")
-    for name in new_product_names:
-        print(f"    - {name}")
-
-    # ── MONTHLY_SALES ─────────────────────────────────────────
-    # col A (idx  0) = COLOUR
-    # col B (idx  1) = PRODUCT NAME
-    # col C (idx  2) = BAG TYPE  ← matched against names_upper
-    # col X (idx 23) = KENYA monthly sales
-    # col AA (idx 26) = OUTSIDE KENYA monthly sales
-
-    ms      = sh.worksheet("MONTHLY_SALES")
-    ms_rows = ms.get_all_values()
-
-    ms_base = []   # colour-level rows; posts + stock merged in later
-
-    for row in ms_rows[1:]:
-        if len(row) < 3:
-            continue
-        bag_type = str(row[2]).strip()   # col C
-        if not bag_type or bag_type.upper() in ("SUM TOTAL", "TOTAL", "GRAND TOTAL"):
-            continue
-        # Build rows for EVERY product; the new-products subset is derived later.
-        colour       = str(row[0]).strip()
-        product_name = str(row[1]).strip()
-        if "total" in product_name.lower():   # skip subtotal/grand-total rows
-            continue
-        ms_base.append({
-            "colour":       colour,
-            "category":     category_lookup.get(bag_type.upper(), ''),
-            "productName":  product_name,
-            "bagType":      bag_type,
-            "kenyaSales":   safe_int(row[23]) if len(row) > 23 else 0,
-            "outsideKenya": safe_int(row[26]) if len(row) > 26 else 0,
-            "mpostKenya":   0,
-            "mpostOutside": 0,
-            "sKenya":       0,
-            "sOutside":     0,
-            "sRestock":     0
-        })
-
-    # ── MONTHLY_MARKETING_POST ────────────────────────────────
-    # colour-level lookup to merge into monthly rows
-    # col A (idx 0) = COLOUR, col D (idx 3) = BAG TYPE
-    # col E (idx 4) = KENYA posts, col H (idx 7) = OUTSIDE KENYA posts
-
-    mmp      = sh.worksheet("MONTHLY_MARKETING_POST")
-    mmp_rows = mmp.get_all_values()
-
-    mpost_lookup = {}   # (bag_upper, colour_upper) -> {kenya, outsideKenya}
-    for row in mmp_rows[1:]:
-        if len(row) < 4:
-            continue
-        bag_type = str(row[3]).strip()
-        if not bag_type or bag_type.upper() in ("SUM TOTAL", "TOTAL", "GRAND TOTAL"):
-            continue
-        colour = str(row[0]).strip()
-        key    = (bag_type.upper(), colour.upper())
-        if key not in mpost_lookup:
-            mpost_lookup[key] = {"kenya": 0, "outsideKenya": 0}
-        mpost_lookup[key]["kenya"]        += safe_int(row[4]) if len(row) > 4 else 0
-        mpost_lookup[key]["outsideKenya"] += safe_int(row[7]) if len(row) > 7 else 0
-
-    # ── STOCK_LEVELS ──────────────────────────────────────────
-    # per-colour lookup shared by both monthly and weekly merges
-    # col D (idx  3) = BAG TYPE, col A (idx  0) = COLOUR
-    # col Y (idx 24) = KENYA, col Z (idx 25) = OUTSIDE KENYA, col AA (idx 26) = RESTOCK
-
-    sl      = sh.worksheet("STOCK_LEVELS")
-    sl_rows = sl.get_all_values()
-
-    stock_lookup = {}   # (bag_upper, colour_upper) -> {sKenya, sOutside, sRestock}
-
-    for row in sl_rows[1:]:
-        if len(row) < 4:
-            continue
-        bag_type = str(row[3]).strip()
-        if not bag_type or bag_type.upper() in ("SUM TOTAL", "TOTAL", "GRAND TOTAL"):
-            continue
-        colour  = str(row[0]).strip()
-        s_kenya = safe_int(row[24]) if len(row) > 24 else 0
-        s_out   = safe_int(row[25]) if len(row) > 25 else 0
-        s_rst   = safe_int(row[26]) if len(row) > 26 else 0
-        key     = (bag_type.upper(), colour.upper())
-        if key not in stock_lookup:
-            stock_lookup[key] = {"sKenya": 0, "sOutside": 0, "sRestock": 0}
-        stock_lookup[key]["sKenya"]   += s_kenya
-        stock_lookup[key]["sOutside"] += s_out
-        stock_lookup[key]["sRestock"] += s_rst
-
-    # Merge posts + stock into each monthly colour-level row
-    for r in ms_base:
-        lk   = (r["bagType"].upper(), r["colour"].upper())
-        post = mpost_lookup.get(lk, {"kenya": 0, "outsideKenya": 0})
-        stk  = stock_lookup.get(lk, {"sKenya": 0, "sOutside": 0, "sRestock": 0})
-        r["mpostKenya"]   = post["kenya"]
-        r["mpostOutside"] = post["outsideKenya"]
-        r["sKenya"]       = stk["sKenya"]
-        r["sOutside"]     = stk["sOutside"]
-        r["sRestock"]     = stk["sRestock"]
-
-    monthly_combined = ms_base
-
-    # ── WEEKLY_MARKETING_POST ─────────────────────────────────
-    # col A (idx 0) = COLOUR, col D (idx 3) = BAG TYPE
-    # col E (idx 4) = KENYA posts, col H (idx 7) = OUTSIDE KENYA posts
-
-    wmp      = sh.worksheet("WEEKLY_MARKETING_POST")
-    wmp_rows = wmp.get_all_values()
-
-    wpost_lookup = {}   # (bag_upper, colour_upper) -> {kenya, outsideKenya}
-    for row in wmp_rows[1:]:
-        if len(row) < 4:
-            continue
-        bag_type = str(row[3]).strip()
-        if not bag_type or bag_type.upper() in ("SUM TOTAL", "TOTAL", "GRAND TOTAL"):
-            continue
-        colour = str(row[0]).strip()
-        key    = (bag_type.upper(), colour.upper())
-        if key not in wpost_lookup:
-            wpost_lookup[key] = {"kenya": 0, "outsideKenya": 0}
-        wpost_lookup[key]["kenya"]        += safe_int(row[4]) if len(row) > 4 else 0
-        wpost_lookup[key]["outsideKenya"] += safe_int(row[7]) if len(row) > 7 else 0
-
-    # ── WEEKLY_SALES ──────────────────────────────────────────
-    # col A (idx  0) = COLOUR
-    # col B (idx  1) = CATEGORY
-    # col C (idx  2) = PRODUCT NAME
-    # col D (idx  3) = BAG TYPE
-    # col X (idx 23) = TOTAL
-
-    ws      = sh.worksheet("WEEKLY_SALES")
-    ws_rows = ws.get_all_values()
-
-    weekly_combined = []
-
-    for row in ws_rows[1:]:
-        if len(row) < 4:
-            continue
-        bag_type = str(row[3]).strip()
-        if not bag_type or bag_type.upper() in ("SUM TOTAL", "TOTAL", "GRAND TOTAL"):
-            continue
-        product_name = str(row[2]).strip()
-        if "total" in product_name.lower():
-            continue
-        colour  = str(row[0]).strip()
-        lk      = (bag_type.upper(), colour.upper())
-        post    = wpost_lookup.get(lk, {"kenya": 0, "outsideKenya": 0})
-        stk     = stock_lookup.get(lk, {"sKenya": 0, "sOutside": 0, "sRestock": 0})
-        weekly_combined.append({
-            "colour":       colour,
-            "category":     str(row[1]).strip(),
-            "productName":  product_name,
-            "bagType":      bag_type,
-            "weeklySales":  safe_int(row[23]) if len(row) > 23 else 0,
-            "wpostKenya":   post["kenya"],
-            "wpostOutside": post["outsideKenya"],
-            "sKenya":       stk["sKenya"],
-            "sOutside":     stk["sOutside"],
-            "sRestock":     stk["sRestock"]
-        })
-
-    # Full catalogue (every product) vs. the new-products subset used by cards/charts
-    all_monthly_combined = ms_base
-    all_weekly_combined  = weekly_combined
-    monthly_combined = [r for r in ms_base         if r["bagType"].upper() in names_upper]
-    weekly_combined  = [r for r in weekly_combined if r["bagType"].upper() in names_upper]
-
-    # ── Timed-offer campaign scope: totals for ONLY the shops the offer runs on.
-    # "ALL" → every shop (use the Kenya + Outside aggregates already computed);
-    # a shop list → sum just those shops' columns for the timed-offer bags.
-    shops_cfg = OFFER_CONFIG.get("shops", "ALL")
-    if isinstance(shops_cfg, str) and shops_cfg.strip().upper() == "ALL":
-        scope_shops    = "ALL"
-        scope_sales_mo = sum(r["kenyaSales"] + r["outsideKenya"] for r in monthly_combined)
-        scope_sales_wk = sum(r["weeklySales"] for r in weekly_combined)
-        scope_stock    = sum(r["sKenya"] + r["sOutside"] for r in monthly_combined)
-    else:
-        scope_shops    = shops_cfg if isinstance(shops_cfg, list) else [shops_cfg]
-        scope_sales_mo = _scoped_total(ms_rows, names_upper, scope_shops)
-        scope_sales_wk = _scoped_total(ws_rows, names_upper, scope_shops)
-        scope_stock    = _scoped_total(sl_rows, names_upper, scope_shops)
-    offer_scope = {"shops": scope_shops, "salesMo": scope_sales_mo,
-                   "salesWk": scope_sales_wk, "stock": scope_stock}
-
-    return (new_product_names, total_target, total_sales, total_deficit,
-            monthly_combined, weekly_combined, product_targets,
-            all_monthly_combined, all_weekly_combined, offer_scope)
+        b = _bucket(row[3])          # col D = BAG TYPE
+        if b:
+            out[b] += safe_int(row[4])   # col E = KENYA posts
+    return out
 
 
-# ── RUN ───────────────────────────────────────────────────────
+# ── BUILD ─────────────────────────────────────────────────────
 
-print("Fetching data from Google Sheets...")
-(new_product_names, total_target, total_sales, total_deficit,
- monthly_combined, weekly_combined, product_targets,
- all_monthly_combined, all_weekly_combined, offer_scope) = fetch_new_products_data()
+print("Fetching timed-offer data (Odoo sales + weekly posting)...")
+sales_map, sales_live = odoo_window_sales(BAGS, CFG["startDate"], CFG["endDate"], CFG["market"])
+posts_map = weekly_kenya_posts(BAGS)
 
-product_count    = len(new_product_names)
-sales_pct        = (total_sales / total_target * 100) if total_target else 0
-monthly_kenya    = sum(r["kenyaSales"]   for r in monthly_combined)
-monthly_outside  = sum(r["outsideKenya"] for r in monthly_combined)
-mpost_kenya      = sum(r["mpostKenya"]   for r in monthly_combined)
-mpost_outside    = sum(r["mpostOutside"] for r in monthly_combined)
-m_skenya         = sum(r["sKenya"]       for r in monthly_combined)
-m_soutside       = sum(r["sOutside"]     for r in monthly_combined)
-m_srestock       = sum(r["sRestock"]     for r in monthly_combined)
-weekly_total     = sum(r["weeklySales"]  for r in weekly_combined)
-wpost_kenya      = sum(r["wpostKenya"]   for r in weekly_combined)
-wpost_outside    = sum(r["wpostOutside"] for r in weekly_combined)
-w_skenya         = sum(r["sKenya"]       for r in weekly_combined)
-w_soutside       = sum(r["sOutside"]     for r in weekly_combined)
-w_srestock       = sum(r["sRestock"]     for r in weekly_combined)
+bag_rows = []
+for b in BAGS:
+    bu = b.upper()
+    sold  = int(sales_map.get(bu, 0))
+    posts = int(posts_map.get(bu, 0))
+    bag_rows.append({
+        "name":  b,
+        "sold":  sold,
+        "posts": posts,
+        "perPost": round(sold / posts, 1) if posts else None,   # bags sold per post
+    })
 
+bag_rows.sort(key=lambda r: -r["sold"])
+total_sold  = sum(r["sold"]  for r in bag_rows)
+total_posts = sum(r["posts"] for r in bag_rows)
 
-# ── WEEKLY POSTS SNAPSHOT ─────────────────────────────────────
-# Record each Sun–Sat week's Weekly Sales Total / Kenya Posts / Outside
-# Posts so the dashboard can track Week 1 → the latest week.
-WEEKLY_POSTS_HISTORY = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                    "timed_offers_weekly_history.json")
-
-def _np_week_start(d):
-    return d - timedelta(days=(d.weekday() + 1) % 7)
-
-def _np_complete_weeks_in_month(ref=None):
-    """Total perfect weeks in the month (Sun–Sat weeks with >=5 days in it)."""
-    d = ref or (date.today() - timedelta(days=1))
-    year, month = d.year, d.month
-    ms = date(year, month, 1)
-    me = (date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)) - timedelta(days=1)
-    ws = ms - timedelta(days=(ms.weekday() + 1) % 7)
-    n = 0
-    while ws <= me:
-        days_in = sum(1 for i in range(7)
-                      if (ws + timedelta(days=i)).year == year
-                      and (ws + timedelta(days=i)).month == month)
-        if days_in >= 5:
-            n += 1
-        ws += timedelta(days=7)
-    return max(n, 1)
-
-def _np_perfect_week_index(d):
-    """Ordinal among the month's perfect weeks (>=5 days in month), so the first
-    FULL week is Week 1 (the opening partial week is not counted here — posts
-    tracking only begins on the first full week).
-    (e.g. Jul 5–11 = Wk 1, Jul 12–18 = Wk 2, Jul 19–25 = Wk 3, ...)"""
-    year, month = d.year, d.month
-    ms = date(year, month, 1)
-    me = (date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)) - timedelta(days=1)
-    ws = ms - timedelta(days=(ms.weekday() + 1) % 7)
-    target = _np_week_start(d)
-    idx = 0
-    while ws <= me:
-        days_in = sum(1 for i in range(7)
-                      if (ws + timedelta(days=i)).year == year
-                      and (ws + timedelta(days=i)).month == month)
-        if days_in >= 5:
-            idx += 1
-        if ws == target:
-            return idx if days_in >= 5 else 0
-        ws += timedelta(days=7)
-    return idx
-
-def update_np_weekly_history():
-    ref = date.today() - timedelta(days=1)
-    ws  = _np_week_start(ref)
-    wk_idx = _np_perfect_week_index(ref)
-    entry = {
-        "weekStart":    ws.isoformat(),
-        "label":        ("Wk " + str(wk_idx)) if wk_idx else "Partial",
-        "month":        ref.strftime("%b"),
-        "weeklyTotal":  weekly_total,
-        "kenyaPosts":   wpost_kenya,
-        "outsidePosts": wpost_outside,
-    }
-    weeks = []
-    if os.path.exists(WEEKLY_POSTS_HISTORY):
-        try:
-            with open(WEEKLY_POSTS_HISTORY, "r") as f:
-                weeks = json.load(f).get("weeks", [])
-        except (ValueError, OSError):
-            weeks = []
-    weeks = [w for w in weeks if w.get("weekStart") != entry["weekStart"]]
-    weeks.append(entry)
-    weeks.sort(key=lambda w: w.get("weekStart", ""))
-    weeks = weeks[-16:]
-    # Re-label every stored week from its own weekStart, so the numbering stays
-    # consistent (opening partial week = Wk 1) even for previously-frozen rows.
-    for w in weeks:
-        try:
-            wi = _np_perfect_week_index(date.fromisoformat(w["weekStart"]))
-            w["label"] = ("Wk " + str(wi)) if wi else "Partial"
-        except Exception:
-            pass
-    with open(WEEKLY_POSTS_HISTORY, "w") as f:
-        json.dump({"weeks": weeks}, f, indent=2)
-    return weeks
-
-np_weekly_history = update_np_weekly_history()
-
-# Weekly target = new-product monthly target ÷ perfect weeks in the month
-np_complete_weeks   = _np_complete_weeks_in_month()
-weekly_target       = round(total_target / np_complete_weeks) if np_complete_weeks else 0
-weekly_sales_pct    = (weekly_total / weekly_target * 100) if weekly_target else 0
-
-
-# ── TIMED-OFFER SNAPSHOTS ─────────────────────────────────────
-# While today is inside the campaign window, record one dated snapshot per run
-# (deduped by date) of the shop-scoped sales / stock / posts, so the page can
-# chart how the offer performed over its window.
-SNAPSHOTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                              "timed_offers_snapshots.json")
-
-_start, _end = OFFER_CONFIG["startDate"], OFFER_CONFIG["endDate"]
-_today       = date.today()
-offer_configured = False
-offer_active     = False
-offer_days_left  = None
-if _start and _end:
+# Nice window label, e.g. "17–21 Aug 2026"
+def _win_label(s, e):
     try:
-        _s = date.fromisoformat(_start)
-        _e = date.fromisoformat(_end)
-        offer_configured = True
-        offer_active     = _s <= _today <= _e
-        offer_days_left  = max((_e - _today).days, 0) if _today <= _e else 0
+        ds, de = date.fromisoformat(s), date.fromisoformat(e)
+        if ds.month == de.month and ds.year == de.year:
+            return f"{ds.day}–{de.day} {de:%b %Y}"
+        return f"{ds:%d %b} – {de:%d %b %Y}"
     except ValueError:
-        offer_configured = False
+        return f"{s} – {e}"
 
-offer_snapshots = []
-if os.path.exists(SNAPSHOTS_FILE):
-    try:
-        with open(SNAPSHOTS_FILE, "r", encoding="utf-8") as f:
-            offer_snapshots = json.load(f).get("snapshots", [])
-    except (ValueError, OSError):
-        offer_snapshots = []
+best  = max(bag_rows, key=lambda r: r["sold"]) if bag_rows else None
+mostp = max(bag_rows, key=lambda r: r["posts"]) if bag_rows else None
 
-if offer_active:
-    entry = {
-        "date":    _today.isoformat(),
-        "salesMo": offer_scope["salesMo"],
-        "salesWk": offer_scope["salesWk"],
-        "stock":   offer_scope["stock"],
-        "postsWk": wpost_kenya + wpost_outside,
-        "postsMo": mpost_kenya + mpost_outside,
-    }
-    offer_snapshots = [x for x in offer_snapshots if x.get("date") != entry["date"]]
-    offer_snapshots.append(entry)
-    offer_snapshots.sort(key=lambda x: x.get("date", ""))
-    offer_snapshots = offer_snapshots[-120:]
-    with open(SNAPSHOTS_FILE, "w", encoding="utf-8") as f:
-        json.dump({"snapshots": offer_snapshots}, f, indent=2)
-
-# Window-anchored metrics: measure the offer FROM its start date = current
-# (shop-scoped) totals minus the baseline captured at the window's first snapshot.
-# Only snapshots inside the CURRENT window count (so changing the window starts
-# a fresh baseline and drops a previous campaign's points from the headline).
-_win_snaps = [s for s in offer_snapshots
-              if (not _start or s.get("date", "") >= _start)
-              and (not _end or s.get("date", "") <= _end)]
-_baseline = _win_snaps[0] if _win_snaps else None
-if _baseline is not None:
-    window_sales  = max(offer_scope["salesMo"] - (_baseline.get("salesMo") or 0), 0)
-    window_posts  = max((mpost_kenya + mpost_outside) - (_baseline.get("postsMo") or 0), 0)
-    window_pct    = round(window_sales / total_target * 100, 2) if total_target else 0.0
-    baseline_date = _baseline.get("date", "")
-else:
-    window_sales = window_posts = window_pct = None
-    baseline_date = ""
-
-offer_config_out = {
-    "shops":        offer_scope["shops"],
-    "startDate":    _start,
-    "endDate":      _end,
-    "configured":   offer_configured,
-    "active":       offer_active,
-    "daysLeft":     offer_days_left,
-    "salesMo":      offer_scope["salesMo"],
-    "salesWk":      offer_scope["salesWk"],
-    "stock":        offer_scope["stock"],
-    "baselineDate": baseline_date,
-    "windowSales":  window_sales,
-    "windowPosts":  window_posts,
-    "windowPct":    window_pct,
+TO = {
+    "market":     CFG["market"],
+    "startDate":  CFG["startDate"],
+    "endDate":    CFG["endDate"],
+    "windowLabel": _win_label(CFG["startDate"], CFG["endDate"]),
+    "salesLive":  sales_live,
+    "bags":       bag_rows,
+    "totalSold":  total_sold,
+    "totalPosts": total_posts,
+    "perPost":    round(total_sold / total_posts, 1) if total_posts else None,
+    "bestName":   best["name"]  if best  else "",
+    "bestSold":   best["sold"]  if best  else 0,
+    "mostPName":  mostp["name"] if mostp else "",
+    "mostPosts":  mostp["posts"] if mostp else 0,
 }
 
 
-# ── INJECT INTO HTML ──────────────────────────────────────────
+# ── INJECT ────────────────────────────────────────────────────
 
 inline_script = (
-    "<!-- NEW_PROD_DATA_START -->\n"
+    "<!-- TIMED_DATA_START -->\n"
     "<script>\n"
-    "const NP = {\n"
-    f'  productCount:    {product_count},\n'
-    f'  totalTarget:     "{fmt_int(total_target)}",\n'
-    f'  totalSales:      "{fmt_int(total_sales)}",\n'
-    f'  totalDeficit:    "{fmt_int(total_deficit)}",\n'
-    f'  salesPct:        "{fmt_pct(sales_pct)}",\n'
-    f'  monthlyKenya:    "{fmt_int(monthly_kenya)}",\n'
-    f'  monthlyOutside:  "{fmt_int(monthly_outside)}",\n'
-    f'  mpostKenya:      "{fmt_int(mpost_kenya)}",\n'
-    f'  mpostOutside:    "{fmt_int(mpost_outside)}",\n'
-    f'  mSKenya:         "{fmt_int(m_skenya)}",\n'
-    f'  mSOutside:       "{fmt_int(m_soutside)}",\n'
-    f'  mSRestock:       "{fmt_int(m_srestock)}",\n'
-    f'  productTargets:  {json.dumps(product_targets, ensure_ascii=False)},\n'
-    f'  weeklyTotal:     "{fmt_int(weekly_total)}",\n'
-    f'  weeklyTarget:    "{fmt_int(weekly_target)}",\n'
-    f'  weeklySalesPct:  "{fmt_pct(weekly_sales_pct)}",\n'
-    f'  perfectWeeks:    {np_complete_weeks},\n'
-    f'  wpostKenya:      "{fmt_int(wpost_kenya)}",\n'
-    f'  wpostOutside:    "{fmt_int(wpost_outside)}",\n'
-    f'  wSKenya:         "{fmt_int(w_skenya)}",\n'
-    f'  wSOutside:       "{fmt_int(w_soutside)}",\n'
-    f'  wSRestock:       "{fmt_int(w_srestock)}",\n'
-    f'  productNames:    {json.dumps(new_product_names, ensure_ascii=False)},\n'
-    f'  monthlyCombined: {json.dumps(monthly_combined, ensure_ascii=False)},\n'
-    f'  weeklyCombined:  {json.dumps(weekly_combined, ensure_ascii=False)},\n'
-    f'  allMonthlyCombined: {json.dumps(all_monthly_combined, ensure_ascii=False)},\n'
-    f'  allWeeklyCombined:  {json.dumps(all_weekly_combined, ensure_ascii=False)},\n'
-    f'  weeklyPostsHistory: {json.dumps(np_weekly_history)},\n'
-    f'  offerConfig:     {json.dumps(offer_config_out, ensure_ascii=False)},\n'
-    f'  offerSnapshots:  {json.dumps(_win_snaps, ensure_ascii=False)}\n'
-    "};\n"
+    "const TO = " + json.dumps(TO, ensure_ascii=False) + ";\n"
     "</script>\n"
-    "<!-- NEW_PROD_DATA_END -->"
+    "<!-- TIMED_DATA_END -->"
 )
 
-BASE_DIR  = os.path.dirname(os.path.abspath(__file__))
 html_path = os.path.join(BASE_DIR, "timed_offers.html")
-
 with open(html_path, "r", encoding="utf-8") as f:
     html = f.read()
-
-html = re.sub(
-    r"<!-- NEW_PROD_DATA_START -->.*?<!-- NEW_PROD_DATA_END -->",
-    inline_script,
-    html,
-    flags=re.DOTALL
-)
-
+html = re.sub(r"<!-- TIMED_DATA_START -->.*?<!-- TIMED_DATA_END -->",
+              inline_script, html, flags=re.DOTALL)
 with open(html_path, "w", encoding="utf-8") as f:
     f.write(html)
 
 if not os.environ.get("DENRI_LAUNCHER"):
     webbrowser.open_new_tab(pathlib.Path(html_path).as_uri())
 
-print("timed_offers.html updated.")
-print(f"  Total Target           : {fmt_int(total_target)}")
-print(f"  Total Sales            : {fmt_int(total_sales)}")
-print(f"  Total Deficit          : {fmt_int(total_deficit)}")
-print(f"  Sales % Achieved       : {fmt_pct(sales_pct)}")
-print(f"  Monthly combined rows  : {len(monthly_combined)}")
-print(f"  Monthly Kenya sales    : {fmt_int(monthly_kenya)}")
-print(f"  Monthly Outside Kenya  : {fmt_int(monthly_outside)}")
-print(f"  Monthly posts (Kenya)  : {fmt_int(mpost_kenya)}")
-print(f"  Monthly posts (Out)    : {fmt_int(mpost_outside)}")
-print(f"  Weekly combined rows   : {len(weekly_combined)}")
-print(f"  Weekly sales total     : {fmt_int(weekly_total)}")
-print(f"  Weekly posts (Kenya)   : {fmt_int(wpost_kenya)}")
-print(f"  Weekly posts (Out)     : {fmt_int(wpost_outside)}")
+print(f"timed_offers.html updated  ({TO['windowLabel']}, {CFG['market']}).")
+print(f"  Sales source        : {'Odoo (live)' if sales_live else 'DB UNREACHABLE — zeros'}")
+for r in bag_rows:
+    pp = f"{r['perPost']}" if r["perPost"] is not None else "—"
+    print(f"    {r['name']:<14} sold {r['sold']:>4}   posts {r['posts']:>3}   sold/post {pp}")
+print(f"  TOTAL sold          : {fmt_int(total_sold)}")
+print(f"  TOTAL posts (Kenya) : {fmt_int(total_posts)}")
