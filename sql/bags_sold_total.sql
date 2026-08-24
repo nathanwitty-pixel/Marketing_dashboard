@@ -34,5 +34,6 @@ WHERE p.date_order::date BETWEEN dp.start_date AND dp.end_date
   AND COALESCE(pt."name", '') NOT ILIKE '%customization%'
   AND COALESCE(pt."name", '') NOT ILIKE '%strap%'
   AND COALESCE(pt."name", '') NOT ILIKE '%KES discount%'   -- price adjustment, not a bag
+  AND COALESCE(pt."name", '') NOT ILIKE '%sample%'         -- display / sample units, not a sale
   AND COALESCE(pcat."name", '') NOT ILIKE '%Pos%'          -- non-bag POS lines
   AND lower(COALESCE(pt."name", '')) <> ALL(:excluded)     -- editable not-a-sale list (sales_exclusions.txt)

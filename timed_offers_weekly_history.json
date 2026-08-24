@@ -37,8 +37,16 @@
       "label": "Wk 2",
       "month": "Aug",
       "weeklyTotal": 796,
-      "kenyaPosts": 165,
-      "outsidePosts": 330
+      "kenyaPosts": 167,
+      "outsidePosts": 155
+    },
+    {
+      "weekStart": "2026-08-16",
+      "label": "Wk 3",
+      "month": "Aug",
+      "weeklyTotal": 762,
+      "kenyaPosts": 192,
+      "outsidePosts": 106
     }
   ]
 }

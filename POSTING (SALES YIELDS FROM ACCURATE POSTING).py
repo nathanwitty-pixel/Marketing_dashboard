@@ -74,6 +74,29 @@ def safe_int(val):
 def fmt_int(n):
     return f"{n:,}"
 
+# ── DEAD-STOCK THRESHOLDS (editable, read fresh each run) ──────
+_DEAD_THRESH_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                 "dead_stock_thresholds.txt")
+
+def load_dead_thresholds():
+    """High-stock floor per region + the weak-sales ceiling. See
+    dead_stock_thresholds.txt. Defaults chosen so Sinza/Uganda (≈1/10th Kenya's
+    stock scale) still surface dead stock."""
+    cfg = {"weak_max": 5, "kenya": 20, "sinza": 5, "uganda": 5}
+    try:
+        with open(_DEAD_THRESH_FILE, encoding="utf-8") as f:
+            for line in f:
+                s = line.split("#", 1)[0].strip()
+                if "=" in s:
+                    k, v = s.split("=", 1)
+                    try:
+                        cfg[k.strip().lower()] = int(float(v.strip()))
+                    except ValueError:
+                        pass
+    except OSError:
+        pass
+    return cfg
+
 def _is_checked(row, col_idx):
     """Return True if the cell at col_idx holds a checkmark/truthy value, or if no filter is set."""
     if col_idx is None:
@@ -383,6 +406,114 @@ def _build_no_convert(post_rows, sales_rows, sales_col_indices,
 
     result.sort(key=lambda x: -x["expectedSale"])
     return result
+
+
+def _dead_stock_region(sales_rows, post_rows, sl_rows, offer_bagtypes,
+                       sales_col, sales_name_col, post_col, stock_col,
+                       stock_min, weak_max, region, period):
+    """Dead Stock Accountability for one region, one period (month or week).
+
+    Dead stock = a bag with stock-on-hand > stock_min AND bags-sold-in-period
+    < weak_max. For each dead-stock bag we ask: did marketing POST it (posts > 0
+    in the period), and did it then SELL (any sales)? Split by ON-OFFER vs NOT
+    (bag type in MONTHLY_TARGET's offer list).
+
+      • Coverage  = posted dead stock ÷ all dead stock   (did they bother?)
+      • Conversion = sold dead stock ÷ posted dead stock (did posting move it?)
+
+    Header-correct region columns per period:
+      Monthly  sales=MONTHLY_SALES (name col B/idx1): Kenya X(23) Sinza Y(24) Uganda Z(25)
+      Weekly   sales=WEEKLY_SALES  (name col C/idx2): Kenya KENYA(27) Sinza R(17) Uganda S(18)
+      posts    = (MONTHLY|WEEKLY)_MARKETING_POST region col E/F/G (4/5/6), name col C
+      stock    = STOCK_LEVELS (period-agnostic on-hand): Kenya Y(24) Sinza R(17) Uganda S(18)
+    """
+    # sales per product — sales_name_col differs (MONTHLY_SALES name=B, WEEKLY_SALES name=C)
+    sales_map = {}
+    for row in sales_rows[1:]:
+        if len(row) <= sales_name_col:
+            continue
+        colour, name = str(row[0]).strip(), str(row[sales_name_col]).strip()
+        if not colour or not name or "total" in name.lower() or "total" in colour.lower():
+            continue
+        k = (colour.lower(), name.lower())
+        sales_map[k] = sales_map.get(k, 0) + (safe_int(row[sales_col]) if len(row) > sales_col else 0)
+
+    # posts per product (MARKETING_POST, key colour A + name C — same layout weekly/monthly)
+    post_map = {}
+    for row in post_rows[1:]:
+        if not _real_mmp(row):
+            continue
+        k = (str(row[0]).lower().strip(), str(row[2]).lower().strip())
+        post_map[k] = post_map.get(k, 0) + (safe_int(row[post_col]) if len(row) > post_col else 0)
+
+    # stock per product (STOCK_LEVELS, key colour A + name C)
+    stock_agg = {}
+    for row in sl_rows[1:]:
+        if len(row) < 4:
+            continue
+        k = (str(row[0]).lower().strip(), str(row[2]).lower().strip())
+        if k not in stock_agg:
+            stock_agg[k] = {"colour": str(row[0]).strip(), "productName": str(row[2]).strip(),
+                            "bagType": str(row[3]).strip(), "stock": 0}
+        stock_agg[k]["stock"] += safe_int(row[stock_col]) if len(row) > stock_col else 0
+
+    def blank():
+        return {"dead": 0, "units": 0, "posted": 0, "notPosted": 0, "sold": 0, "unsold": 0,
+                "postedUnits": 0, "notPostedUnits": 0}
+    grp = {"on": blank(), "off": blank()}
+    bags = []
+    for k, si in stock_agg.items():
+        stock = si["stock"]
+        sales = sales_map.get(k, 0)
+        if not (stock > stock_min and sales < weak_max):
+            continue
+        on_offer = si["bagType"].upper() in offer_bagtypes
+        post_cnt = post_map.get(k, 0)
+        posted   = post_cnt > 0
+        g = grp["on"] if on_offer else grp["off"]
+        g["dead"] += 1
+        g["units"] += stock
+        if posted:
+            g["posted"] += 1
+            g["postedUnits"] += stock
+            status = "sold" if sales > 0 else "unsold"
+            g[status] += 1
+        else:
+            g["notPosted"] += 1
+            g["notPostedUnits"] += stock
+            status = "notposted"
+        bags.append({"colour": si["colour"], "productName": si["productName"],
+                     "bagType": si["bagType"], "stock": stock, "sales": sales,
+                     "onOffer": on_offer, "posted": posted, "postCount": post_cnt,
+                     "status": status})
+    # Rank: the bags most in need of action first — never-posted, then posted-but-dead,
+    # then posted-and-moving; within each, on-offer and biggest stock surface first.
+    _order = {"notposted": 0, "unsold": 1, "sold": 2}
+    bags.sort(key=lambda x: (_order.get(x["status"], 3), -int(x["onOffer"]), -x["stock"]))
+
+    def pct(a, b):
+        return round(a / b * 100, 1) if b else 0.0
+
+    def summarise(g):
+        return {**g, "coverage": pct(g["posted"], g["dead"]),
+                "conversion": pct(g["sold"], g["posted"])}
+
+    tot = blank()
+    for gk in ("on", "off"):
+        for kk in tot:
+            tot[kk] += grp[gk][kk]
+
+    print(f"  Dead stock {region:<7} {period:<7}: {tot['dead']} SKUs / {fmt_int(tot['units'])} units  "
+          f"posted={tot['posted']} (cov {pct(tot['posted'], tot['dead'])}%)  "
+          f"sold={tot['sold']} (conv {pct(tot['sold'], tot['posted'])}%)")
+
+    return {
+        "total": summarise(tot),
+        "on":    summarise(grp["on"]),
+        "off":   summarise(grp["off"]),
+        "bags":  bags[:40],
+        "notPosted": [b for b in bags if b["status"] == "notposted"][:15],
+    }
 
 
 def _posted_stock(wmp_rows, sl_rows, post_col, check_col, stock_col):
@@ -1630,6 +1761,35 @@ def fetch_posting_data():
     sinza['weekly']  = sz_wk
     uganda['weekly'] = ug_wk
 
+    # ── DEAD STOCK ACCOUNTABILITY (monthly + weekly) ──────────
+    # On-offer = bag type flagged ✅ in MONTHLY_TARGET col F (canonical offer list).
+    # Region sales columns are header-correct and differ by period:
+    #   Monthly (MONTHLY_SALES, name col B/idx1): Kenya X(23) Sinza Y(24) Uganda Z(25)
+    #   Weekly  (WEEKLY_SALES,  name col C/idx2): Kenya KENYA(27) Sinza R(17) Uganda S(18)
+    #   posts E/F/G (4/5/6); stock STOCK_LEVELS Kenya Y(24) Sinza R(17) Uganda S(18).
+    dead_offer_bagtypes = {
+        str(row[0]).strip().upper()
+        for row in mt_rows[1:]
+        if len(row) > 5 and str(row[0]).strip() and _is_checked(row, 5)
+    }
+    _th = load_dead_thresholds()
+    print("\n  ── Dead Stock Accountability ─────────────────────────────")
+
+    def _dead(region, mo_sales_col, wk_sales_col, post_col, stock_col, floor):
+        return {
+            "region": region, "stockMin": floor, "weakMax": _th["weak_max"],
+            "monthly": _dead_stock_region(ms_rows, mmp_rows, sl_rows, dead_offer_bagtypes,
+                                          mo_sales_col, 1, post_col, stock_col,
+                                          floor, _th["weak_max"], region, "monthly"),
+            "weekly":  _dead_stock_region(ws_rows_wk, wmp_rows_wk, sl_rows, dead_offer_bagtypes,
+                                          wk_sales_col, 2, post_col, stock_col,
+                                          floor, _th["weak_max"], region, "weekly"),
+        }
+
+    kenya['deadStock']  = _dead("Kenya",  23, 27, 4, 24, _th["kenya"])
+    sinza['deadStock']  = _dead("Sinza",  24, 17, 5, 17, _th["sinza"])
+    uganda['deadStock'] = _dead("Uganda", 25, 18, 6, 18, _th["uganda"])
+
     # Posted-but-didn't-sell bags (weekly), tagged on/not-on-offer, for the guidance panel
     sinza['noConvertWk']  = _build_no_convert(wmp_rows_wk, ws_rows_wk, [17],  9, 5, sl_rows, 17, SINZA_SPP,  sales_check_col=25)
     uganda['noConvertWk'] = _build_no_convert(wmp_rows_wk, ws_rows_wk, [18], 10, 6, sl_rows, 18, UGANDA_SPP, sales_check_col=26)
@@ -2121,6 +2281,8 @@ inline_script = (
     f'  salesFromPosting: {json.dumps(kenya["salesFromPosting"], ensure_ascii=False)},\n'
     f'  salesNoPost:      {json.dumps(kenya["salesNoPost"],      ensure_ascii=False)},\n'
     f'  accuracyBags:     {json.dumps(kenya["accuracyBags"],     ensure_ascii=False)},\n'
+    # ── Dead Stock Accountability (Kenya top-level; Sinza/Uganda ride in their nested dicts) ──
+    f'  deadKenya:        {json.dumps(kenya["deadStock"], ensure_ascii=False)},\n'
     # ── Sinza nested ──
     f'  sinza:            {json.dumps(sinza,   ensure_ascii=False)},\n'
     # ── Uganda nested ──

@@ -1,0 +1,11 @@
+# Dead Stock Accountability — tuning knobs (read fresh each refresh).
+# A bag counts as "dead stock" when it has HIGH stock on hand AND WEAK sales this month:
+#     stock-on-hand  >  <region floor below>      AND      bags sold this month  <  weak_max
+#
+# Kenya operates at ~10x the stock scale of Sinza/Uganda, so each region has its
+# own "high stock" floor. Edit the numbers and re-run the dashboard to retune.
+
+weak_max = 5      # "weak sales" = sold fewer than this many bags this month
+kenya    = 20     # Kenya: high stock = more than this many units on hand
+sinza    = 5      # Sinza: smaller operation, lower floor
+uganda   = 5      # Uganda: smaller operation, lower floor

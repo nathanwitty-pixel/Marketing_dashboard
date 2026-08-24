@@ -26,10 +26,34 @@ from datetime import date, timedelta
 SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 
 
-# ── MANUAL INPUTS — fill these in yourself ────────────────────
-
-corporate_bags = 138+131+43   # 138 prior + 131 new corporate bags in week 4 (Forecasted Projection)
+# ── CORPORATE BAGS (dynamic) ──────────────────────────────────
+# No longer a manual entry. Pulled live from Odoo customer invoices
+# (account_move) for the projected month — see _corporate_bags() below and
+# sql/corporate_bags.sql. Used ONLY by the Forecasted Projection and added on
+# top of POS in the Sales card; Total/Weekly/Net Bags Sold stay POS-only, so
+# corporate is never double-counted.
 # bare_minimum is computed below = monthly target ÷ perfect weeks in month.
+
+
+def _corporate_bags(year, month):
+    """Corporate bags sold in the given month, live from Odoo invoices.
+    Returns 0 when Postgres isn't reachable (projection falls back to POS-only
+    rather than a stale hardcoded figure)."""
+    try:
+        from lib import db, queries
+        ok, _ = db.check_connection()
+        if not ok:
+            return 0
+        m_start = date(year, month, 1)
+        m_end   = date(year, month, calendar.monthrange(year, month)[1])
+        df = db.run_query(queries.CORPORATE_BAGS,
+                          {"start_date": m_start.isoformat(),
+                           "end_date":   m_end.isoformat()})
+        if df is not None and not df.empty:
+            return int(df.iloc[0]["bags"] or 0)
+    except Exception:
+        pass
+    return 0
 
 
 # ── PERFECT (COMPLETE) WEEKS IN THE MONTH ─────────────────────
@@ -167,6 +191,9 @@ if (not sales_is_live and current_day <= 6 and days_in_month and total_target
 
 velocity_factor = days_in_month / current_day
 proj_month      = proj_ref.strftime("%B")
+
+# Corporate bags for the projected month (dynamic — from Odoo invoices).
+corporate_bags = _corporate_bags(proj_ref.year, proj_ref.month)
 
 # Perfect (complete) weeks in the month — used for the bare minimum
 perfect_weeks = count_complete_weeks_in_month()

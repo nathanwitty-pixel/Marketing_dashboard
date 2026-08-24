@@ -275,7 +275,8 @@
     <div class="card blue" id="sales-card">
       <div class="card-label">Sales <span style="font-size:0.58rem;font-weight:800;letter-spacing:0.05em;color:#22d3ee;border:1px solid rgba(34,211,238,0.4);border-radius:5px;padding:0.06rem 0.36rem;margin-left:0.35rem;vertical-align:middle">ODOO · THIS MONTH</span></div>
       <div class="card-value" id="kpi-sales"></div>
-      <div class="card-interpretation">Bags sold this month, live from Odoo POS (the till data) — target still comes from the sheet, so Remaining = target − these sales.</div>
+      <div id="sales-breakdown" style="font-size:0.72rem;color:#94a3b8;margin-top:-0.15rem;margin-bottom:0.2rem"></div>
+      <div class="card-interpretation">Total bags this month: Odoo POS (tills) <strong>plus</strong> corporate bags sold from paid/settled invoices. Target comes from the sheet, so Remaining = target − these sales. Weekly Sales and Net Bags Sold stay POS-only.</div>
     </div>
 
     <div class="card cyan" id="master-card">
@@ -404,18 +405,20 @@
 <!-- PERF_DATA_START -->
 <script>
 const PERF = {
-  remainingTarget:    "17,571",
-  salesPctAchieved:   "24.37%",
-  sales:              "5,661",
-  masterBags:         "5,610",
-  previousSalesPct:   "20.78%",
-  previousSalesBags:  "3,171",
-  wowSalesPct:        "-73.73%",
-  wowSalesBags:       "-2,338",
-  weeklySalesTotal:   "833",
-  weeklySalesPct:     "3.59%",
-  growthHistory:      [{"date": "2026-07-27", "growth": 14.52}, {"date": "2026-07-28", "growth": 14.52}, {"date": "2026-07-30", "growth": 14.52}, {"date": "2026-07-31", "growth": 14.52}, {"date": "2026-08-01", "growth": 14.52}, {"date": "2026-08-02", "growth": 19.73}, {"date": "2026-08-03", "growth": 71.8}, {"date": "2026-08-04", "growth": 2.9}, {"date": "2026-08-05", "growth": 2.9}, {"date": "2026-08-06", "growth": 7.2}, {"date": "2026-08-07", "growth": 7.2}, {"date": "2026-08-08", "growth": 13.65}, {"date": "2026-08-10", "growth": 1.01}, {"date": "2026-08-11", "growth": 3.59}],
-  weeklyThisMonth:    "833",
+  remainingTarget:    "10,412",
+  salesPctAchieved:   "55.18%",
+  sales:              "12,820",
+  salesPos:           "12,811",
+  corporateBags:      "9",
+  masterBags:         "12,673",
+  previousSalesPct:   "54.16%",
+  previousSalesBags:  "237",
+  wowSalesPct:        "0.00%",
+  wowSalesBags:       "0",
+  weeklySalesTotal:   "237",
+  weeklySalesPct:     "1.02%",
+  growthHistory:      [{"date": "2026-07-27", "growth": 14.52}, {"date": "2026-07-28", "growth": 14.52}, {"date": "2026-07-30", "growth": 14.52}, {"date": "2026-07-31", "growth": 14.52}, {"date": "2026-08-01", "growth": 14.52}, {"date": "2026-08-02", "growth": 19.73}, {"date": "2026-08-03", "growth": 71.8}, {"date": "2026-08-04", "growth": 2.9}, {"date": "2026-08-05", "growth": 2.9}, {"date": "2026-08-06", "growth": 7.2}, {"date": "2026-08-07", "growth": 7.2}, {"date": "2026-08-08", "growth": 13.65}, {"date": "2026-08-10", "growth": 1.01}, {"date": "2026-08-11", "growth": 3.59}, {"date": "2026-08-13", "growth": 9.34}, {"date": "2026-08-14", "growth": 11.67}, {"date": "2026-08-16", "growth": 0.84}, {"date": "2026-08-17", "growth": 1.28}, {"date": "2026-08-20", "growth": 8.17}, {"date": "2026-08-21", "growth": 11.23}, {"date": "2026-08-22", "growth": 14.12}, {"date": "2026-08-23", "growth": 1.02}, {"date": "2026-08-24", "growth": 1.02}],
+  weeklyThisMonth:    "237",
   weeklyThisMonthDays: 0,
   prevMonthDays:      0,
   weeklyCarryover:    "",
@@ -423,8 +426,8 @@ const PERF = {
   carryoverDate:      "",
   prevMonthWeekly:    "3,373",
   prevMonthLabel:     "July",
-  momWeeklyBags:      "-2,540",
-  momWeeklyPct:       "-75.30%",
+  momWeeklyBags:      "-3,136",
+  momWeeklyPct:       "-92.97%",
   bareMinimum:        "",
   declinedBy:         ""
 };
@@ -434,20 +437,20 @@ const PERF = {
 <!-- PROJ_DATA_START -->
 <script>
 const PROJ = {
-  currentDay:               10,
+  currentDay:               23,
   daysInMonth:              31,
   projMonth:                "August",
-  velocityFactor:           "3.10x",
+  velocityFactor:           "1.35x",
   totalTarget:              "23,232",
-  totalSales:               "5,661",
-  standardProjection:       "75.54%",
-  forecastedProjection:     "79.70%",
-  corporateBags:            "312",
+  totalSales:               "12,811",
+  standardProjection:       "74.32%",
+  forecastedProjection:     "74.38%",
+  corporateBags:            "9",
   bareMinimum:              "5,808",
   bareMinimumGrowthPct:     "25.00%",
-  declinedBy:               "-4,975",
-  weeklySalesTotal:         "833",
-  weeklyHistory:            [{"weekStart": "2026-08-01", "label": "Wk 1", "month": "Aug", "salesPct": 3.57, "salesBags": 830, "prevSalesPct": 0.0, "prevSalesBags": 0, "weeklySales": 830, "declinedBy": -4978}, {"weekStart": "2026-08-02", "label": "Wk 2", "month": "Aug", "salesPct": 20.78, "salesBags": 4828, "prevSalesPct": 3.57, "prevSalesBags": 830, "weeklySales": 3998, "declinedBy": -1810}, {"weekStart": "2026-08-09", "label": "Wk 3", "month": "Aug", "salesPct": 24.37, "salesBags": 5661, "prevSalesPct": 20.78, "prevSalesBags": 4828, "weeklySales": 833, "declinedBy": -4975}]
+  declinedBy:               "-5,571",
+  weeklySalesTotal:         "237",
+  weeklyHistory:            [{"weekStart": "2026-08-01", "label": "Wk 1", "month": "Aug", "salesPct": 3.57, "salesBags": 830, "prevSalesPct": 0.0, "prevSalesBags": 0, "weeklySales": 830, "declinedBy": -4978}, {"weekStart": "2026-08-02", "label": "Wk 2", "month": "Aug", "salesPct": 20.73, "salesBags": 4816, "prevSalesPct": 3.57, "prevSalesBags": 830, "weeklySales": 3986, "declinedBy": -1822}, {"weekStart": "2026-08-09", "label": "Wk 3", "month": "Aug", "salesPct": 37.22, "salesBags": 8647, "prevSalesPct": 20.73, "prevSalesBags": 4816, "weeklySales": 3831, "declinedBy": -1977}, {"weekStart": "2026-08-16", "label": "Wk 4", "month": "Aug", "salesPct": 54.12, "salesBags": 12574, "prevSalesPct": 37.22, "prevSalesBags": 8647, "weeklySales": 3927, "declinedBy": -1881}, {"weekStart": "2026-08-23", "label": "Wk 5", "month": "Aug", "salesPct": 55.14, "salesBags": 12811, "prevSalesPct": 54.12, "prevSalesBags": 12574, "weeklySales": 237, "declinedBy": -5571}]
 };
 </script>
 <!-- PROJ_DATA_END -->
@@ -474,6 +477,18 @@ const PROJ = {
   /* ── Section 1: Current Performance ─────────────────────── */
   setText('kpi-remaining',    PERF.remainingTarget);
   setText('kpi-sales',        PERF.sales);
+  // Sales card breakdown: POS + corporate (only shown when corporate > 0)
+  (function(){
+    var el = document.getElementById('sales-breakdown');
+    if (!el) return;
+    var corp = parseInt(String(PERF.corporateBags || '0').replace(/[^0-9]/g, '')) || 0;
+    if (corp > 0) {
+      el.innerHTML = PERF.salesPos + ' POS <span style="color:#64748b">+</span> '
+                   + PERF.corporateBags + ' corporate';
+    } else {
+      el.textContent = PERF.salesPos + ' POS · corporate 0';
+    }
+  })();
   setText('kpi-master',       PERF.masterBags);
   setText('kpi-weekly-sales', PERF.weeklySalesTotal);
   // Shown in the Sales hover popover
@@ -712,24 +727,35 @@ window.addEventListener('DOMContentLoaded', function() {
   (function () {
     var ctx = document.getElementById('chart-wow');
     if (!ctx) return;
-    // Prefer the weekly history so "last week" is a real prior figure, not this week's
-    // snapshot (which can equal this week and show a misleading 0%).
-    var hist = (typeof PROJ !== 'undefined' && PROJ.weeklyHistory) ? PROJ.weeklyHistory : [];
-    var lastWk, thisWk;
-    if (hist.length >= 2) {
-      lastWk = Number(hist[hist.length - 2].prevSalesBags) || 0;
-      thisWk = Number(hist[hist.length - 1].prevSalesBags) || 0;
-    } else {
-      lastWk = parseNum(PERF.previousSalesBags);
-      thisWk = parseNum(PERF.weeklySalesTotal);
-    }
+    // Each bar is a week's OWN sales (weeklySales) — NOT the running month total
+    // (salesBags/prevSalesBags are cumulative and made "this week" look like ~8k).
+    var hist = ((typeof PROJ !== 'undefined' && PROJ.weeklyHistory) ? PROJ.weeklyHistory : [])
+                 .filter(function (w) { return w && w.label; });
+
+    // Sunday (YYYY-MM-DD) that starts the week containing today = the in-progress week.
+    var _t = new Date(); _t.setHours(0, 0, 0, 0);
+    _t.setDate(_t.getDate() - _t.getDay());   // getDay(): Sunday = 0
+    var todaySun = _t.getFullYear() + '-' + String(_t.getMonth() + 1).padStart(2, '0')
+                   + '-' + String(_t.getDate()).padStart(2, '0');
+
+    // Compare the two most recent COMPLETE weeks — drop the current, still-running
+    // week so a day-old week can't distort the comparison.
+    var complete = hist.filter(function (w) { return w.weekStart !== todaySun; });
+    var use = (complete.length >= 2) ? complete : hist;
+    var prevEntry = use[use.length - 2] || {};
+    var lastEntry = use[use.length - 1] || {};
+    var lastWk = Number(prevEntry.weeklySales) || parseNum(PERF.previousSalesBags);
+    var thisWk = Number(lastEntry.weeklySales) || parseNum(PERF.weeklySalesTotal);
+    var lastLabel = prevEntry.label || 'Last week';
+    var thisLabel = lastEntry.label || 'This week';
+
     var wowDelta = thisWk - lastWk;
     var wowPct   = lastWk > 0 ? (wowDelta / lastWk * 100) : 0;
     var up = wowDelta >= 0;
     new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ['Last week', 'This week'],
+        labels: [lastLabel, thisLabel],
         datasets: [{
           data: [lastWk, thisWk],
           backgroundColor: ['rgba(148,163,184,0.5)', up ? C.green : C.red],

@@ -243,6 +243,34 @@ total_sales = monthly_from_db(total_sales)
 # Net catalogue bags (master-list products only) for the KPI card.
 master_bags = master_from_db()
 
+# Corporate bags (dynamic, from Odoo customer invoices — NOT the POS tills, so
+# they're absent from Weekly Sales and Net Bags Sold, which stay POS-only).
+# Added on top of POS in the Sales card only.
+def corporate_from_db():
+    """Current month's corporate bags, live from Odoo invoices. 0 when the DB
+    isn't reachable so the Sales card gracefully shows POS-only."""
+    try:
+        from lib import db, queries
+        ok, _ = db.check_connection()
+        if not ok:
+            return 0
+        today   = datetime.date.today()
+        m_start = today.replace(day=1)
+        import calendar as _cal
+        m_end   = today.replace(day=_cal.monthrange(today.year, today.month)[1])
+        df = db.run_query(queries.CORPORATE_BAGS,
+                          {"start_date": m_start.isoformat(),
+                           "end_date":   m_end.isoformat()})
+        if df is not None and not df.empty:
+            return int(df.iloc[0]["bags"] or 0)
+    except Exception:
+        pass
+    return 0
+
+corporate_bags = corporate_from_db()
+sales_pos      = total_sales                    # POS-only (Weekly / Net Bags basis)
+total_sales    = total_sales + corporate_bags   # Sales card = POS + corporate
+
 # Month-boundary handling: split the straddling week's total by month.
 carryover_bags, carryover_date, prev_month_rec = update_month_boundary(weekly_sales_total)
 prev_month_weekly = prev_month_rec.get("final_weekly_sales", 0) if prev_month_rec else 0
@@ -420,6 +448,8 @@ inline_script = (
     f'  remainingTarget:    "{fmt_int(remaining_target)}",\n'
     f'  salesPctAchieved:   "{fmt_pct(sales_pct_achieved)}",\n'
     f'  sales:              "{fmt_int(sales)}",\n'
+    f'  salesPos:           "{fmt_int(sales_pos)}",\n'
+    f'  corporateBags:      "{fmt_int(corporate_bags)}",\n'
     f'  masterBags:         "{fmt_int(master_bags) if master_bags is not None else "—"}",\n'
     f'  previousSalesPct:   "{fmt_pct(previous_sales_pct)}",\n'
     f'  previousSalesBags:  "{fmt_int(previous_sales_bags)}",\n'
@@ -464,7 +494,9 @@ with open(html_path, "w", encoding="utf-8") as f:
 save_snapshot(weekly_sales_total, previous_sales_bags)
 print("current_performance.html updated.")
 print(f"  Total Target (sheet) : {fmt_int(total_target)}")
-print(f"  Total Sales  (Odoo)  : {fmt_int(total_sales)}")
+print(f"  POS Sales    (Odoo)  : {fmt_int(sales_pos)}")
+print(f"  Corporate    (invoices): {fmt_int(corporate_bags)}")
+print(f"  Sales (POS+corp)     : {fmt_int(total_sales)}")
 print(f"  Sheet Deficit (col E): {fmt_int(total_deficit)}")
 print(f"  Remaining (tgt-sales): {fmt_int(remaining_target)}")
 print(f"  Sales % Achieved     : {fmt_pct(sales_pct_achieved)}")
