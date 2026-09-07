@@ -220,6 +220,7 @@ LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 WHERE p.date_order::date BETWEEN :start_date AND :end_date
   AND p.state IN ('done', 'paid') AND pl.qty > 0
   AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
+  AND pt."name" NOT LIKE '%+%'   -- combo products belong to the combos view, not deals
 GROUP BY UPPER(pt."name")
 """
 
@@ -234,6 +235,7 @@ LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 WHERE p.date_order::date BETWEEN :start_date AND :end_date
   AND p.state IN ('done', 'paid') AND pl.qty > 0
   AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
+  AND pt."name" NOT LIKE '%+%'   -- combo products belong to the combos view, not deals
 GROUP BY UPPER(pt."name"), wk
 """
 
@@ -285,6 +287,19 @@ def _enrich_deals(deals, m_start, m_end, stock_map):
     deals["powerRevenue"] = sum(x["revenue"] for x in deals.get("powerDeals", []))
     deals["dowSold"] = sum(x["sold"] for x in deals.get("dealOfWeek", []))
     deals["dowRevenue"] = sum(x["revenue"] for x in deals.get("dealOfWeek", []))
+
+    # Deduped totals — a bag that runs as BOTH a Power Deal and a Deal of the Week
+    # (same Odoo product) is one bag's sales, so count it once for the combined
+    # "Deal units sold" / revenue headline instead of on both sides.
+    def _dn(s):
+        return re.sub(r"\s+", " ", str(s).strip().upper())
+    _seen = {}
+    for _x in deals.get("powerDeals", []) + deals.get("dealOfWeek", []):
+        _seen.setdefault(_dn(_x["product"]), _x)   # first wins; sold/revenue identical per product
+    deals["dedupSold"] = sum(v.get("sold", 0) for v in _seen.values())
+    deals["dedupRevenue"] = sum(v.get("revenue", 0) for v in _seen.values())
+    deals["dedupProducts"] = len(_seen)
+    deals["overlapProducts"] = (len(deals.get("powerDeals", [])) + len(deals.get("dealOfWeek", []))) - len(_seen)
 
     # Cross-sell: which Power Deals are ALSO run as a Deal of the Week (same bag).
     # Matched by product name, so each card can show the same bag's rival pricing —
