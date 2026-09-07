@@ -32,8 +32,7 @@ SCRIPTS = [
     ("Forward Projections",    "forward_projections.py"),
     ("New Products Analytics", "new_products.py"),
     ("Timed Offers Analytics", "timed_offers.py"),
-    ("Bags Selection Analytics", "bags_selection.py"),
-    ("Offer Type Analysis",    "offer_type_analysis.py"),
+    ("Self Made Combos",       "self_made_combos.py"),
     ("Posting Yields",         "POSTING (SALES YIELDS FROM ACCURATE POSTING).py"),
     # Live dispatch/receiving from Odoo — shops_efficiency.py reads its JSON.
     ("Shops Dispatch (Postgres)", "shops_dispatch.py"),
@@ -41,8 +40,10 @@ SCRIPTS = [
     # These read the data the scripts above injected — keep them LAST.
     ("Dashboard Insights",     "generate_insights.py"),
     ("Monthly Report",         "monthly_report.py"),
-    # Reads the frozen months back from Supabase for the History page.
-    # No-ops safely if Supabase is unreachable.
+    # Always back the freshly-written snapshot up to Supabase, then read it back
+    # for History — so History is never behind the local data. Both no-op safely
+    # if Supabase is unreachable (they need SUPABASE_DB_URL + psycopg2).
+    ("Push to Supabase",       "push_to_supabase.py"),
     ("History (Supabase)",     "history.py"),
 ]
 
@@ -181,14 +182,15 @@ SCRIPT_MAP = {
     "forward_projections.html":                             ["forward_projections.py"],
     "new_products.html":                                    ["new_products.py"],
     "timed_offers.html":                                    ["timed_offers.py"],
-    "bags_selection.html":                                  ["bags_selection.py"],
-    "offer_type_analysis.html":                             ["offer_type_analysis.py"],
+    "self_made_combos.html":                                ["self_made_combos.py"],
     "POSTING (SALES YIELDS FROM ACCURATE POSTING).html":   ["POSTING (SALES YIELDS FROM ACCURATE POSTING).py"],
     "shops_efficiency.html":                                ["shops_dispatch.py",
                                                              "shops_efficiency.py"],
     "insights.html":                                        ["generate_insights.py"],
-    "monthly_report.html":                                  ["monthly_report.py"],
-    "history.html":                                         ["history.py"],
+    "monthly_report.html":                                  ["monthly_report.py",
+                                                             "push_to_supabase.py"],
+    "history.html":                                         ["push_to_supabase.py",
+                                                             "history.py"],
 }
 
 

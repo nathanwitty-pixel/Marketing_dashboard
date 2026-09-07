@@ -1,14 +1,14 @@
 {
   "last_run": {
-    "date": "2026-08-24",
-    "week_start": "2026-08-23",
-    "weekly_sales_total": 274
+    "date": "2026-09-07",
+    "week_start": "2026-09-06",
+    "weekly_sales_total": 114
   },
   "carryover": {},
   "prev_month": {
-    "month": "2026-07",
-    "final_weekly_sales": 3373,
-    "recorded_on": "2026-07-31"
+    "month": "2026-08",
+    "final_weekly_sales": 722,
+    "recorded_on": "2026-08-31"
   },
   "straddle_anchor": {}
 }

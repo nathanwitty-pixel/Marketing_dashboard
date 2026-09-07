@@ -58,9 +58,34 @@ def fmt_pct(p):
 
 # ── ODOO SALES (source of truth for new-product sold) ─────────
 def odoo_month_product_bags():
-    """Current month's bags per product from Odoo (Postgres), or None if the DB
+    """Reporting month's bags per product from Odoo (Postgres), or None if the DB
     isn't reachable. Product list still comes from MONTHLY_TARGET; only the SOLD
-    figure is sourced here."""
+    figure is sourced here.
+
+    The window comes from lib/report_month.py so this matches the month the
+    report is labelled with — anchoring on today made the 1-Sep run report zero
+    new-product sales for August."""
+    try:
+        from lib import db, queries, report_month
+    except Exception:
+        return None
+    ok, _ = db.check_connection()
+    if not ok:
+        return None
+    start, end = report_month.month_window()
+    df = db.run_query(queries.WEEKLY_BAGS_SOLD,   # grouped by full_product_name
+                      {"start_date": start.isoformat(), "end_date": end.isoformat()})
+    if df is None:
+        return None
+    if df.empty:
+        return []
+    return [(str(r["product"]), int(round(float(r["bags"] or 0)))) for _, r in df.iterrows()]
+
+
+def odoo_lifetime_product_bags():
+    """All-time bags per product from Odoo (no month window) — the lifetime sales
+    of each new product since it launched. Same query/scope as the monthly figure,
+    just an open date range. None if Postgres isn't reachable."""
     try:
         from lib import db, queries
     except Exception:
@@ -68,11 +93,8 @@ def odoo_month_product_bags():
     ok, _ = db.check_connection()
     if not ok:
         return None
-    today = date.today()
-    start = today.replace(day=1)
-    end   = today.replace(day=calendar.monthrange(today.year, today.month)[1])
     df = db.run_query(queries.WEEKLY_BAGS_SOLD,   # grouped by full_product_name
-                      {"start_date": start.isoformat(), "end_date": end.isoformat()})
+                      {"start_date": "2000-01-01", "end_date": date.today().isoformat()})
     if df is None:
         return None
     if df.empty:
@@ -92,6 +114,38 @@ def match_odoo_bags(bag_type, odoo_list):
             total += bags
             hits.append(name)
     return total, hits
+
+
+def odoo_sales_window(start, end):
+    """{UPPER(product name): {'kenya': units, 'outside': units}} for a date window,
+    live from Odoo. Kenya = Kenya POS tills; outside = Sinza / Dar-es-Salaam /
+    Uganda. None if Postgres is unreachable — so callers fall back to the sheet."""
+    if start is None or end is None:
+        return None
+    try:
+        from lib import db
+    except Exception:
+        return None
+    ok, _ = db.check_connection()
+    if not ok:
+        return None
+    sql = """
+    SELECT UPPER(pt."name") AS pname,
+           COALESCE(SUM(pl.qty) FILTER (WHERE lower(COALESCE(pc."name", '')) NOT IN ('sinza','dar-es-alam','uganda')), 0)::int AS kenya,
+           COALESCE(SUM(pl.qty) FILTER (WHERE lower(COALESCE(pc."name", '')) IN ('sinza','dar-es-alam','uganda')), 0)::int AS outside
+    FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+    LEFT JOIN pos_session ps ON p.session_id = ps.id
+    LEFT JOIN pos_config pc ON ps.config_id = pc.id
+    LEFT JOIN product_product pp ON pl.product_id = pp.id
+    LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
+    WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'paid') AND pl.qty > 0
+    GROUP BY UPPER(pt."name")
+    """
+    df = db.run_query(sql, {"s": start.isoformat(), "e": end.isoformat()})
+    if df is None:
+        return None
+    return {str(r["pname"]): {"kenya": int(r["kenya"] or 0), "outside": int(r["outside"] or 0)}
+            for _, r in df.iterrows()}
 
 
 # ── FETCH ─────────────────────────────────────────────────────
@@ -156,6 +210,17 @@ def fetch_new_products_data():
         total_deficit = sum(p["remaining"] for p in product_targets)
     else:
         print("  Sales source          : sheet (Odoo unreachable)")
+
+    # ── LIFETIME sales (all-time, per product) ────────────────
+    odoo_life = odoo_lifetime_product_bags()
+    if odoo_life is not None:
+        for p in product_targets:
+            life, _ = match_odoo_bags(p["name"], odoo_life)
+            p["lifetime"] = life
+        print(f"  Lifetime sales source : Odoo (all-time) — total {sum(p['lifetime'] for p in product_targets):,}")
+    else:
+        for p in product_targets:      # fall back to this month's figure
+            p["lifetime"] = p["sold"]
 
     print(f"  New products found    : {len(new_product_names)}")
     for name in new_product_names:
@@ -319,6 +384,40 @@ def fetch_new_products_data():
             "sRestock":     stk["sRestock"]
         })
 
+    # ── Sales from Odoo — the single source of truth for EVERY sales figure ──
+    # Replace the sheet's colour-level sales with live Odoo POS sales, split
+    # Kenya tills (Kenya) vs Sinza / Dar-es-Salaam / Uganda (outside). Matched to
+    # each row by product name (exact upper, then alphanumeric-normalised). Falls
+    # back to the sheet only if Postgres is unreachable.
+    _norm = lambda s: re.sub(r"[^A-Z0-9]", "", str(s).upper())
+
+    try:
+        from lib import report_month as _rm
+        _m_start, _m_end = _rm.month_window()
+    except Exception:
+        _m_start = _m_end = None
+    _odoo_m = odoo_sales_window(_m_start, _m_end)
+    if _odoo_m is not None:
+        _mn = {_norm(k): v for k, v in _odoo_m.items()}
+        for r in ms_base:
+            k = str(r["productName"]).upper().strip()
+            s = _odoo_m.get(k) or _mn.get(_norm(k))
+            r["kenyaSales"]   = s["kenya"]   if s else 0
+            r["outsideKenya"] = s["outside"] if s else 0
+        print("  Monthly sales source  : Odoo (Kenya tills vs outside)")
+
+    # Weekly = the current Sun-Sat week, to date
+    _today   = date.today()
+    _wk_start = _today - timedelta(days=(_today.weekday() + 1) % 7)
+    _odoo_w  = odoo_sales_window(_wk_start, _today)
+    if _odoo_w is not None:
+        _wn = {_norm(k): v for k, v in _odoo_w.items()}
+        for r in weekly_combined:
+            k = str(r["productName"]).upper().strip()
+            s = _odoo_w.get(k) or _wn.get(_norm(k))
+            r["weeklySales"] = (s["kenya"] if s else 0)   # WEEKLY_SALES col X is Kenya
+        print("  Weekly sales source   : Odoo (Kenya, this week to date)")
+
     # Full catalogue (every product) vs. the new-products subset used by cards/charts
     all_monthly_combined = ms_base
     all_weekly_combined  = weekly_combined
@@ -338,6 +437,7 @@ print("Fetching data from Google Sheets...")
  all_monthly_combined, all_weekly_combined) = fetch_new_products_data()
 
 product_count    = len(new_product_names)
+total_lifetime   = sum(p.get("lifetime", 0) for p in product_targets)
 sales_pct        = (total_sales / total_target * 100) if total_target else 0
 monthly_kenya    = sum(r["kenyaSales"]   for r in monthly_combined)
 monthly_outside  = sum(r["outsideKenya"] for r in monthly_combined)
@@ -454,6 +554,7 @@ inline_script = (
     f'  productCount:    {product_count},\n'
     f'  totalTarget:     "{fmt_int(total_target)}",\n'
     f'  totalSales:      "{fmt_int(total_sales)}",\n'
+    f'  totalLifetime:   "{fmt_int(total_lifetime)}",\n'
     f'  totalDeficit:    "{fmt_int(total_deficit)}",\n'
     f'  salesPct:        "{fmt_pct(sales_pct)}",\n'
     f'  monthlyKenya:    "{fmt_int(monthly_kenya)}",\n'

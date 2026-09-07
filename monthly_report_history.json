@@ -458,16 +458,16 @@
     "month": "August",
     "year": 2026,
     "key": "2026-08",
-    "generatedOn": "2026-08-24",
+    "generatedOn": "2026-09-01",
     "currentPerformance": {
-      "achievedPct": 55.3,
-      "totalSales": 12848.0,
+      "achievedPct": 76.06,
+      "totalSales": 17671.0,
       "totalTarget": 23232.0,
-      "gap": 10384.0,
+      "gap": 5561.0,
       "bareMinimum": 5808.0,
-      "avgWeekly": 2570.0,
-      "corporate": 9.0,
-      "forecast": "74.59%",
+      "avgWeekly": 2945.1666666666665,
+      "corporate": 65.0,
+      "forecast": "76.34%",
       "weekly": [
         {
           "label": "Wk 1",
@@ -495,20 +495,26 @@
         },
         {
           "label": "Wk 5",
-          "pct": 1.19,
-          "cum": 55.31,
-          "bags": 276.0
+          "pct": 18.22,
+          "cum": 72.34,
+          "bags": 4233.0
+        },
+        {
+          "label": "Wk 6",
+          "pct": 3.72,
+          "cum": 76.06,
+          "bags": 864.0
         }
       ]
     },
     "newProducts": {
       "count": 7,
       "target": 930.0,
-      "sales": 286.0,
-      "deficit": 644.0,
-      "kenya": 297.0,
-      "outside": 4.0,
-      "posts": 299.0,
+      "sales": 393.0,
+      "deficit": 537.0,
+      "kenya": 402.0,
+      "outside": 10.0,
+      "posts": 443.0,
       "names": [
         "AMORA",
         "IMANI",
@@ -528,45 +534,45 @@
         },
         {
           "name": "IMANI",
-          "sold": 7.0,
-          "remaining": 73.0,
+          "sold": 10.0,
+          "remaining": 70.0,
           "posts": 0.0,
-          "stock": 173.0
+          "stock": 170.0
         },
         {
           "name": "LAMORA",
-          "sold": 57.0,
-          "remaining": 143.0,
-          "posts": 73.0,
-          "stock": 107.0
+          "sold": 71.0,
+          "remaining": 129.0,
+          "posts": 115.0,
+          "stock": 93.0
         },
         {
           "name": "LOOP BP",
-          "sold": 77.0,
-          "remaining": 173.0,
-          "posts": 27.0,
-          "stock": 95.0
+          "sold": 113.0,
+          "remaining": 137.0,
+          "posts": 47.0,
+          "stock": 98.0
         },
         {
           "name": "NALA",
-          "sold": 25.0,
-          "remaining": 75.0,
-          "posts": 50.0,
-          "stock": 59.0
+          "sold": 32.0,
+          "remaining": 68.0,
+          "posts": 80.0,
+          "stock": 48.0
         },
         {
           "name": "TAJI",
-          "sold": 31.0,
-          "remaining": 69.0,
-          "posts": 64.0,
-          "stock": 106.0
+          "sold": 45.0,
+          "remaining": 55.0,
+          "posts": 90.0,
+          "stock": 89.0
         },
         {
           "name": "ZULA",
-          "sold": 85.0,
-          "remaining": 65.0,
-          "posts": 66.0,
-          "stock": 211.0
+          "sold": 118.0,
+          "remaining": 32.0,
+          "posts": 92.0,
+          "stock": 175.0
         }
       ]
     },
@@ -574,52 +580,25 @@
       "combos": 10,
       "powerDeals": 10,
       "kenya": {
-        "comboUnits": 2081.0,
-        "comboValue": 9474019.0,
-        "comboAvg": 4399.0,
-        "dealUnits": 2690.0,
-        "dealValue": 5166300.0,
-        "dealAvg": 1966.7,
+        "comboUnits": 2509,
+        "comboValue": 0,
+        "comboAvg": 0,
+        "dealUnits": 3745,
+        "dealValue": 2599700,
+        "dealAvg": 2025,
         "offers": [
           {
-            "name": "Jumbo + standard/Liam + Pioneer/Antitheft",
-            "units": 418.0,
-            "type": "combo",
-            "bags": [
-              {
-                "name": "Antitheft",
-                "stock": 325.0
-              },
-              {
-                "name": "Liam",
-                "stock": 247.0
-              },
-              {
-                "name": "Jumbo",
-                "stock": 199.0
-              },
-              {
-                "name": "Pioneer",
-                "stock": 92.0
-              },
-              {
-                "name": "standard",
-                "stock": null
-              }
-            ]
-          },
-          {
             "name": "Fabela + Laptop backpack / Big man",
-            "units": 305.0,
+            "units": 386.0,
             "type": "combo",
             "bags": [
               {
                 "name": "Big man",
-                "stock": 283.0
+                "stock": 265.0
               },
               {
                 "name": "Fabela",
-                "stock": 100.0
+                "stock": 206.0
               },
               {
                 "name": "Laptop backpack",
@@ -629,66 +608,70 @@
           },
           {
             "name": "Amaya + Zipped/Lunchset/ Nizana / Moon",
-            "units": 305.0,
+            "units": 374.0,
             "type": "combo",
             "bags": [
               {
-                "name": "Amaya",
-                "stock": 214.0
-              },
-              {
                 "name": "Moon",
-                "stock": 182.0
+                "stock": 223.0
               },
               {
-                "name": "Nizana",
-                "stock": 138.0
+                "name": "Amaya",
+                "stock": 165.0
               },
               {
                 "name": "Zipped",
-                "stock": 102.0
+                "stock": 90.0
+              },
+              {
+                "name": "Nizana",
+                "stock": 72.0
               },
               {
                 "name": "Lunchset",
-                "stock": 62.0
+                "stock": 38.0
               }
             ]
           },
           {
-            "name": "Mega + Man Bag/ Mini Umbra / Neo man",
-            "units": 210.0,
+            "name": "Jumbo + standard/Liam + Pioneer/Antitheft",
+            "units": 501.0,
             "type": "combo",
             "bags": [
               {
-                "name": "Man Bag",
-                "stock": 217.0
+                "name": "Antitheft",
+                "stock": 296.0
               },
               {
-                "name": "Mini Umbra",
-                "stock": 143.0
+                "name": "Jumbo",
+                "stock": 294.0
               },
               {
-                "name": "Mega",
-                "stock": 122.0
+                "name": "Liam",
+                "stock": 210.0
               },
               {
-                "name": "Neo man",
+                "name": "Pioneer",
+                "stock": 98.0
+              },
+              {
+                "name": "standard",
                 "stock": null
               }
             ]
           },
           {
             "name": "SAFIRI + STANDARD/ ANTITHEFT",
-            "units": 233.0,
+            "units": 274.0,
             "type": "combo",
             "bags": [
               {
                 "name": "ANTITHEFT",
-                "stock": 325.0
+                "stock": 296.0
               },
               {
                 "name": "SAFIRI",
-                "stock": 89.0
+                "stock": 87.0
               },
               {
                 "name": "STANDARD",
@@ -697,13 +680,51 @@
             ]
           },
           {
+            "name": "Mega + Man Bag/ Mini Umbra / Neo man",
+            "units": 250.0,
+            "type": "combo",
+            "bags": [
+              {
+                "name": "Man Bag",
+                "stock": 316.0
+              },
+              {
+                "name": "Mini Umbra",
+                "stock": 84.0
+              },
+              {
+                "name": "Mega",
+                "stock": 69.0
+              },
+              {
+                "name": "Neo man",
+                "stock": null
+              }
+            ]
+          },
+          {
+            "name": "Sarai + Prime",
+            "units": 228.0,
+            "type": "combo",
+            "bags": [
+              {
+                "name": "Prime",
+                "stock": 46.0
+              },
+              {
+                "name": "Sarai",
+                "stock": 43.0
+              }
+            ]
+          },
+          {
             "name": "Standard / liam + Laptop backpack",
-            "units": 150.0,
+            "units": 172.0,
             "type": "combo",
             "bags": [
               {
                 "name": "liam",
-                "stock": 247.0
+                "stock": 210.0
               },
               {
                 "name": "Standard",
@@ -716,40 +737,25 @@
             ]
           },
           {
-            "name": "Sarai + Prime",
-            "units": 191.0,
-            "type": "combo",
-            "bags": [
-              {
-                "name": "Sarai",
-                "stock": 73.0
-              },
-              {
-                "name": "Prime",
-                "stock": 62.0
-              }
-            ]
-          },
-          {
             "name": "Moon/ Nizana / Oval+ Zane/Manbag",
-            "units": 112.0,
+            "units": 140.0,
             "type": "combo",
             "bags": [
               {
                 "name": "Manbag",
-                "stock": 217.0
+                "stock": 316.0
               },
               {
                 "name": "Moon",
-                "stock": 182.0
-              },
-              {
-                "name": "Nizana",
-                "stock": 138.0
+                "stock": 223.0
               },
               {
                 "name": "Zane",
-                "stock": 89.0
+                "stock": 93.0
+              },
+              {
+                "name": "Nizana",
+                "stock": 72.0
               },
               {
                 "name": "Oval",
@@ -758,44 +764,25 @@
             ]
           },
           {
-            "name": "Baby Bag + Liam/Standard",
-            "units": 60.0,
-            "type": "combo",
-            "bags": [
-              {
-                "name": "Liam",
-                "stock": 247.0
-              },
-              {
-                "name": "Baby Bag",
-                "stock": 83.0
-              },
-              {
-                "name": "Standard",
-                "stock": null
-              }
-            ]
-          },
-          {
             "name": "Bonita + Zane / Mini Umbra / Nizana /Neo Man",
-            "units": 97.0,
+            "units": 122.0,
             "type": "combo",
             "bags": [
-              {
-                "name": "Mini Umbra",
-                "stock": 143.0
-              },
-              {
-                "name": "Nizana",
-                "stock": 138.0
-              },
               {
                 "name": "Bonita",
-                "stock": 128.0
+                "stock": 125.0
               },
               {
                 "name": "Zane",
-                "stock": 89.0
+                "stock": 93.0
+              },
+              {
+                "name": "Mini Umbra",
+                "stock": 84.0
+              },
+              {
+                "name": "Nizana",
+                "stock": 72.0
               },
               {
                 "name": "Neo Man",
@@ -804,41 +791,60 @@
             ]
           },
           {
-            "name": "Jumbo",
-            "units": 806.0,
-            "type": "deal",
+            "name": "Baby Bag + Liam/Standard",
+            "units": 62.0,
+            "type": "combo",
             "bags": [
               {
-                "name": "Jumbo",
-                "stock": 199.0
+                "name": "Liam",
+                "stock": 210.0
+              },
+              {
+                "name": "Baby Bag",
+                "stock": 72.0
+              },
+              {
+                "name": "Standard",
+                "stock": null
               }
             ]
           },
           {
-            "name": "MINI MAYA",
-            "units": 276.0,
+            "name": "Jumbo",
+            "units": 1130.0,
             "type": "deal",
             "bags": [
               {
-                "name": "MINI MAYA",
-                "stock": 77.0
+                "name": "Jumbo",
+                "stock": 294.0
               }
             ]
           },
           {
             "name": "PRIME",
-            "units": 287.0,
+            "units": 452.0,
             "type": "deal",
             "bags": [
               {
                 "name": "PRIME",
-                "stock": 62.0
+                "stock": 46.0
+              }
+            ]
+          },
+          {
+            "name": "FABELA",
+            "units": 449.0,
+            "type": "deal",
+            "bags": [
+              {
+                "name": "FABELA",
+                "stock": 206.0
               }
             ]
           },
           {
             "name": "REO TRAVEL",
-            "units": 294.0,
+            "units": 392.0,
             "type": "deal",
             "bags": [
               {
@@ -848,30 +854,30 @@
             ]
           },
           {
-            "name": "FABELA",
-            "units": 323.0,
+            "name": "MINI MAYA",
+            "units": 384.0,
             "type": "deal",
             "bags": [
               {
-                "name": "FABELA",
-                "stock": 100.0
+                "name": "MINI MAYA",
+                "stock": 49.0
               }
             ]
           },
           {
             "name": "CATHY HANDBAG",
-            "units": 162.0,
+            "units": 217.0,
             "type": "deal",
             "bags": [
               {
                 "name": "CATHY HANDBAG",
-                "stock": 148.0
+                "stock": 125.0
               }
             ]
           },
           {
             "name": "GYM BAG",
-            "units": 148.0,
+            "units": 206.0,
             "type": "deal",
             "bags": [
               {
@@ -882,29 +888,29 @@
           },
           {
             "name": "MONAH BP",
-            "units": 154.0,
+            "units": 201.0,
             "type": "deal",
             "bags": [
               {
                 "name": "MONAH BP",
-                "stock": 81.0
+                "stock": 37.0
               }
             ]
           },
           {
             "name": "MINI ZURI",
-            "units": 121.0,
+            "units": 165.0,
             "type": "deal",
             "bags": [
               {
                 "name": "MINI ZURI",
-                "stock": 153.0
+                "stock": 146.0
               }
             ]
           },
           {
             "name": "AVANA HB",
-            "units": 119.0,
+            "units": 149.0,
             "type": "deal",
             "bags": [
               {
@@ -916,62 +922,62 @@
         ]
       },
       "sinza": {
-        "units": 162.0,
-        "value": 635799.0,
-        "cleared": 24.5,
+        "units": 206,
+        "value": 49500,
+        "cleared": 42.2,
         "offers": [
           {
             "name": "JUMBO + CODE 3 + MAN BAG",
-            "units": 63.0,
+            "units": 72.0,
             "type": "combo",
             "bags": [
               {
-                "name": "MAN BAG",
-                "stock": 16.0
+                "name": "JUMBO",
+                "stock": 7.0
               },
               {
-                "name": "JUMBO",
-                "stock": 15.0
+                "name": "MAN BAG",
+                "stock": 3.0
               },
               {
                 "name": "CODE 3",
-                "stock": 3.0
+                "stock": 0.0
               }
             ]
           },
           {
-            "name": "BONITA + ZELUS",
-            "units": 7.0,
+            "name": "SARAI + BIG MAN",
+            "units": 18.0,
             "type": "combo",
             "bags": [
               {
-                "name": "BONITA",
-                "stock": 16.0
+                "name": "BIG MAN",
+                "stock": 27.0
               },
               {
-                "name": "ZELUS",
-                "stock": 5.0
-              }
-            ]
-          },
-          {
-            "name": "GYMBAG + ARIA SLING",
-            "units": 5.0,
-            "type": "combo",
-            "bags": [
-              {
-                "name": "GYMBAG",
-                "stock": 13.0
-              },
-              {
-                "name": "ARIA SLING",
+                "name": "SARAI",
                 "stock": 12.0
               }
             ]
           },
           {
+            "name": "BONITA + ZELUS",
+            "units": 16.0,
+            "type": "combo",
+            "bags": [
+              {
+                "name": "BONITA",
+                "stock": 7.0
+              },
+              {
+                "name": "ZELUS",
+                "stock": 2.0
+              }
+            ]
+          },
+          {
             "name": "SAFIRI + STANDARD",
-            "units": 7.0,
+            "units": 8.0,
             "type": "combo",
             "bags": [
               {
@@ -985,17 +991,47 @@
             ]
           },
           {
-            "name": "SARAI + BIG MAN",
-            "units": 13.0,
+            "name": "STANDARD + JADE",
+            "units": 6.0,
             "type": "combo",
             "bags": [
               {
-                "name": "BIG MAN",
-                "stock": 34.0
+                "name": "JADE",
+                "stock": 4.0
               },
               {
-                "name": "SARAI",
-                "stock": 20.0
+                "name": "STANDARD",
+                "stock": null
+              }
+            ]
+          },
+          {
+            "name": "GYMBAG + ARIA SLING",
+            "units": 4.0,
+            "type": "combo",
+            "bags": [
+              {
+                "name": "GYMBAG",
+                "stock": 11.0
+              },
+              {
+                "name": "ARIA SLING",
+                "stock": 7.0
+              }
+            ]
+          },
+          {
+            "name": "MOON BAG + BELT BAG",
+            "units": 2.0,
+            "type": "combo",
+            "bags": [
+              {
+                "name": "BELT BAG",
+                "stock": 12.0
+              },
+              {
+                "name": "MOON BAG",
+                "stock": 5.0
               }
             ]
           },
@@ -1010,7 +1046,7 @@
               },
               {
                 "name": "ELYSE",
-                "stock": 8.0
+                "stock": 7.0
               }
             ]
           },
@@ -1030,28 +1066,13 @@
             ]
           },
           {
-            "name": "MOON BAG + BELT BAG",
-            "units": 2.0,
-            "type": "combo",
-            "bags": [
-              {
-                "name": "BELT BAG",
-                "stock": 13.0
-              },
-              {
-                "name": "MOON BAG",
-                "stock": 4.0
-              }
-            ]
-          },
-          {
             "name": "REO + AVANNA",
             "units": 0.0,
             "type": "combo",
             "bags": [
               {
                 "name": "REO",
-                "stock": 17.0
+                "stock": 12.0
               },
               {
                 "name": "AVANNA",
@@ -1060,17 +1081,57 @@
             ]
           },
           {
-            "name": "STANDARD + JADE",
-            "units": 4.0,
-            "type": "combo",
+            "name": "CODE 3",
+            "units": 24.0,
+            "type": "single",
             "bags": [
               {
-                "name": "JADE",
-                "stock": 10.0
-              },
+                "name": "CODE 3",
+                "stock": 0.0
+              }
+            ]
+          },
+          {
+            "name": "SARAI",
+            "units": 11.0,
+            "type": "single",
+            "bags": [
               {
-                "name": "STANDARD",
-                "stock": null
+                "name": "SARAI",
+                "stock": 12.0
+              }
+            ]
+          },
+          {
+            "name": "MINI UMBRA",
+            "units": 10.0,
+            "type": "single",
+            "bags": [
+              {
+                "name": "MINI UMBRA",
+                "stock": 12.0
+              }
+            ]
+          },
+          {
+            "name": "BIG MAN BAG",
+            "units": 9.0,
+            "type": "single",
+            "bags": [
+              {
+                "name": "BIG MAN BAG",
+                "stock": 27.0
+              }
+            ]
+          },
+          {
+            "name": "SLEEVE 1",
+            "units": 8.0,
+            "type": "single",
+            "bags": [
+              {
+                "name": "SLEEVE 1",
+                "stock": 0.0
               }
             ]
           },
@@ -1086,57 +1147,13 @@
             ]
           },
           {
-            "name": "MINI UMBRA",
-            "units": 8.0,
+            "name": "MONAH BP",
+            "units": 5.0,
             "type": "single",
             "bags": [
               {
-                "name": "MINI UMBRA",
-                "stock": 15.0
-              }
-            ]
-          },
-          {
-            "name": "BIG MAN BAG",
-            "units": 4.0,
-            "type": "single",
-            "bags": [
-              {
-                "name": "BIG MAN BAG",
-                "stock": 34.0
-              }
-            ]
-          },
-          {
-            "name": "CODE 3",
-            "units": 20.0,
-            "type": "single",
-            "bags": [
-              {
-                "name": "CODE 3",
-                "stock": 3.0
-              }
-            ]
-          },
-          {
-            "name": "KATE",
-            "units": 2.0,
-            "type": "single",
-            "bags": [
-              {
-                "name": "KATE",
-                "stock": 12.0
-              }
-            ]
-          },
-          {
-            "name": "SARAI",
-            "units": 4.0,
-            "type": "single",
-            "bags": [
-              {
-                "name": "SARAI",
-                "stock": 20.0
+                "name": "MONAH BP",
+                "stock": 7.0
               }
             ]
           },
@@ -1147,7 +1164,18 @@
             "bags": [
               {
                 "name": "GYM BAG",
-                "stock": 13.0
+                "stock": 11.0
+              }
+            ]
+          },
+          {
+            "name": "KATE",
+            "units": 2.0,
+            "type": "single",
+            "bags": [
+              {
+                "name": "KATE",
+                "stock": 10.0
               }
             ]
           },
@@ -1161,133 +1189,555 @@
                 "stock": 15.0
               }
             ]
-          },
-          {
-            "name": "MONAH BP",
-            "units": 5.0,
-            "type": "single",
-            "bags": [
-              {
-                "name": "MONAH BP",
-                "stock": 8.0
-              }
-            ]
-          },
-          {
-            "name": "SLEEVE 1",
-            "units": 7.0,
-            "type": "single",
-            "bags": [
-              {
-                "name": "SLEEVE 1",
-                "stock": 0.0
-              }
-            ]
           }
         ]
       },
       "uganda": {
-        "units": 61.0,
-        "value": 3971000.0,
-        "cleared": 11.8,
+        "units": 78,
+        "value": 36,
+        "cleared": 10.3,
         "offers": [
           {
             "name": "ANTITHEFT",
-            "units": 17.0,
-            "stock": 11.0
-          },
-          {
-            "name": "MANDY HB",
-            "units": 4.0,
-            "stock": 2.0
-          },
-          {
-            "name": "zane man",
-            "units": 2.0,
-            "stock": 19.0
-          },
-          {
-            "name": "AVANA HB",
-            "units": 2.0,
-            "stock": 9.0
+            "units": 22.0,
+            "stock": 29.0
           },
           {
             "name": "JUMBO",
-            "units": 7.0,
-            "stock": 18.0
-          },
-          {
-            "name": "KAI",
-            "units": 1.0,
-            "stock": 17.0
-          },
-          {
-            "name": "MINI ZURI",
-            "units": 2.0,
-            "stock": 11.0
-          },
-          {
-            "name": "MOON BAG",
-            "units": 2.0,
-            "stock": 7.0
-          },
-          {
-            "name": "NEO MAN",
-            "units": 4.0,
-            "stock": 8.0
-          },
-          {
-            "name": "NIZANA",
-            "units": 1.0,
-            "stock": 13.0
+            "units": 9.0,
+            "stock": 71.0
           },
           {
             "name": "SATCHEL",
             "units": 8.0,
+            "stock": 10.0
+          },
+          {
+            "name": "MANDY HB",
+            "units": 5.0,
+            "stock": 1.0
+          },
+          {
+            "name": "NEO MAN",
+            "units": 5.0,
+            "stock": 10.0
+          },
+          {
+            "name": "KAI",
+            "units": 4.0,
+            "stock": 18.0
+          },
+          {
+            "name": "KAYLA",
+            "units": 4.0,
+            "stock": 0.0
+          },
+          {
+            "name": "MINI SCHOOL",
+            "units": 4.0,
+            "stock": 8.0
+          },
+          {
+            "name": "AVANA HB",
+            "units": 3.0,
+            "stock": 5.0
+          },
+          {
+            "name": "MINI ZURI",
+            "units": 3.0,
+            "stock": 10.0
+          },
+          {
+            "name": "MOON BAG",
+            "units": 3.0,
+            "stock": 5.0
+          },
+          {
+            "name": "NIZANA",
+            "units": 2.0,
             "stock": 11.0
           },
           {
             "name": "SKYE HB",
             "units": 2.0,
-            "stock": 1.0
+            "stock": 2.0
+          },
+          {
+            "name": "zane man",
+            "units": 2.0,
+            "stock": 18.0
           },
           {
             "name": "BIG MAN BAG",
             "units": 1.0,
-            "stock": 17.0
-          },
-          {
-            "name": "KAYLA",
-            "units": 6.0,
-            "stock": 0.0
-          },
-          {
-            "name": "MINI SCHOOL",
-            "units": 2.0,
-            "stock": 11.0
+            "stock": 15.0
           },
           {
             "name": "PIONEER",
-            "units": 0.0,
-            "stock": 4.0
+            "units": 1.0,
+            "stock": 2.0
           }
         ]
       }
     },
     "postingYields": {
-      "kenyaPct": 86.8,
-      "sinzaPct": 15.3,
-      "ugandaPct": 9.6,
-      "postedStock": 4652.0,
-      "unpostedStock": 5321.0,
-      "postsMade": 427.0,
+      "kenyaPct": 85.9,
+      "sinzaPct": 20.4,
+      "ugandaPct": 15.3,
+      "postedStock": 4841.0,
+      "unpostedStock": 5478.0,
+      "postsMade": 674.0,
       "notOnOffer": {
-        "kenya": 5321.0,
-        "sinza": 394.0,
-        "uganda": 358.0
+        "kenya": 5478.0,
+        "sinza": 308.0,
+        "uganda": 436.0
       },
-      "salesFromPosting": 3390.0,
-      "expectedFromPosting": 961.0
-    }
+      "salesFromPosting": 5863.0,
+      "expectedFromPosting": 1516.0
+    },
+    "timedOffers": [
+      {
+        "name": "Back to School Edition",
+        "market": "Kenya",
+        "startDate": "2026-08-17",
+        "endDate": "2026-08-21",
+        "windowLabel": "17–21 Aug 2026",
+        "totalSold": 695.0,
+        "totalPosts": 21.0,
+        "perPost": 33.1,
+        "bestName": "Code 3",
+        "bestSold": 225.0,
+        "totalStock": 1324,
+        "verdict": "<b>Good move.</b> Sales rose <b>+79%</b> per day during back-to-school. Match the cut depth to demand — the popular school lines carried the volume.",
+        "liftPct": 79,
+        "baseStart": "2026-08-01",
+        "baseEnd": "2026-08-16",
+        "baseDays": 16,
+        "baseTotal": 1240,
+        "basePerDay": 77.5,
+        "offerDays": 5,
+        "offerTotal": 695,
+        "offerPerDay": 139.0,
+        "bags": [
+          {
+            "name": "Code 3",
+            "sold": 225.0,
+            "posts": 7.0,
+            "perPost": 32.1,
+            "stock": 263,
+            "category": "BACKPACK",
+            "priceWas": 2100,
+            "priceNow": 54068,
+            "discountKes": -51968,
+            "discountPct": 2475,
+            "bagLift": 56
+          },
+          {
+            "name": "Antitheft",
+            "sold": 204.0,
+            "posts": 0.0,
+            "perPost": null,
+            "stock": 304,
+            "category": "BACKPACK",
+            "priceWas": 2200,
+            "priceNow": 66356,
+            "discountKes": -64156,
+            "discountPct": 2916,
+            "bagLift": 33
+          },
+          {
+            "name": "School bag",
+            "sold": 106.0,
+            "posts": 0.0,
+            "perPost": null,
+            "stock": 225,
+            "category": "SCHOOL BAG",
+            "priceWas": 2100,
+            "priceNow": 54068,
+            "discountKes": -51968,
+            "discountPct": 2475,
+            "bagLift": 562
+          },
+          {
+            "name": "Kai",
+            "sold": 80.0,
+            "posts": 6.0,
+            "perPost": 13.3,
+            "stock": 178,
+            "category": "BACKPACK",
+            "priceWas": 2800,
+            "priceNow": 71271,
+            "discountKes": -68471,
+            "discountPct": 2445,
+            "bagLift": 65
+          },
+          {
+            "name": "Pioneer",
+            "sold": 55.0,
+            "posts": 8.0,
+            "perPost": 6.9,
+            "stock": 100,
+            "category": "BACKPACK",
+            "priceWas": null,
+            "priceNow": null,
+            "discountKes": null,
+            "discountPct": 13,
+            "bagLift": 206
+          },
+          {
+            "name": "Double Press",
+            "sold": 25.0,
+            "posts": 0.0,
+            "perPost": null,
+            "stock": 254,
+            "category": "BACKPACK",
+            "priceWas": 2600,
+            "priceNow": 66356,
+            "discountKes": -63756,
+            "discountPct": 2452,
+            "bagLift": 212
+          }
+        ],
+        "daily": [
+          {
+            "date": "2026-08-01",
+            "bags": 85,
+            "off": false
+          },
+          {
+            "date": "2026-08-02",
+            "bags": 27,
+            "off": false
+          },
+          {
+            "date": "2026-08-03",
+            "bags": 91,
+            "off": false
+          },
+          {
+            "date": "2026-08-04",
+            "bags": 81,
+            "off": false
+          },
+          {
+            "date": "2026-08-05",
+            "bags": 81,
+            "off": false
+          },
+          {
+            "date": "2026-08-06",
+            "bags": 88,
+            "off": false
+          },
+          {
+            "date": "2026-08-07",
+            "bags": 92,
+            "off": false
+          },
+          {
+            "date": "2026-08-08",
+            "bags": 103,
+            "off": false
+          },
+          {
+            "date": "2026-08-09",
+            "bags": 29,
+            "off": false
+          },
+          {
+            "date": "2026-08-10",
+            "bags": 93,
+            "off": false
+          },
+          {
+            "date": "2026-08-11",
+            "bags": 91,
+            "off": false
+          },
+          {
+            "date": "2026-08-12",
+            "bags": 95,
+            "off": false
+          },
+          {
+            "date": "2026-08-13",
+            "bags": 85,
+            "off": false
+          },
+          {
+            "date": "2026-08-14",
+            "bags": 77,
+            "off": false
+          },
+          {
+            "date": "2026-08-15",
+            "bags": 100,
+            "off": false
+          },
+          {
+            "date": "2026-08-16",
+            "bags": 22,
+            "off": false
+          },
+          {
+            "date": "2026-08-17",
+            "bags": 111,
+            "off": true
+          },
+          {
+            "date": "2026-08-18",
+            "bags": 130,
+            "off": true
+          },
+          {
+            "date": "2026-08-19",
+            "bags": 134,
+            "off": true
+          },
+          {
+            "date": "2026-08-20",
+            "bags": 153,
+            "off": true
+          },
+          {
+            "date": "2026-08-21",
+            "bags": 167,
+            "off": true
+          }
+        ],
+        "weekly": [
+          {
+            "label": "Wk 1",
+            "start": "2026-08-01",
+            "end": "2026-08-01",
+            "total": 85,
+            "days": 1,
+            "perDay": 85.0,
+            "off": false
+          },
+          {
+            "label": "Wk 2",
+            "start": "2026-08-02",
+            "end": "2026-08-08",
+            "total": 563,
+            "days": 7,
+            "perDay": 80.4,
+            "off": false
+          },
+          {
+            "label": "Wk 3",
+            "start": "2026-08-09",
+            "end": "2026-08-15",
+            "total": 570,
+            "days": 7,
+            "perDay": 81.4,
+            "off": false
+          },
+          {
+            "label": "Wk 4",
+            "start": "2026-08-16",
+            "end": "2026-08-22",
+            "total": 849,
+            "days": 7,
+            "perDay": 121.3,
+            "off": true
+          },
+          {
+            "label": "Wk 5",
+            "start": "2026-08-23",
+            "end": "2026-08-29",
+            "total": 912,
+            "days": 7,
+            "perDay": 130.3,
+            "off": false
+          },
+          {
+            "label": "Wk 6",
+            "start": "2026-08-30",
+            "end": "2026-09-01",
+            "total": 209,
+            "days": 3,
+            "perDay": 69.7,
+            "off": false
+          }
+        ]
+      }
+    ],
+    "comments": [
+      {
+        "section": "Executive Summary",
+        "label": "The Bottom Line",
+        "type": "bottom",
+        "text": "August closed at 76.1% of target — 17,671 of 23,232 bags, missing by 5,561 bags. The gap is not weak demand; it is stock we never marketed."
+      },
+      {
+        "section": "Executive Summary",
+        "label": "Key point",
+        "type": "bullet",
+        "text": "53.1% of Kenya stock (5,478 bags) was never posted — yet posted bags sold at 85.9% of expectation. Marketing is the lever, and much of it went unused."
+      },
+      {
+        "section": "Executive Summary",
+        "label": "Key point",
+        "type": "bullet",
+        "text": "Weekly output (~2,945 bags) ran below the 5,808/week floor needed to hit target — the problem is consistency, not a bad month."
+      },
+      {
+        "section": "Executive Summary",
+        "label": "Key point",
+        "type": "bullet",
+        "text": "Regions are uneven: Kenya posts at 85.9% sales-achieved, Sinza 20.4%, Uganda 15.3%. The Kenya playbook isn't being run elsewhere."
+      },
+      {
+        "section": "Current Performance",
+        "label": "The Bottom Line",
+        "type": "bottom",
+        "text": "We finished August at 76.1% of target (17,671 bags), 5,561 bags short. Weekly output averaged about 2,945 bags — under the 5,808-bag weekly floor the target requires."
+      },
+      {
+        "section": "Current Performance",
+        "label": "The Insight",
+        "type": "insight",
+        "text": "Weekly output ran below the bare minimum needed to reach target most weeks. The shortfall is one of throughput and consistency, not demand — corporate orders (65 bags) only nudged the forecast to 76.34%."
+      },
+      {
+        "section": "Current Performance",
+        "label": "Business Impact",
+        "type": "impact",
+        "text": "Closing even half the weekly gap (~1,431 bags/week) across the month adds ~5,726 bags — lifting achievement from 76.1% to ~100.7%."
+      },
+      {
+        "section": "New Products",
+        "label": "The Bottom Line",
+        "type": "bottom",
+        "text": "The 7 new products (AMORA, IMANI, LAMORA, LOOP BP, NALA, TAJI, ZULA) reached only 42.3% of their 930-bag target (393 sold) — a 537-bag deficit."
+      },
+      {
+        "section": "New Products",
+        "label": "The Insight",
+        "type": "insight",
+        "text": "New products received 443 marketing posts but converted just 393 bags, and almost all of it (402 of 393) was Kenya — outside-Kenya is effectively untested (10 bags). Awareness is being created; conversion and distribution are the bottleneck."
+      },
+      {
+        "section": "New Products",
+        "label": "Business Impact",
+        "type": "impact",
+        "text": "Recovering half the deficit (~268 bags) is realistic within one cycle; a working outside-Kenya channel would add a comparable second stream."
+      },
+      {
+        "section": "Timed Offers",
+        "label": "On offer?",
+        "type": "insight",
+        "text": "No configured offer prices — showing realised averages only."
+      },
+      {
+        "section": "Timed Offers",
+        "label": "Stock",
+        "type": "insight",
+        "text": "Mostly backpacks with real inventory behind them — 1,324 still in Kenya stock even after the push (led by Antitheft at 304). The offer draws down a genuine stock position, not a token one."
+      },
+      {
+        "section": "Timed Offers",
+        "label": "Season",
+        "type": "insight",
+        "text": "All six sit in Backpack, School Bag — school categories — and the step-up landed in the offer week as schools opened. Antitheft and School bag even sold on zero marketing posts (pure demand). The timing fits the sales pattern as much as the price cut does."
+      },
+      {
+        "section": "Offer Type Analysis",
+        "label": "The Bottom Line",
+        "type": "bottom",
+        "text": "Across 10 combos and 10 power deals (Kenya), the two offer types cleared stock very differently: combos moved 0 bags (KES 0) while power deals moved 8,100 bags (KES 16,970,000). Power deals shifted the most stock; power deals made the most money."
+      },
+      {
+        "section": "Offer Type Analysis",
+        "label": "The Insight",
+        "type": "insight",
+        "text": "It's a price-point story: combos averaged KES 0 per offer vs power deals KES 2,025. The cheaper combos clear more volume, so dead stock moves fastest through combos — yet 4,841 bags remain in Kenya offer stock (plus 488 Sinza, 569 Uganda), so the mix still isn't drawing inventory down fast enough."
+      },
+      {
+        "section": "Offer Type Analysis",
+        "label": "Sinza & Uganda offers",
+        "type": "insight",
+        "text": "Sinza ran 10 combos, 10 singles and 0 specials, moving 120,000 bags (value 220,500,000) against 488 in stock. Uganda ran 3 combos and 0 singles, moving 0 bags (value 0) against 569 in stock. Both are clearing only a thin slice of their offer stock — the same dead-stock problem as Kenya, at smaller scale."
+      },
+      {
+        "section": "Offer Type Analysis",
+        "label": "Business Impact",
+        "type": "impact",
+        "text": "Clearing just 20% of the 4,841-bag Kenya position (~968 bags) in the month is ~4.2% of target — and frees working capital tied up in slow stock."
+      },
+      {
+        "section": "Posting Yields (Sales from Accurate Posting)",
+        "label": "The Bottom Line",
+        "type": "bottom",
+        "text": "Marketing posting is our most effective lever — Kenya posted bags hit 85.9% of expected sales monthly — but 53.1% of in-stock bags (5,478) were never posted. The target gap is sitting in unmarketed stock."
+      },
+      {
+        "section": "Posting Yields (Sales from Accurate Posting)",
+        "label": "Which bags were never postedAgainst the month's posting, these in-stock bags carry zero marketing posts — the dead stock marketing moves first so the sales team can reach target: GIFT BAG A5112 in stock · 0 postsBrown MAN BAG BROWN104 in stock · 0 postsBlack MAN BAG BLACK97 in stock · 0 postsGrey JUMBO GREY89 in stock · 0 postsBrown ANTITHEFT BROWN88 in stock · 0 postsGreen ANTITHEFT GREEN86 in stock · 0 postsBlack JUMBO BLACK85 in stock · 0 posts GIFT BAG A482 in stock · 0 postsBlack GYM BAG BLACK80 in stock · 0 postsBrown SCHOOL BAG BROWN78 in stock · 0 posts The Insight",
+        "type": "insight",
+        "text": "Where we post, we sell: monthly sales on posted bags (5,863) ran ~3.9× the 1,516 expected. Yet only 4,841 bags were on offer/posted vs 5,478 not. Regionally the discipline collapses — Kenya 85.9%, Sinza 20.4%, Uganda 15.3% — so the biggest untapped demand is in Uganda and in unmarketed stock."
+      },
+      {
+        "section": "Posting Yields (Sales from Accurate Posting)",
+        "label": "Business Impact",
+        "type": "impact",
+        "text": "If the 5,478 unposted bags converted at even a conservative 20% once marketed, that is ~1,096 bags — enough to close ~19.7% of the entire target gap. Bringing Uganda toward Kenya's rate compounds it further."
+      },
+      {
+        "section": "Current Performance",
+        "label": "Recommendation",
+        "type": "rec",
+        "text": "Managing to a hard 5,808-bag weekly commit, reviewed every Monday — not a single monthly number reconciled at month-end."
+      },
+      {
+        "section": "Current Performance",
+        "label": "Recommendation",
+        "type": "rec",
+        "text": "Treating the ~2,863-bag weekly gap as normal. Each missed week is unrecoverable against a fixed monthly target."
+      },
+      {
+        "section": "New Products",
+        "label": "Recommendation",
+        "type": "rec",
+        "text": "A concentrated push on the weakest launches with price/offer support to clear the 537-bag deficit."
+      },
+      {
+        "section": "New Products",
+        "label": "Recommendation",
+        "type": "rec",
+        "text": "Outside-Kenya distribution for the best-performing new lines — 10 bags sold there all month is an untested market, not a dead one."
+      },
+      {
+        "section": "Offer Type Analysis",
+        "label": "Recommendation",
+        "type": "rec",
+        "text": "Routing the slowest dead stock through combos (the higher-volume clearer) and keeping premium movers in power deals for margin."
+      },
+      {
+        "section": "Offer Type Analysis",
+        "label": "Recommendation",
+        "type": "rec",
+        "text": "Restocking the slowest-moving colours until the 4,841-bag Kenya position draws down."
+      },
+      {
+        "section": "Posting Yields (Sales from Accurate Posting)",
+        "label": "Focus — move the bags NOT on offerMarketing's real target is the stock sitting not on offer. Read across the three posting lenses:CombinedSales vs Expected (Posted & Unposted) — of Kenya's in-stock bags, 4,841 are on offer but 5,478 sit not on offer: dead stock we aren't even putting in front of buyers.With postingSales with Posting vs Expected — where marketing posted, sales ran ~3.9× expected. Posting demonstrably works, so aiming it at the not-on-offer pile is the lever.No postingSales with no Posting vs Opportunity if Marketed — the sales team already moved 2,023 bags with zero marketing; the gap up to the opportunity is what marketing leaves on the table by not posting the not-on-offer stock.Not-on-offer stock by region: Kenya 5,478, Sinza 308, Uganda 436 — and Sinza (20.4%) and Uganda (15.3%) move it far slower than Kenya (85.9%). Same playbook, all three regions. Bags NOT on offer, by region — the dead stock marketing must move Recommendation",
+        "type": "rec",
+        "text": "Systematically posting the 5,478 unmarketed in-stock bags — the single largest, cheapest lever against the 5,561-bag target gap."
+      },
+      {
+        "section": "Posting Yields (Sales from Accurate Posting)",
+        "label": "Focus — move the bags NOT on offerMarketing's real target is the stock sitting not on offer. Read across the three posting lenses:CombinedSales vs Expected (Posted & Unposted) — of Kenya's in-stock bags, 4,841 are on offer but 5,478 sit not on offer: dead stock we aren't even putting in front of buyers.With postingSales with Posting vs Expected — where marketing posted, sales ran ~3.9× expected. Posting demonstrably works, so aiming it at the not-on-offer pile is the lever.No postingSales with no Posting vs Opportunity if Marketed — the sales team already moved 2,023 bags with zero marketing; the gap up to the opportunity is what marketing leaves on the table by not posting the not-on-offer stock.Not-on-offer stock by region: Kenya 5,478, Sinza 308, Uganda 436 — and Sinza (20.4%) and Uganda (15.3%) move it far slower than Kenya (85.9%). Same playbook, all three regions. Bags NOT on offer, by region — the dead stock marketing must move Recommendation",
+        "type": "rec",
+        "text": "The Kenya posting playbook in Uganda, where sales-achieved is 15.3% vs Kenya's 85.9%."
+      },
+      {
+        "section": "Posting Yields (Sales from Accurate Posting)",
+        "label": "Focus — move the bags NOT on offerMarketing's real target is the stock sitting not on offer. Read across the three posting lenses:CombinedSales vs Expected (Posted & Unposted) — of Kenya's in-stock bags, 4,841 are on offer but 5,478 sit not on offer: dead stock we aren't even putting in front of buyers.With postingSales with Posting vs Expected — where marketing posted, sales ran ~3.9× expected. Posting demonstrably works, so aiming it at the not-on-offer pile is the lever.No postingSales with no Posting vs Opportunity if Marketed — the sales team already moved 2,023 bags with zero marketing; the gap up to the opportunity is what marketing leaves on the table by not posting the not-on-offer stock.Not-on-offer stock by region: Kenya 5,478, Sinza 308, Uganda 436 — and Sinza (20.4%) and Uganda (15.3%) move it far slower than Kenya (85.9%). Same playbook, all three regions. Bags NOT on offer, by region — the dead stock marketing must move Recommendation",
+        "type": "rec",
+        "text": "Letting in-stock bags sit unposted — every unmarketed bag is a bag that reliably does not sell."
+      }
+    ]
   }
 }

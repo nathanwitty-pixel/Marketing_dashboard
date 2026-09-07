@@ -26,14 +26,6 @@
       "presentation": { "reveal": "always", "panel": "shared", "clear": false }
     },
     {
-      "label": "Run Offer Type Analysis",
-      "type": "shell",
-      "command": "python",
-      "args": ["${workspaceFolder}\\offer_type_analysis.py"],
-      "options": { "cwd": "${workspaceFolder}" },
-      "presentation": { "reveal": "always", "panel": "shared", "clear": false }
-    },
-    {
       "label": "Run Posting Analysis",
       "type": "shell",
       "command": "python",

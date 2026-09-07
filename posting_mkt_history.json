@@ -1,30 +1,6 @@
 {
   "weeks": [
     {
-      "label": "Wk 1",
-      "month": "Jul",
-      "kenya": 67.4,
-      "sinza": 25.0,
-      "uganda": 5.6,
-      "_sig": [
-        176,
-        78,
-        176
-      ]
-    },
-    {
-      "label": "Wk 2",
-      "month": "Jul",
-      "kenya": 68.7,
-      "sinza": 34.1,
-      "uganda": 10.4,
-      "_sig": [
-        189,
-        0,
-        0
-      ]
-    },
-    {
       "label": "Wk 3",
       "month": "Jul",
       "kenya": 68.3,
@@ -130,6 +106,42 @@
         212,
         53,
         55
+      ]
+    },
+    {
+      "label": "Wk 6",
+      "month": "Aug",
+      "kenya": 66.8,
+      "sinza": 33.4,
+      "uganda": 20.6,
+      "_sig": [
+        212,
+        53,
+        55
+      ]
+    },
+    {
+      "label": "Wk 1",
+      "month": "Sep",
+      "kenya": 66.8,
+      "sinza": 33.4,
+      "uganda": 20.6,
+      "_sig": [
+        212,
+        53,
+        55
+      ]
+    },
+    {
+      "label": "Wk 2",
+      "month": "Sep",
+      "kenya": 59.9,
+      "sinza": 50.0,
+      "uganda": 0.0,
+      "_sig": [
+        203,
+        30,
+        0
       ]
     }
   ]

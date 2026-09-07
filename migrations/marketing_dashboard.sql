@@ -47,8 +47,11 @@ create table if not exists denri_mkt_monthly (
   notoffer_sinza        numeric,
   notoffer_uganda       numeric,
   sales_from_posting    numeric,
-  expected_from_posting numeric
+  expected_from_posting numeric,
+  comments              jsonb
 );
+-- Older databases created before comments existed: add it idempotently.
+alter table denri_mkt_monthly add column if not exists comments jsonb;
 
 create table if not exists denri_mkt_weekly (
   month_key      text references denri_mkt_monthly(month_key) on delete cascade,
@@ -85,14 +88,133 @@ create table if not exists denri_mkt_offers (
   stock      numeric
 );
 
+-- Timed offers: one row per campaign that ran in the month, plus its bags and
+-- its daily sales series (the pre-offer baseline and the offer window, which is
+-- what makes the lift readable rather than just a percentage).
+create table if not exists denri_mkt_timed_offers (
+  month_key     text references denri_mkt_monthly(month_key) on delete cascade,
+  seq           int,
+  name          text,
+  market        text,
+  start_date    date,
+  end_date      date,
+  window_label  text,
+  total_sold    numeric,
+  total_posts   numeric,
+  per_post      numeric,
+  best_name     text,
+  best_sold     numeric,
+  total_stock   numeric,
+  lift_pct      numeric,
+  base_start    date,
+  base_end      date,
+  base_days     numeric,
+  base_total    numeric,
+  base_per_day  numeric,
+  offer_days    numeric,
+  offer_total   numeric,
+  offer_per_day numeric,
+  verdict       text
+);
+
+create table if not exists denri_mkt_timed_offer_bags (
+  month_key    text references denri_mkt_monthly(month_key) on delete cascade,
+  offer_seq    int,
+  name         text,
+  category     text,
+  sold         numeric,
+  posts        numeric,
+  per_post     numeric,
+  stock        numeric,
+  price_was    numeric,
+  price_now    numeric,
+  discount_kes numeric,
+  discount_pct numeric,
+  bag_lift     numeric
+);
+
+create table if not exists denri_mkt_timed_offer_days (
+  month_key text references denri_mkt_monthly(month_key) on delete cascade,
+  offer_seq int,
+  day       date,
+  bags      numeric,
+  in_offer  boolean
+);
+
+create table if not exists denri_mkt_timed_offer_weeks (
+  month_key  text references denri_mkt_monthly(month_key) on delete cascade,
+  offer_seq  int,
+  seq        int,
+  label      text,
+  week_start date,
+  week_end   date,
+  total      numeric,
+  days       numeric,
+  per_day    numeric,
+  in_offer   boolean
+);
+
+-- Self-made combos (staff CBR requests) vs running combos — one summary row per
+-- month, the sold-combo lines, and the full combo-request log (CBR/2026 refs).
+create table if not exists denri_mkt_self_made_summary (
+  month_key       text references denri_mkt_monthly(month_key) on delete cascade,
+  sm_count        numeric,
+  sm_units        numeric,
+  sm_value        numeric,
+  run_count       numeric,
+  run_units       numeric,
+  run_value       numeric,
+  req_total       numeric,
+  req_approved    numeric,
+  req_rejected    numeric,
+  req_pending     numeric,
+  sm_avg_colours  numeric,
+  run_avg_colours numeric
+);
+-- Colour-range averages added after the table first shipped.
+alter table denri_mkt_self_made_summary add column if not exists sm_avg_colours  numeric;
+alter table denri_mkt_self_made_summary add column if not exists run_avg_colours numeric;
+
+create table if not exists denri_mkt_combo_sales (
+  month_key      text references denri_mkt_monthly(month_key) on delete cascade,
+  name           text,
+  self_made      boolean,
+  units          numeric,
+  value          numeric,
+  colour_options numeric
+);
+-- colour_options = how many colour picks the till offers for that combo.
+alter table denri_mkt_combo_sales add column if not exists colour_options numeric;
+
+create table if not exists denri_mkt_combo_requests (
+  month_key     text references denri_mkt_monthly(month_key) on delete cascade,
+  cbr           text,
+  combo         text,
+  shop          text,
+  requested_by  text,
+  state         text,
+  lloyd         boolean,
+  price         numeric,
+  requested_on  text,
+  sold_units    numeric,
+  reject_reason text
+);
+
 
 -- ══ July 2026 (2026-07) ══
-insert into denri_mkt_monthly (month_key, month, year, generated_on, achieved_pct, total_sales, total_target, gap, bare_minimum, avg_weekly, corporate, forecast, np_count, np_target, np_sales, np_deficit, np_kenya, np_outside, np_posts, combos, power_deals, kenya_combo_units, kenya_combo_value, kenya_combo_avg, kenya_deal_units, kenya_deal_value, kenya_deal_avg, sinza_units, sinza_value, sinza_cleared, uganda_units, uganda_value, uganda_cleared, posting_kenya_pct, posting_sinza_pct, posting_uganda_pct, posted_stock, unposted_stock, posts_made, notoffer_kenya, notoffer_sinza, notoffer_uganda, sales_from_posting, expected_from_posting)
-values ('2026-07', 'July', 2026, '2026-08-03', 71.8, 16680, 23232, 6552, 5808, 3270.5, 312, '73.14%', 7, 930, 410, 520, 406, 4, 292, 10, 10, 2159, 9344041, 4439, 3892, 7452800, 1800, 206, 983844, 32.5, 89, 6550000, 21.9, 89.7, 50.7, 19.2, 4975, 5602, 785, 5602, 439, 235, 6925, 1766)
-on conflict (month_key) do update set month = excluded.month, year = excluded.year, generated_on = excluded.generated_on, achieved_pct = excluded.achieved_pct, total_sales = excluded.total_sales, total_target = excluded.total_target, gap = excluded.gap, bare_minimum = excluded.bare_minimum, avg_weekly = excluded.avg_weekly, corporate = excluded.corporate, forecast = excluded.forecast, np_count = excluded.np_count, np_target = excluded.np_target, np_sales = excluded.np_sales, np_deficit = excluded.np_deficit, np_kenya = excluded.np_kenya, np_outside = excluded.np_outside, np_posts = excluded.np_posts, combos = excluded.combos, power_deals = excluded.power_deals, kenya_combo_units = excluded.kenya_combo_units, kenya_combo_value = excluded.kenya_combo_value, kenya_combo_avg = excluded.kenya_combo_avg, kenya_deal_units = excluded.kenya_deal_units, kenya_deal_value = excluded.kenya_deal_value, kenya_deal_avg = excluded.kenya_deal_avg, sinza_units = excluded.sinza_units, sinza_value = excluded.sinza_value, sinza_cleared = excluded.sinza_cleared, uganda_units = excluded.uganda_units, uganda_value = excluded.uganda_value, uganda_cleared = excluded.uganda_cleared, posting_kenya_pct = excluded.posting_kenya_pct, posting_sinza_pct = excluded.posting_sinza_pct, posting_uganda_pct = excluded.posting_uganda_pct, posted_stock = excluded.posted_stock, unposted_stock = excluded.unposted_stock, posts_made = excluded.posts_made, notoffer_kenya = excluded.notoffer_kenya, notoffer_sinza = excluded.notoffer_sinza, notoffer_uganda = excluded.notoffer_uganda, sales_from_posting = excluded.sales_from_posting, expected_from_posting = excluded.expected_from_posting;
+insert into denri_mkt_monthly (month_key, month, year, generated_on, achieved_pct, total_sales, total_target, gap, bare_minimum, avg_weekly, corporate, forecast, np_count, np_target, np_sales, np_deficit, np_kenya, np_outside, np_posts, combos, power_deals, kenya_combo_units, kenya_combo_value, kenya_combo_avg, kenya_deal_units, kenya_deal_value, kenya_deal_avg, sinza_units, sinza_value, sinza_cleared, uganda_units, uganda_value, uganda_cleared, posting_kenya_pct, posting_sinza_pct, posting_uganda_pct, posted_stock, unposted_stock, posts_made, notoffer_kenya, notoffer_sinza, notoffer_uganda, sales_from_posting, expected_from_posting, comments)
+values ('2026-07', 'July', 2026, '2026-08-03', 71.8, 16680, 23232, 6552, 5808, 3270.5, 312, '73.14%', 7, 930, 410, 520, 406, 4, 292, 10, 10, 2159, 9344041, 4439, 3892, 7452800, 1800, 206, 983844, 32.5, 89, 6550000, 21.9, 89.7, 50.7, 19.2, 4975, 5602, 785, 5602, 439, 235, 6925, 1766, NULL)
+on conflict (month_key) do update set month = excluded.month, year = excluded.year, generated_on = excluded.generated_on, achieved_pct = excluded.achieved_pct, total_sales = excluded.total_sales, total_target = excluded.total_target, gap = excluded.gap, bare_minimum = excluded.bare_minimum, avg_weekly = excluded.avg_weekly, corporate = excluded.corporate, forecast = excluded.forecast, np_count = excluded.np_count, np_target = excluded.np_target, np_sales = excluded.np_sales, np_deficit = excluded.np_deficit, np_kenya = excluded.np_kenya, np_outside = excluded.np_outside, np_posts = excluded.np_posts, combos = excluded.combos, power_deals = excluded.power_deals, kenya_combo_units = excluded.kenya_combo_units, kenya_combo_value = excluded.kenya_combo_value, kenya_combo_avg = excluded.kenya_combo_avg, kenya_deal_units = excluded.kenya_deal_units, kenya_deal_value = excluded.kenya_deal_value, kenya_deal_avg = excluded.kenya_deal_avg, sinza_units = excluded.sinza_units, sinza_value = excluded.sinza_value, sinza_cleared = excluded.sinza_cleared, uganda_units = excluded.uganda_units, uganda_value = excluded.uganda_value, uganda_cleared = excluded.uganda_cleared, posting_kenya_pct = excluded.posting_kenya_pct, posting_sinza_pct = excluded.posting_sinza_pct, posting_uganda_pct = excluded.posting_uganda_pct, posted_stock = excluded.posted_stock, unposted_stock = excluded.unposted_stock, posts_made = excluded.posts_made, notoffer_kenya = excluded.notoffer_kenya, notoffer_sinza = excluded.notoffer_sinza, notoffer_uganda = excluded.notoffer_uganda, sales_from_posting = excluded.sales_from_posting, expected_from_posting = excluded.expected_from_posting, comments = excluded.comments;
 delete from denri_mkt_weekly       where month_key = '2026-07';
 delete from denri_mkt_new_products where month_key = '2026-07';
 delete from denri_mkt_offers       where month_key = '2026-07';
+delete from denri_mkt_timed_offer_weeks where month_key = '2026-07';
+delete from denri_mkt_timed_offer_days  where month_key = '2026-07';
+delete from denri_mkt_timed_offer_bags  where month_key = '2026-07';
+delete from denri_mkt_timed_offers      where month_key = '2026-07';
+delete from denri_mkt_self_made_summary where month_key = '2026-07';
+delete from denri_mkt_combo_sales       where month_key = '2026-07';
+delete from denri_mkt_combo_requests    where month_key = '2026-07';
 insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-07', 1, 'Wk 1', 'Jul', 10.52, 10.52, 2445, 4824, -2379);
 insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-07', 2, 'Wk 2', 'Jul', 16.16, 26.68, 3754, 6133, -2379);
 insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-07', 3, 'Wk 3', 'Jul', 15.34, 42.02, 3510, 5808, -2298);
@@ -163,75 +285,119 @@ insert into denri_mkt_offers (month_key, region, name, offer_type, units, value,
 insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-07', 'Uganda', 'zane man', NULL, 0, NULL, 21);
 
 -- ══ August 2026 (2026-08) ══
-insert into denri_mkt_monthly (month_key, month, year, generated_on, achieved_pct, total_sales, total_target, gap, bare_minimum, avg_weekly, corporate, forecast, np_count, np_target, np_sales, np_deficit, np_kenya, np_outside, np_posts, combos, power_deals, kenya_combo_units, kenya_combo_value, kenya_combo_avg, kenya_deal_units, kenya_deal_value, kenya_deal_avg, sinza_units, sinza_value, sinza_cleared, uganda_units, uganda_value, uganda_cleared, posting_kenya_pct, posting_sinza_pct, posting_uganda_pct, posted_stock, unposted_stock, posts_made, notoffer_kenya, notoffer_sinza, notoffer_uganda, sales_from_posting, expected_from_posting)
-values ('2026-08', 'August', 2026, '2026-08-10', 21.59, 5015, 23232, 18217, 5808, 1671.6666666666667, 312, '78.98%', 7, 930, 118, 812, 126, 3, 219, 10, 10, 893, 3983207, 4399, 1100, 2372300, 1970, 80, 367939, 14.8, 16, 1211500, 2.4, 80.2, 7.1, 2.4, 5075, 5738, 215, 5738, 388, 470, 1021, 484)
-on conflict (month_key) do update set month = excluded.month, year = excluded.year, generated_on = excluded.generated_on, achieved_pct = excluded.achieved_pct, total_sales = excluded.total_sales, total_target = excluded.total_target, gap = excluded.gap, bare_minimum = excluded.bare_minimum, avg_weekly = excluded.avg_weekly, corporate = excluded.corporate, forecast = excluded.forecast, np_count = excluded.np_count, np_target = excluded.np_target, np_sales = excluded.np_sales, np_deficit = excluded.np_deficit, np_kenya = excluded.np_kenya, np_outside = excluded.np_outside, np_posts = excluded.np_posts, combos = excluded.combos, power_deals = excluded.power_deals, kenya_combo_units = excluded.kenya_combo_units, kenya_combo_value = excluded.kenya_combo_value, kenya_combo_avg = excluded.kenya_combo_avg, kenya_deal_units = excluded.kenya_deal_units, kenya_deal_value = excluded.kenya_deal_value, kenya_deal_avg = excluded.kenya_deal_avg, sinza_units = excluded.sinza_units, sinza_value = excluded.sinza_value, sinza_cleared = excluded.sinza_cleared, uganda_units = excluded.uganda_units, uganda_value = excluded.uganda_value, uganda_cleared = excluded.uganda_cleared, posting_kenya_pct = excluded.posting_kenya_pct, posting_sinza_pct = excluded.posting_sinza_pct, posting_uganda_pct = excluded.posting_uganda_pct, posted_stock = excluded.posted_stock, unposted_stock = excluded.unposted_stock, posts_made = excluded.posts_made, notoffer_kenya = excluded.notoffer_kenya, notoffer_sinza = excluded.notoffer_sinza, notoffer_uganda = excluded.notoffer_uganda, sales_from_posting = excluded.sales_from_posting, expected_from_posting = excluded.expected_from_posting;
+insert into denri_mkt_monthly (month_key, month, year, generated_on, achieved_pct, total_sales, total_target, gap, bare_minimum, avg_weekly, corporate, forecast, np_count, np_target, np_sales, np_deficit, np_kenya, np_outside, np_posts, combos, power_deals, kenya_combo_units, kenya_combo_value, kenya_combo_avg, kenya_deal_units, kenya_deal_value, kenya_deal_avg, sinza_units, sinza_value, sinza_cleared, uganda_units, uganda_value, uganda_cleared, posting_kenya_pct, posting_sinza_pct, posting_uganda_pct, posted_stock, unposted_stock, posts_made, notoffer_kenya, notoffer_sinza, notoffer_uganda, sales_from_posting, expected_from_posting, comments)
+values ('2026-08', 'August', 2026, '2026-09-01', 76.06, 17671, 23232, 5561, 5808, 2945.1666666666665, 65, '76.34%', 7, 930, 393, 537, 402, 10, 443, 10, 10, 2509, 0, 0, 3745, 2599700, 2025, 206, 49500, 42.2, 78, 36, 10.3, 85.9, 20.4, 15.3, 4841, 5478, 674, 5478, 308, 436, 5863, 1516, '[{"section": "Executive Summary", "label": "The Bottom Line", "type": "bottom", "text": "August closed at 76.1% of target — 17,671 of 23,232 bags, missing by 5,561 bags. The gap is not weak demand; it is stock we never marketed."}, {"section": "Executive Summary", "label": "Key point", "type": "bullet", "text": "53.1% of Kenya stock (5,478 bags) was never posted — yet posted bags sold at 85.9% of expectation. Marketing is the lever, and much of it went unused."}, {"section": "Executive Summary", "label": "Key point", "type": "bullet", "text": "Weekly output (~2,945 bags) ran below the 5,808/week floor needed to hit target — the problem is consistency, not a bad month."}, {"section": "Executive Summary", "label": "Key point", "type": "bullet", "text": "Regions are uneven: Kenya posts at 85.9% sales-achieved, Sinza 20.4%, Uganda 15.3%. The Kenya playbook isn''t being run elsewhere."}, {"section": "Current Performance", "label": "The Bottom Line", "type": "bottom", "text": "We finished August at 76.1% of target (17,671 bags), 5,561 bags short. Weekly output averaged about 2,945 bags — under the 5,808-bag weekly floor the target requires."}, {"section": "Current Performance", "label": "The Insight", "type": "insight", "text": "Weekly output ran below the bare minimum needed to reach target most weeks. The shortfall is one of throughput and consistency, not demand — corporate orders (65 bags) only nudged the forecast to 76.34%."}, {"section": "Current Performance", "label": "Business Impact", "type": "impact", "text": "Closing even half the weekly gap (~1,431 bags/week) across the month adds ~5,726 bags — lifting achievement from 76.1% to ~100.7%."}, {"section": "New Products", "label": "The Bottom Line", "type": "bottom", "text": "The 7 new products (AMORA, IMANI, LAMORA, LOOP BP, NALA, TAJI, ZULA) reached only 42.3% of their 930-bag target (393 sold) — a 537-bag deficit."}, {"section": "New Products", "label": "The Insight", "type": "insight", "text": "New products received 443 marketing posts but converted just 393 bags, and almost all of it (402 of 393) was Kenya — outside-Kenya is effectively untested (10 bags). Awareness is being created; conversion and distribution are the bottleneck."}, {"section": "New Products", "label": "Business Impact", "type": "impact", "text": "Recovering half the deficit (~268 bags) is realistic within one cycle; a working outside-Kenya channel would add a comparable second stream."}, {"section": "Timed Offers", "label": "On offer?", "type": "insight", "text": "No configured offer prices — showing realised averages only."}, {"section": "Timed Offers", "label": "Stock", "type": "insight", "text": "Mostly backpacks with real inventory behind them — 1,324 still in Kenya stock even after the push (led by Antitheft at 304). The offer draws down a genuine stock position, not a token one."}, {"section": "Timed Offers", "label": "Season", "type": "insight", "text": "All six sit in Backpack, School Bag — school categories — and the step-up landed in the offer week as schools opened. Antitheft and School bag even sold on zero marketing posts (pure demand). The timing fits the sales pattern as much as the price cut does."}, {"section": "Offer Type Analysis", "label": "The Bottom Line", "type": "bottom", "text": "Across 10 combos and 10 power deals (Kenya), the two offer types cleared stock very differently: combos moved 0 bags (KES 0) while power deals moved 8,100 bags (KES 16,970,000). Power deals shifted the most stock; power deals made the most money."}, {"section": "Offer Type Analysis", "label": "The Insight", "type": "insight", "text": "It''s a price-point story: combos averaged KES 0 per offer vs power deals KES 2,025. The cheaper combos clear more volume, so dead stock moves fastest through combos — yet 4,841 bags remain in Kenya offer stock (plus 488 Sinza, 569 Uganda), so the mix still isn''t drawing inventory down fast enough."}, {"section": "Offer Type Analysis", "label": "Sinza & Uganda offers", "type": "insight", "text": "Sinza ran 10 combos, 10 singles and 0 specials, moving 120,000 bags (value 220,500,000) against 488 in stock. Uganda ran 3 combos and 0 singles, moving 0 bags (value 0) against 569 in stock. Both are clearing only a thin slice of their offer stock — the same dead-stock problem as Kenya, at smaller scale."}, {"section": "Offer Type Analysis", "label": "Business Impact", "type": "impact", "text": "Clearing just 20% of the 4,841-bag Kenya position (~968 bags) in the month is ~4.2% of target — and frees working capital tied up in slow stock."}, {"section": "Posting Yields (Sales from Accurate Posting)", "label": "The Bottom Line", "type": "bottom", "text": "Marketing posting is our most effective lever — Kenya posted bags hit 85.9% of expected sales monthly — but 53.1% of in-stock bags (5,478) were never posted. The target gap is sitting in unmarketed stock."}, {"section": "Posting Yields (Sales from Accurate Posting)", "label": "Which bags were never postedAgainst the month''s posting, these in-stock bags carry zero marketing posts — the dead stock marketing moves first so the sales team can reach target: GIFT BAG A5112 in stock · 0 postsBrown MAN BAG BROWN104 in stock · 0 postsBlack MAN BAG BLACK97 in stock · 0 postsGrey JUMBO GREY89 in stock · 0 postsBrown ANTITHEFT BROWN88 in stock · 0 postsGreen ANTITHEFT GREEN86 in stock · 0 postsBlack JUMBO BLACK85 in stock · 0 posts GIFT BAG A482 in stock · 0 postsBlack GYM BAG BLACK80 in stock · 0 postsBrown SCHOOL BAG BROWN78 in stock · 0 posts The Insight", "type": "insight", "text": "Where we post, we sell: monthly sales on posted bags (5,863) ran ~3.9× the 1,516 expected. Yet only 4,841 bags were on offer/posted vs 5,478 not. Regionally the discipline collapses — Kenya 85.9%, Sinza 20.4%, Uganda 15.3% — so the biggest untapped demand is in Uganda and in unmarketed stock."}, {"section": "Posting Yields (Sales from Accurate Posting)", "label": "Business Impact", "type": "impact", "text": "If the 5,478 unposted bags converted at even a conservative 20% once marketed, that is ~1,096 bags — enough to close ~19.7% of the entire target gap. Bringing Uganda toward Kenya''s rate compounds it further."}, {"section": "Current Performance", "label": "Recommendation", "type": "rec", "text": "Managing to a hard 5,808-bag weekly commit, reviewed every Monday — not a single monthly number reconciled at month-end."}, {"section": "Current Performance", "label": "Recommendation", "type": "rec", "text": "Treating the ~2,863-bag weekly gap as normal. Each missed week is unrecoverable against a fixed monthly target."}, {"section": "New Products", "label": "Recommendation", "type": "rec", "text": "A concentrated push on the weakest launches with price/offer support to clear the 537-bag deficit."}, {"section": "New Products", "label": "Recommendation", "type": "rec", "text": "Outside-Kenya distribution for the best-performing new lines — 10 bags sold there all month is an untested market, not a dead one."}, {"section": "Offer Type Analysis", "label": "Recommendation", "type": "rec", "text": "Routing the slowest dead stock through combos (the higher-volume clearer) and keeping premium movers in power deals for margin."}, {"section": "Offer Type Analysis", "label": "Recommendation", "type": "rec", "text": "Restocking the slowest-moving colours until the 4,841-bag Kenya position draws down."}, {"section": "Posting Yields (Sales from Accurate Posting)", "label": "Focus — move the bags NOT on offerMarketing''s real target is the stock sitting not on offer. Read across the three posting lenses:CombinedSales vs Expected (Posted & Unposted) — of Kenya''s in-stock bags, 4,841 are on offer but 5,478 sit not on offer: dead stock we aren''t even putting in front of buyers.With postingSales with Posting vs Expected — where marketing posted, sales ran ~3.9× expected. Posting demonstrably works, so aiming it at the not-on-offer pile is the lever.No postingSales with no Posting vs Opportunity if Marketed — the sales team already moved 2,023 bags with zero marketing; the gap up to the opportunity is what marketing leaves on the table by not posting the not-on-offer stock.Not-on-offer stock by region: Kenya 5,478, Sinza 308, Uganda 436 — and Sinza (20.4%) and Uganda (15.3%) move it far slower than Kenya (85.9%). Same playbook, all three regions. Bags NOT on offer, by region — the dead stock marketing must move Recommendation", "type": "rec", "text": "Systematically posting the 5,478 unmarketed in-stock bags — the single largest, cheapest lever against the 5,561-bag target gap."}, {"section": "Posting Yields (Sales from Accurate Posting)", "label": "Focus — move the bags NOT on offerMarketing''s real target is the stock sitting not on offer. Read across the three posting lenses:CombinedSales vs Expected (Posted & Unposted) — of Kenya''s in-stock bags, 4,841 are on offer but 5,478 sit not on offer: dead stock we aren''t even putting in front of buyers.With postingSales with Posting vs Expected — where marketing posted, sales ran ~3.9× expected. Posting demonstrably works, so aiming it at the not-on-offer pile is the lever.No postingSales with no Posting vs Opportunity if Marketed — the sales team already moved 2,023 bags with zero marketing; the gap up to the opportunity is what marketing leaves on the table by not posting the not-on-offer stock.Not-on-offer stock by region: Kenya 5,478, Sinza 308, Uganda 436 — and Sinza (20.4%) and Uganda (15.3%) move it far slower than Kenya (85.9%). Same playbook, all three regions. Bags NOT on offer, by region — the dead stock marketing must move Recommendation", "type": "rec", "text": "The Kenya posting playbook in Uganda, where sales-achieved is 15.3% vs Kenya''s 85.9%."}, {"section": "Posting Yields (Sales from Accurate Posting)", "label": "Focus — move the bags NOT on offerMarketing''s real target is the stock sitting not on offer. Read across the three posting lenses:CombinedSales vs Expected (Posted & Unposted) — of Kenya''s in-stock bags, 4,841 are on offer but 5,478 sit not on offer: dead stock we aren''t even putting in front of buyers.With postingSales with Posting vs Expected — where marketing posted, sales ran ~3.9× expected. Posting demonstrably works, so aiming it at the not-on-offer pile is the lever.No postingSales with no Posting vs Opportunity if Marketed — the sales team already moved 2,023 bags with zero marketing; the gap up to the opportunity is what marketing leaves on the table by not posting the not-on-offer stock.Not-on-offer stock by region: Kenya 5,478, Sinza 308, Uganda 436 — and Sinza (20.4%) and Uganda (15.3%) move it far slower than Kenya (85.9%). Same playbook, all three regions. Bags NOT on offer, by region — the dead stock marketing must move Recommendation", "type": "rec", "text": "Letting in-stock bags sit unposted — every unmarketed bag is a bag that reliably does not sell."}]'::jsonb)
+on conflict (month_key) do update set month = excluded.month, year = excluded.year, generated_on = excluded.generated_on, achieved_pct = excluded.achieved_pct, total_sales = excluded.total_sales, total_target = excluded.total_target, gap = excluded.gap, bare_minimum = excluded.bare_minimum, avg_weekly = excluded.avg_weekly, corporate = excluded.corporate, forecast = excluded.forecast, np_count = excluded.np_count, np_target = excluded.np_target, np_sales = excluded.np_sales, np_deficit = excluded.np_deficit, np_kenya = excluded.np_kenya, np_outside = excluded.np_outside, np_posts = excluded.np_posts, combos = excluded.combos, power_deals = excluded.power_deals, kenya_combo_units = excluded.kenya_combo_units, kenya_combo_value = excluded.kenya_combo_value, kenya_combo_avg = excluded.kenya_combo_avg, kenya_deal_units = excluded.kenya_deal_units, kenya_deal_value = excluded.kenya_deal_value, kenya_deal_avg = excluded.kenya_deal_avg, sinza_units = excluded.sinza_units, sinza_value = excluded.sinza_value, sinza_cleared = excluded.sinza_cleared, uganda_units = excluded.uganda_units, uganda_value = excluded.uganda_value, uganda_cleared = excluded.uganda_cleared, posting_kenya_pct = excluded.posting_kenya_pct, posting_sinza_pct = excluded.posting_sinza_pct, posting_uganda_pct = excluded.posting_uganda_pct, posted_stock = excluded.posted_stock, unposted_stock = excluded.unposted_stock, posts_made = excluded.posts_made, notoffer_kenya = excluded.notoffer_kenya, notoffer_sinza = excluded.notoffer_sinza, notoffer_uganda = excluded.notoffer_uganda, sales_from_posting = excluded.sales_from_posting, expected_from_posting = excluded.expected_from_posting, comments = excluded.comments;
 delete from denri_mkt_weekly       where month_key = '2026-08';
 delete from denri_mkt_new_products where month_key = '2026-08';
 delete from denri_mkt_offers       where month_key = '2026-08';
+delete from denri_mkt_timed_offer_weeks where month_key = '2026-08';
+delete from denri_mkt_timed_offer_days  where month_key = '2026-08';
+delete from denri_mkt_timed_offer_bags  where month_key = '2026-08';
+delete from denri_mkt_timed_offers      where month_key = '2026-08';
+delete from denri_mkt_self_made_summary where month_key = '2026-08';
+delete from denri_mkt_combo_sales       where month_key = '2026-08';
+delete from denri_mkt_combo_requests    where month_key = '2026-08';
 insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-08', 1, 'Wk 1', NULL, 3.57, 3.57, 830, NULL, NULL);
 insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-08', 2, 'Wk 2', NULL, 17.16, 20.73, 3986, NULL, NULL);
-insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-08', 3, 'Wk 3', NULL, 0.86, 21.59, 199, NULL, NULL);
-insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'AMORA', 0, 50, 15, 55);
-insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'IMANI', 3, 77, 0, 179);
-insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'LAMORA', 29, 171, 54, 129);
-insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'LOOP BP', 26, 224, 21, 99);
-insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'NALA', 16, 84, 33, 81);
-insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'TAJI', 10, 90, 42, 102);
-insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'ZULA', 34, 116, 54, 218);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Amaya + Zipped/Lunchset/ Nizana / Moon', 'combo', 171, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'SAFIRI + STANDARD/ ANTITHEFT', 'combo', 123, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Sarai + Prime', 'combo', 105, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Fabela + Laptop backpack / Big man', 'combo', 89, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Jumbo + standard/Liam + Pioneer/Antitheft', 'combo', 127, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Mega + Man Bag/ Mini Umbra / Neo man', 'combo', 91, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Bonita + Zane / Mini Umbra / Nizana /Neo Man', 'combo', 64, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Standard / liam + Laptop backpack', 'combo', 56, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Moon/ Nizana / Oval+ Zane/Manbag', 'combo', 52, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Baby Bag + Liam/Standard', 'combo', 15, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Jumbo', 'deal', 343, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'FABELA', 'deal', 126, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'REO TRAVEL', 'deal', 123, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'PRIME', 'deal', 100, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'MINI MAYA', 'deal', 73, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'CATHY HANDBAG', 'deal', 70, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'MINI ZURI', 'deal', 66, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'GYM BAG', 'deal', 60, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'MONAH BP', 'deal', 66, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'AVANA HB', 'deal', 73, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'JUMBO + CODE 3 + MAN BAG', 'combo', 32, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'SARAI + BIG MAN', 'combo', 15, NULL, NULL);
+insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-08', 3, 'Wk 3', NULL, 16.49, 37.22, 3831, NULL, NULL);
+insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-08', 4, 'Wk 4', NULL, 16.9, 54.12, 3927, NULL, NULL);
+insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-08', 5, 'Wk 5', NULL, 18.22, 72.34, 4233, NULL, NULL);
+insert into denri_mkt_weekly (month_key, seq, label, week_month, pct, cum, bags, target_to_beat, declined_by) values ('2026-08', 6, 'Wk 6', NULL, 3.72, 76.06, 864, NULL, NULL);
+insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'AMORA', 4, 46, 19, 52);
+insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'IMANI', 10, 70, 0, 170);
+insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'LAMORA', 71, 129, 115, 93);
+insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'LOOP BP', 113, 137, 47, 98);
+insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'NALA', 32, 68, 80, 48);
+insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'TAJI', 45, 55, 90, 89);
+insert into denri_mkt_new_products (month_key, name, sold, remaining, posts, stock) values ('2026-08', 'ZULA', 118, 32, 92, 175);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Fabela + Laptop backpack / Big man', 'combo', 386, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Amaya + Zipped/Lunchset/ Nizana / Moon', 'combo', 374, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Jumbo + standard/Liam + Pioneer/Antitheft', 'combo', 501, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'SAFIRI + STANDARD/ ANTITHEFT', 'combo', 274, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Mega + Man Bag/ Mini Umbra / Neo man', 'combo', 250, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Sarai + Prime', 'combo', 228, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Standard / liam + Laptop backpack', 'combo', 172, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Moon/ Nizana / Oval+ Zane/Manbag', 'combo', 140, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Bonita + Zane / Mini Umbra / Nizana /Neo Man', 'combo', 122, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Baby Bag + Liam/Standard', 'combo', 62, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'Jumbo', 'deal', 1130, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'PRIME', 'deal', 452, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'FABELA', 'deal', 449, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'REO TRAVEL', 'deal', 392, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'MINI MAYA', 'deal', 384, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'CATHY HANDBAG', 'deal', 217, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'GYM BAG', 'deal', 206, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'MONAH BP', 'deal', 201, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'MINI ZURI', 'deal', 165, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Kenya', 'AVANA HB', 'deal', 149, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'JUMBO + CODE 3 + MAN BAG', 'combo', 72, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'SARAI + BIG MAN', 'combo', 18, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'BONITA + ZELUS', 'combo', 16, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'SAFIRI + STANDARD', 'combo', 8, NULL, NULL);
 insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'STANDARD + JADE', 'combo', 6, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'BONITA + ZELUS', 'combo', 3, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'GYMBAG + ARIA SLING', 'combo', 3, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'GYMBAG + ARIA SLING', 'combo', 4, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'MOON BAG + BELT BAG', 'combo', 2, NULL, NULL);
 insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'ELYSE + MINIZURI', 'combo', 0, NULL, NULL);
 insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'FABELA + AMAYA', 'combo', 0, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'MOON BAG + BELT BAG', 'combo', 0, NULL, NULL);
 insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'REO + AVANNA', 'combo', 0, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'SAFIRI + STANDARD', 'combo', 2, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'SLEEVE 1', 'single', 6, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'LUNA', 'single', 4, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'CODE 3', 'single', 3, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'BIG MAN BAG', 'single', 1, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'GYM BAG', 'single', 2, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'MONAH BP', 'single', 1, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'SARAI', 'single', 2, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'KATE', 'single', 0, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'MINI UMBRA', 'single', 0, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'CODE 3', 'single', 24, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'SARAI', 'single', 11, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'MINI UMBRA', 'single', 10, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'BIG MAN BAG', 'single', 9, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'SLEEVE 1', 'single', 8, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'LUNA', 'single', 7, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'MONAH BP', 'single', 5, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'GYM BAG', 'single', 4, NULL, NULL);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'KATE', 'single', 2, NULL, NULL);
 insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Sinza', 'MINI ZURI', 'single', 0, NULL, NULL);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'ANTITHEFT', NULL, 4, NULL, 26);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'SATCHEL', NULL, 5, NULL, 15);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'JUMBO', NULL, 3, NULL, 27);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'MINI ZURI', NULL, 1, NULL, 11);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'NEO MAN', NULL, 1, NULL, 17);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'AVANA HB', NULL, 0, NULL, 8);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'BIG MAN BAG', NULL, 0, NULL, 14);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'KAI', NULL, 0, NULL, 18);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'KAYLA', NULL, 2, NULL, 4);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'MANDY HB', NULL, 0, NULL, 5);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'MINI SCHOOL', NULL, 0, NULL, 13);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'MOON BAG', NULL, 0, NULL, 7);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'NIZANA', NULL, 0, NULL, 11);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'PIONEER', NULL, 0, NULL, 5);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'SKYE HB', NULL, 0, NULL, 7);
-insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'zane man', NULL, 0, NULL, 21);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'ANTITHEFT', NULL, 22, NULL, 29);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'JUMBO', NULL, 9, NULL, 71);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'SATCHEL', NULL, 8, NULL, 10);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'MANDY HB', NULL, 5, NULL, 1);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'NEO MAN', NULL, 5, NULL, 10);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'KAI', NULL, 4, NULL, 18);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'KAYLA', NULL, 4, NULL, 0);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'MINI SCHOOL', NULL, 4, NULL, 8);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'AVANA HB', NULL, 3, NULL, 5);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'MINI ZURI', NULL, 3, NULL, 10);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'MOON BAG', NULL, 3, NULL, 5);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'NIZANA', NULL, 2, NULL, 11);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'SKYE HB', NULL, 2, NULL, 2);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'zane man', NULL, 2, NULL, 18);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'BIG MAN BAG', NULL, 1, NULL, 15);
+insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ('2026-08', 'Uganda', 'PIONEER', NULL, 1, NULL, 2);
+insert into denri_mkt_timed_offers (month_key, seq, name, market, start_date, end_date, window_label, total_sold, total_posts, per_post, best_name, best_sold, total_stock, lift_pct, base_start, base_end, base_days, base_total, base_per_day, offer_days, offer_total, offer_per_day, verdict) values ('2026-08', 1, 'Back to School Edition', 'Kenya', '2026-08-17', '2026-08-21', '17–21 Aug 2026', 695, 21, 33.1, 'Code 3', 225, 1324, 79, '2026-08-01', '2026-08-16', 16, 1240, 77.5, 5, 695, 139, '<b>Good move.</b> Sales rose <b>+79%</b> per day during back-to-school. Match the cut depth to demand — the popular school lines carried the volume.');
+insert into denri_mkt_timed_offer_bags (month_key, offer_seq, name, category, sold, posts, per_post, stock, price_was, price_now, discount_kes, discount_pct, bag_lift) values ('2026-08', 1, 'Code 3', 'BACKPACK', 225, 7, 32.1, 263, 2100, 54068, -51968, 2475, 56);
+insert into denri_mkt_timed_offer_bags (month_key, offer_seq, name, category, sold, posts, per_post, stock, price_was, price_now, discount_kes, discount_pct, bag_lift) values ('2026-08', 1, 'Antitheft', 'BACKPACK', 204, 0, NULL, 304, 2200, 66356, -64156, 2916, 33);
+insert into denri_mkt_timed_offer_bags (month_key, offer_seq, name, category, sold, posts, per_post, stock, price_was, price_now, discount_kes, discount_pct, bag_lift) values ('2026-08', 1, 'School bag', 'SCHOOL BAG', 106, 0, NULL, 225, 2100, 54068, -51968, 2475, 562);
+insert into denri_mkt_timed_offer_bags (month_key, offer_seq, name, category, sold, posts, per_post, stock, price_was, price_now, discount_kes, discount_pct, bag_lift) values ('2026-08', 1, 'Kai', 'BACKPACK', 80, 6, 13.3, 178, 2800, 71271, -68471, 2445, 65);
+insert into denri_mkt_timed_offer_bags (month_key, offer_seq, name, category, sold, posts, per_post, stock, price_was, price_now, discount_kes, discount_pct, bag_lift) values ('2026-08', 1, 'Pioneer', 'BACKPACK', 55, 8, 6.9, 100, NULL, NULL, NULL, 13, 206);
+insert into denri_mkt_timed_offer_bags (month_key, offer_seq, name, category, sold, posts, per_post, stock, price_was, price_now, discount_kes, discount_pct, bag_lift) values ('2026-08', 1, 'Double Press', 'BACKPACK', 25, 0, NULL, 254, 2600, 66356, -63756, 2452, 212);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-01', 85, false);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-02', 27, false);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-03', 91, false);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-04', 81, false);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-05', 81, false);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-06', 88, false);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-07', 92, false);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-08', 103, false);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-09', 29, false);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-10', 93, false);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-11', 91, false);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-12', 95, false);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-13', 85, false);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-14', 77, false);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-15', 100, false);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-16', 22, false);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-17', 111, true);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-18', 130, true);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-19', 134, true);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-20', 153, true);
+insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ('2026-08', 1, '2026-08-21', 167, true);
+insert into denri_mkt_timed_offer_weeks (month_key, offer_seq, seq, label, week_start, week_end, total, days, per_day, in_offer) values ('2026-08', 1, 1, 'Wk 1', '2026-08-01', '2026-08-01', 85, 1, 85, false);
+insert into denri_mkt_timed_offer_weeks (month_key, offer_seq, seq, label, week_start, week_end, total, days, per_day, in_offer) values ('2026-08', 1, 2, 'Wk 2', '2026-08-02', '2026-08-08', 563, 7, 80.4, false);
+insert into denri_mkt_timed_offer_weeks (month_key, offer_seq, seq, label, week_start, week_end, total, days, per_day, in_offer) values ('2026-08', 1, 3, 'Wk 3', '2026-08-09', '2026-08-15', 570, 7, 81.4, false);
+insert into denri_mkt_timed_offer_weeks (month_key, offer_seq, seq, label, week_start, week_end, total, days, per_day, in_offer) values ('2026-08', 1, 4, 'Wk 4', '2026-08-16', '2026-08-22', 849, 7, 121.3, true);
+insert into denri_mkt_timed_offer_weeks (month_key, offer_seq, seq, label, week_start, week_end, total, days, per_day, in_offer) values ('2026-08', 1, 5, 'Wk 5', '2026-08-23', '2026-08-29', 912, 7, 130.3, false);
+insert into denri_mkt_timed_offer_weeks (month_key, offer_seq, seq, label, week_start, week_end, total, days, per_day, in_offer) values ('2026-08', 1, 6, 'Wk 6', '2026-08-30', '2026-09-01', 209, 3, 69.7, false);

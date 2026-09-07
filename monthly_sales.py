@@ -14,25 +14,27 @@ filled in (ships resolved).
 """
 from __future__ import annotations
 
-import calendar
 import datetime
 import json
 import os
 
-from lib import db, queries
+from lib import db, queries, report_month
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 OUT_FILE = os.path.join(BASE, "monthly_sales_db.json")
 
 
 def month_window(ref: datetime.date | None = None) -> tuple[datetime.date, datetime.date]:
-    """First → last calendar day of the month containing `ref` (defaults today).
-    There are no future rows, so this naturally equals sales-to-date for the
-    current, in-progress month."""
-    ref = ref or datetime.date.today()
-    start = ref.replace(day=1)
-    last_day = calendar.monthrange(ref.year, ref.month)[1]
-    return start, ref.replace(day=last_day)
+    """First → last calendar day of the LIVE month (today's month; see
+    lib/report_month.py `live_month_window`).
+
+    This feeds the LIVE Current Performance cards, which must always show the
+    month we are actually in — on 1 Sep that is September (day 1), not the closed
+    August. The archived monthly report is kept correct separately: the just-
+    finished month is frozen via FINALIZED_MONTHS, and month_end.py PINS the month
+    it archives (which makes this window resolve to that pinned month), so the 1-Sep
+    'August report filled with September's day-1 bags' bug cannot recur."""
+    return report_month.live_month_window(ref)
 
 
 def _query_ready(sql: str) -> bool:

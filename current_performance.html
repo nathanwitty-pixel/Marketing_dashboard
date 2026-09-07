@@ -313,6 +313,7 @@
       <div class="table-title">Weekly Performance — Week 1 to Latest</div>
       <div id="weekly-perf-chart-wrap" style="padding:1rem 1.4rem 0;display:none">
         <div style="position:relative;height:210px"><canvas id="chart-weekly-perf"></canvas></div>
+        <div id="cp-weekly-stats" style="display:flex;flex-wrap:wrap;gap:0.35rem 2rem;justify-content:center;font-size:0.78rem;color:#94a3b8;padding:0.55rem 0 0.3rem"></div>
       </div>
       <div style="overflow-x:auto">
         <table id="weekly-perf-table" style="width:100%;border-collapse:collapse;font-size:0.85rem;white-space:nowrap">
@@ -405,29 +406,32 @@
 <!-- PERF_DATA_START -->
 <script>
 const PERF = {
-  remainingTarget:    "10,375",
-  salesPctAchieved:   "55.34%",
-  sales:              "12,857",
-  salesPos:           "12,848",
-  corporateBags:      "9",
-  masterBags:         "12,711",
-  previousSalesPct:   "54.16%",
-  previousSalesBags:  "237",
-  wowSalesPct:        "+15.61%",
-  wowSalesBags:       "+37",
-  weeklySalesTotal:   "274",
-  weeklySalesPct:     "1.18%",
-  growthHistory:      [{"date": "2026-07-27", "growth": 14.52}, {"date": "2026-07-28", "growth": 14.52}, {"date": "2026-07-30", "growth": 14.52}, {"date": "2026-07-31", "growth": 14.52}, {"date": "2026-08-01", "growth": 14.52}, {"date": "2026-08-02", "growth": 19.73}, {"date": "2026-08-03", "growth": 71.8}, {"date": "2026-08-04", "growth": 2.9}, {"date": "2026-08-05", "growth": 2.9}, {"date": "2026-08-06", "growth": 7.2}, {"date": "2026-08-07", "growth": 7.2}, {"date": "2026-08-08", "growth": 13.65}, {"date": "2026-08-10", "growth": 1.01}, {"date": "2026-08-11", "growth": 3.59}, {"date": "2026-08-13", "growth": 9.34}, {"date": "2026-08-14", "growth": 11.67}, {"date": "2026-08-16", "growth": 0.84}, {"date": "2026-08-17", "growth": 1.28}, {"date": "2026-08-20", "growth": 8.17}, {"date": "2026-08-21", "growth": 11.23}, {"date": "2026-08-22", "growth": 14.12}, {"date": "2026-08-23", "growth": 1.02}, {"date": "2026-08-24", "growth": 1.18}],
-  weeklyThisMonth:    "274",
+  cpPrevWeekly:       [{"label": "Wk 1", "pct": 3.57}, {"label": "Wk 2", "pct": 17.16}, {"label": "Wk 3", "pct": 16.49}, {"label": "Wk 4", "pct": 16.9}, {"label": "Wk 5", "pct": 18.22}, {"label": "Wk 6", "pct": 3.72}],
+  cpPrevLabel:        "August 2026",
+  cpCurLabel:         "September 2026",
+  remainingTarget:    "21,121",
+  salesPctAchieved:   "13.68%",
+  sales:              "3,347",
+  salesPos:           "3,346",
+  corporateBags:      "1",
+  masterBags:         "3,295",
+  previousSalesPct:   "13.21%",
+  previousSalesBags:  "114",
+  wowSalesPct:        "0.00%",
+  wowSalesBags:       "0",
+  weeklySalesTotal:   "114",
+  weeklySalesPct:     "0.47%",
+  growthHistory:      [{"date": "2026-07-27", "growth": 14.52}, {"date": "2026-07-28", "growth": 14.52}, {"date": "2026-07-30", "growth": 14.52}, {"date": "2026-07-31", "growth": 14.52}, {"date": "2026-08-01", "growth": 14.52}, {"date": "2026-08-02", "growth": 19.73}, {"date": "2026-08-03", "growth": 71.8}, {"date": "2026-08-04", "growth": 2.9}, {"date": "2026-08-05", "growth": 2.9}, {"date": "2026-08-06", "growth": 7.2}, {"date": "2026-08-07", "growth": 7.2}, {"date": "2026-08-08", "growth": 13.65}, {"date": "2026-08-10", "growth": 1.01}, {"date": "2026-08-11", "growth": 3.59}, {"date": "2026-08-13", "growth": 9.34}, {"date": "2026-08-14", "growth": 11.67}, {"date": "2026-08-16", "growth": 0.84}, {"date": "2026-08-17", "growth": 1.28}, {"date": "2026-08-20", "growth": 8.17}, {"date": "2026-08-21", "growth": 11.23}, {"date": "2026-08-22", "growth": 14.12}, {"date": "2026-08-23", "growth": 1.02}, {"date": "2026-08-24", "growth": 1.18}, {"date": "2026-08-26", "growth": 9.32}, {"date": "2026-08-27", "growth": 9.43}, {"date": "2026-08-28", "growth": 12.4}, {"date": "2026-08-31", "growth": 3.11}, {"date": "2026-09-01", "growth": 4.24}, {"date": "2026-09-02", "growth": 8.84}, {"date": "2026-09-03", "growth": 9.13}, {"date": "2026-09-04", "growth": 11.66}, {"date": "2026-09-06", "growth": 0.49}, {"date": "2026-09-07", "growth": 0.47}],
+  weeklyThisMonth:    "114",
   weeklyThisMonthDays: 0,
   prevMonthDays:      0,
   weeklyCarryover:    "",
   carryoverMonth:     "",
   carryoverDate:      "",
-  prevMonthWeekly:    "3,373",
-  prevMonthLabel:     "July",
-  momWeeklyBags:      "-3,099",
-  momWeeklyPct:       "-91.88%",
+  prevMonthWeekly:    "722",
+  prevMonthLabel:     "August",
+  momWeeklyBags:      "-608",
+  momWeeklyPct:       "-84.21%",
   bareMinimum:        "",
   declinedBy:         ""
 };
@@ -437,20 +441,20 @@ const PERF = {
 <!-- PROJ_DATA_START -->
 <script>
 const PROJ = {
-  currentDay:               23,
-  daysInMonth:              31,
-  projMonth:                "August",
-  velocityFactor:           "1.35x",
+  currentDay:               5,
+  daysInMonth:              30,
+  projMonth:                "September",
+  velocityFactor:           "6.00x",
   totalTarget:              "23,232",
-  totalSales:               "12,848",
-  standardProjection:       "74.54%",
-  forecastedProjection:     "74.59%",
-  corporateBags:            "9",
+  totalSales:               "3,346",
+  standardProjection:       "86.42%",
+  forecastedProjection:     "86.44%",
+  corporateBags:            "1",
   bareMinimum:              "5,808",
   bareMinimumGrowthPct:     "25.00%",
-  declinedBy:               "-5,534",
-  weeklySalesTotal:         "274",
-  weeklyHistory:            [{"weekStart": "2026-08-01", "label": "Wk 1", "month": "Aug", "salesPct": 3.57, "salesBags": 830, "prevSalesPct": 0.0, "prevSalesBags": 0, "weeklySales": 830, "declinedBy": -4978}, {"weekStart": "2026-08-02", "label": "Wk 2", "month": "Aug", "salesPct": 20.73, "salesBags": 4816, "prevSalesPct": 3.57, "prevSalesBags": 830, "weeklySales": 3986, "declinedBy": -1822}, {"weekStart": "2026-08-09", "label": "Wk 3", "month": "Aug", "salesPct": 37.22, "salesBags": 8647, "prevSalesPct": 20.73, "prevSalesBags": 4816, "weeklySales": 3831, "declinedBy": -1977}, {"weekStart": "2026-08-16", "label": "Wk 4", "month": "Aug", "salesPct": 54.12, "salesBags": 12574, "prevSalesPct": 37.22, "prevSalesBags": 8647, "weeklySales": 3927, "declinedBy": -1881}, {"weekStart": "2026-08-23", "label": "Wk 5", "month": "Aug", "salesPct": 55.31, "salesBags": 12850, "prevSalesPct": 54.12, "prevSalesBags": 12574, "weeklySales": 276, "declinedBy": -5532}]
+  declinedBy:               "-5,694",
+  weeklySalesTotal:         "114",
+  weeklyHistory:            [{"weekStart": "2026-09-01", "label": "Wk 1", "month": "Sep", "salesPct": 13.91, "salesBags": 3232, "prevSalesPct": 0.0, "prevSalesBags": 0, "weeklySales": 3232, "declinedBy": -2576}, {"weekStart": "2026-09-06", "label": "Wk 2", "month": "Sep", "salesPct": 14.4, "salesBags": 3346, "prevSalesPct": 13.91, "prevSalesBags": 3232, "weeklySales": 114, "declinedBy": -5694}]
 };
 </script>
 <!-- PROJ_DATA_END -->
@@ -502,15 +506,23 @@ const PROJ = {
   var _lmDays = Number(PERF.prevMonthDays) || 0;                                      // days last month gave the week
   var _thisMon = new Date().toLocaleDateString('en-US', { month: 'short' });          // "Aug" in the viewer's clock
   var _salesTotal = parseInt(String(PERF.sales).replace(/[^0-9]/g, '')) || 0;
-  // WEEKLY_SALES sometimes holds the whole month (e.g. stale data before the new
-  // week's numbers are entered). When the "weekly" figure is >= the month total it
-  // isn't a real single week, so weekly comparisons would be misleading — guard them.
-  var _weeklyIsWholeMonth = _salesTotal > 0 && _wk >= _salesTotal;
+  var _carry = parseInt(String(PERF.weeklyCarryover).replace(/[^0-9]/g, '')) || 0;   // last month's part of this week
+  var _thisWkSlice = Math.max(_wk - _carry, 0);                                        // this month's part of this week
+  // This Sun–Sat week CROSSES the month boundary when part of it belongs to last
+  // month (e.g. Aug 30–31 sitting inside the Aug 30 → Sep 5 week). The weekly total
+  // then legitimately exceeds the tiny new-month total — that's a real straddle, not
+  // stale data. Only treat it as "whole month" when there's no such split.
+  var _weeklyStraddle   = _carry > 0 && _carry < _wk;
+  var _weeklyIsWholeMonth = !_weeklyStraddle && _salesTotal > 0 && _wk >= _salesTotal;
 
-  // Weekly Sales card: surface how the first day(s) of the new month performed and
-  // what a full week at that pace would look like — the month's potential in one glance.
-  if (_weeklyIsWholeMonth) {
-    setText('weekly-carryover-sub', 'Matches the month total — the weekly sheet hasn\'t reset to the new week yet.');
+  // Weekly Sales card: show how this week splits across the month change.
+  if (_weeklyStraddle) {
+    setText('weekly-carryover-sub',
+      _thisWkSlice.toLocaleString() + ' from ' + _thisMon + ' so far · ' +
+      _carry.toLocaleString() + ' from ' + PERF.carryoverMonth +
+      ' — this week crosses the month change.');
+  } else if (_weeklyIsWholeMonth) {
+    setText('weekly-carryover-sub', 'Matches the month total — the new week has no data of its own yet.');
   } else if (PERF.weeklyCarryover) {
     var _pctOfWeek = _wk ? (_tmw / _wk * 100) : 0;
     var _sub = PERF.weeklyThisMonth + ' this month (' + _pctOfWeek.toFixed(1) + '% of ' + PERF.weeklySalesTotal + ') · ' +
@@ -526,7 +538,12 @@ const PROJ = {
 
   // Weekly vs Last Month — compare PACE, not raw totals. One day of the new month
   // vs many days of last month's close is unfair as a total; per-day it reveals momentum.
-  if (_weeklyIsWholeMonth) {
+  if (_weeklyStraddle) {
+    setText('kpi-mom-weekly', '—');
+    setText('mom-weekly-sub', 'This week still spans ' + PERF.carryoverMonth +
+      ' — a clean weekly comparison returns once ' + _thisMon + ' has a full week of its own.');
+    document.getElementById('kpi-mom-weekly').style.color = '#94a3b8';
+  } else if (_weeklyIsWholeMonth) {
     setText('kpi-mom-weekly', '—');
     setText('mom-weekly-sub', 'Weekly total equals the month total — a fair weekly comparison isn\'t available until the new week has its own data.');
     document.getElementById('kpi-mom-weekly').style.color = '#94a3b8';
@@ -856,80 +873,55 @@ window.addEventListener('DOMContentLoaded', function() {
     var bagsSeries = weeks.map(function(w) { return Number(w.weeklySales) || 0; });
     // Running cumulative (for tooltip / total badge).
     var cumSeries = []; series.reduce(function(a, v, i) { return (cumSeries[i] = a + v); }, 0);
-    var minPct = parsePct(PROJ.bareMinimumGrowthPct) || 0;
-
     var cx = ctx.getContext('2d');
     var grad = cx.createLinearGradient(0, 0, 0, 210);
-    grad.addColorStop(0, 'rgba(245,158,11,0.38)'); grad.addColorStop(1, 'rgba(245,158,11,0.02)');
+    grad.addColorStop(0, 'rgba(245,158,11,0.32)'); grad.addColorStop(1, 'rgba(245,158,11,0.02)');
 
-    // Dashed reference lines: monthly target (100%) + bare-minimum threshold.
-    var refLines = { id: 'wpRefs', beforeDatasetsDraw: function(ch) {
-      var c = ch.ctx, ys = ch.scales.y, ca = ch.chartArea;
-      c.save();
-      [[100, '#34d399', 'Monthly target (100%)'], [minPct, '#64748b', 'Bare minimum ' + minPct.toFixed(0) + '%']].forEach(function(r) {
-        if (!r[0]) return; var y = ys.getPixelForValue(r[0]); if (y < ca.top || y > ca.bottom) return;
-        c.strokeStyle = r[1]; c.setLineDash([5, 4]); c.lineWidth = 1; c.globalAlpha = 0.75;
-        c.beginPath(); c.moveTo(ca.left, y); c.lineTo(ca.right, y); c.stroke();
-        c.setLineDash([]); c.globalAlpha = 1; c.fillStyle = r[1];
-        c.font = '600 0.62rem "Segoe UI", system-ui, sans-serif'; c.textAlign = 'left'; c.textBaseline = 'bottom';
-        c.fillText(r[2], ca.left + 4, y - 2);
-      });
-      c.restore();
-    } };
-    // Value label above each point.
+    // Previous month's per-week % of target — the dashed comparison line.
+    var prevW = (typeof PERF !== 'undefined' && PERF.cpPrevWeekly) ? PERF.cpPrevWeekly : [];
+    var hasPrev = prevW.length > 0;
+    var curLabel  = (typeof PERF !== 'undefined' && PERF.cpCurLabel)  ? PERF.cpCurLabel  : 'This month';
+    var prevLabel = (typeof PERF !== 'undefined' && PERF.cpPrevLabel) ? PERF.cpPrevLabel : 'Last month';
+    // X-axis spans the longer of the two months (last month usually has more weeks).
+    var labels = weeks.map(function(w){ return w.label; });
+    if (prevW.length > labels.length) labels = prevW.map(function(x){ return x.label; });
+
+    // Value label above each of THIS month's points.
     var ptLabels = { id: 'wpPts', afterDatasetsDraw: function(ch) {
       var c = ch.ctx, m = ch.getDatasetMeta(0);
       c.save(); c.font = '700 0.72rem "Segoe UI", system-ui, sans-serif'; c.fillStyle = '#fde68a';
       c.textAlign = 'center'; c.textBaseline = 'bottom'; c.shadowColor = 'rgba(0,0,0,0.6)'; c.shadowBlur = 3;
-      m.data.forEach(function(pt, i) { c.fillText(series[i].toFixed(1) + '%', pt.x, pt.y - 8); });
-      c.restore();
-    } };
-    // Week-on-week growth badge: change between the last two weeks' contributions.
-    var gainBadge = { id: 'wpGain', afterDraw: function(ch) {
-      if (series.length < 2) return;
-      var n = series.length;
-      var g = series[n - 1] - series[n - 2];          // e.g. 16.16 − 10.52 = +5.64 pts
-      var up = g >= 0, c = ch.ctx, ca = ch.chartArea;
-      var txt = 'Week-on-week growth: ' + (up ? '+' : '') + g.toFixed(2) + ' pts';
-      var sub = weeks[n - 2].label + ' → ' + weeks[n - 1].label;
-      c.save();
-      c.font = '700 0.74rem "Segoe UI", system-ui, sans-serif';
-      var w = Math.max(c.measureText(txt).width, c.measureText(sub).width) + 22, h = 40;
-      var x = ca.left + 6, y = ca.top + 4;
-      c.fillStyle = up ? 'rgba(16,185,129,0.14)' : 'rgba(239,68,68,0.14)';
-      c.strokeStyle = up ? '#34d399' : '#f87171'; c.lineWidth = 1;
-      c.beginPath();
-      if (c.roundRect) c.roundRect(x, y, w, h, 8); else c.rect(x, y, w, h);
-      c.fill(); c.stroke();
-      c.textAlign = 'left'; c.textBaseline = 'top';
-      c.fillStyle = up ? '#34d399' : '#f87171';
-      c.fillText((up ? '▲ ' : '▼ ') + txt, x + 11, y + 7);
-      c.fillStyle = '#94a3b8'; c.font = '600 0.62rem "Segoe UI", system-ui, sans-serif';
-      c.fillText(sub, x + 11, y + 24);
+      m.data.forEach(function(pt, i) { if (series[i] == null) return; c.fillText(series[i].toFixed(1) + '%', pt.x, pt.y - 8); });
       c.restore();
     } };
 
+    var dsets = [
+      { label: curLabel, data: series,
+        borderColor: C.amber, backgroundColor: grad, borderWidth: 3, fill: true, tension: 0.35,
+        pointRadius: 5, pointHoverRadius: 8, pointBackgroundColor: C.amber, pointBorderColor: '#0b0d16', pointBorderWidth: 2, order: 1 } ];
+    if (hasPrev) dsets.push(
+      { label: prevLabel, data: prevW.map(function(x){ return x.pct; }),
+        borderColor: 'rgba(148,163,184,0.9)', backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 4],
+        fill: false, tension: 0.35, pointRadius: 3, pointHoverRadius: 6, pointBackgroundColor: '#94a3b8', pointBorderColor: '#0b0d16', pointBorderWidth: 1, order: 2 });
+
     new Chart(ctx, {
       type: 'line',
-      data: { labels: weeks.map(function(w){ return w.label; }),
-        datasets: [{ label: 'Sales % Achieved', data: series,
-          borderColor: C.amber, backgroundColor: grad, borderWidth: 3, fill: true, tension: 0.35,
-          pointRadius: 5, pointHoverRadius: 8, pointBackgroundColor: C.amber, pointBorderColor: '#0b0d16', pointBorderWidth: 2 }] },
+      data: { labels: labels, datasets: dsets },
       options: {
         responsive: true, maintainAspectRatio: false,
         layout: { padding: { top: 22 } },
         plugins: {
-          legend: { display: false },
+          legend: { display: hasPrev, labels: { usePointStyle: true, boxWidth: 8, color: C.text } },
           tooltip: Object.assign({}, ttDefaults, {
             callbacks: {
               title: function(items) { return items[0].label; },
-              label: function(c) { return 'This week: ' + series[c.dataIndex].toFixed(2) + '% of monthly target'; },
+              label: function(c) { return c.dataset.label + ': ' + Number(c.parsed.y).toFixed(2) + '% of target'; },
               afterBody: function(items) {
+                if (!items.length || items[0].datasetIndex !== 0) return '';
                 var i = items[0].dataIndex;
-                var lines = ['Weekly sales: ' + Math.round(bagsSeries[i]).toLocaleString() + ' bags',
-                             'Cumulative to date: ' + (cumSeries[i] || 0).toFixed(1) + '% of target',
-                             'Remaining to target: ' + Math.max(100 - (cumSeries[i] || 0), 0).toFixed(1) + ' pts'];
-                if (i > 0) { var d = series[i] - series[i - 1]; lines.push((d >= 0 ? '▲ +' : '▼ ') + d.toFixed(1) + ' pts vs ' + weeks[i - 1].label + ' contribution'); }
+                var lines = ['Weekly sales: ' + Math.round(bagsSeries[i] || 0).toLocaleString() + ' bags',
+                             'Cumulative to date: ' + (cumSeries[i] || 0).toFixed(1) + '% of target'];
+                if (i > 0) { var d = series[i] - series[i - 1]; lines.push((d >= 0 ? '▲ +' : '▼ ') + d.toFixed(1) + ' pts vs ' + weeks[i - 1].label); }
                 return lines;
               }
             }
@@ -941,8 +933,17 @@ window.addEventListener('DOMContentLoaded', function() {
                ticks: { color: C.text, callback: function(v){ return Number(v).toFixed(0) + '%'; } } }
         }
       },
-      plugins: [refLines, ptLabels, gainBadge]
+      plugins: [ptLabels]
     });
+
+    // Footer stats — growth toward monthly sales + last month's achieved % (image-2 style).
+    var statsEl = document.getElementById('cp-weekly-stats');
+    if (statsEl && typeof PERF !== 'undefined') {
+      var gPct = PERF.weeklySalesPct || '', pPct = PERF.previousSalesPct || '', pBags = PERF.previousSalesBags || '';
+      statsEl.innerHTML =
+        '<span>Growth % towards achieved monthly sales: <b style="color:#fbbf24">' + gPct + '</b></span>'
+        + (pPct ? '<span>Previous sales % achieved: <b style="color:#fbbf24">' + pPct + (pBags ? ' (' + pBags + ' bags)' : '') + '</b></span>' : '');
+    }
   })();
 });
 </script>

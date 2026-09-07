@@ -74,27 +74,43 @@ def esc(s):   return str(s).replace("&", "&amp;").replace("<", "&lt;").replace("
 perf = read_block("current_performance.html", "<!-- PERF_DATA_START -->", "<!-- PERF_DATA_END -->")
 proj = read_block("current_performance.html", "<!-- PROJ_DATA_START -->", "<!-- PROJ_DATA_END -->")
 np_  = read_block("new_products.html", "<!-- NEW_PROD_DATA_START -->", "<!-- NEW_PROD_DATA_END -->")
-oa   = read_block("offer_type_analysis.html", "<!-- OFFER_DATA_START -->", "<!-- OFFER_DATA_END -->")
+oa   = read_block("self_made_combos.html", "<!-- OFFER_DATA_START -->", "<!-- OFFER_DATA_END -->")
 pa   = read_block("POSTING (SALES YIELDS FROM ACCURATE POSTING).html", "<!-- POST_DATA_START -->", "<!-- POST_DATA_END -->")
 
-# Report month + year (projMonth is the completed month during a rollover)
-month = gstr(proj, "projMonth") or datetime.date.today().strftime("%B")
-year  = datetime.date.today().year
+# Report month + year. The live report always shows the CURRENT month
+# (live_anchor), matching the live dashboards — on 1 Sep it is September (day 1),
+# not the closed August. A pin (DENRI_REPORT_MONTH, set by month_end.py) points
+# it at the exact month being archived instead.
+from lib import report_month
+_anchor = report_month.live_anchor()
+month = gstr(proj, "projMonth") or _anchor.strftime("%B")
+year  = _anchor.year
 
 # ── FINALIZED (FROZEN) MONTHS ─────────────────────────────────
 # A finalized month's report is STATIC — never regenerated. Its report HTML,
 # dated archive and history entry stay exactly as saved, so a later run (or a
 # change in the live dashboards) can't overwrite it. Once the reporting month
 # rolls forward, the next run generates that new month as a fresh report.
-# July 2026 is frozen with its final figures.
-FINALIZED_MONTHS = {"2026-07"}
+# July and August 2026 are frozen with their final figures.
+#
+# A DELIBERATE rebuild overrides the freeze: pin the month with
+# DENRI_REPORT_MONTH=YYYY-MM and the report regenerates for exactly that month.
+# That is the supported way to correct a frozen month (August 2026 was rebuilt
+# this way after the report-month anchor bug filled it with September's day-1
+# numbers) — an unpinned run can still never touch it.
+FINALIZED_MONTHS = {"2026-07", "2026-08"}
 import calendar as _cal_fin
 _fin_num = (list(_cal_fin.month_name).index(month)
-            if month in list(_cal_fin.month_name) else datetime.date.today().month)
-if f"{year}-{_fin_num:02d}" in FINALIZED_MONTHS:
+            if month in list(_cal_fin.month_name) else _anchor.month)
+_this_key = f"{year}-{_fin_num:02d}"
+if _this_key in FINALIZED_MONTHS and not report_month.is_pinned():
     print(f"Monthly report: {month} {year} is finalized (static) — left unchanged.")
-    print("  The next reporting month (e.g. August) will generate as a new report.")
+    print("  The next reporting month (e.g. September) will generate as a new report.")
+    print(f"  To rebuild it deliberately, set {report_month.ENV_VAR}={_this_key} and re-run.")
     raise SystemExit(0)
+if _this_key in FINALIZED_MONTHS:
+    print(f"Monthly report: REBUILDING finalized month {month} {year} "
+          f"({report_month.ENV_VAR} is set) — the frozen figures will be replaced.")
 
 # Previous month's weekly climb, for the History-style comparison overlay on the
 # Current Performance chart (this month solid, last month dashed).
@@ -149,6 +165,29 @@ except (ValueError, OSError):
     avg_weekly = 0
 weekly_short = max(bare_min - avg_weekly, 0)
 
+# ── In-progress vs completed month → tense/phrasing ───────────
+# When the report is the CURRENT calendar month and today isn't the last day, the
+# month is still running, so the report reads "so far" / "is going" instead of the
+# past-tense "closed" / "went" used for a completed (archived) month.
+_today_rpt = datetime.date.today()
+_in_progress = (year == _today_rpt.year and _fin_num == _today_rpt.month
+                and _today_rpt.day < _cal_fin.monthrange(year, _fin_num)[1])
+_headline_verb = "How the Month Is Going So Far" if _in_progress else "How the Month Went"
+if _in_progress:
+    _exec_lead = (f"{month} is at <b>{pct(achieved)} of target</b> so far — {fmt(total_sales)} of "
+                  f"{fmt(total_target)} bags, <b>{fmt(gap)} bags</b> still to go. The gap so far is not "
+                  f"weak demand; it is <b>stock we haven't marketed yet</b>.")
+    _cp_lead = (f"So far in {month} we're at <b>{pct(achieved)} of target ({fmt(total_sales)} bags)</b>, "
+                f"<b>{fmt(gap)} bags</b> still to go. Weekly output has averaged about <b>{fmt(avg_weekly)} bags</b> "
+                f"— under the <b>{fmt(bare_min)}-bag weekly floor</b> the target requires.")
+else:
+    _exec_lead = (f"{month} closed at <b>{pct(achieved)} of target</b> — {fmt(total_sales)} of "
+                  f"{fmt(total_target)} bags, missing by <b>{fmt(gap)} bags</b>. The gap is not weak demand; "
+                  f"it is <b>stock we never marketed</b>.")
+    _cp_lead = (f"We finished {month} at <b>{pct(achieved)} of target ({fmt(total_sales)} bags)</b>, "
+                f"<b>{fmt(gap)} bags short</b>. Weekly output averaged about <b>{fmt(avg_weekly)} bags</b> — "
+                f"under the <b>{fmt(bare_min)}-bag weekly floor</b> the target requires.")
+
 # New products
 np_count   = int(gnum(np_, "productCount"))
 np_target  = num(gstr(np_, "totalTarget"))
@@ -197,6 +236,30 @@ def _read_timed_offers():
 
 timed_offers = _read_timed_offers()
 
+# ── Self-Made Combos (CBR requests) vs running combos ─────────
+# Staff-created combos (Odoo pos_combo_request → the CBR/2026 refs) vs the
+# official running combos, for the REPORT month, Kenya tills. Queried directly
+# (like the master-bags KPI) via self_made_combos.build_payload so it is correct
+# whether the report is live or pinned to a past month, and stays in sync with
+# the Self-Made Combos page.
+def _self_made_combos():
+    try:
+        from lib import db as _sdb
+        from self_made_combos import build_payload as _smc_build
+    except Exception:                                            # noqa: BLE001
+        return None
+    try:
+        _s = datetime.date(year, _fin_num, 1)
+        _e = datetime.date(year, _fin_num, _cal_fin.monthrange(year, _fin_num)[1])
+        ok, _ = _sdb.check_connection()
+        if not ok:
+            return None
+        return _smc_build(_s, _e)
+    except Exception:                                            # noqa: BLE001 — section is optional
+        return None
+
+self_made = _self_made_combos()
+
 # Offer type analysis
 combos    = int(gnum(oa, "comboCount"))
 deals     = int(gnum(oa, "powerDealCount"))
@@ -216,12 +279,31 @@ def _garr_line(block, key):
         return []
 
 def _parse_offers(headers, rows):
+    """Parse an offer table (Kenya combos/deals, Sinza, Uganda) → [{name, units, price}].
+
+    Robust to the offer sheet's shifting column order (the reason August's units
+    came out as prices). The units-moved figure is the sum of the weekly 'Wk N'
+    columns (bags moved), never a price column:
+      • price  = a header containing 'price' (the non-TSH one first);
+      • units  = Σ of the 'Wk N' / week columns; falling back to a
+                 'total'/'units'/'moved'/'sold' column, then to the last
+                 non-name, non-price column — but a price column is NEVER read
+                 as units."""
     headers = headers or []
     low = [str(h).lower().strip() for h in headers]
     iprice = next((i for i, h in enumerate(low) if "price" in h and "tsh" not in h), -1)
     if iprice < 0:
         iprice = next((i for i, h in enumerate(low) if "price" in h), -1)
-    itotal = next((i for i, h in enumerate(low) if h == "total"), len(low) - 1)
+    price_cols = {i for i, h in enumerate(low) if "price" in h}          # every price column (incl. TSH)
+    wk_cols    = [i for i, h in enumerate(low) if i != 0 and i not in price_cols and ("wk" in h or "week" in h)]
+    tot_cols   = [i for i, h in enumerate(low) if i != 0 and i not in price_cols
+                  and any(k in h for k in ("total", "unit", "moved", "sold"))]
+    other_cols = [i for i in range(len(low)) if i != 0 and i not in price_cols]
+
+    def _units(r):
+        cols = wk_cols or tot_cols[:1] or other_cols[-1:]
+        return sum(num(r[i]) for i in cols if 0 <= i < len(r))
+
     out = []
     for r in (rows or []):
         if not r:
@@ -230,8 +312,7 @@ def _parse_offers(headers, rows):
         if not name or "total" in name.lower():
             continue
         price = num(r[iprice]) if 0 <= iprice < len(r) else 0
-        units = num(r[itotal]) if 0 <= itotal < len(r) else 0
-        out.append({"name": name, "units": units, "price": price})
+        out.append({"name": name, "units": _units(r), "price": price})
     return out
 
 def _agg_offers(offers):
@@ -290,6 +371,11 @@ w_total         = gnum(perf, "weeklySalesTotal")
 carryover_month = gstr(perf, "carryoverMonth") or p_label
 pct_of_week     = (w_this / w_total * 100) if w_total else 0
 next_short      = next_month[:3]
+# The momentum card compares THIS month's pace vs last month's. For a live,
+# in-progress month that's "Momentum in September (so far)" labelled "Sep:", not
+# "into October"/"Oct:" — that framing only fits an already-completed month.
+_mom_title = (f"{month} momentum so far" if _in_progress else f"Momentum into {next_month}")
+_mom_short = (month[:3] if _in_progress else next_short)
 growth_pct_txt  = gstr(perf, "weeklySalesPct")    or ""   # e.g. "19.73%"
 prev_pct_txt    = gstr(perf, "previousSalesPct")  or ""   # e.g. "52.07%"
 prev_bags_txt   = gstr(perf, "previousSalesBags") or ""   # e.g. "4,584"
@@ -456,7 +542,7 @@ else:
 if show_outlook:
     _pl = "" if int(w_days) == 1 else "s"
     outlook_block = (
-        f'<div class="row"><div class="tag" style="color:#38bdf8">Momentum into {esc(next_month)}</div>'
+        f'<div class="row"><div class="tag" style="color:#38bdf8">{esc(_mom_title)}</div>'
         '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0.9rem">'
         # Weekly Sales card
         '<div style="position:relative;background:#171a27;border:1px solid #2d3148;border-radius:14px;padding:1.1rem 1.2rem;overflow:hidden">'
@@ -471,8 +557,8 @@ if show_outlook:
         '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#8b5cf6,#22d3ee)"></div>'
         '<div style="font-size:0.64rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#64748b">Weekly vs Last Month</div>'
         f'<div style="font-size:2.1rem;font-weight:800;color:#34d399;line-height:1.15;margin:0.2rem 0 0.35rem">{pace_ratio:.2f}&times;</div>'
-        f'<div style="font-size:0.8rem;color:#93c5fd;line-height:1.5">{esc(next_short)}: {fmt(w_this)} in {int(w_days)} day{_pl} ({fmt(next_per_day)}/day) vs {esc(p_label)}: {fmt(p_weekly)} in {int(p_days)} days ({fmt(prev_per_day)}/day)</div>'
-        '<div style="font-size:0.72rem;color:#64748b;margin-top:0.5rem">This month&rsquo;s per-day pace vs last month&rsquo;s final-week pace. Above 1&times; means the new month is outrunning how last month closed.</div>'
+        f'<div style="font-size:0.8rem;color:#93c5fd;line-height:1.5">{esc(_mom_short)}: {fmt(w_this)} in {int(w_days)} day{_pl} ({fmt(next_per_day)}/day) vs {esc(p_label)}: {fmt(p_weekly)} in {int(p_days)} days ({fmt(prev_per_day)}/day)</div>'
+        '<div style="font-size:0.72rem;color:#64748b;margin-top:0.5rem">This month&rsquo;s per-day pace vs last month&rsquo;s final-week pace. Above 1&times; means this month is outrunning how last month closed.</div>'
         '</div>'
         '</div></div>'
     )
@@ -555,6 +641,93 @@ if timed_offers:
             for b in _bags)
         _insight = (f'<b>{" and ".join(_zeros)}</b> sold with <b>0 recorded posts</b> — moving without marketing. '
                     if _zeros else '')
+
+        # ── "Why these bags" table (price from Odoo incl-tax · discount · lift · stock) ──
+        _wb = _why.get("bags", [])
+        _th = ('style="text-align:{a};padding:0.45rem 0.7rem;font-size:0.66rem;'
+               'text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148"')
+        def _cell(txt, extra=""):
+            return f'<td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;{extra}">{txt}</td>'
+        _why_table = ""
+        if _wb:
+            _wh = ("<tr>"
+                   + f'<th {_th.format(a="left")}>Bag</th>'
+                   + f'<th {_th.format(a="right")}>Sold</th>'
+                   + f'<th {_th.format(a="right")}>In stock</th>'
+                   + f'<th {_th.format(a="right")}>Price was</th>'
+                   + f'<th {_th.format(a="right")}>Price now</th>'
+                   + f'<th {_th.format(a="right")}>Discount</th>'
+                   + f'<th {_th.format(a="right")}>Sales lift</th>'
+                   + f'<th {_th.format(a="left")}>Category</th></tr>')
+            _wbody = ""
+            for b in _wb:
+                _dk = num(b.get("discountKes"))
+                _disc = (f'<span style="color:#34d399;font-weight:700">&minus;{fmt(_dk)}</span> '
+                         f'<span style="color:#94a3b8;font-size:0.72rem">({b.get("discountPct")}%)</span>'
+                         if _dk else '<span style="color:#64748b">&mdash;</span>')
+                _bl = b.get("bagLift")
+                _lift = ('<span style="color:#64748b">&mdash;</span>' if _bl is None
+                         else f'<span style="color:{"#34d399" if _bl >= 0 else "#f87171"};font-weight:700">'
+                              f'{"+" if _bl >= 0 else ""}{_bl}%</span>')
+                _was = f'KES {fmt(num(b.get("priceWas")))}' if b.get("priceWas") is not None else '&mdash;'
+                _now = f'KES {fmt(num(b.get("priceNow")))}' if b.get("priceNow") is not None else '&mdash;'
+                _wbody += ("<tr>"
+                    + _cell(esc(b.get("name", "")), "color:#f1f5f9;font-weight:600")
+                    + _cell(fmt(num(b.get("sold"))), "text-align:right;color:#e2e8f0")
+                    + _cell(fmt(num(b.get("stock"))), "text-align:right;color:#94a3b8")
+                    + _cell(_was, "text-align:right;color:#94a3b8")
+                    + _cell(_now, "text-align:right;color:#34d399")
+                    + _cell(_disc, "text-align:right")
+                    + _cell(_lift, "text-align:right")
+                    + _cell(esc(b.get("category", "")), "color:#94a3b8") + "</tr>")
+            _why_table = (
+                '<div class="chart-cap" style="margin-top:1rem">Why these bags — price (Odoo, incl-tax), discount &amp; each bag\'s own sales lift</div>'
+                '<table style="width:100%;border-collapse:collapse;font-size:0.82rem;margin-top:0.4rem">'
+                '<thead>' + _wh + '</thead><tbody>' + _wbody + '</tbody></table>')
+
+        # ── "Price week by week" matrix (realised avg vs list/offer) ──
+        _pw = _why.get("priceWeeks") or {}
+        _pw_wks = _pw.get("weeks", [])
+        _pw_table = ""
+        if _pw.get("bags") and _pw_wks:
+            _offbg = "background:rgba(16,185,129,0.10);"
+            _pth = 'text-align:right;padding:0.4rem 0.6rem;font-size:0.64rem;text-transform:uppercase;color:#64748b;border-bottom:1px solid #2d3148'
+            _ph = ('<tr><th style="text-align:left;padding:0.4rem 0.6rem;font-size:0.64rem;text-transform:uppercase;'
+                   'color:#64748b;border-bottom:1px solid #2d3148">Bag</th>')
+            for _w in _pw_wks:
+                _st = _pth + (";" + _offbg + "color:#34d399" if _w.get("off") else "")
+                _ph += f'<th style="{_st}" title="{esc(_w.get("start",""))} &rarr; {esc(_w.get("end",""))}">{esc(_w.get("label",""))}{" &middot;offer" if _w.get("off") else ""}</th>'
+            _ph += f'<th style="{_pth}">Was</th><th style="{_pth}">Now</th></tr>'
+            _pbody = ""
+            for b in _pw["bags"]:
+                _wv, _nv = num(b.get("was")), num(b.get("now"))
+                _prow = ('<td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">'
+                         + esc(b.get("name", "")) + '</td>')
+                for _i2, _c in enumerate(b.get("cells", [])):
+                    _off = _pw_wks[_i2].get("off") if _i2 < len(_pw_wks) else False
+                    _bg = _offbg if _off else ""
+                    _avg = _c.get("avg")
+                    if _avg is None:
+                        _prow += f'<td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#475569;{_bg}">&mdash;</td>'
+                    else:
+                        _col = "#94a3b8"
+                        if _nv and _avg <= _nv * 1.03:
+                            _col = "#34d399"
+                        elif _wv and _avg < _wv * 0.97:
+                            _col = "#fbbf24"
+                        _prow += (f'<td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;{_bg}">'
+                                  f'<span style="color:{_col};font-weight:700">{fmt(_avg)}</span> '
+                                  f'<span style="color:#64748b;font-size:0.68rem">({fmt(num(_c.get("qty")))})</span></td>')
+                _prow += f'<td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">{fmt(_wv) if _wv else "&mdash;"}</td>'
+                _prow += f'<td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">{fmt(_nv) if _nv else "&mdash;"}</td>'
+                _pbody += "<tr>" + _prow + "</tr>"
+            _pw_table = (
+                '<div class="chart-cap" style="margin-top:1.1rem">Price week by week &mdash; realised avg price per bag '
+                '(incl-tax; units in parens). <span style="color:#34d399">green</span> = at/below offer, '
+                '<span style="color:#94a3b8">grey</span> &asymp; full, <span style="color:#fbbf24">amber</span> = part-way. Offer week highlighted.</div>'
+                '<table style="width:100%;border-collapse:collapse;font-size:0.8rem;margin-top:0.4rem">'
+                '<thead>' + _ph + '</thead><tbody>' + _pbody + '</tbody></table>')
+
         _to_parts.append(f"""
     <div style="font-size:1.05rem;font-weight:700;color:#fbbf24;margin:0.2rem 0 0.15rem">{_name}</div>
     <div class="chart-cap">{_win} · {_mkt} · sales from Odoo (exact window) · posting = last week (Kenya)</div>
@@ -578,6 +751,8 @@ if timed_offers:
       </tr></thead>
       <tbody>{_rows}</tbody>
     </table>
+    {_why_table}
+    {_pw_table}
     <div style="margin-top:0.9rem"></div>
     {_why_rows}
     {_verdict_box}""")
@@ -588,18 +763,84 @@ if timed_offers:
         '\n  </div>'
     )
 
+# ── Self-Made Combos section (staff CBR combos vs running combos) ──
+self_made_section = ""
+if self_made and (self_made.get("smTotals", {}).get("count") or self_made.get("reqTotal")):
+    _sm = self_made["smTotals"]; _run = self_made["runTotals"]
+    _rc = self_made.get("reqCounts", {})
+    _tot_units = _sm["units"] + _run["units"]
+    _sm_share = (_sm["units"] / _tot_units * 100) if _tot_units else 0
+    _sm_avg = (_sm["value"] / _sm["units"]) if _sm["units"] else 0
+    _run_avg = (_run["value"] / _run["units"]) if _run["units"] else 0
+    _reqs = self_made.get("requests", [])
+    _rej = [r for r in _reqs if r["state"] in ("rejected", "reject")]
+
+    # KPI chips
+    _smc_kpis = (
+        '<div style="display:flex;gap:1.6rem;flex-wrap:wrap;margin:0 0 1rem;font-size:0.9rem;color:#cbd5e1">'
+        f'<span><b style="color:#fbbf24;font-size:1.15rem">{fmt(_sm["units"])}</b> self-made units ({fmt(_sm["count"])} combos)</span>'
+        f'<span><b style="color:#22d3ee;font-size:1.15rem">{fmt(_run["units"])}</b> running units ({fmt(_run["count"])} combos)</span>'
+        f'<span><b style="color:#a78bfa;font-size:1.15rem">{_sm_share:.0f}%</b> self-made share</span>'
+        f'<span><b style="color:#e2e8f0;font-size:1.15rem">{fmt(self_made.get("reqTotal", 0))}</b> requests '
+        f'({fmt(_rc.get("approved",0))} approved · {fmt(_rc.get("rejected",0))} rejected'
+        + (f' · {fmt(_rc.get("pending",0))} pending' if _rc.get("pending") else '') + ')</span>'
+        '</div>'
+    )
+
+    # Self-made vs running summary table
+    def _smc_srow(lbl, colour, d, avg):
+        return (f'<tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:{colour};font-weight:700">{lbl}</td>'
+                f'<td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">{fmt(d["count"])}</td>'
+                f'<td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">{fmt(d["units"])}</td>'
+                f'<td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">{fmt(d["value"])}</td>'
+                f'<td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">{fmt(avg)}</td>'
+                f'<td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">{d.get("avgColours", 0):g}</td></tr>')
+    _th_smc = ('style="text-align:{a};padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;'
+               'letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148"')
+    _smc_summary = (
+        '<div class="chart-cap">Self-made vs running — combos, units, revenue, avg price &amp; colour range</div>'
+        '<table style="width:100%;border-collapse:collapse;font-size:0.84rem;margin-bottom:0.4rem">'
+        '<thead><tr>'
+        f'<th {_th_smc.format(a="left")}>Type</th>'
+        f'<th {_th_smc.format(a="right")}>Combos</th>'
+        f'<th {_th_smc.format(a="right")}>Units</th>'
+        f'<th {_th_smc.format(a="right")}>Revenue (KES)</th>'
+        f'<th {_th_smc.format(a="right")}>Avg price</th>'
+        f'<th {_th_smc.format(a="right")}>Avg colours</th>'
+        '</tr></thead><tbody>'
+        + _smc_srow('Self-made (CBR)', '#fbbf24', _sm, _sm_avg)
+        + _smc_srow('Running (official)', '#22d3ee', _run, _run_avg)
+        + '</tbody></table>'
+    )
+
+    _cheaper = "self-made" if _sm_avg <= _run_avg else "running"
+    _rej_note = (f' {len(_rej)} request(s) were rejected'
+                 + (f' (e.g. {esc(_rej[0]["cbr"])} — {esc(_rej[0]["reject"])})' if _rej and _rej[0].get("reject") else '')
+                 + '.') if _rej else ''
+    self_made_section = f"""
+  <div class="sec">
+    <div class="sec-head"><div class="sec-num" style="background:#fbbf24">◆</div><h2>Self-Made Combos</h2></div>
+    <p style="font-size:0.86rem;color:#94a3b8;margin-bottom:0.9rem">Staff often build their own combos on the POS (a <b>Combo Request</b> &mdash; the CBR/2026 refs) instead of pushing the month&rsquo;s official running combos. Each self-made combo is matched to its real CBR request via <code style="color:#94a3b8">combo_product_id</code>. Kenya tills.</p>
+    {_smc_kpis}
+    {_smc_summary}
+    <div class="row" style="margin-top:1rem"><div class="tag bottom">The Bottom Line</div>
+      <p>Staff-made combos were <b>{fmt(_sm["count"])} combos moving {fmt(_sm["units"])} units</b> (KES {fmt(_sm["value"])}) — <b>{_sm_share:.0f}% of all combo volume</b> — vs <b>{fmt(_run["count"])} official running combos moving {fmt(_run["units"])} units</b> (KES {fmt(_run["value"])}). {fmt(self_made.get("reqTotal",0))} combo requests were logged this month.{_rej_note}</p></div>
+    <div class="row"><div class="tag insight">The Insight</div>
+      <p>Self-made combos average <b>KES {fmt(_sm_avg)}</b> vs running combos <b>KES {fmt(_run_avg)}</b>, so the <b>{_cheaper}</b> combos are the cheaper ticket. Every self-made combo needs an approved CBR, so the request table behind them is the audit trail — who requested what, from which shop, and whether it actually sold.</p>
+      <p style="margin-top:0.5rem">The split also shows up at the till: an <b>official running combo offers a wide colour range</b> for the attendant to pick from (avg <b>{_run.get("avgColours",0):g} colour options</b>), while a <b>self-made combo is locked to one specific pairing</b> (avg <b>{_sm.get("avgColours",0):g}</b>) — the same divide the CBR link draws, from the shop floor’s point of view.</p></div>
+  </div>"""
+
 body = f"""
   <div class="rpt-head">
     <span class="rpt-pill">Monthly Report</span>
-    <h1>{month} {year} — How the Month Went</h1>
-    <div class="dek">Current Performance · New Products · Offer Type Analysis · Posting Yields</div>
+    <h1>{month} {year} — {_headline_verb}</h1>
+    <div class="dek">Current Performance · New Products · Offer Type Analysis · Self-Made Combos · Posting Yields</div>
   </div>
 
   <div class="exec">
     <div class="lbl">The Bottom Line</div>
     <div class="headline">
-      {month} closed at <b>{pct(achieved)} of target</b> — {fmt(total_sales)} of {fmt(total_target)} bags,
-      missing by <b>{fmt(gap)} bags</b>. The gap is not weak demand; it is <b>stock we never marketed</b>.
+      {_exec_lead}
     </div>
     <ul>
       <li><b>{pct(unposted_pct)} of Kenya stock ({fmt(notposted)} bags) was never posted</b> — yet posted bags sold at {pct(ke_mo_mkt)} of expectation. Marketing is the lever, and much of it went unused.</li>
@@ -625,7 +866,7 @@ body = f"""
       <span>Previous sales % achieved: <b style="color:#fbbf24">{prev_pct_txt} ({prev_bags_txt} bags)</b></span>
     </div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
-      <p>We finished {month} at <b>{pct(achieved)} of target ({fmt(total_sales)} bags)</b>, <b>{fmt(gap)} bags short</b>. Weekly output averaged about <b>{fmt(avg_weekly)} bags</b> — under the <b>{fmt(bare_min)}-bag weekly floor</b> the target requires.</p></div>
+      <p>{_cp_lead}</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
       <p>Weekly output ran <b>below the bare minimum</b> needed to reach target most weeks. The shortfall is one of <b>throughput and consistency</b>, not demand — corporate orders ({fmt(corporate)} bags) only nudged the forecast to {forecast}.</p></div>
     <div class="row"><div class="tag rec">Recommendation</div>
@@ -699,7 +940,7 @@ body = f"""
       <div class="impact"><p>Clearing just <b>20% of the {fmt(ke_stock)}-bag Kenya position (~{fmt(offer_clear)} bags)</b> in the month is ~{pct(offer_clear_pct)} of target — and frees working capital tied up in slow stock.</p></div>
       <div class="assump">Assumes a 20% draw-down of the reported Kenya offer stock; excludes Sinza/Uganda upside.</div></div>
   </div>
-
+{self_made_section}
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#34d399">4</div><h2>Posting Yields (Sales from Accurate Posting)</h2></div>
     <div class="chart-cap">Posting sales-achieved % by region &amp; posted vs unposted stock</div>
@@ -1149,10 +1390,61 @@ out = os.path.join(BASE, "monthly_report.html")
 with open(out, "w", encoding="utf-8") as f:
     f.write(_full)
 
-# Keep a dated archive so past months are never overwritten.
-archive = os.path.join(BASE, f"report_{year}_{month.lower()}.html")
-with open(archive, "w", encoding="utf-8") as f:
-    f.write(_full)
+# The live monthly_report.html always shows only the latest month. Past months
+# are preserved in the History page (backed by Supabase) — including the comments
+# collected below — so no dated per-month HTML archive is written any more.
+
+# ── COLLECT THE REPORT'S COMMENTS (for Supabase / History) ────
+# Pull the narrative blocks straight out of the rendered report, so History can
+# show the same Bottom Line / Insight / Recommendation prose per month without a
+# second copy of the text drifting out of sync.
+def _html_text(s):
+    s = re.sub(r"<[^>]+>", "", s)
+    for _a, _b in (("&amp;", "&"), ("&mdash;", "—"), ("&minus;", "−"), ("&middot;", "·"),
+                   ("&rarr;", "→"), ("&asymp;", "≈"), ("&nbsp;", " "), ("&lt;", "<"),
+                   ("&gt;", ">"), ("&times;", "×")):
+        s = s.replace(_a, _b)
+    return re.sub(r"\s+", " ", s).strip()
+
+def _collect_comments(html):
+    items = []
+    m = re.search(r'<div class="headline">(.*?)</div>', html, re.S)
+    if m:
+        items.append({"section": "Executive Summary", "label": "The Bottom Line",
+                      "type": "bottom", "text": _html_text(m.group(1))})
+    for li in re.findall(r'<div class="exec">.*?<ul>(.*?)</ul>', html, re.S)[:1]:
+        for one in re.findall(r'<li>(.*?)</li>', li, re.S):
+            items.append({"section": "Executive Summary", "label": "Key point",
+                          "type": "bullet", "text": _html_text(one)})
+    heads = [(mm.start(), _html_text(mm.group(1)))
+             for mm in re.finditer(r'<div class="sec-head">.*?<h2>(.*?)</h2>', html, re.S)]
+    def _section_for(pos):
+        name = "Report"
+        for hpos, hname in heads:
+            if hpos <= pos:
+                name = hname
+            else:
+                break
+        return name
+    # Bottom Line / Insight / Business Impact — each carries a <p>
+    for mm in re.finditer(
+            r'<div class="tag (bottom|insight|impact)">(.*?)</div>'
+            r'(?:\s*<div class="impact">)?\s*<p>(.*?)</p>', html, re.S):
+        text = _html_text(mm.group(3))
+        if text:
+            items.append({"section": _section_for(mm.start()),
+                          "label": _html_text(mm.group(2)), "type": mm.group(1), "text": text})
+    # Recommendations (Start/Stop/Test list items — no <p>)
+    for mm in re.finditer(r'<div class="tag rec">(.*?)</div>\s*<div class="recs">(.*?)</div>\s*</div>', html, re.S):
+        label = _html_text(mm.group(1))
+        for span in re.findall(r'<span[^>]*>(.*?)</span>', mm.group(2), re.S):
+            t = _html_text(span)
+            if t and t.lower() not in ("start", "stop", "start testing"):
+                items.append({"section": _section_for(mm.start()), "label": label, "type": "rec", "text": t})
+    return items
+
+_comments = _collect_comments(body)
+print(f"  Report comments : {len(_comments)} blocks captured")
 
 # ── HISTORICAL SNAPSHOT (JSON) ────────────────────────────────
 # Freeze this month's report figures, keyed by YYYY-MM, so past months (e.g.
@@ -1160,6 +1452,65 @@ with open(archive, "w", encoding="utf-8") as f:
 # next month. Accumulates all months in monthly_report_history.json.
 _month_num = list(_cal.month_name).index(month) if month in list(_cal.month_name) else datetime.date.today().month
 _key = f"{year}-{_month_num:02d}"
+
+
+def _timed_offer_snapshots():
+    """This month's timed-offer campaigns, flattened for storage.
+
+    The live TO payload carries each bag twice — the headline list (sold, posts,
+    sold/post) and the richer `why.bags` list (stock, prices, discount, the bag's
+    own lift). They are merged by name here so one stored row per bag holds the
+    whole picture. The daily series comes along too: it is what makes the lift
+    ("77.5/day before → 139.0/day during") readable in History instead of a bare
+    percentage."""
+    out = []
+    for c in timed_offers:
+        lift = c.get("lift") or {}
+        why = c.get("why") or {}
+        rich = {str(b.get("name", "")).strip().lower(): b for b in (why.get("bags") or [])}
+        bags = []
+        for b in (c.get("bags") or []):
+            r = rich.get(str(b.get("name", "")).strip().lower(), {})
+            bags.append({
+                "name":        b.get("name"),
+                "sold":        num(b.get("sold")),
+                "posts":       num(b.get("posts")),
+                "perPost":     b.get("perPost"),
+                "stock":       r.get("stock"),
+                "category":    r.get("category"),
+                "priceWas":    r.get("priceWas"),
+                "priceNow":    r.get("priceNow"),
+                "discountKes": r.get("discountKes"),
+                "discountPct": r.get("discountPct"),
+                "bagLift":     r.get("bagLift"),
+            })
+        out.append({
+            "name":        c.get("name"),
+            "market":      c.get("market"),
+            "startDate":   c.get("startDate"),
+            "endDate":     c.get("endDate"),
+            "windowLabel": c.get("windowLabel"),
+            "totalSold":   num(c.get("totalSold")),
+            "totalPosts":  num(c.get("totalPosts")),
+            "perPost":     c.get("perPost"),
+            "bestName":    c.get("bestName"),
+            "bestSold":    num(c.get("bestSold")),
+            "totalStock":  why.get("totalStock"),
+            "verdict":     why.get("verdict"),
+            "liftPct":     lift.get("liftPct"),
+            "baseStart":   lift.get("baseStart"),
+            "baseEnd":     lift.get("baseEnd"),
+            "baseDays":    lift.get("baseDays"),
+            "baseTotal":   lift.get("baseTotal"),
+            "basePerDay":  lift.get("basePerDay"),
+            "offerDays":   lift.get("offerDays"),
+            "offerTotal":  lift.get("offerTotal"),
+            "offerPerDay": lift.get("offerPerDay"),
+            "bags":        bags,
+            "daily":       lift.get("daily") or [],
+            "weekly":      lift.get("weekly") or [],
+        })
+    return out
 _snapshot = {
     "month": month, "year": year, "key": _key,
     "generatedOn": datetime.date.today().isoformat(),
@@ -1189,25 +1540,43 @@ _snapshot = {
         "notOnOffer": {"kenya": ke_notoffer_stock, "sinza": sz_notoffer_stock, "uganda": ug_notoffer_stock},
         "salesFromPosting": mo_sales_posting, "expectedFromPosting": mo_expect_posting,
     },
+    "timedOffers": _timed_offer_snapshots(),
+    "selfMadeCombos": ({
+        "smTotals": self_made["smTotals"], "runTotals": self_made["runTotals"],
+        "selfMade": self_made["selfMade"], "running": self_made["running"],
+        "requests": self_made["requests"], "reqCounts": self_made["reqCounts"],
+        "reqTotal": self_made["reqTotal"],
+    } if self_made else None),
+    "comments": _comments,
 }
 HISTORY_FILE = os.path.join(BASE, "monthly_report_history.json")
+# History (→ Supabase) is written ONLY when archiving a completed month — i.e.
+# when month_end.py PINS the month. A normal live run just rebuilds the current-
+# month report HTML and leaves the archive untouched, so History holds finished
+# months only; the current month lands there at month-end.
+_archived = report_month.is_pinned()
 _hist = {}
-if os.path.exists(HISTORY_FILE):
-    try:
-        with open(HISTORY_FILE, encoding="utf-8") as f:
-            _hist = json.load(f)
-    except (ValueError, OSError):
+if _archived:
+    if os.path.exists(HISTORY_FILE):
+        try:
+            with open(HISTORY_FILE, encoding="utf-8") as f:
+                _hist = json.load(f)
+        except (ValueError, OSError):
+            _hist = {}
+    if not isinstance(_hist, dict):
         _hist = {}
-if not isinstance(_hist, dict):
-    _hist = {}
-_hist[_key] = _snapshot
-with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-    json.dump(_hist, f, indent=2, ensure_ascii=False)
+    _hist[_key] = _snapshot
+    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+        json.dump(_hist, f, indent=2, ensure_ascii=False)
 
 print(f"monthly_report.html built for {month} {year}.")
 print(f"  Target achieved : {pct(achieved)}  ({fmt(total_sales)}/{fmt(total_target)})")
 print(f"  Missed by       : {fmt(gap)} bags")
 print(f"  Unposted stock  : {fmt(notposted)} ({pct(unposted_pct)})")
 print(f"  Weakest region  : {weak_name} ({pct(weak_val)})")
-print(f"  Archive         : report_{year}_{month.lower()}.html")
-print(f"  History JSON     : monthly_report_history.json [{_key}]  ({len(_hist)} month(s) stored)")
+print(f"  Timed offers    : {len(_snapshot['timedOffers'])} campaign(s) stored "
+      f"({sum(len(c['bags']) for c in _snapshot['timedOffers'])} bag rows)")
+if _archived:
+    print(f"  Archived [{_key}] to history.json  ({len(_hist)} month(s) stored) — will push to Supabase.")
+else:
+    print(f"  Live {month} report — history.json unchanged (a month is archived at month-end via month_end.py).")

@@ -1,6 +1,10 @@
 """
-offer_type_analysis.py
+offer_data.py
 ─────────────────────────────────────────────────────────────────
+Shared COMBOS-sheet reader (formerly offer_type_analysis.py). Builds the offer /
+combo dataset (Kenya + Sinza + Uganda) once and hands it to the Self-Made-Combos
+page and the Monthly Report — call build() for the (dict, OFFER_DATA-block) pair.
+
 Reads live from Google Sheets (three sheets) — KENYA focus:
 
   COMBOS         → B3:K12 = JUNE COMBOS
@@ -17,7 +21,7 @@ Reads live from Google Sheets (three sheets) — KENYA focus:
 ─────────────────────────────────────────────────────────────────
 """
 
-import re, webbrowser, os, pathlib, json
+import re, os, json
 
 # ── SPREADSHEET ───────────────────────────────────────────────
 
@@ -400,21 +404,7 @@ def fetch_offer_data():
             bag_targets)
 
 
-# ── RUN ───────────────────────────────────────────────────────
-
-print("Fetching Offer Type Analysis data...")
-(month_name, ug_title,
- june_combo_headers, june_combos,
- power_deal_headers, power_deals,
- offer_products, stock_data, total_kenya_stock,
- ug_combo_headers, ug_combos,
- ug_singles_headers, ug_singles,
- ug_stock_data, total_uganda_stock,
- sinza_combo_headers, sinza_combos,
- sinza_singles_headers, sinza_singles,
- sinza_special_headers, sinza_specials,
- sinza_stock_data, total_sinza_stock,
- bag_targets) = fetch_offer_data()
+# ── DERIVED HELPERS ───────────────────────────────────────────
 
 # ── Complete (perfect) weeks REMAINING in the current month ───
 # A "perfect week" is a Sun–Sat week with >=5 of its days in the month;
@@ -436,94 +426,89 @@ def complete_weeks_remaining(ref=None):
         ws += timedelta(days=7)
     return max(n, 1)
 
-weeks_remaining = complete_weeks_remaining()
-
 def data_rows_count(rows):
     """Count product rows, excluding the appended TOTAL row."""
     return sum(1 for r in rows
                if not (r and str(r[0]).strip().upper().startswith("TOTAL")))
 
-combo_count      = data_rows_count(june_combos)
-power_deal_count = data_rows_count(power_deals)
-offer_count      = len(offer_products)      # no total row in this list
-stock_row_cnt    = len(stock_data)          # no total row in this list
 
-# Uganda counts
-ug_combo_count   = data_rows_count(ug_combos)
-ug_singles_count = data_rows_count(ug_singles)
-ug_stock_row_cnt = len(ug_stock_data)
-
-# Sinza counts
-sinza_combo_count    = data_rows_count(sinza_combos)
-sinza_singles_count  = data_rows_count(sinza_singles)
-sinza_specials_count = data_rows_count(sinza_specials)
-sinza_stock_row_cnt  = len(sinza_stock_data)
+_CACHE = None
 
 
-# ── INJECT INTO HTML ──────────────────────────────────────────
+def build():
+    """Fetch + shape the COMBOS-sheet dataset once (cached per process).
 
-inline_script = (
-    "<!-- OFFER_DATA_START -->\n"
-    "<script>\n"
-    "const OA = {\n"
-    f'  monthName:           {json.dumps(month_name)},\n'
-    f'  ugComboTitle:        {json.dumps(ug_title)},\n'
-    f'  comboCount:          {combo_count},\n'
-    f'  powerDealCount:      {power_deal_count},\n'
-    f'  offerCount:          {offer_count},\n'
-    f'  stockRowCount:       {stock_row_cnt},\n'
-    f'  totalKenyaStock:     "{fmt_int(total_kenya_stock)}",\n'
-    f'  juneComboHeaders:    {json.dumps(june_combo_headers,  ensure_ascii=False)},\n'
-    f'  juneCombos:          {json.dumps(june_combos,         ensure_ascii=False)},\n'
-    f'  powerDealHeaders:    {json.dumps(power_deal_headers,  ensure_ascii=False)},\n'
-    f'  powerDeals:          {json.dumps(power_deals,         ensure_ascii=False)},\n'
-    f'  bagTargets:          {json.dumps(bag_targets,         ensure_ascii=False)},\n'
-    f'  weeksRemaining:      {weeks_remaining},\n'
-    f'  offerProducts:       {json.dumps(offer_products,      ensure_ascii=False)},\n'
-    f'  stockData:           {json.dumps(stock_data,          ensure_ascii=False)},\n'
-    f'  ugComboHeaders:      {json.dumps(ug_combo_headers,    ensure_ascii=False)},\n'
-    f'  ugCombos:            {json.dumps(ug_combos,           ensure_ascii=False)},\n'
-    f'  ugSinglesHeaders:    {json.dumps(ug_singles_headers,  ensure_ascii=False)},\n'
-    f'  ugSingles:           {json.dumps(ug_singles,          ensure_ascii=False)},\n'
-    f'  ugComboCount:        {ug_combo_count},\n'
-    f'  ugSinglesCount:      {ug_singles_count},\n'
-    f'  ugStockRowCount:     {ug_stock_row_cnt},\n'
-    f'  totalUgandaStock:    "{fmt_int(total_uganda_stock)}",\n'
-    f'  ugStockData:         {json.dumps(ug_stock_data,       ensure_ascii=False)},\n'
-    f'  sinzaComboHeaders:   {json.dumps(sinza_combo_headers,   ensure_ascii=False)},\n'
-    f'  sinzaCombos:         {json.dumps(sinza_combos,          ensure_ascii=False)},\n'
-    f'  sinzaSinglesHeaders: {json.dumps(sinza_singles_headers, ensure_ascii=False)},\n'
-    f'  sinzaSingles:        {json.dumps(sinza_singles,         ensure_ascii=False)},\n'
-    f'  sinzaSpecialHeaders: {json.dumps(sinza_special_headers, ensure_ascii=False)},\n'
-    f'  sinzaSpecials:       {json.dumps(sinza_specials,        ensure_ascii=False)},\n'
-    f'  sinzaComboCount:     {sinza_combo_count},\n'
-    f'  sinzaSinglesCount:   {sinza_singles_count},\n'
-    f'  sinzaSpecialsCount:  {sinza_specials_count},\n'
-    f'  sinzaStockRowCount:  {sinza_stock_row_cnt},\n'
-    f'  totalSinzaStock:     "{fmt_int(total_sinza_stock)}",\n'
-    f'  sinzaStockData:      {json.dumps(sinza_stock_data,      ensure_ascii=False)}\n'
-    "};\n"
-    "</script>\n"
-    "<!-- OFFER_DATA_END -->"
-)
+    Returns (oa_dict, offer_data_block). `oa_dict` is consumed directly by
+    self_made_combos.py; `offer_data_block` is the
+    <!-- OFFER_DATA_START -->…<!-- OFFER_DATA_END --> markup that
+    self_made_combos.html embeds so the Monthly Report can read it there."""
+    global _CACHE
+    if _CACHE is not None:
+        return _CACHE
 
-BASE_DIR  = os.path.dirname(os.path.abspath(__file__))
-html_path = os.path.join(BASE_DIR, "offer_type_analysis.html")
+    (month_name, ug_title,
+     june_combo_headers, june_combos,
+     power_deal_headers, power_deals,
+     offer_products, stock_data, total_kenya_stock,
+     ug_combo_headers, ug_combos,
+     ug_singles_headers, ug_singles,
+     ug_stock_data, total_uganda_stock,
+     sinza_combo_headers, sinza_combos,
+     sinza_singles_headers, sinza_singles,
+     sinza_special_headers, sinza_specials,
+     sinza_stock_data, total_sinza_stock,
+     bag_targets) = fetch_offer_data()
 
-with open(html_path, "r", encoding="utf-8") as f:
-    html = f.read()
+    oa = {
+        "monthName":           month_name,
+        "ugComboTitle":        ug_title,
+        "comboCount":          data_rows_count(june_combos),
+        "powerDealCount":      data_rows_count(power_deals),
+        "offerCount":          len(offer_products),
+        "stockRowCount":       len(stock_data),
+        "totalKenyaStock":     fmt_int(total_kenya_stock),
+        "juneComboHeaders":    june_combo_headers,
+        "juneCombos":          june_combos,
+        "powerDealHeaders":    power_deal_headers,
+        "powerDeals":          power_deals,
+        "bagTargets":          bag_targets,
+        "weeksRemaining":      complete_weeks_remaining(),
+        "offerProducts":       offer_products,
+        "stockData":           stock_data,
+        "ugComboHeaders":      ug_combo_headers,
+        "ugCombos":            ug_combos,
+        "ugSinglesHeaders":    ug_singles_headers,
+        "ugSingles":           ug_singles,
+        "ugComboCount":        data_rows_count(ug_combos),
+        "ugSinglesCount":      data_rows_count(ug_singles),
+        "ugStockRowCount":     len(ug_stock_data),
+        "totalUgandaStock":    fmt_int(total_uganda_stock),
+        "ugStockData":         ug_stock_data,
+        "sinzaComboHeaders":   sinza_combo_headers,
+        "sinzaCombos":         sinza_combos,
+        "sinzaSinglesHeaders": sinza_singles_headers,
+        "sinzaSingles":        sinza_singles,
+        "sinzaSpecialHeaders": sinza_special_headers,
+        "sinzaSpecials":       sinza_specials,
+        "sinzaComboCount":     data_rows_count(sinza_combos),
+        "sinzaSinglesCount":   data_rows_count(sinza_singles),
+        "sinzaSpecialsCount":  data_rows_count(sinza_specials),
+        "sinzaStockRowCount":  len(sinza_stock_data),
+        "totalSinzaStock":     fmt_int(total_sinza_stock),
+        "sinzaStockData":      sinza_stock_data,
+    }
 
-html = re.sub(
-    r"<!-- OFFER_DATA_START -->.*?<!-- OFFER_DATA_END -->",
-    inline_script,
-    html,
-    flags=re.DOTALL
-)
+    # One field per line, arrays inline — the format the Monthly Report's
+    # line-based readers (gstr / gnum / garr) expect.
+    lines = "".join(f'  {k}: {json.dumps(v, ensure_ascii=False)},\n' for k, v in oa.items())
+    block = ("<!-- OFFER_DATA_START -->\n<script>\nconst OA = {\n"
+             + lines + "};\n</script>\n<!-- OFFER_DATA_END -->")
 
-with open(html_path, "w", encoding="utf-8") as f:
-    f.write(html)
+    _CACHE = (oa, block)
+    return _CACHE
 
-if not os.environ.get("DENRI_LAUNCHER"):
-    webbrowser.open_new_tab(pathlib.Path(html_path).as_uri())
 
-print("offer_type_analysis.html updated.")
+if __name__ == "__main__":
+    _oa, _block = build()
+    print(f"offer_data: {_oa['comboCount']} Kenya combos · "
+          f"{_oa['sinzaComboCount']} Sinza combos · {_oa['ugComboCount']} Uganda combos")

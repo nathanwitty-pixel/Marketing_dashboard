@@ -89,8 +89,11 @@ create table if not exists denri_mkt_monthly (
   notoffer_sinza        numeric,
   notoffer_uganda       numeric,
   sales_from_posting    numeric,
-  expected_from_posting numeric
+  expected_from_posting numeric,
+  comments              jsonb
 );
+-- Older databases created before comments existed: add it idempotently.
+alter table denri_mkt_monthly add column if not exists comments jsonb;
 
 create table if not exists denri_mkt_weekly (
   month_key      text references denri_mkt_monthly(month_key) on delete cascade,
@@ -126,6 +129,118 @@ create table if not exists denri_mkt_offers (
   value      numeric,
   stock      numeric
 );
+
+-- Timed offers: one row per campaign that ran in the month, plus its bags and
+-- its daily sales series (the pre-offer baseline and the offer window, which is
+-- what makes the lift readable rather than just a percentage).
+create table if not exists denri_mkt_timed_offers (
+  month_key     text references denri_mkt_monthly(month_key) on delete cascade,
+  seq           int,
+  name          text,
+  market        text,
+  start_date    date,
+  end_date      date,
+  window_label  text,
+  total_sold    numeric,
+  total_posts   numeric,
+  per_post      numeric,
+  best_name     text,
+  best_sold     numeric,
+  total_stock   numeric,
+  lift_pct      numeric,
+  base_start    date,
+  base_end      date,
+  base_days     numeric,
+  base_total    numeric,
+  base_per_day  numeric,
+  offer_days    numeric,
+  offer_total   numeric,
+  offer_per_day numeric,
+  verdict       text
+);
+
+create table if not exists denri_mkt_timed_offer_bags (
+  month_key    text references denri_mkt_monthly(month_key) on delete cascade,
+  offer_seq    int,
+  name         text,
+  category     text,
+  sold         numeric,
+  posts        numeric,
+  per_post     numeric,
+  stock        numeric,
+  price_was    numeric,
+  price_now    numeric,
+  discount_kes numeric,
+  discount_pct numeric,
+  bag_lift     numeric
+);
+
+create table if not exists denri_mkt_timed_offer_days (
+  month_key text references denri_mkt_monthly(month_key) on delete cascade,
+  offer_seq int,
+  day       date,
+  bags      numeric,
+  in_offer  boolean
+);
+
+create table if not exists denri_mkt_timed_offer_weeks (
+  month_key  text references denri_mkt_monthly(month_key) on delete cascade,
+  offer_seq  int,
+  seq        int,
+  label      text,
+  week_start date,
+  week_end   date,
+  total      numeric,
+  days       numeric,
+  per_day    numeric,
+  in_offer   boolean
+);
+
+-- Self-made combos (staff CBR requests) vs running combos — one summary row per
+-- month, the sold-combo lines, and the full combo-request log (CBR/2026 refs).
+create table if not exists denri_mkt_self_made_summary (
+  month_key       text references denri_mkt_monthly(month_key) on delete cascade,
+  sm_count        numeric,
+  sm_units        numeric,
+  sm_value        numeric,
+  run_count       numeric,
+  run_units       numeric,
+  run_value       numeric,
+  req_total       numeric,
+  req_approved    numeric,
+  req_rejected    numeric,
+  req_pending     numeric,
+  sm_avg_colours  numeric,
+  run_avg_colours numeric
+);
+-- Colour-range averages added after the table first shipped.
+alter table denri_mkt_self_made_summary add column if not exists sm_avg_colours  numeric;
+alter table denri_mkt_self_made_summary add column if not exists run_avg_colours numeric;
+
+create table if not exists denri_mkt_combo_sales (
+  month_key      text references denri_mkt_monthly(month_key) on delete cascade,
+  name           text,
+  self_made      boolean,
+  units          numeric,
+  value          numeric,
+  colour_options numeric
+);
+-- colour_options = how many colour picks the till offers for that combo.
+alter table denri_mkt_combo_sales add column if not exists colour_options numeric;
+
+create table if not exists denri_mkt_combo_requests (
+  month_key     text references denri_mkt_monthly(month_key) on delete cascade,
+  cbr           text,
+  combo         text,
+  shop          text,
+  requested_by  text,
+  state         text,
+  lloyd         boolean,
+  price         numeric,
+  requested_on  text,
+  sold_units    numeric,
+  reject_reason text
+);
 """
 
 # Column order for the monthly upsert.
@@ -138,7 +253,7 @@ MONTHLY_COLS = [
     "sinza_units", "sinza_value", "sinza_cleared", "uganda_units", "uganda_value",
     "uganda_cleared", "posting_kenya_pct", "posting_sinza_pct", "posting_uganda_pct",
     "posted_stock", "unposted_stock", "posts_made", "notoffer_kenya", "notoffer_sinza",
-    "notoffer_uganda", "sales_from_posting", "expected_from_posting",
+    "notoffer_uganda", "sales_from_posting", "expected_from_posting", "comments",
 ]
 
 
@@ -176,6 +291,8 @@ def month_block(key: str, s: dict) -> str:
         "notoffer_kenya": num(noff.get("kenya")), "notoffer_sinza": num(noff.get("sinza")),
         "notoffer_uganda": num(noff.get("uganda")), "sales_from_posting": num(py.get("salesFromPosting")),
         "expected_from_posting": num(py.get("expectedFromPosting")),
+        "comments": (q(json.dumps(s.get("comments"), ensure_ascii=False)) + "::jsonb")
+                    if s.get("comments") else "NULL",
     }
 
     out = [f"\n-- ══ {s.get('month')} {s.get('year')} ({key}) ══"]
@@ -191,6 +308,13 @@ def month_block(key: str, s: dict) -> str:
     out.append(f"delete from denri_mkt_weekly       where month_key = {q(key)};")
     out.append(f"delete from denri_mkt_new_products where month_key = {q(key)};")
     out.append(f"delete from denri_mkt_offers       where month_key = {q(key)};")
+    out.append(f"delete from denri_mkt_timed_offer_weeks where month_key = {q(key)};")
+    out.append(f"delete from denri_mkt_timed_offer_days  where month_key = {q(key)};")
+    out.append(f"delete from denri_mkt_timed_offer_bags  where month_key = {q(key)};")
+    out.append(f"delete from denri_mkt_timed_offers      where month_key = {q(key)};")
+    out.append(f"delete from denri_mkt_self_made_summary where month_key = {q(key)};")
+    out.append(f"delete from denri_mkt_combo_sales       where month_key = {q(key)};")
+    out.append(f"delete from denri_mkt_combo_requests    where month_key = {q(key)};")
 
     for i, w in enumerate(cp.get("weekly", []), start=1):
         out.append(
@@ -225,6 +349,83 @@ def month_block(key: str, s: dict) -> str:
             "insert into denri_mkt_offers (month_key, region, name, offer_type, units, value, stock) values ("
             f"{q(key)}, {q(region)}, {q(name)}, {q(otype)}, {num(units)}, {num(value)}, {num(stock)});"
         )
+
+    # Timed offers — campaign row, then its bags and its daily series, keyed by
+    # the campaign's position in the month so the three tables join up.
+    for i, c in enumerate(s.get("timedOffers", []), start=1):
+        out.append(
+            "insert into denri_mkt_timed_offers (month_key, seq, name, market, start_date, end_date, "
+            "window_label, total_sold, total_posts, per_post, best_name, best_sold, total_stock, "
+            "lift_pct, base_start, base_end, base_days, base_total, base_per_day, offer_days, "
+            "offer_total, offer_per_day, verdict) values ("
+            f"{q(key)}, {i}, {q(c.get('name'))}, {q(c.get('market'))}, {q(c.get('startDate'))}, "
+            f"{q(c.get('endDate'))}, {q(c.get('windowLabel'))}, {num(c.get('totalSold'))}, "
+            f"{num(c.get('totalPosts'))}, {num(c.get('perPost'))}, {q(c.get('bestName'))}, "
+            f"{num(c.get('bestSold'))}, {num(c.get('totalStock'))}, {num(c.get('liftPct'))}, "
+            f"{q(c.get('baseStart'))}, {q(c.get('baseEnd'))}, {num(c.get('baseDays'))}, "
+            f"{num(c.get('baseTotal'))}, {num(c.get('basePerDay'))}, {num(c.get('offerDays'))}, "
+            f"{num(c.get('offerTotal'))}, {num(c.get('offerPerDay'))}, {q(c.get('verdict'))});"
+        )
+        for b in c.get("bags", []):
+            out.append(
+                "insert into denri_mkt_timed_offer_bags (month_key, offer_seq, name, category, sold, "
+                "posts, per_post, stock, price_was, price_now, discount_kes, discount_pct, bag_lift) values ("
+                f"{q(key)}, {i}, {q(b.get('name'))}, {q(b.get('category'))}, {num(b.get('sold'))}, "
+                f"{num(b.get('posts'))}, {num(b.get('perPost'))}, {num(b.get('stock'))}, "
+                f"{num(b.get('priceWas'))}, {num(b.get('priceNow'))}, {num(b.get('discountKes'))}, "
+                f"{num(b.get('discountPct'))}, {num(b.get('bagLift'))});"
+            )
+        for day in c.get("daily", []):
+            out.append(
+                "insert into denri_mkt_timed_offer_days (month_key, offer_seq, day, bags, in_offer) values ("
+                f"{q(key)}, {i}, {q(day.get('date'))}, {num(day.get('bags'))}, "
+                f"{'true' if day.get('off') else 'false'});"
+            )
+        for j, wk in enumerate(c.get("weekly", []), start=1):
+            out.append(
+                "insert into denri_mkt_timed_offer_weeks (month_key, offer_seq, seq, label, "
+                "week_start, week_end, total, days, per_day, in_offer) values ("
+                f"{q(key)}, {i}, {j}, {q(wk.get('label'))}, {q(wk.get('start'))}, {q(wk.get('end'))}, "
+                f"{num(wk.get('total'))}, {num(wk.get('days'))}, {num(wk.get('perDay'))}, "
+                f"{'true' if wk.get('off') else 'false'});"
+            )
+
+    # Self-made combos — summary row, the sold-combo lines, and the CBR request log.
+    smc = s.get("selfMadeCombos")
+    if smc:
+        sm = smc.get("smTotals", {})
+        run = smc.get("runTotals", {})
+        rc = smc.get("reqCounts", {})
+        out.append(
+            "insert into denri_mkt_self_made_summary (month_key, sm_count, sm_units, sm_value, "
+            "run_count, run_units, run_value, req_total, req_approved, req_rejected, req_pending, "
+            "sm_avg_colours, run_avg_colours) values ("
+            f"{q(key)}, {num(sm.get('count'))}, {num(sm.get('units'))}, {num(sm.get('value'))}, "
+            f"{num(run.get('count'))}, {num(run.get('units'))}, {num(run.get('value'))}, "
+            f"{num(smc.get('reqTotal'))}, {num(rc.get('approved'))}, {num(rc.get('rejected'))}, "
+            f"{num(rc.get('pending'))}, {num(sm.get('avgColours'))}, {num(run.get('avgColours'))});"
+        )
+        for o in smc.get("selfMade", []):
+            out.append(
+                "insert into denri_mkt_combo_sales (month_key, name, self_made, units, value, colour_options) values ("
+                f"{q(key)}, {q(o.get('name'))}, true, {num(o.get('qty'))}, {num(o.get('value'))}, "
+                f"{num(o.get('colourOptions'))});"
+            )
+        for o in smc.get("running", []):
+            out.append(
+                "insert into denri_mkt_combo_sales (month_key, name, self_made, units, value, colour_options) values ("
+                f"{q(key)}, {q(o.get('name'))}, false, {num(o.get('qty'))}, {num(o.get('value'))}, "
+                f"{num(o.get('colourOptions'))});"
+            )
+        for r in smc.get("requests", []):
+            out.append(
+                "insert into denri_mkt_combo_requests (month_key, cbr, combo, shop, requested_by, "
+                "state, lloyd, price, requested_on, sold_units, reject_reason) values ("
+                f"{q(key)}, {q(r.get('cbr'))}, {q(r.get('combo'))}, {q(r.get('shop'))}, "
+                f"{q(r.get('by'))}, {q(r.get('state'))}, {'true' if r.get('lloyd') else 'false'}, "
+                f"{num(r.get('price'))}, {q(r.get('on'))}, {num(r.get('soldUnits'))}, "
+                f"{q(r.get('reject'))});"
+            )
     return "\n".join(out)
 
 

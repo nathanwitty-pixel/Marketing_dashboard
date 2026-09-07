@@ -23,7 +23,7 @@ Reads the live data already in the dashboard HTML files (no re-running scripts n
 |---|---|---|---|
 | Current Performance | `current_performance.html` | `PERF`, `PROJ` | `sales`, `salesPctAchieved`, `remainingTarget`, `weeklySalesTotal`, `wowSalesPct`, `bareMinimum`, `standardProjection` |
 | New Products | `new_products.html` | `NP` | `salesPct`, `totalSales`, `totalDeficit`, `monthlyKenya`, `monthlyOutside`, `monthlyCombined` |
-| Offer Type Analysis | `offer_type_analysis.html` | `OA` | `totalKenyaStock`, `totalUgandaStock`, `totalSinzaStock`, `comboCount`, `powerDealCount`, `offerCount` |
+| Offer / combo data | `self_made_combos.html` | `OA` | `totalKenyaStock`, `totalUgandaStock`, `totalSinzaStock`, `comboCount`, `powerDealCount`, `offerCount` |
 | Posting Yields | `POSTING (SALES YIELDS FROM ACCURATE POSTING).html` | `PA` | `wkMktPct`, `moMktPct`, `weeklySalesTotal`, `weeklyPostsMade`, `wkInstockPosted`, `wkInstockNotPosted` |
 
 ## How to Extract Data
@@ -33,7 +33,7 @@ Use Grep to find the injected data blocks:
 ```
 <!-- PERF_DATA_START -->   in current_performance.html
 <!-- NEW_PROD_DATA_START --> in new_products.html
-<!-- OFFER_DATA_START -->   in offer_type_analysis.html
+<!-- OFFER_DATA_START -->   in self_made_combos.html
 <!-- POST_DATA_START -->    in POSTING (SALES YIELDS FROM ACCURATE POSTING).html
 ```
 

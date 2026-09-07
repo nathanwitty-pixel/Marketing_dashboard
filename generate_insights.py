@@ -64,7 +64,7 @@ print("Generating insights from dashboard data...")
 perf = read_block("current_performance.html", "<!-- PERF_DATA_START -->", "<!-- PERF_DATA_END -->")
 proj = read_block("current_performance.html", "<!-- PROJ_DATA_START -->", "<!-- PROJ_DATA_END -->")
 np_  = read_block("new_products.html", "<!-- NEW_PROD_DATA_START -->", "<!-- NEW_PROD_DATA_END -->")
-oa   = read_block("offer_type_analysis.html", "<!-- OFFER_DATA_START -->", "<!-- OFFER_DATA_END -->")
+oa   = read_block("self_made_combos.html", "<!-- OFFER_DATA_START -->", "<!-- OFFER_DATA_END -->")
 pa   = read_block("POSTING (SALES YIELDS FROM ACCURATE POSTING).html", "<!-- POST_DATA_START -->", "<!-- POST_DATA_END -->")
 
 missing = [n for n, b in [("current_performance", perf), ("projections", proj),

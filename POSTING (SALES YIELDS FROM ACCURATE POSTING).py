@@ -24,14 +24,16 @@ Three analytical sections per region:
 
 import re, webbrowser, os, pathlib, json, datetime
 
+from lib import report_month   # which month these figures belong to
+
 SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 
 # ── WEEK COUNTER ─────────────────────────────────────────────
 
 def count_complete_weeks_in_month():
-    """Count Mon–Sun weeks in the current month that have ≥5 days falling within that month."""
-    today = datetime.date.today()
-    year, month = today.year, today.month
+    """Count Mon–Sun weeks in the reporting month that have ≥5 days falling within it."""
+    anchor = report_month.anchor()
+    year, month = anchor.year, anchor.month
     month_start = datetime.date(year, month, 1)
     if month == 12:
         month_end = datetime.date(year + 1, 1, 1) - datetime.timedelta(days=1)
@@ -158,7 +160,8 @@ def _real_mmp(row):
 
 def _analyze_region(ms_rows, mmp_rows, sl_rows,
                     sales_col, post_col, stock_col, spp, region,
-                    ms_check_col=None, mmp_check_col=None, sl_check_col=None):
+                    ms_check_col=None, mmp_check_col=None, sl_check_col=None,
+                    offer_bagtypes=None):
     """
     Runs all three posting sections for one region.
 
@@ -514,6 +517,122 @@ def _dead_stock_region(sales_rows, post_rows, sl_rows, offer_bagtypes,
         "bags":  bags[:40],
         "notPosted": [b for b in bags if b["status"] == "notposted"][:15],
     }
+
+
+def _alignment_region(sales_rows, post_rows, sl_rows, offer_bagtypes,
+                      sales_col, sales_name_col, post_col, stock_col):
+    """Marketing–Sales alignment (posted × sold) over ALL bags, one region/period.
+    Returns {total, on, off}; each has the posted&sold / posted&unsold / sold&not-posted
+    counts, units and rates. Columns match _dead_stock_region (period-correct)."""
+    offer = offer_bagtypes or set()
+    sales_map, post_map, stock_agg = {}, {}, {}
+    for row in sales_rows[1:]:
+        if len(row) <= sales_name_col:
+            continue
+        colour, name = str(row[0]).strip(), str(row[sales_name_col]).strip()
+        if not colour or not name or "total" in name.lower() or "total" in colour.lower():
+            continue
+        k = (colour.lower(), name.lower())
+        sales_map[k] = sales_map.get(k, 0) + (safe_int(row[sales_col]) if len(row) > sales_col else 0)
+    for row in post_rows[1:]:
+        if not _real_mmp(row):
+            continue
+        k = (str(row[0]).lower().strip(), str(row[2]).lower().strip())
+        post_map[k] = post_map.get(k, 0) + (safe_int(row[post_col]) if len(row) > post_col else 0)
+    for row in sl_rows[1:]:
+        if len(row) < 4:
+            continue
+        k = (str(row[0]).lower().strip(), str(row[2]).lower().strip())
+        if k not in stock_agg:
+            stock_agg[k] = {"bagType": str(row[3]).strip(), "stock": 0}
+        stock_agg[k]["stock"] += safe_int(row[stock_col]) if len(row) > stock_col else 0
+
+    posted_keys = {k for k, v in post_map.items() if v > 0}
+    # Universe = only bags with real presence in THIS region — sold, in stock, or
+    # posted. (STOCK_LEVELS lists the whole catalogue incl. products with 0 stock &
+    # 0 sales in this region; those aren't real inventory here, so they're excluded.)
+    sold_keys  = {k for k, v in sales_map.items() if (v or 0) > 0}
+    stock_keys = {k for k, v in stock_agg.items() if (v.get("stock", 0) or 0) > 0}
+    all_keys = sold_keys | stock_keys | posted_keys
+    def _sold(k):  return (sales_map.get(k, 0) or 0) > 0
+    def _units(k): return sales_map.get(k, 0) or 0
+    def _stk(k):   return stock_agg.get(k, {}).get("stock", 0) or 0
+    def _onoff(k): return str(stock_agg.get(k, {}).get("bagType", "")).strip().upper() in offer
+
+    def _for(keys):
+        a_sold   = [k for k in keys if k in posted_keys and _sold(k)]
+        a_dead   = [k for k in keys if k in posted_keys and not _sold(k)]
+        s_driven = [k for k in keys if k not in posted_keys and _sold(k)]
+        notp     = [k for k in keys if k not in posted_keys]
+        posted   = [k for k in keys if k in posted_keys]
+        return {
+            "postedSold":        len(a_sold),
+            "postedSoldUnits":   sum(_units(k) for k in a_sold),
+            "postedUnsold":      len(a_dead),
+            "postedUnsoldStock": sum(_stk(k) for k in a_dead),
+            "salesDriven":       len(s_driven),
+            "salesDrivenUnits":  sum(_units(k) for k in s_driven),
+            "notPosted":         len(notp),
+            "postedTotal":       len(posted),
+            # NOT POSTED × SOLD companion: of the bags marketing skipped, how many
+            # sold anyway (sales-driven) vs sat untouched (no post, no sale).
+            "notPostedUnsold":      len(notp) - len(s_driven),
+            "notPostedUnsoldStock": sum(_stk(k) for k in notp if not _sold(k)),
+            "notPostedUnsoldPct":   round((len(notp) - len(s_driven)) / len(notp) * 100, 1) if notp else 0.0,
+            "alignmentPct":      round(len(a_sold) / len(posted) * 100, 1) if posted else 0.0,
+            "deadEffortPct":     round(len(a_dead) / len(posted) * 100, 1) if posted else 0.0,
+            "salesDrivenPct":    round(len(s_driven) / len(notp) * 100, 1) if notp else 0.0,
+        }
+    on_k  = [k for k in all_keys if _onoff(k)]
+    off_k = [k for k in all_keys if not _onoff(k)]
+    return {"total": _for(all_keys), "on": _for(on_k), "off": _for(off_k)}
+
+
+def _offer_bagtypes_by_region(fallback=None):
+    """On-offer bag types per region, read from self_made_combos.html's SMC block:
+      Kenya  = running-combo component bags + power-deal + deal-of-week products.
+      Sinza  = Sinza combos + singles component bags.
+      Uganda = Uganda combos component bags.
+    Returns {'kenya','sinza','uganda'} → sets; falls back per region if unavailable."""
+    fb = fallback or set()
+    out = {"kenya": set(fb), "sinza": set(fb), "uganda": set(fb)}
+    try:
+        p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "self_made_combos.html")
+        txt = open(p, encoding="utf-8").read()
+        m = re.search(r"<!-- SMC_DATA_START -->\s*<script>\s*const SMC = (.*?);\s*</script>", txt, re.DOTALL)
+        if not m:
+            return out
+        smc = json.loads(m.group(1))
+    except Exception:
+        return out
+    U = lambda s: str(s).strip().upper()
+    kenya = set()
+    for c in smc.get("runningCards", []):
+        for b in c.get("bags", []):
+            if b.get("name"):
+                kenya.add(U(b["name"]))
+    deals = smc.get("deals") or {}
+    for d in (deals.get("powerDeals", []) + deals.get("dealOfWeek", [])):
+        if d.get("product"):
+            kenya.add(U(d["product"]))
+
+    def _region_bags(rk):
+        s = set()
+        for g in ((smc.get("regions") or {}).get(rk) or {}).get("groups", []):
+            for c in g.get("cards", []):
+                for b in c.get("bags", []):
+                    if b.get("name"):
+                        s.add(U(b["name"]))
+        return s
+
+    if kenya:
+        out["kenya"] = kenya
+    _sz, _ug = _region_bags("sinza"), _region_bags("uganda")
+    if _sz:
+        out["sinza"] = _sz
+    if _ug:
+        out["uganda"] = _ug
+    return out
 
 
 def _posted_stock(wmp_rows, sl_rows, post_col, check_col, stock_col):
@@ -1725,17 +1844,23 @@ def fetch_posting_data():
     print(f"  STOCK_LEVELS rows          : {len(sl_rows) - 1}")
     print(f"  MONTHLY_TARGET rows        : {len(mt_rows) - 1}")
 
+    # Canonical on-offer bag types (MONTHLY_TARGET col F ✅) — used to split the
+    # marketing-alignment metric into On Offer vs Not On Offer (like the charts above).
+    _offer_bt = {str(row[0]).strip().upper()
+                 for row in mt_rows[1:]
+                 if len(row) > 5 and str(row[0]).strip() and _is_checked(row, 5)}
+
     kenya = _analyze_region(ms_rows, mmp_rows, sl_rows,
                             sales_col=23, post_col=4, stock_col=24,
-                            spp=KENYA_SPP, region="Kenya")
+                            spp=KENYA_SPP, region="Kenya", offer_bagtypes=_offer_bt)
 
     sinza = _analyze_region(ms_rows, mmp_rows, sl_rows,
                             sales_col=17, post_col=5, stock_col=24,
-                            spp=SINZA_SPP, region="Sinza")
+                            spp=SINZA_SPP, region="Sinza", offer_bagtypes=_offer_bt)
 
     uganda = _analyze_region(ms_rows, mmp_rows, sl_rows,
                              sales_col=17, post_col=6, stock_col=18,
-                             spp=UGANDA_SPP, region="Uganda")
+                             spp=UGANDA_SPP, region="Uganda", offer_bagtypes=_offer_bt)
 
     (wk_posts, wk_sales, wk_expected, wk_unposted, s3_wk_posts, nc_wk,
      not_offer_posted_wk, offer_not_posted_wk, offer_posted_wk, not_offer_not_posted_wk,
@@ -1790,6 +1915,29 @@ def fetch_posting_data():
     sinza['deadStock']  = _dead("Sinza",  24, 17, 5, 17, _th["sinza"])
     uganda['deadStock'] = _dead("Uganda", 25, 18, 6, 18, _th["uganda"])
 
+    # ── Marketing–Sales alignment (posted × sold), monthly + weekly ──
+    # On-offer = the actual offers on the Self-Made-Combos page: Kenya = running-combo
+    # component bags + power deals + deals of the week; Sinza = combos + singles;
+    # Uganda = combos. Falls back to the MONTHLY_TARGET ✅ flag if that page is missing.
+    _off_by_region = _offer_bagtypes_by_region(fallback=_offer_bt)
+    def _align(region_key, mo_sales_col, wk_sales_col, post_col, stock_col):
+        ob = _off_by_region.get(region_key) or _offer_bt
+        return {
+            "monthly": _alignment_region(ms_rows, mmp_rows, sl_rows, ob, mo_sales_col, 1, post_col, stock_col),
+            "weekly":  _alignment_region(ws_rows_wk, wmp_rows_wk, sl_rows, ob, wk_sales_col, 2, post_col, stock_col),
+        }
+    kenya['alignment']  = _align("kenya",  23, 27, 4, 24)
+    sinza['alignment']  = _align("sinza",  24, 17, 5, 17)
+    uganda['alignment'] = _align("uganda", 25, 18, 6, 18)
+    print(f"  Alignment on-offer bags   : Kenya {len(_off_by_region.get('kenya') or [])}  "
+          f"Sinza {len(_off_by_region.get('sinza') or [])}  Uganda {len(_off_by_region.get('uganda') or [])}")
+    def _univ(a, per):
+        t = a[per]["total"]
+        return t["postedTotal"] + t["notPosted"]
+    print(f"  Alignment universe wk/mo  : Kenya {_univ(kenya['alignment'],'weekly')}/{_univ(kenya['alignment'],'monthly')}  "
+          f"Sinza {_univ(sinza['alignment'],'weekly')}/{_univ(sinza['alignment'],'monthly')}  "
+          f"Uganda {_univ(uganda['alignment'],'weekly')}/{_univ(uganda['alignment'],'monthly')}")
+
     # Posted-but-didn't-sell bags (weekly), tagged on/not-on-offer, for the guidance panel
     sinza['noConvertWk']  = _build_no_convert(wmp_rows_wk, ws_rows_wk, [17],  9, 5, sl_rows, 17, SINZA_SPP,  sales_check_col=25)
     uganda['noConvertWk'] = _build_no_convert(wmp_rows_wk, ws_rows_wk, [18], 10, 6, sl_rows, 18, UGANDA_SPP, sales_check_col=26)
@@ -1798,6 +1946,25 @@ def fetch_posting_data():
     kenya['postedStock']  = _posted_stock(wmp_rows_wk, sl_rows, 4,  8, 24)
     sinza['postedStock']  = _posted_stock(wmp_rows_wk, sl_rows, 5,  9, 17)
     uganda['postedStock'] = _posted_stock(wmp_rows_wk, sl_rows, 6, 10, 18)
+
+    # Visibility carry-over: of the bags marketing POSTED last week, how many still
+    # hold live stock this week — those posts stay relevant / keep stock visible.
+    # (Stock is live, so a post on a now-empty bag no longer drives anything.)
+    def _post_relevance(ps):
+        total = len(ps)
+        live  = [v for v in ps.values() if (v.get("stock", 0) or 0) > 0]
+        return {
+            "postedBags":   total,
+            "liveBags":     len(live),
+            "deadBags":     total - len(live),
+            "liveUnits":    sum(v.get("stock", 0) or 0 for v in live),
+            "relevancePct": round(len(live) / total * 100, 1) if total else 0.0,
+        }
+    kenya['postRelevance']  = _post_relevance(kenya['postedStock'])
+    sinza['postRelevance']  = _post_relevance(sinza['postedStock'])
+    uganda['postRelevance'] = _post_relevance(uganda['postedStock'])
+    print(f"  Post relevance (Kenya)    : {kenya['postRelevance']['liveBags']}/{kenya['postRelevance']['postedBags']} "
+          f"posted bags still in stock ({kenya['postRelevance']['relevancePct']}%)")
 
     # Sinza accuracy: STOCK_LEVELS col R (idx 17) > 0, col AC (idx 28) = ✅ or x → Sinza-specific rows
     # Match against WMP/MMP using col C (idx 2) name only
@@ -2278,6 +2445,8 @@ inline_script = (
     f'  s2Sales:          "{kenya["s2Sales"]}",\n'
     f'  s1Posts:          {kenya["s1Posts"]},\n'
     f'  s1Expected:       "{kenya["s1Expected"]}",\n'
+    f'  alignment:        {json.dumps(kenya["alignment"])},\n'
+    f'  postRelevance:    {json.dumps(kenya["postRelevance"])},\n'
     f'  salesFromPosting: {json.dumps(kenya["salesFromPosting"], ensure_ascii=False)},\n'
     f'  salesNoPost:      {json.dumps(kenya["salesNoPost"],      ensure_ascii=False)},\n'
     f'  accuracyBags:     {json.dumps(kenya["accuracyBags"],     ensure_ascii=False)},\n'

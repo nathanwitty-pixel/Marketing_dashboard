@@ -1,11 +1,11 @@
 {
-  "monthKey": "2026-08",
-  "monthLabel": "August 2026",
-  "monthStart": "2026-08-01",
-  "monthEnd": "2026-08-31",
-  "monthlyBags": 12848,
-  "monthlyValue": 22490013,
-  "masterBags": 12711,
-  "lines": 12743,
-  "computedOn": "2026-08-24"
+  "monthKey": "2026-09",
+  "monthLabel": "September 2026",
+  "monthStart": "2026-09-01",
+  "monthEnd": "2026-09-30",
+  "monthlyBags": 3346,
+  "monthlyValue": 5809774,
+  "masterBags": 3295,
+  "lines": 3339,
+  "computedOn": "2026-09-06"
 }

@@ -44,7 +44,8 @@ CONFIG_FILE = os.path.join(BASE_DIR, "timed_offers_config.json")
 
 def load_config():
     cfg = {"name": "", "market": "Kenya", "startDate": "", "endDate": "",
-           "bags": ["Kai", "Pioneer", "Double Press", "Antitheft", "Code 3", "School bag"]}
+           "bags": ["Kai", "Pioneer", "Double Press", "Antitheft", "Code 3", "School bag"],
+           "prices": {}}
     try:
         with open(CONFIG_FILE, encoding="utf-8") as f:
             raw = json.load(f)
@@ -54,6 +55,12 @@ def load_config():
         cfg["endDate"]   = str(raw.get("endDate", "") or "").strip()
         if isinstance(raw.get("bags"), list) and raw["bags"]:
             cfg["bags"] = [str(b).strip() for b in raw["bags"] if str(b).strip()]
+        # Actual offer pricing per bag {was, now} — the authoritative discount.
+        if isinstance(raw.get("prices"), dict):
+            for k, v in raw["prices"].items():
+                if isinstance(v, dict):
+                    cfg["prices"][str(k).strip().upper()] = {
+                        "was": safe_int(v.get("was")), "now": safe_int(v.get("now"))}
     except (ValueError, OSError):
         pass
     return cfg
@@ -242,6 +249,103 @@ def kenya_stock_by_bag(bags):
     return out
 
 
+# ── OFFER PRICING: pulled from Odoo, tax-INCLUSIVE (matches the "Incl. Taxes"
+#    figure on the product) — NOT the ex-tax Sales Price, and NOT an average. ──
+TAX_INCL = 1.16   # Kenya VAT: list_price / fixed_price are ex-tax; ×1.16 = incl-tax.
+
+def odoo_list_price(bags):
+    """{BAG_UP: incl-tax Sales Price} — the product's normal price ("was"),
+    the dominant list_price among each bag's plain (non-combo) variants, grossed
+    up to tax-inclusive. {} if the DB isn't reachable."""
+    out = {}
+    try:
+        from lib import db
+        ok, _ = db.check_connection()
+        if not ok:
+            return out
+    except Exception:
+        return out
+    for b in bags:
+        df = db.run_query(
+            'SELECT ROUND(pt.list_price * :tax) AS incl, COUNT(*) AS n '
+            'FROM product_template pt '
+            'WHERE pt."name" ILIKE :pat AND pt."name" NOT LIKE \'%+%\' '
+            '  AND COALESCE(pt.active, true) = true AND pt.list_price > 0 '
+            'GROUP BY 1 ORDER BY n DESC, incl ASC LIMIT 1',
+            {"tax": TAX_INCL, "pat": b + "%"})
+        if df is not None and not df.empty:
+            out[b.upper()] = int(df.iloc[0]["incl"])
+    return out
+
+def odoo_offer_price(bags, start, end):
+    """{BAG_UP: incl-tax offer price} — the offer's "now" price, the dominant
+    fixed price from pricelist items overlapping the offer window, grossed up to
+    incl-tax. {} if none (bag not on a dated pricelist)."""
+    out = {}
+    try:
+        from lib import db
+        ok, _ = db.check_connection()
+        if not ok:
+            return out
+    except Exception:
+        return out
+    for b in bags:
+        df = db.run_query(
+            'SELECT ROUND(i.fixed_price * :tax) AS incl, COUNT(*) AS n '
+            'FROM product_pricelist_item i JOIN product_template pt ON pt.id = i.product_tmpl_id '
+            'WHERE pt."name" ILIKE :pat AND pt."name" NOT LIKE \'%+%\' '
+            "  AND i.compute_price = 'fixed' AND i.fixed_price > 0 "
+            '  AND (i.date_start IS NULL OR i.date_start::date <= CAST(:e AS date)) '
+            '  AND (i.date_end   IS NULL OR i.date_end::date   >= CAST(:s AS date)) '
+            'GROUP BY 1 ORDER BY n DESC, incl ASC LIMIT 1',
+            {"tax": TAX_INCL, "pat": b + "%", "s": start, "e": end})
+        if df is not None and not df.empty:
+            out[b.upper()] = int(df.iloc[0]["incl"])
+    return out
+
+def odoo_bag_daily_value(bags, start, end):
+    """{(BAG_UP, 'YYYY-MM-DD'): {'qty', 'val'}} — per-bag daily units and incl-tax
+    value (Kenya), so we can build the realised price per bag per week. {} if no DB."""
+    out = {}
+    try:
+        from lib import db
+        ok, _ = db.check_connection()
+        if not ok:
+            return out
+    except Exception:
+        return out
+    like = " OR ".join([f'pt."name" ILIKE :bag{i}' for i in range(len(bags))])
+    params = {"s": start, "e": end}
+    for i, b in enumerate(bags):
+        params[f"bag{i}"] = b + "%"
+    q = ('SELECT p.date_order::date AS d, pt."name" AS product, '
+         'SUM(pl.qty)::int AS qty, SUM(pl.price_subtotal_incl)::numeric AS val '
+         'FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id '
+         'LEFT JOIN pos_session ps ON p.session_id = ps.id '
+         'LEFT JOIN pos_config pc ON ps.config_id = pc.id '
+         'LEFT JOIN product_product pp ON pl.product_id = pp.id '
+         'LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id '
+         'LEFT JOIN product_category pcat ON pcat.id = pt.categ_id '
+         'WHERE p.date_order::date BETWEEN CAST(:s AS date) AND CAST(:e AS date) '
+         "  AND p.state IN ('done','paid') AND pl.qty > 0 "
+         '  AND lower(COALESCE(pc."name",\'\')) NOT IN (\'sinza\',\'dar-es-alam\',\'uganda\') '
+         '  AND COALESCE(pt."name",\'\') NOT LIKE \'%+%\' '
+         '  AND COALESCE(pt."name",\'\') NOT ILIKE \'%delivery%\' '
+         '  AND COALESCE(pt."name",\'\') NOT ILIKE \'%sample%\' '
+         '  AND COALESCE(pcat."name",\'\') NOT ILIKE \'%Pos%\' '
+         f'  AND ({like}) GROUP BY 1, 2')
+    df = db.run_query(q, params)
+    if df is not None and not df.empty:
+        for _, r in df.iterrows():
+            b = _bucket(r["product"])
+            if not b:
+                continue
+            e = out.setdefault((b.upper(), str(r["d"])), {"qty": 0, "val": 0.0})
+            e["qty"] += int(r["qty"] or 0)
+            e["val"] += float(r["val"] or 0)
+    return out
+
+
 # ── POSTING: last week's Kenya posts (WEEKLY_MARKETING_POST col E) ─
 
 def weekly_kenya_posts(bags):
@@ -390,14 +494,30 @@ def _avg(m, bu):
 _bd = lift.get("baseDays") if lift else None
 _od = lift.get("offerDays") if lift else None
 
+_cfg_prices  = CFG.get("prices", {})
+_list_prices = odoo_list_price(BAGS)                            # "was" — Odoo Sales Price incl-tax
+_offer_prices = odoo_offer_price(BAGS, CFG["startDate"], CFG["endDate"])   # "now" — offer pricelist incl-tax
+
 why_bags = []
 for r in bag_rows:
     bu = r["name"].upper()
-    pre_p = _avg(_pre_prices, bu)
     off_p = _avg(_off_prices, bu)
-    disc_pct = round((off_p - pre_p) / pre_p * 100) if (pre_p and off_p) else None
-    discounted = bool(disc_pct is not None and disc_pct <= -3)   # ≥3% drop = a real markdown
-    avg_price = off_p or pre_p
+    pre_p = _avg(_pre_prices, bu)
+    sold_at = off_p or pre_p                     # realised avg (what it actually left at)
+    # AUTHORITATIVE prices come from ODOO, tax-INCLUSIVE:
+    #   was = product Sales Price (list_price ×1.16); now = offer pricelist (fixed ×1.16).
+    # Manual config is only a fallback if Odoo has no price; averages are a last resort.
+    pr = _cfg_prices.get(bu) or {}
+    was = _list_prices.get(bu)  or (pr.get("was") or None)
+    now = _offer_prices.get(bu) or (pr.get("now") or None)
+    if was and now and was > 0:
+        disc_kes = was - now
+        disc_pct = round((now - was) / was * 100)          # negative = a cut
+        discounted = disc_kes > 0
+    else:
+        was = now = disc_kes = None
+        disc_pct = round((off_p - pre_p) / pre_p * 100) if (pre_p and off_p) else None
+        discounted = bool(disc_pct is not None and disc_pct <= -3)
     # each bag's own sales pace: units/day before vs during the offer
     pre_q = int(_pre_prices.get(bu, {}).get("qty", 0))
     off_q = int(_off_prices.get(bu, {}).get("qty", 0))
@@ -407,90 +527,98 @@ for r in bag_rows:
     sm = _stock_map.get(bu, {"stock": 0, "category": ""})
     why_bags.append({
         "name": r["name"], "sold": r["sold"], "posts": r["posts"], "stock": sm["stock"],
-        "avgPrice": avg_price, "prePrice": pre_p, "offerPrice": off_p,
-        "discountPct": disc_pct, "discounted": discounted,
+        "priceWas": was, "priceNow": now, "discountKes": disc_kes,
+        "discountPct": disc_pct, "discounted": discounted, "soldAt": sold_at,
         "prePerDay": pre_pd, "offerPerDay": off_pd, "bagLift": bag_lift,
         "category": sm["category"],
-        "cheaper": bool(avg_price is not None and _catalog_avg and avg_price < _catalog_avg),
     })
 
 _total_stock = sum(w["stock"] for w in why_bags)
 _cats = sorted({w["category"] for w in why_bags if w["category"]})
-_priced = [w for w in why_bags if w["avgPrice"]]
-_cheapest = min(_priced, key=lambda w: w["avgPrice"]) if _priced else None
-_priciest = max(_priced, key=lambda w: w["avgPrice"]) if _priced else None
 _topstock = max(why_bags, key=lambda w: w["stock"]) if why_bags else None
 _zero_post = [w["name"] for w in why_bags if not w["posts"] and w["sold"] > 0]
 _lift_txt = (f"+{lift['liftPct']}%" if lift and lift.get("liftPct") is not None else "higher")
 
-# Discount attribution
-_disc = [w for w in why_bags if w["discounted"]]
-_nodisc_sold = sum(w["sold"] for w in why_bags if not w["discounted"])
-_nodisc_share = round(_nodisc_sold / total_sold * 100) if total_sold else 0
-_top2 = sorted(why_bags, key=lambda w: -w["sold"])[:2]
-_top2_nodisc = [w for w in _top2 if not w["discounted"]]
-_disc_drove = _nodisc_share < 50   # did the discount drive most volume?
+# Discount reality — from the real offer pricelist (config), not inferred averages.
+_priced = [w for w in why_bags if w.get("discountKes") is not None]
+_disc   = [w for w in why_bags if w["discounted"]]
+_all_cut = bool(_priced) and all(w["discounted"] for w in _priced)
+_kes  = [w["discountKes"] for w in _priced if w["discountKes"]]
+_pcts = [abs(w["discountPct"]) for w in _priced if w["discountPct"] is not None]
+_deepest = min(_priced, key=lambda w: w["discountPct"]) if _priced else None    # most negative
+_bestseller  = bag_rows[0]  if bag_rows else None
+_best_disc = next((w["discountPct"] for w in why_bags
+                   if _bestseller and w["name"] == _bestseller["name"]), None)
 
 _insights = []
-# Discount check first — it's the "was it really the offer price?" question
-if _top2:
-    if _top2_nodisc:
-        _names = " and ".join(w["name"] for w in _top2_nodisc)
-        _disc_list = ", ".join(f"{w['name']} {w['discountPct']}%" for w in _disc) or "the smaller lines"
-        _insights.append({"tag": "Discount check", "text":
-            f"<b>Not really the discount.</b> {_names} — the top seller(s) — held a <b>flat or higher</b> price during the window, "
-            f"and <b>{_nodisc_share}% of all volume sold at (near) full price</b>. The genuine markdowns ({_disc_list}) were the mid/low-volume bags. "
-            f"So the offer price wasn't what pulled buyers on the bulk of sales."})
-    else:
-        _dt = ", ".join(f"{w['name']} {w['discountPct']}%" for w in _top2)
-        _insights.append({"tag": "Discount check", "text":
-            f"<b>The discount plausibly helped.</b> The top sellers were genuinely marked down during the window "
-            f"({_dt}), and only {_nodisc_share}% of volume sold at full price — so the offer price did pull buyers."})
-
-# Which bags were ACTUALLY on offer (price truly cut) — and did the cut sell them faster?
-if _disc:
-    def _phrase(w):
-        bl = w.get("bagLift")
-        if bl is None:
-            return f"{w['name']} ({w['discountPct']}% price)"
-        return f"{w['name']} ({w['discountPct']}% price, own pace {'+' if bl > 0 else ''}{bl}%)"
-    _helped  = [w for w in _disc if (w.get("bagLift") or 0) > 0]
-    _flopped = [w for w in _disc if (w.get("bagLift") or 0) <= 0]
-    _txt = "<b>Actually on offer (price truly cut):</b> " + "; ".join(_phrase(w) for w in _disc) + ". "
-    if _helped:
-        _txt += ("The cut sold <b>" + " and ".join(w["name"] for w in _helped)
-                 + "</b> faster than before the offer. ")
-    if _flopped:
-        _txt += ("<b>" + " and ".join(w["name"] for w in _flopped)
-                 + "</b> were marked down but still didn't pick up — those cuts mostly gave away margin.")
-    _insights.append({"tag": "On offer?", "text": _txt})
+# 1) On offer? — the real cuts
+if _all_cut:
+    _list = ", ".join(f"{w['name']} −{w['discountKes']:,} ({w['discountPct']}%)" for w in _priced)
+    _insights.append({"tag": "On offer?", "text":
+        f"<b>All six were genuinely on offer</b> — real list-price cuts of KES {min(_kes):,}–{max(_kes):,} "
+        f"({min(_pcts)}–{max(_pcts)}% off): {_list}."})
+elif _disc:
+    _insights.append({"tag": "On offer?", "text":
+        "On offer (real cut): " + ", ".join(f"{w['name']} ({w['discountPct']}%)" for w in _disc) + "."})
 else:
     _insights.append({"tag": "On offer?", "text":
-        "None of the six were meaningfully marked down during the window (all sold within ~3% of their pre-offer price), "
-        "so the sales came from demand/timing rather than a real price cut."})
+        "No configured offer prices — showing realised averages only."})
 
+# 2) Did the discount drive it? — depth vs sales
+if _all_cut and _deepest and _bestseller:
+    _insights.append({"tag": "Discount vs demand", "text":
+        f"Because <b>every bag was cut</b>, the discount and back-to-school timing can't be fully separated — both applied at once. "
+        f"But <b>discount depth didn't decide the winners</b>: the deepest cut, {_deepest['name']} ({_deepest['discountPct']}%), sold only {_deepest['sold']:,}, "
+        f"while {_bestseller['name']} led with {_bestseller['sold']:,} on a shallower {_best_disc}% cut. "
+        f"The cut opened the door, but <b>demand — which bags people wanted for school — chose what actually moved</b>."})
+
+# 3) Stock
 if _topstock and _total_stock:
     _insights.append({"tag": "Stock", "text":
         f"Mostly backpacks with real inventory behind them — <b>{_total_stock:,} still in Kenya stock</b> even after the push "
-        f"(led by {_topstock['name']} at {_topstock['stock']:,}). Putting them on offer draws down a genuine stock position, not a token one."})
+        f"(led by {_topstock['name']} at {_topstock['stock']:,}). The offer draws down a genuine stock position, not a token one."})
+
+# 4) Season
 if _cats:
     _season_bag = (" and ".join(_zero_post[:2]) + " even sold on zero marketing posts (pure demand). ") if _zero_post else ""
     _insights.append({"tag": "Season", "text":
         f"All six sit in <b>{', '.join(c.title() for c in _cats)}</b> — school categories — and the step-up landed in the offer week as schools opened. "
-        f"{_season_bag}The timing lines up with schools opening, which fits the sales pattern better than the price cut does."})
+        f"{_season_bag}The timing fits the sales pattern as much as the price cut does."})
 
-if _disc_drove:
-    _verdict = (f"<b>Good move.</b> Sales rose <b>{_lift_txt}</b> per day and the genuinely-discounted bags drove most of it, "
-                f"so the offer price did its job. Repeat at back-to-school; consider protecting margin on any lines that sold well without a deep cut.")
+if _all_cut and _deepest:
+    _verdict = (f"<b>Good move.</b> All six ran a real <b>{min(_pcts)}–{max(_pcts)}% cut</b> and daily sales rose <b>{_lift_txt}</b> during back-to-school. "
+                f"The catch: <b>discount depth didn't pick the winners</b> — the deepest cut ({_deepest['name']}, {_deepest['discountPct']}%) sold least, while the popular school lines led. "
+                f"Repeat the timing; you can likely <b>trim the deepest cuts</b> on the slow movers without losing volume.")
 else:
-    _verdict = (f"<b>Good move — but credit the timing, not the discount.</b> Sales rose <b>{_lift_txt}</b> per day, yet "
-                f"<b>{_nodisc_share}% of volume sold at (near) full price</b> — the lift tracks <b>back-to-school demand for high-stock school bags</b>, "
-                f"not the markdown. Keep running these bags this season; the offer framing helps, but you likely don't need to give away margin on the top sellers "
-                + (f"({', '.join(w['name'] for w in _top2_nodisc)})" if _top2_nodisc else "") + ".")
+    _verdict = (f"<b>Good move.</b> Sales rose <b>{_lift_txt}</b> per day during back-to-school. Match the cut depth to demand — the popular school lines carried the volume.")
 
-why = {"catalogAvg": _catalog_avg, "totalStock": _total_stock, "categories": _cats,
-       "nodiscShare": _nodisc_share, "discDrove": _disc_drove,
+why = {"totalStock": _total_stock, "categories": _cats, "allCut": _all_cut,
        "bags": why_bags, "insights": _insights, "verdict": _verdict}
+
+# ── Price week-by-week: realised avg price per bag per week vs list/offer ──
+# Shows whether each bag was ALREADY selling at/below the offer price before the
+# window (→ timing drove it) or only got cut in the offer week (→ the discount did).
+if lift and lift.get("weekly"):
+    _dv = odoo_bag_daily_value(BAGS, lift["baseStart"], date.today().isoformat())
+    _pw_bags = []
+    for w in why_bags:
+        bu = w["name"].upper()
+        cells = []
+        for wk in lift["weekly"]:
+            q = v = 0.0
+            dd, de = date.fromisoformat(wk["start"]), date.fromisoformat(wk["end"])
+            while dd <= de:
+                c = _dv.get((bu, dd.isoformat()))
+                if c:
+                    q += c["qty"]; v += c["val"]
+                dd += timedelta(days=1)
+            cells.append({"avg": (round(v / q) if q else None), "qty": int(q)})
+        _pw_bags.append({"name": w["name"], "was": w["priceWas"], "now": w["priceNow"], "cells": cells})
+    why["priceWeeks"] = {
+        "weeks": [{"label": wk["label"], "start": wk["start"], "end": wk["end"], "off": wk["off"]}
+                  for wk in lift["weekly"]],
+        "bags": _pw_bags,
+    }
 
 TO = {
     "name":       CFG["name"],

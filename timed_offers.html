@@ -76,18 +76,27 @@
 
     <div class="panel" id="to-why-panel" style="display:none">
       <h2>Why these bags — and was it a good move?</h2>
-      <div class="cap"><b>Avg price</b> = the bag's realised selling price per unit during the offer (Odoo POS Kenya, KES incl. — value sold ÷ units). <b>On offer?</b> compares it to the pre-offer average (a genuine cut vs already at that price). <b>Sales lift</b> = the bag's own units/day during vs before the offer.</div>
+      <div class="cap"><b>Price was</b> = the product's Odoo Sales Price incl. tax; <b>Price now</b> = the offer pricelist price incl. tax — both pulled live from Odoo (not typed, not an average). <b>Discount</b> = the real cut. <b>Sales lift</b> = the bag's own units/day during vs before the offer.</div>
       <div style="overflow-x:auto">
         <table>
           <thead><tr>
             <th>Bag</th><th class="r">Sold</th><th class="r">In stock</th>
-            <th class="r">Avg price</th><th>On offer?</th><th class="r">Sales lift</th><th>Category</th>
+            <th class="r">Price was</th><th class="r">Price now</th><th class="r">Discount</th><th class="r">Sales lift</th><th>Category</th>
           </tr></thead>
           <tbody id="to-why-tbody"></tbody>
         </table>
       </div>
       <div id="to-why-insights" style="margin-top:1rem"></div>
       <div id="to-why-verdict" style="margin-top:0.9rem;padding:0.9rem 1rem;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.28);border-radius:10px;font-size:0.9rem;color:#e2e8f0;line-height:1.55"></div>
+    </div>
+
+    <div class="panel" id="to-priceweeks-panel" style="display:none">
+      <h2>Price week by week — were they already on offer?</h2>
+      <div class="cap">Each cell = the bag's <b>realised average selling price</b> that week (incl-tax; units sold in parentheses). Compare to <b>Was</b> (list) and <b>Now</b> (offer): a cell already near/below <b>Now</b> means the bag was effectively on offer that week — so its sales weren't down to the campaign cut. The offer week is highlighted.</div>
+      <div style="overflow-x:auto">
+        <table><thead id="to-pw-head"></thead><tbody id="to-pw-body"></tbody></table>
+      </div>
+      <div class="cap" style="margin-top:0.6rem"><span style="color:#34d399;font-weight:700">green</span> = at/below the offer price · <span style="color:#94a3b8;font-weight:700">grey</span> ≈ full price · <span style="color:#fbbf24;font-weight:700">amber</span> = part-way</div>
     </div>
 
     <div class="panel">
@@ -119,7 +128,7 @@
 
 <!-- TIMED_DATA_START -->
 <script>
-const TO = {"name": "Back to School Edition", "market": "Kenya", "startDate": "2026-08-17", "endDate": "2026-08-21", "windowLabel": "17–21 Aug 2026", "lift": {"baseStart": "2026-08-01", "baseEnd": "2026-08-16", "baseDays": 16, "baseTotal": 1240, "basePerDay": 77.5, "offerDays": 5, "offerTotal": 695, "offerPerDay": 139.0, "liftPct": 79, "daily": [{"date": "2026-08-01", "bags": 85, "off": false}, {"date": "2026-08-02", "bags": 27, "off": false}, {"date": "2026-08-03", "bags": 91, "off": false}, {"date": "2026-08-04", "bags": 81, "off": false}, {"date": "2026-08-05", "bags": 81, "off": false}, {"date": "2026-08-06", "bags": 88, "off": false}, {"date": "2026-08-07", "bags": 92, "off": false}, {"date": "2026-08-08", "bags": 103, "off": false}, {"date": "2026-08-09", "bags": 29, "off": false}, {"date": "2026-08-10", "bags": 93, "off": false}, {"date": "2026-08-11", "bags": 91, "off": false}, {"date": "2026-08-12", "bags": 95, "off": false}, {"date": "2026-08-13", "bags": 85, "off": false}, {"date": "2026-08-14", "bags": 77, "off": false}, {"date": "2026-08-15", "bags": 100, "off": false}, {"date": "2026-08-16", "bags": 22, "off": false}, {"date": "2026-08-17", "bags": 111, "off": true}, {"date": "2026-08-18", "bags": 130, "off": true}, {"date": "2026-08-19", "bags": 134, "off": true}, {"date": "2026-08-20", "bags": 153, "off": true}, {"date": "2026-08-21", "bags": 167, "off": true}], "weekly": [{"label": "Wk 1", "start": "2026-08-01", "end": "2026-08-01", "total": 85, "days": 1, "perDay": 85.0, "off": false}, {"label": "Wk 2", "start": "2026-08-02", "end": "2026-08-08", "total": 563, "days": 7, "perDay": 80.4, "off": false}, {"label": "Wk 3", "start": "2026-08-09", "end": "2026-08-15", "total": 570, "days": 7, "perDay": 81.4, "off": false}, {"label": "Wk 4", "start": "2026-08-16", "end": "2026-08-22", "total": 849, "days": 7, "perDay": 121.3, "off": true}, {"label": "Wk 5", "start": "2026-08-23", "end": "2026-08-24", "total": 51, "days": 2, "perDay": 25.5, "off": false}]}, "why": {"catalogAvg": 1737, "totalStock": 1160, "categories": ["BACKPACK", "SCHOOL BAG"], "nodiscShare": 70, "discDrove": false, "bags": [{"name": "Code 3", "sold": 225, "posts": 7, "stock": 292, "avgPrice": 1444, "prePrice": 1473, "offerPrice": 1444, "discountPct": -2, "discounted": false, "prePerDay": 28.8, "offerPerDay": 45.0, "bagLift": 56, "category": "BACKPACK", "cheaper": true}, {"name": "Antitheft", "sold": 204, "posts": 0, "stock": 325, "avgPrice": 1812, "prePrice": 1757, "offerPrice": 1812, "discountPct": 3, "discounted": false, "prePerDay": 30.7, "offerPerDay": 40.8, "bagLift": 33, "category": "BACKPACK", "cheaper": false}, {"name": "School bag", "sold": 106, "posts": 0, "stock": 131, "avgPrice": 1711, "prePrice": 1976, "offerPrice": 1711, "discountPct": -13, "discounted": true, "prePerDay": 3.2, "offerPerDay": 21.2, "bagLift": 562, "category": "SCHOOL BAG", "cheaper": true}, {"name": "Kai", "sold": 80, "posts": 6, "stock": 152, "avgPrice": 2335, "prePrice": 2430, "offerPrice": 2335, "discountPct": -4, "discounted": true, "prePerDay": 9.7, "offerPerDay": 16.0, "bagLift": 65, "category": "BACKPACK", "cheaper": false}, {"name": "Pioneer", "sold": 55, "posts": 8, "stock": 92, "avgPrice": 1955, "prePrice": 1726, "offerPrice": 1955, "discountPct": 13, "discounted": false, "prePerDay": 3.6, "offerPerDay": 11.0, "bagLift": 206, "category": "BACKPACK", "cheaper": false}, {"name": "Double Press", "sold": 25, "posts": 0, "stock": 168, "avgPrice": 2000, "prePrice": 2279, "offerPrice": 2000, "discountPct": -12, "discounted": true, "prePerDay": 1.6, "offerPerDay": 5.0, "bagLift": 212, "category": "BACKPACK", "cheaper": false}], "insights": [{"tag": "Discount check", "text": "<b>Not really the discount.</b> Code 3 and Antitheft — the top seller(s) — held a <b>flat or higher</b> price during the window, and <b>70% of all volume sold at (near) full price</b>. The genuine markdowns (School bag -13%, Kai -4%, Double Press -12%) were the mid/low-volume bags. So the offer price wasn't what pulled buyers on the bulk of sales."}, {"tag": "On offer?", "text": "<b>Actually on offer (price truly cut):</b> School bag (-13% price, own pace +562%); Kai (-4% price, own pace +65%); Double Press (-12% price, own pace +212%). The cut sold <b>School bag and Kai and Double Press</b> faster than before the offer. "}, {"tag": "Stock", "text": "Mostly backpacks with real inventory behind them — <b>1,160 still in Kenya stock</b> even after the push (led by Antitheft at 325). Putting them on offer draws down a genuine stock position, not a token one."}, {"tag": "Season", "text": "All six sit in <b>Backpack, School Bag</b> — school categories — and the step-up landed in the offer week as schools opened. Antitheft and School bag even sold on zero marketing posts (pure demand). The timing lines up with schools opening, which fits the sales pattern better than the price cut does."}], "verdict": "<b>Good move — but credit the timing, not the discount.</b> Sales rose <b>+79%</b> per day, yet <b>70% of volume sold at (near) full price</b> — the lift tracks <b>back-to-school demand for high-stock school bags</b>, not the markdown. Keep running these bags this season; the offer framing helps, but you likely don't need to give away margin on the top sellers (Code 3, Antitheft)."}, "salesLive": true, "bags": [{"name": "Code 3", "sold": 225, "posts": 7, "perPost": 32.1}, {"name": "Antitheft", "sold": 204, "posts": 0, "perPost": null}, {"name": "School bag", "sold": 106, "posts": 0, "perPost": null}, {"name": "Kai", "sold": 80, "posts": 6, "perPost": 13.3}, {"name": "Pioneer", "sold": 55, "posts": 8, "perPost": 6.9}, {"name": "Double Press", "sold": 25, "posts": 0, "perPost": null}], "totalSold": 695, "totalPosts": 21, "perPost": 33.1, "bestName": "Code 3", "bestSold": 225, "mostPName": "Pioneer", "mostPosts": 8};
+const TO = {"name": "Back to School Edition", "market": "Kenya", "startDate": "2026-08-17", "endDate": "2026-08-21", "windowLabel": "17–21 Aug 2026", "lift": {"baseStart": "2026-08-01", "baseEnd": "2026-08-16", "baseDays": 16, "baseTotal": 1240, "basePerDay": 77.5, "offerDays": 5, "offerTotal": 695, "offerPerDay": 139.0, "liftPct": 79, "daily": [{"date": "2026-08-01", "bags": 85, "off": false}, {"date": "2026-08-02", "bags": 27, "off": false}, {"date": "2026-08-03", "bags": 91, "off": false}, {"date": "2026-08-04", "bags": 81, "off": false}, {"date": "2026-08-05", "bags": 81, "off": false}, {"date": "2026-08-06", "bags": 88, "off": false}, {"date": "2026-08-07", "bags": 92, "off": false}, {"date": "2026-08-08", "bags": 103, "off": false}, {"date": "2026-08-09", "bags": 29, "off": false}, {"date": "2026-08-10", "bags": 93, "off": false}, {"date": "2026-08-11", "bags": 91, "off": false}, {"date": "2026-08-12", "bags": 95, "off": false}, {"date": "2026-08-13", "bags": 85, "off": false}, {"date": "2026-08-14", "bags": 77, "off": false}, {"date": "2026-08-15", "bags": 100, "off": false}, {"date": "2026-08-16", "bags": 22, "off": false}, {"date": "2026-08-17", "bags": 111, "off": true}, {"date": "2026-08-18", "bags": 130, "off": true}, {"date": "2026-08-19", "bags": 134, "off": true}, {"date": "2026-08-20", "bags": 153, "off": true}, {"date": "2026-08-21", "bags": 167, "off": true}], "weekly": [{"label": "Wk 1", "start": "2026-08-01", "end": "2026-08-01", "total": 85, "days": 1, "perDay": 85.0, "off": false}, {"label": "Wk 2", "start": "2026-08-02", "end": "2026-08-08", "total": 563, "days": 7, "perDay": 80.4, "off": false}, {"label": "Wk 3", "start": "2026-08-09", "end": "2026-08-15", "total": 570, "days": 7, "perDay": 81.4, "off": false}, {"label": "Wk 4", "start": "2026-08-16", "end": "2026-08-22", "total": 849, "days": 7, "perDay": 121.3, "off": true}, {"label": "Wk 5", "start": "2026-08-23", "end": "2026-08-29", "total": 912, "days": 7, "perDay": 130.3, "off": false}, {"label": "Wk 6", "start": "2026-08-30", "end": "2026-09-04", "total": 537, "days": 6, "perDay": 89.5, "off": false}]}, "why": {"totalStock": 1196, "categories": ["BACKPACK", "SCHOOL BAG"], "allCut": false, "bags": [{"name": "Code 3", "sold": 225, "posts": 7, "stock": 269, "priceWas": 2100, "priceNow": 54068, "discountKes": -51968, "discountPct": 2475, "discounted": false, "soldAt": 1444, "prePerDay": 28.8, "offerPerDay": 45.0, "bagLift": 56, "category": "BACKPACK"}, {"name": "Antitheft", "sold": 204, "posts": 0, "stock": 206, "priceWas": 2200, "priceNow": 66356, "discountKes": -64156, "discountPct": 2916, "discounted": false, "soldAt": 1812, "prePerDay": 30.7, "offerPerDay": 40.8, "bagLift": 33, "category": "BACKPACK"}, {"name": "School bag", "sold": 106, "posts": 0, "stock": 221, "priceWas": 2100, "priceNow": 54068, "discountKes": -51968, "discountPct": 2475, "discounted": false, "soldAt": 1711, "prePerDay": 3.2, "offerPerDay": 21.2, "bagLift": 562, "category": "SCHOOL BAG"}, {"name": "Kai", "sold": 80, "posts": 6, "stock": 164, "priceWas": 2800, "priceNow": 71271, "discountKes": -68471, "discountPct": 2445, "discounted": false, "soldAt": 2335, "prePerDay": 9.7, "offerPerDay": 16.0, "bagLift": 65, "category": "BACKPACK"}, {"name": "Pioneer", "sold": 55, "posts": 8, "stock": 100, "priceWas": null, "priceNow": null, "discountKes": null, "discountPct": 13, "discounted": false, "soldAt": 1955, "prePerDay": 3.6, "offerPerDay": 11.0, "bagLift": 206, "category": "BACKPACK"}, {"name": "Double Press", "sold": 25, "posts": 0, "stock": 236, "priceWas": 2600, "priceNow": 66356, "discountKes": -63756, "discountPct": 2452, "discounted": false, "soldAt": 2000, "prePerDay": 1.6, "offerPerDay": 5.0, "bagLift": 212, "category": "BACKPACK"}], "insights": [{"tag": "On offer?", "text": "No configured offer prices — showing realised averages only."}, {"tag": "Stock", "text": "Mostly backpacks with real inventory behind them — <b>1,196 still in Kenya stock</b> even after the push (led by Code 3 at 269). The offer draws down a genuine stock position, not a token one."}, {"tag": "Season", "text": "All six sit in <b>Backpack, School Bag</b> — school categories — and the step-up landed in the offer week as schools opened. Antitheft and School bag even sold on zero marketing posts (pure demand). The timing fits the sales pattern as much as the price cut does."}], "verdict": "<b>Good move.</b> Sales rose <b>+79%</b> per day during back-to-school. Match the cut depth to demand — the popular school lines carried the volume.", "priceWeeks": {"weeks": [{"label": "Wk 1", "start": "2026-08-01", "end": "2026-08-01", "off": false}, {"label": "Wk 2", "start": "2026-08-02", "end": "2026-08-08", "off": false}, {"label": "Wk 3", "start": "2026-08-09", "end": "2026-08-15", "off": false}, {"label": "Wk 4", "start": "2026-08-16", "end": "2026-08-22", "off": true}, {"label": "Wk 5", "start": "2026-08-23", "end": "2026-08-29", "off": false}, {"label": "Wk 6", "start": "2026-08-30", "end": "2026-09-04", "off": false}], "bags": [{"name": "Code 3", "was": 2100, "now": 54068, "cells": [{"avg": 1866, "qty": 32}, {"avg": 1604, "qty": 215}, {"avg": 1311, "qty": 203}, {"avg": 1407, "qty": 283}, {"avg": 1596, "qty": 346}, {"avg": 1534, "qty": 152}]}, {"name": "Antitheft", "was": 2200, "now": 66356, "cells": [{"avg": 1758, "qty": 40}, {"avg": 1944, "qty": 217}, {"avg": 1567, "qty": 228}, {"avg": 1849, "qty": 233}, {"avg": 1942, "qty": 231}, {"avg": 2091, "qty": 223}]}, {"name": "School bag", "was": 2100, "now": 54068, "cells": [{"avg": 2100, "qty": 2}, {"avg": 2015, "qty": 20}, {"avg": 2007, "qty": 27}, {"avg": 1753, "qty": 134}, {"avg": 1974, "qty": 129}, {"avg": 1983, "qty": 46}]}, {"name": "Kai", "was": 2800, "now": 71271, "cells": [{"avg": 2660, "qty": 5}, {"avg": 2440, "qty": 80}, {"avg": 2437, "qty": 68}, {"avg": 2328, "qty": 95}, {"avg": 2540, "qty": 122}, {"avg": 2370, "qty": 79}]}, {"name": "Pioneer", "was": null, "now": null, "cells": [{"avg": 2080, "qty": 5}, {"avg": 1809, "qty": 23}, {"avg": 1579, "qty": 28}, {"avg": 1952, "qty": 73}, {"avg": 2156, "qty": 64}, {"avg": 1528, "qty": 25}]}, {"name": "Double Press", "was": 2600, "now": 66356, "cells": [{"avg": 2600, "qty": 1}, {"avg": 2275, "qty": 8}, {"avg": 2261, "qty": 16}, {"avg": 2045, "qty": 31}, {"avg": 2600, "qty": 20}, {"avg": 2350, "qty": 12}]}]}}, "salesLive": true, "bags": [{"name": "Code 3", "sold": 225, "posts": 7, "perPost": 32.1}, {"name": "Antitheft", "sold": 204, "posts": 0, "perPost": null}, {"name": "School bag", "sold": 106, "posts": 0, "perPost": null}, {"name": "Kai", "sold": 80, "posts": 6, "perPost": 13.3}, {"name": "Pioneer", "sold": 55, "posts": 8, "perPost": 6.9}, {"name": "Double Press", "sold": 25, "posts": 0, "perPost": null}], "totalSold": 695, "totalPosts": 21, "perPost": 33.1, "bestName": "Code 3", "bestSold": 225, "mostPName": "Pioneer", "mostPosts": 8};
 </script>
 <!-- TIMED_DATA_END -->
 
@@ -232,13 +241,11 @@ const TO = {"name": "Back to School Edition", "market": "Kenya", "startDate": "2
     var wpn = document.getElementById('to-why-panel'); if (wpn) wpn.style.display = '';
     var wtb = document.getElementById('to-why-tbody');
     if (wtb) wtb.innerHTML = W.bags.map(function(b){
-      var price = b.avgPrice != null ? 'KES ' + fmt(b.avgPrice) : '—';
-      // On offer? — genuine cut (green) vs same/higher (grey)
-      var offer;
-      if (b.discountPct == null) offer = '<span style="color:#64748b">—</span>';
-      else if (b.discounted) offer = '<span style="color:#34d399;font-weight:700">Cut ' + b.discountPct + '%</span>';
-      else if (b.discountPct > 0) offer = '<span style="color:#94a3b8">+' + b.discountPct + '% · no cut</span>';
-      else offer = '<span style="color:#94a3b8">≈ same (' + b.discountPct + '%)</span>';
+      var was = b.priceWas != null ? 'KES ' + fmt(b.priceWas) : '—';
+      var now = b.priceNow != null ? 'KES ' + fmt(b.priceNow) : '—';
+      var disc = (b.discountKes != null && b.discountKes > 0)
+        ? '<span style="color:#34d399;font-weight:700">−' + fmt(b.discountKes) + '</span> <span style="color:#94a3b8;font-size:0.74rem">(' + b.discountPct + '%)</span>'
+        : '<span style="color:#64748b">—</span>';
       // Sales lift — the bag's own pace change (green up / red down)
       var lift;
       if (b.bagLift == null) lift = '<span style="color:#64748b">—</span>';
@@ -247,8 +254,9 @@ const TO = {"name": "Back to School Edition", "market": "Kenya", "startDate": "2
       return '<tr><td class="name">' + b.name + '</td>'
         + '<td class="r">' + fmt(b.sold) + '</td>'
         + '<td class="r">' + fmt(b.stock) + '</td>'
-        + '<td class="r">' + price + '</td>'
-        + '<td>' + offer + '</td>'
+        + '<td class="r">' + was + '</td>'
+        + '<td class="r">' + now + '</td>'
+        + '<td class="r">' + disc + '</td>'
         + '<td class="r">' + lift + '</td>'
         + '<td>' + (b.category || '') + '</td></tr>';
     }).join('');
@@ -261,6 +269,34 @@ const TO = {"name": "Back to School Edition", "market": "Kenya", "startDate": "2
     }).join('');
     var vd = document.getElementById('to-why-verdict');
     if (vd) vd.innerHTML = W.verdict || '';
+  }
+
+  // ── Price week by week (realised avg vs list/offer) ──
+  var PW = W && W.priceWeeks;
+  if (PW && (PW.bags || []).length && (PW.weeks || []).length) {
+    var pwp = document.getElementById('to-priceweeks-panel'); if (pwp) pwp.style.display = '';
+    var offCol = 'background:rgba(16,185,129,0.10)';
+    var head = document.getElementById('to-pw-head');
+    if (head) head.innerHTML = '<tr><th>Bag</th>'
+      + PW.weeks.map(function(w){ return '<th class="r" title="' + w.start + ' → ' + w.end + '"'
+          + (w.off ? ' style="' + offCol + ';color:#34d399"' : '') + '>' + w.label + (w.off ? ' ·offer' : '') + '</th>'; }).join('')
+      + '<th class="r">Was</th><th class="r">Now</th></tr>';
+    var body = document.getElementById('to-pw-body');
+    if (body) body.innerHTML = PW.bags.map(function(b){
+      var cells = b.cells.map(function(c, i){
+        var off = PW.weeks[i] && PW.weeks[i].off;
+        if (c.avg == null) return '<td class="r"' + (off ? ' style="' + offCol + '"' : '') + '><span style="color:#475569">—</span></td>';
+        var col = '#94a3b8';                                   // ~full price
+        if (b.now && c.avg <= b.now * 1.03) col = '#34d399';   // at/below offer
+        else if (b.was && c.avg < b.was * 0.97) col = '#fbbf24'; // part-way
+        return '<td class="r"' + (off ? ' style="' + offCol + '"' : '') + '>'
+          + '<span style="color:' + col + ';font-weight:700">' + fmt(c.avg) + '</span>'
+          + ' <span style="color:#64748b;font-size:0.72rem">(' + fmt(c.qty) + ')</span></td>';
+      }).join('');
+      return '<tr><td class="name">' + b.name + '</td>' + cells
+        + '<td class="r" style="color:#94a3b8">' + (b.was != null ? fmt(b.was) : '—') + '</td>'
+        + '<td class="r" style="color:#34d399">' + (b.now != null ? fmt(b.now) : '—') + '</td></tr>';
+    }).join('');
   }
 
   // ── Table ──

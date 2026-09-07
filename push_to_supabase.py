@@ -20,7 +20,10 @@ load_dotenv()
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 SQL_FILE = os.path.join(BASE, "migrations", "marketing_dashboard.sql")
-TABLES = ("denri_mkt_monthly", "denri_mkt_weekly", "denri_mkt_new_products", "denri_mkt_offers")
+TABLES = ("denri_mkt_monthly", "denri_mkt_weekly", "denri_mkt_new_products", "denri_mkt_offers",
+          "denri_mkt_timed_offers", "denri_mkt_timed_offer_bags", "denri_mkt_timed_offer_days",
+          "denri_mkt_timed_offer_weeks", "denri_mkt_self_made_summary", "denri_mkt_combo_sales",
+          "denri_mkt_combo_requests")
 
 
 def main() -> None:

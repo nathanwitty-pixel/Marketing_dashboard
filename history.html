@@ -80,6 +80,23 @@
   .offer-mix { font-size: 0.75rem; color: #64748b; text-align: center; margin-top: 0.7rem; }
   .offer-mix b { color: #94a3b8; } .offer-mix b.c { color: #fbbf24; } .offer-mix b.p { color: #c4b5fd; }
 
+  /* Timed offers */
+  .to-camp { border-top: 1px solid #2d3148; margin-top: 1.2rem; padding-top: 1.1rem; }
+  .to-camp:first-of-type { border-top: 0; margin-top: 0.2rem; padding-top: 0; }
+  .to-name { font-size: 1.02rem; font-weight: 700; color: #fbbf24; }
+  .to-win { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: #64748b; margin-top: 0.15rem; }
+  .to-kpis { display: flex; flex-wrap: wrap; gap: 0.4rem 1.6rem; margin: 0.7rem 0 0.2rem; font-size: 0.86rem; color: #cbd5e1; }
+  .to-kpis b { font-size: 1.1rem; }
+  .to-verdict { margin-top: 0.7rem; padding: 0.8rem 0.95rem; background: rgba(245,158,11,0.08);
+                border: 1px solid rgba(245,158,11,0.28); border-radius: 10px; color: #e2e8f0;
+                font-size: 0.86rem; line-height: 1.55; }
+  .to-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 0.3rem; }
+  .to-table th { text-align: right; padding: 0.45rem 0.7rem; color: #64748b; font-size: 0.62rem;
+                 font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; border-bottom: 1px solid #2d3148; }
+  .to-table th:first-child { text-align: left; }
+  .to-table td { padding: 0.45rem 0.7rem; border-top: 1px solid #262a3d; text-align: right; font-variant-numeric: tabular-nums; }
+  .to-table td:first-child { text-align: left; color: #f1f5f9; font-weight: 600; }
+
   .foot { font-size: 0.72rem; color: #475569; text-align: center; margin-top: 1.4rem; }
   .empty { background: #1e2130; border: 1px dashed #2d3148; border-radius: 16px; padding: 3rem 2rem; text-align: center; color: #64748b; }
   .empty h3 { color: #cbd5e1; font-size: 1rem; margin-bottom: 0.4rem; }
@@ -92,7 +109,7 @@
   <div class="rpt-head">
     <span class="rpt-pill"><span class="dot"></span>History · Stored in Supabase</span>
     <h1>Reporting History</h1>
-    <div class="dek">Every month backed up to the database — Current Performance, Offer Type Analysis (all locations), New Products &amp; Posting.</div>
+    <div class="dek">Every month backed up to the database — Current Performance, New Products, Offer Type Analysis (all locations), Posting, Timed Offers &amp; Self-Made Combos.</div>
     <div class="switcher" id="switcher"></div>
     <div class="src-note" id="src-note"></div>
   </div>
@@ -106,55 +123,231 @@
 <script id="history-data" type="application/json">
 {
 "source": "Supabase",
-"generatedOn": "2026-08-24",
+"generatedOn": "2026-09-04",
 "months": [
 {
 "key": "2026-08",
 "month": "August",
 "year": 2026,
-"generatedOn": "2026-08-10",
+"generatedOn": "2026-09-01",
+"comments": [
+{
+"text": "August closed at 76.1% of target — 17,671 of 23,232 bags, missing by 5,561 bags. The gap is not weak demand; it is stock we never marketed.",
+"type": "bottom",
+"label": "The Bottom Line",
+"section": "Executive Summary"
+},
+{
+"text": "53.1% of Kenya stock (5,478 bags) was never posted — yet posted bags sold at 85.9% of expectation. Marketing is the lever, and much of it went unused.",
+"type": "bullet",
+"label": "Key point",
+"section": "Executive Summary"
+},
+{
+"text": "Weekly output (~2,945 bags) ran below the 5,808/week floor needed to hit target — the problem is consistency, not a bad month.",
+"type": "bullet",
+"label": "Key point",
+"section": "Executive Summary"
+},
+{
+"text": "Regions are uneven: Kenya posts at 85.9% sales-achieved, Sinza 20.4%, Uganda 15.3%. The Kenya playbook isn't being run elsewhere.",
+"type": "bullet",
+"label": "Key point",
+"section": "Executive Summary"
+},
+{
+"text": "We finished August at 76.1% of target (17,671 bags), 5,561 bags short. Weekly output averaged about 2,945 bags — under the 5,808-bag weekly floor the target requires.",
+"type": "bottom",
+"label": "The Bottom Line",
+"section": "Current Performance"
+},
+{
+"text": "Weekly output ran below the bare minimum needed to reach target most weeks. The shortfall is one of throughput and consistency, not demand — corporate orders (65 bags) only nudged the forecast to 76.34%.",
+"type": "insight",
+"label": "The Insight",
+"section": "Current Performance"
+},
+{
+"text": "Closing even half the weekly gap (~1,431 bags/week) across the month adds ~5,726 bags — lifting achievement from 76.1% to ~100.7%.",
+"type": "impact",
+"label": "Business Impact",
+"section": "Current Performance"
+},
+{
+"text": "The 7 new products (AMORA, IMANI, LAMORA, LOOP BP, NALA, TAJI, ZULA) reached only 42.3% of their 930-bag target (393 sold) — a 537-bag deficit.",
+"type": "bottom",
+"label": "The Bottom Line",
+"section": "New Products"
+},
+{
+"text": "New products received 443 marketing posts but converted just 393 bags, and almost all of it (402 of 393) was Kenya — outside-Kenya is effectively untested (10 bags). Awareness is being created; conversion and distribution are the bottleneck.",
+"type": "insight",
+"label": "The Insight",
+"section": "New Products"
+},
+{
+"text": "Recovering half the deficit (~268 bags) is realistic within one cycle; a working outside-Kenya channel would add a comparable second stream.",
+"type": "impact",
+"label": "Business Impact",
+"section": "New Products"
+},
+{
+"text": "No configured offer prices — showing realised averages only.",
+"type": "insight",
+"label": "On offer?",
+"section": "Timed Offers"
+},
+{
+"text": "Mostly backpacks with real inventory behind them — 1,324 still in Kenya stock even after the push (led by Antitheft at 304). The offer draws down a genuine stock position, not a token one.",
+"type": "insight",
+"label": "Stock",
+"section": "Timed Offers"
+},
+{
+"text": "All six sit in Backpack, School Bag — school categories — and the step-up landed in the offer week as schools opened. Antitheft and School bag even sold on zero marketing posts (pure demand). The timing fits the sales pattern as much as the price cut does.",
+"type": "insight",
+"label": "Season",
+"section": "Timed Offers"
+},
+{
+"text": "Across 10 combos and 10 power deals (Kenya), the two offer types cleared stock very differently: combos moved 0 bags (KES 0) while power deals moved 8,100 bags (KES 16,970,000). Power deals shifted the most stock; power deals made the most money.",
+"type": "bottom",
+"label": "The Bottom Line",
+"section": "Offer Type Analysis"
+},
+{
+"text": "It's a price-point story: combos averaged KES 0 per offer vs power deals KES 2,025. The cheaper combos clear more volume, so dead stock moves fastest through combos — yet 4,841 bags remain in Kenya offer stock (plus 488 Sinza, 569 Uganda), so the mix still isn't drawing inventory down fast enough.",
+"type": "insight",
+"label": "The Insight",
+"section": "Offer Type Analysis"
+},
+{
+"text": "Sinza ran 10 combos, 10 singles and 0 specials, moving 120,000 bags (value 220,500,000) against 488 in stock. Uganda ran 3 combos and 0 singles, moving 0 bags (value 0) against 569 in stock. Both are clearing only a thin slice of their offer stock — the same dead-stock problem as Kenya, at smaller scale.",
+"type": "insight",
+"label": "Sinza & Uganda offers",
+"section": "Offer Type Analysis"
+},
+{
+"text": "Clearing just 20% of the 4,841-bag Kenya position (~968 bags) in the month is ~4.2% of target — and frees working capital tied up in slow stock.",
+"type": "impact",
+"label": "Business Impact",
+"section": "Offer Type Analysis"
+},
+{
+"text": "Marketing posting is our most effective lever — Kenya posted bags hit 85.9% of expected sales monthly — but 53.1% of in-stock bags (5,478) were never posted. The target gap is sitting in unmarketed stock.",
+"type": "bottom",
+"label": "The Bottom Line",
+"section": "Posting Yields (Sales from Accurate Posting)"
+},
+{
+"text": "Where we post, we sell: monthly sales on posted bags (5,863) ran ~3.9× the 1,516 expected. Yet only 4,841 bags were on offer/posted vs 5,478 not. Regionally the discipline collapses — Kenya 85.9%, Sinza 20.4%, Uganda 15.3% — so the biggest untapped demand is in Uganda and in unmarketed stock.",
+"type": "insight",
+"label": "Which bags were never postedAgainst the month's posting, these in-stock bags carry zero marketing posts — the dead stock marketing moves first so the sales team can reach target: GIFT BAG A5112 in stock · 0 postsBrown MAN BAG BROWN104 in stock · 0 postsBlack MAN BAG BLACK97 in stock · 0 postsGrey JUMBO GREY89 in stock · 0 postsBrown ANTITHEFT BROWN88 in stock · 0 postsGreen ANTITHEFT GREEN86 in stock · 0 postsBlack JUMBO BLACK85 in stock · 0 posts GIFT BAG A482 in stock · 0 postsBlack GYM BAG BLACK80 in stock · 0 postsBrown SCHOOL BAG BROWN78 in stock · 0 posts The Insight",
+"section": "Posting Yields (Sales from Accurate Posting)"
+},
+{
+"text": "If the 5,478 unposted bags converted at even a conservative 20% once marketed, that is ~1,096 bags — enough to close ~19.7% of the entire target gap. Bringing Uganda toward Kenya's rate compounds it further.",
+"type": "impact",
+"label": "Business Impact",
+"section": "Posting Yields (Sales from Accurate Posting)"
+},
+{
+"text": "Managing to a hard 5,808-bag weekly commit, reviewed every Monday — not a single monthly number reconciled at month-end.",
+"type": "rec",
+"label": "Recommendation",
+"section": "Current Performance"
+},
+{
+"text": "Treating the ~2,863-bag weekly gap as normal. Each missed week is unrecoverable against a fixed monthly target.",
+"type": "rec",
+"label": "Recommendation",
+"section": "Current Performance"
+},
+{
+"text": "A concentrated push on the weakest launches with price/offer support to clear the 537-bag deficit.",
+"type": "rec",
+"label": "Recommendation",
+"section": "New Products"
+},
+{
+"text": "Outside-Kenya distribution for the best-performing new lines — 10 bags sold there all month is an untested market, not a dead one.",
+"type": "rec",
+"label": "Recommendation",
+"section": "New Products"
+},
+{
+"text": "Routing the slowest dead stock through combos (the higher-volume clearer) and keeping premium movers in power deals for margin.",
+"type": "rec",
+"label": "Recommendation",
+"section": "Offer Type Analysis"
+},
+{
+"text": "Restocking the slowest-moving colours until the 4,841-bag Kenya position draws down.",
+"type": "rec",
+"label": "Recommendation",
+"section": "Offer Type Analysis"
+},
+{
+"text": "Systematically posting the 5,478 unmarketed in-stock bags — the single largest, cheapest lever against the 5,561-bag target gap.",
+"type": "rec",
+"label": "Focus — move the bags NOT on offerMarketing's real target is the stock sitting not on offer. Read across the three posting lenses:CombinedSales vs Expected (Posted & Unposted) — of Kenya's in-stock bags, 4,841 are on offer but 5,478 sit not on offer: dead stock we aren't even putting in front of buyers.With postingSales with Posting vs Expected — where marketing posted, sales ran ~3.9× expected. Posting demonstrably works, so aiming it at the not-on-offer pile is the lever.No postingSales with no Posting vs Opportunity if Marketed — the sales team already moved 2,023 bags with zero marketing; the gap up to the opportunity is what marketing leaves on the table by not posting the not-on-offer stock.Not-on-offer stock by region: Kenya 5,478, Sinza 308, Uganda 436 — and Sinza (20.4%) and Uganda (15.3%) move it far slower than Kenya (85.9%). Same playbook, all three regions. Bags NOT on offer, by region — the dead stock marketing must move Recommendation",
+"section": "Posting Yields (Sales from Accurate Posting)"
+},
+{
+"text": "The Kenya posting playbook in Uganda, where sales-achieved is 15.3% vs Kenya's 85.9%.",
+"type": "rec",
+"label": "Focus — move the bags NOT on offerMarketing's real target is the stock sitting not on offer. Read across the three posting lenses:CombinedSales vs Expected (Posted & Unposted) — of Kenya's in-stock bags, 4,841 are on offer but 5,478 sit not on offer: dead stock we aren't even putting in front of buyers.With postingSales with Posting vs Expected — where marketing posted, sales ran ~3.9× expected. Posting demonstrably works, so aiming it at the not-on-offer pile is the lever.No postingSales with no Posting vs Opportunity if Marketed — the sales team already moved 2,023 bags with zero marketing; the gap up to the opportunity is what marketing leaves on the table by not posting the not-on-offer stock.Not-on-offer stock by region: Kenya 5,478, Sinza 308, Uganda 436 — and Sinza (20.4%) and Uganda (15.3%) move it far slower than Kenya (85.9%). Same playbook, all three regions. Bags NOT on offer, by region — the dead stock marketing must move Recommendation",
+"section": "Posting Yields (Sales from Accurate Posting)"
+},
+{
+"text": "Letting in-stock bags sit unposted — every unmarketed bag is a bag that reliably does not sell.",
+"type": "rec",
+"label": "Focus — move the bags NOT on offerMarketing's real target is the stock sitting not on offer. Read across the three posting lenses:CombinedSales vs Expected (Posted & Unposted) — of Kenya's in-stock bags, 4,841 are on offer but 5,478 sit not on offer: dead stock we aren't even putting in front of buyers.With postingSales with Posting vs Expected — where marketing posted, sales ran ~3.9× expected. Posting demonstrably works, so aiming it at the not-on-offer pile is the lever.No postingSales with no Posting vs Opportunity if Marketed — the sales team already moved 2,023 bags with zero marketing; the gap up to the opportunity is what marketing leaves on the table by not posting the not-on-offer stock.Not-on-offer stock by region: Kenya 5,478, Sinza 308, Uganda 436 — and Sinza (20.4%) and Uganda (15.3%) move it far slower than Kenya (85.9%). Same playbook, all three regions. Bags NOT on offer, by region — the dead stock marketing must move Recommendation",
+"section": "Posting Yields (Sales from Accurate Posting)"
+}
+],
 "monthly": {
 "year": 2026,
-"achieved_pct": 21.59,
-"total_sales": 5015,
+"achieved_pct": 76.06,
+"total_sales": 17671,
 "total_target": 23232,
-"gap": 18217,
+"gap": 5561,
 "bare_minimum": 5808,
-"avg_weekly": 1671.67,
-"corporate": 312,
-"forecast": "78.98%",
+"avg_weekly": 2945.17,
+"corporate": 65,
+"forecast": "76.34%",
 "np_count": 7,
 "np_target": 930,
-"np_sales": 118,
-"np_deficit": 812,
-"np_kenya": 126,
-"np_outside": 3,
-"np_posts": 219,
+"np_sales": 393,
+"np_deficit": 537,
+"np_kenya": 402,
+"np_outside": 10,
+"np_posts": 443,
 "combos": 10,
 "power_deals": 10,
-"kenya_combo_units": 893,
-"kenya_combo_value": 3983207,
-"kenya_combo_avg": 4399,
-"kenya_deal_units": 1100,
-"kenya_deal_value": 2372300,
-"kenya_deal_avg": 1970,
-"sinza_units": 80,
-"sinza_value": 367939,
-"sinza_cleared": 14.8,
-"uganda_units": 16,
-"uganda_value": 1211500,
-"uganda_cleared": 2.4,
-"posting_kenya_pct": 80.2,
-"posting_sinza_pct": 7.1,
-"posting_uganda_pct": 2.4,
-"posted_stock": 5075,
-"unposted_stock": 5738,
-"posts_made": 215,
-"notoffer_kenya": 5738,
-"notoffer_sinza": 388,
-"notoffer_uganda": 470,
-"sales_from_posting": 1021,
-"expected_from_posting": 484
+"kenya_combo_units": 2509,
+"kenya_combo_value": 0,
+"kenya_combo_avg": 0,
+"kenya_deal_units": 3745,
+"kenya_deal_value": 2599700,
+"kenya_deal_avg": 2025,
+"sinza_units": 206,
+"sinza_value": 49500,
+"sinza_cleared": 42.2,
+"uganda_units": 78,
+"uganda_value": 36,
+"uganda_cleared": 10.3,
+"posting_kenya_pct": 85.9,
+"posting_sinza_pct": 20.4,
+"posting_uganda_pct": 15.3,
+"posted_stock": 4841,
+"unposted_stock": 5478,
+"posts_made": 674,
+"notoffer_kenya": 5478,
+"notoffer_sinza": 308,
+"notoffer_uganda": 436,
+"sales_from_posting": 5863,
+"expected_from_posting": 1516
 },
 "weekly": [
 {
@@ -180,9 +373,39 @@
 {
 "seq": 3,
 "label": "Wk 3",
-"pct": 0.86,
-"cum": 21.59,
-"bags": 199,
+"pct": 16.49,
+"cum": 37.22,
+"bags": 3831,
+"week_month": null,
+"target_to_beat": null,
+"declined_by": null
+},
+{
+"seq": 4,
+"label": "Wk 4",
+"pct": 16.9,
+"cum": 54.12,
+"bags": 3927,
+"week_month": null,
+"target_to_beat": null,
+"declined_by": null
+},
+{
+"seq": 5,
+"label": "Wk 5",
+"pct": 18.22,
+"cum": 72.34,
+"bags": 4233,
+"week_month": null,
+"target_to_beat": null,
+"declined_by": null
+},
+{
+"seq": 6,
+"label": "Wk 6",
+"pct": 3.72,
+"cum": 76.06,
+"bags": 864,
 "week_month": null,
 "target_to_beat": null,
 "declined_by": null
@@ -191,52 +414,52 @@
 "newProducts": [
 {
 "name": "ZULA",
-"sold": 34,
-"remaining": 116,
-"posts": 54,
-"stock": 218
-},
-{
-"name": "LAMORA",
-"sold": 29,
-"remaining": 171,
-"posts": 54,
-"stock": 129
+"sold": 118,
+"remaining": 32,
+"posts": 92,
+"stock": 175
 },
 {
 "name": "LOOP BP",
-"sold": 26,
-"remaining": 224,
-"posts": 21,
-"stock": 99
+"sold": 113,
+"remaining": 137,
+"posts": 47,
+"stock": 98
 },
 {
-"name": "NALA",
-"sold": 16,
-"remaining": 84,
-"posts": 33,
-"stock": 81
+"name": "LAMORA",
+"sold": 71,
+"remaining": 129,
+"posts": 115,
+"stock": 93
 },
 {
 "name": "TAJI",
-"sold": 10,
-"remaining": 90,
-"posts": 42,
-"stock": 102
+"sold": 45,
+"remaining": 55,
+"posts": 90,
+"stock": 89
+},
+{
+"name": "NALA",
+"sold": 32,
+"remaining": 68,
+"posts": 80,
+"stock": 48
 },
 {
 "name": "IMANI",
-"sold": 3,
-"remaining": 77,
+"sold": 10,
+"remaining": 70,
 "posts": 0,
-"stock": 179
+"stock": 170
 },
 {
 "name": "AMORA",
-"sold": 0,
-"remaining": 50,
-"posts": 15,
-"stock": 55
+"sold": 4,
+"remaining": 46,
+"posts": 19,
+"stock": 52
 }
 ],
 "offers": [
@@ -244,15 +467,7 @@
 "region": "Kenya",
 "name": "Jumbo",
 "offer_type": "deal",
-"units": 343,
-"value": null,
-"stock": null
-},
-{
-"region": "Kenya",
-"name": "Amaya + Zipped/Lunchset/ Nizana / Moon",
-"offer_type": "combo",
-"units": 171,
+"units": 1130,
 "value": null,
 "stock": null
 },
@@ -260,39 +475,7 @@
 "region": "Kenya",
 "name": "Jumbo + standard/Liam + Pioneer/Antitheft",
 "offer_type": "combo",
-"units": 127,
-"value": null,
-"stock": null
-},
-{
-"region": "Kenya",
-"name": "FABELA",
-"offer_type": "deal",
-"units": 126,
-"value": null,
-"stock": null
-},
-{
-"region": "Kenya",
-"name": "REO TRAVEL",
-"offer_type": "deal",
-"units": 123,
-"value": null,
-"stock": null
-},
-{
-"region": "Kenya",
-"name": "SAFIRI + STANDARD/ ANTITHEFT",
-"offer_type": "combo",
-"units": 123,
-"value": null,
-"stock": null
-},
-{
-"region": "Kenya",
-"name": "Sarai + Prime",
-"offer_type": "combo",
-"units": 105,
+"units": 501,
 "value": null,
 "stock": null
 },
@@ -300,15 +483,23 @@
 "region": "Kenya",
 "name": "PRIME",
 "offer_type": "deal",
-"units": 100,
+"units": 452,
 "value": null,
 "stock": null
 },
 {
 "region": "Kenya",
-"name": "Mega + Man Bag/ Mini Umbra / Neo man",
-"offer_type": "combo",
-"units": 91,
+"name": "FABELA",
+"offer_type": "deal",
+"units": 449,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "REO TRAVEL",
+"offer_type": "deal",
+"units": 392,
 "value": null,
 "stock": null
 },
@@ -316,15 +507,7 @@
 "region": "Kenya",
 "name": "Fabela + Laptop backpack / Big man",
 "offer_type": "combo",
-"units": 89,
-"value": null,
-"stock": null
-},
-{
-"region": "Kenya",
-"name": "AVANA HB",
-"offer_type": "deal",
-"units": 73,
+"units": 386,
 "value": null,
 "stock": null
 },
@@ -332,7 +515,39 @@
 "region": "Kenya",
 "name": "MINI MAYA",
 "offer_type": "deal",
-"units": 73,
+"units": 384,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "Amaya + Zipped/Lunchset/ Nizana / Moon",
+"offer_type": "combo",
+"units": 374,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "SAFIRI + STANDARD/ ANTITHEFT",
+"offer_type": "combo",
+"units": 274,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "Mega + Man Bag/ Mini Umbra / Neo man",
+"offer_type": "combo",
+"units": 250,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "Sarai + Prime",
+"offer_type": "combo",
+"units": 228,
 "value": null,
 "stock": null
 },
@@ -340,31 +555,7 @@
 "region": "Kenya",
 "name": "CATHY HANDBAG",
 "offer_type": "deal",
-"units": 70,
-"value": null,
-"stock": null
-},
-{
-"region": "Kenya",
-"name": "MINI ZURI",
-"offer_type": "deal",
-"units": 66,
-"value": null,
-"stock": null
-},
-{
-"region": "Kenya",
-"name": "MONAH BP",
-"offer_type": "deal",
-"units": 66,
-"value": null,
-"stock": null
-},
-{
-"region": "Kenya",
-"name": "Bonita + Zane / Mini Umbra / Nizana /Neo Man",
-"offer_type": "combo",
-"units": 64,
+"units": 217,
 "value": null,
 "stock": null
 },
@@ -372,7 +563,15 @@
 "region": "Kenya",
 "name": "GYM BAG",
 "offer_type": "deal",
-"units": 60,
+"units": 206,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "MONAH BP",
+"offer_type": "deal",
+"units": 201,
 "value": null,
 "stock": null
 },
@@ -380,7 +579,23 @@
 "region": "Kenya",
 "name": "Standard / liam + Laptop backpack",
 "offer_type": "combo",
-"units": 56,
+"units": 172,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "MINI ZURI",
+"offer_type": "deal",
+"units": 165,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "AVANA HB",
+"offer_type": "deal",
+"units": 149,
 "value": null,
 "stock": null
 },
@@ -388,7 +603,15 @@
 "region": "Kenya",
 "name": "Moon/ Nizana / Oval+ Zane/Manbag",
 "offer_type": "combo",
-"units": 52,
+"units": 140,
+"value": null,
+"stock": null
+},
+{
+"region": "Kenya",
+"name": "Bonita + Zane / Mini Umbra / Nizana /Neo Man",
+"offer_type": "combo",
+"units": 122,
 "value": null,
 "stock": null
 },
@@ -396,7 +619,7 @@
 "region": "Kenya",
 "name": "Baby Bag + Liam/Standard",
 "offer_type": "combo",
-"units": 15,
+"units": 62,
 "value": null,
 "stock": null
 },
@@ -404,7 +627,15 @@
 "region": "Sinza",
 "name": "JUMBO + CODE 3 + MAN BAG",
 "offer_type": "combo",
-"units": 32,
+"units": 72,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "CODE 3",
+"offer_type": "single",
+"units": 24,
 "value": null,
 "stock": null
 },
@@ -412,7 +643,63 @@
 "region": "Sinza",
 "name": "SARAI + BIG MAN",
 "offer_type": "combo",
-"units": 15,
+"units": 18,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "BONITA + ZELUS",
+"offer_type": "combo",
+"units": 16,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "SARAI",
+"offer_type": "single",
+"units": 11,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "MINI UMBRA",
+"offer_type": "single",
+"units": 10,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "BIG MAN BAG",
+"offer_type": "single",
+"units": 9,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "SLEEVE 1",
+"offer_type": "single",
+"units": 8,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "SAFIRI + STANDARD",
+"offer_type": "combo",
+"units": 8,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "LUNA",
+"offer_type": "single",
+"units": 7,
 "value": null,
 "stock": null
 },
@@ -426,15 +713,15 @@
 },
 {
 "region": "Sinza",
-"name": "SLEEVE 1",
+"name": "MONAH BP",
 "offer_type": "single",
-"units": 6,
+"units": 5,
 "value": null,
 "stock": null
 },
 {
 "region": "Sinza",
-"name": "LUNA",
+"name": "GYM BAG",
 "offer_type": "single",
 "units": 4,
 "value": null,
@@ -444,79 +731,7 @@
 "region": "Sinza",
 "name": "GYMBAG + ARIA SLING",
 "offer_type": "combo",
-"units": 3,
-"value": null,
-"stock": null
-},
-{
-"region": "Sinza",
-"name": "BONITA + ZELUS",
-"offer_type": "combo",
-"units": 3,
-"value": null,
-"stock": null
-},
-{
-"region": "Sinza",
-"name": "CODE 3",
-"offer_type": "single",
-"units": 3,
-"value": null,
-"stock": null
-},
-{
-"region": "Sinza",
-"name": "SAFIRI + STANDARD",
-"offer_type": "combo",
-"units": 2,
-"value": null,
-"stock": null
-},
-{
-"region": "Sinza",
-"name": "GYM BAG",
-"offer_type": "single",
-"units": 2,
-"value": null,
-"stock": null
-},
-{
-"region": "Sinza",
-"name": "SARAI",
-"offer_type": "single",
-"units": 2,
-"value": null,
-"stock": null
-},
-{
-"region": "Sinza",
-"name": "BIG MAN BAG",
-"offer_type": "single",
-"units": 1,
-"value": null,
-"stock": null
-},
-{
-"region": "Sinza",
-"name": "MONAH BP",
-"offer_type": "single",
-"units": 1,
-"value": null,
-"stock": null
-},
-{
-"region": "Sinza",
-"name": "FABELA + AMAYA",
-"offer_type": "combo",
-"units": 0,
-"value": null,
-"stock": null
-},
-{
-"region": "Sinza",
-"name": "ELYSE + MINIZURI",
-"offer_type": "combo",
-"units": 0,
+"units": 4,
 "value": null,
 "stock": null
 },
@@ -524,14 +739,22 @@
 "region": "Sinza",
 "name": "KATE",
 "offer_type": "single",
-"units": 0,
+"units": 2,
 "value": null,
 "stock": null
 },
 {
 "region": "Sinza",
-"name": "MINI UMBRA",
-"offer_type": "single",
+"name": "MOON BAG + BELT BAG",
+"offer_type": "combo",
+"units": 2,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "ELYSE + MINIZURI",
+"offer_type": "combo",
 "units": 0,
 "value": null,
 "stock": null
@@ -554,7 +777,7 @@
 },
 {
 "region": "Sinza",
-"name": "MOON BAG + BELT BAG",
+"name": "FABELA + AMAYA",
 "offer_type": "combo",
 "units": 0,
 "value": null,
@@ -562,139 +785,420 @@
 },
 {
 "region": "Uganda",
-"name": "SATCHEL",
-"offer_type": null,
-"units": 5,
-"value": null,
-"stock": 15
-},
-{
-"region": "Uganda",
 "name": "ANTITHEFT",
 "offer_type": null,
-"units": 4,
+"units": 22,
 "value": null,
-"stock": 26
+"stock": 29
 },
 {
 "region": "Uganda",
 "name": "JUMBO",
 "offer_type": null,
-"units": 3,
+"units": 9,
 "value": null,
-"stock": 27
+"stock": 71
 },
 {
 "region": "Uganda",
-"name": "KAYLA",
+"name": "SATCHEL",
 "offer_type": null,
-"units": 2,
+"units": 8,
 "value": null,
-"stock": 4
-},
-{
-"region": "Uganda",
-"name": "MINI ZURI",
-"offer_type": null,
-"units": 1,
-"value": null,
-"stock": 11
-},
-{
-"region": "Uganda",
-"name": "NEO MAN",
-"offer_type": null,
-"units": 1,
-"value": null,
-"stock": 17
-},
-{
-"region": "Uganda",
-"name": "BIG MAN BAG",
-"offer_type": null,
-"units": 0,
-"value": null,
-"stock": 14
-},
-{
-"region": "Uganda",
-"name": "KAI",
-"offer_type": null,
-"units": 0,
-"value": null,
-"stock": 18
+"stock": 10
 },
 {
 "region": "Uganda",
 "name": "MANDY HB",
 "offer_type": null,
-"units": 0,
+"units": 5,
 "value": null,
-"stock": 5
+"stock": 1
+},
+{
+"region": "Uganda",
+"name": "NEO MAN",
+"offer_type": null,
+"units": 5,
+"value": null,
+"stock": 10
+},
+{
+"region": "Uganda",
+"name": "KAI",
+"offer_type": null,
+"units": 4,
+"value": null,
+"stock": 18
+},
+{
+"region": "Uganda",
+"name": "KAYLA",
+"offer_type": null,
+"units": 4,
+"value": null,
+"stock": 0
 },
 {
 "region": "Uganda",
 "name": "MINI SCHOOL",
 "offer_type": null,
-"units": 0,
+"units": 4,
 "value": null,
-"stock": 13
-},
-{
-"region": "Uganda",
-"name": "SKYE HB",
-"offer_type": null,
-"units": 0,
-"value": null,
-"stock": 7
-},
-{
-"region": "Uganda",
-"name": "zane man",
-"offer_type": null,
-"units": 0,
-"value": null,
-"stock": 21
-},
-{
-"region": "Uganda",
-"name": "MOON BAG",
-"offer_type": null,
-"units": 0,
-"value": null,
-"stock": 7
-},
-{
-"region": "Uganda",
-"name": "NIZANA",
-"offer_type": null,
-"units": 0,
-"value": null,
-"stock": 11
-},
-{
-"region": "Uganda",
-"name": "PIONEER",
-"offer_type": null,
-"units": 0,
-"value": null,
-"stock": 5
+"stock": 8
 },
 {
 "region": "Uganda",
 "name": "AVANA HB",
 "offer_type": null,
-"units": 0,
+"units": 3,
 "value": null,
-"stock": 8
+"stock": 5
+},
+{
+"region": "Uganda",
+"name": "MINI ZURI",
+"offer_type": null,
+"units": 3,
+"value": null,
+"stock": 10
+},
+{
+"region": "Uganda",
+"name": "MOON BAG",
+"offer_type": null,
+"units": 3,
+"value": null,
+"stock": 5
+},
+{
+"region": "Uganda",
+"name": "NIZANA",
+"offer_type": null,
+"units": 2,
+"value": null,
+"stock": 11
+},
+{
+"region": "Uganda",
+"name": "SKYE HB",
+"offer_type": null,
+"units": 2,
+"value": null,
+"stock": 2
+},
+{
+"region": "Uganda",
+"name": "zane man",
+"offer_type": null,
+"units": 2,
+"value": null,
+"stock": 18
+},
+{
+"region": "Uganda",
+"name": "BIG MAN BAG",
+"offer_type": null,
+"units": 1,
+"value": null,
+"stock": 15
+},
+{
+"region": "Uganda",
+"name": "PIONEER",
+"offer_type": null,
+"units": 1,
+"value": null,
+"stock": 2
+}
+],
+"timedOffers": [
+{
+"seq": 1,
+"name": "Back to School Edition",
+"market": "Kenya",
+"start_date": "2026-08-17",
+"end_date": "2026-08-21",
+"window_label": "17–21 Aug 2026",
+"total_sold": 695,
+"total_posts": 21,
+"per_post": 33.1,
+"best_name": "Code 3",
+"best_sold": 225,
+"total_stock": 1324,
+"lift_pct": 79,
+"base_start": "2026-08-01",
+"base_end": "2026-08-16",
+"base_days": 16,
+"base_total": 1240,
+"base_per_day": 77.5,
+"offer_days": 5,
+"offer_total": 695,
+"offer_per_day": 139,
+"verdict": "<b>Good move.</b> Sales rose <b>+79%</b> per day during back-to-school. Match the cut depth to demand — the popular school lines carried the volume.",
+"bags": [
+{
+"name": "Code 3",
+"category": "BACKPACK",
+"sold": 225,
+"posts": 7,
+"per_post": 32.1,
+"stock": 263,
+"price_was": 2100,
+"price_now": 54068,
+"discount_kes": -51968,
+"discount_pct": 2475,
+"bag_lift": 56
+},
+{
+"name": "Antitheft",
+"category": "BACKPACK",
+"sold": 204,
+"posts": 0,
+"per_post": null,
+"stock": 304,
+"price_was": 2200,
+"price_now": 66356,
+"discount_kes": -64156,
+"discount_pct": 2916,
+"bag_lift": 33
+},
+{
+"name": "School bag",
+"category": "SCHOOL BAG",
+"sold": 106,
+"posts": 0,
+"per_post": null,
+"stock": 225,
+"price_was": 2100,
+"price_now": 54068,
+"discount_kes": -51968,
+"discount_pct": 2475,
+"bag_lift": 562
+},
+{
+"name": "Kai",
+"category": "BACKPACK",
+"sold": 80,
+"posts": 6,
+"per_post": 13.3,
+"stock": 178,
+"price_was": 2800,
+"price_now": 71271,
+"discount_kes": -68471,
+"discount_pct": 2445,
+"bag_lift": 65
+},
+{
+"name": "Pioneer",
+"category": "BACKPACK",
+"sold": 55,
+"posts": 8,
+"per_post": 6.9,
+"stock": 100,
+"price_was": null,
+"price_now": null,
+"discount_kes": null,
+"discount_pct": 13,
+"bag_lift": 206
+},
+{
+"name": "Double Press",
+"category": "BACKPACK",
+"sold": 25,
+"posts": 0,
+"per_post": null,
+"stock": 254,
+"price_was": 2600,
+"price_now": 66356,
+"discount_kes": -63756,
+"discount_pct": 2452,
+"bag_lift": 212
+}
+],
+"daily": [
+{
+"day": "2026-08-01",
+"bags": 85,
+"in_offer": false
+},
+{
+"day": "2026-08-02",
+"bags": 27,
+"in_offer": false
+},
+{
+"day": "2026-08-03",
+"bags": 91,
+"in_offer": false
+},
+{
+"day": "2026-08-04",
+"bags": 81,
+"in_offer": false
+},
+{
+"day": "2026-08-05",
+"bags": 81,
+"in_offer": false
+},
+{
+"day": "2026-08-06",
+"bags": 88,
+"in_offer": false
+},
+{
+"day": "2026-08-07",
+"bags": 92,
+"in_offer": false
+},
+{
+"day": "2026-08-08",
+"bags": 103,
+"in_offer": false
+},
+{
+"day": "2026-08-09",
+"bags": 29,
+"in_offer": false
+},
+{
+"day": "2026-08-10",
+"bags": 93,
+"in_offer": false
+},
+{
+"day": "2026-08-11",
+"bags": 91,
+"in_offer": false
+},
+{
+"day": "2026-08-12",
+"bags": 95,
+"in_offer": false
+},
+{
+"day": "2026-08-13",
+"bags": 85,
+"in_offer": false
+},
+{
+"day": "2026-08-14",
+"bags": 77,
+"in_offer": false
+},
+{
+"day": "2026-08-15",
+"bags": 100,
+"in_offer": false
+},
+{
+"day": "2026-08-16",
+"bags": 22,
+"in_offer": false
+},
+{
+"day": "2026-08-17",
+"bags": 111,
+"in_offer": true
+},
+{
+"day": "2026-08-18",
+"bags": 130,
+"in_offer": true
+},
+{
+"day": "2026-08-19",
+"bags": 134,
+"in_offer": true
+},
+{
+"day": "2026-08-20",
+"bags": 153,
+"in_offer": true
+},
+{
+"day": "2026-08-21",
+"bags": 167,
+"in_offer": true
+}
+],
+"weekly": [
+{
+"seq": 1,
+"label": "Wk 1",
+"week_start": "2026-08-01",
+"week_end": "2026-08-01",
+"total": 85,
+"days": 1,
+"per_day": 85,
+"in_offer": false
+},
+{
+"seq": 2,
+"label": "Wk 2",
+"week_start": "2026-08-02",
+"week_end": "2026-08-08",
+"total": 563,
+"days": 7,
+"per_day": 80.4,
+"in_offer": false
+},
+{
+"seq": 3,
+"label": "Wk 3",
+"week_start": "2026-08-09",
+"week_end": "2026-08-15",
+"total": 570,
+"days": 7,
+"per_day": 81.4,
+"in_offer": false
+},
+{
+"seq": 4,
+"label": "Wk 4",
+"week_start": "2026-08-16",
+"week_end": "2026-08-22",
+"total": 849,
+"days": 7,
+"per_day": 121.3,
+"in_offer": true
+},
+{
+"seq": 5,
+"label": "Wk 5",
+"week_start": "2026-08-23",
+"week_end": "2026-08-29",
+"total": 912,
+"days": 7,
+"per_day": 130.3,
+"in_offer": false
+},
+{
+"seq": 6,
+"label": "Wk 6",
+"week_start": "2026-08-30",
+"week_end": "2026-09-01",
+"total": 209,
+"days": 3,
+"per_day": 69.7,
+"in_offer": false
 }
 ]
+}
+],
+"selfMade": {
+"summary": null,
+"sales": [],
+"requests": []
+}
 },
 {
 "key": "2026-07",
 "month": "July",
 "year": 2026,
 "generatedOn": "2026-08-03",
+"comments": [],
 "monthly": {
 "year": 2026,
 "achieved_pct": 71.8,
@@ -1060,22 +1564,6 @@
 },
 {
 "region": "Sinza",
-"name": "WASHBAG",
-"offer_type": "single",
-"units": 4,
-"value": null,
-"stock": null
-},
-{
-"region": "Sinza",
-"name": "STANDARD + MANBAG",
-"offer_type": "combo",
-"units": 4,
-"value": null,
-"stock": null
-},
-{
-"region": "Sinza",
 "name": "ELYSE",
 "offer_type": "single",
 "units": 4,
@@ -1092,7 +1580,23 @@
 },
 {
 "region": "Sinza",
-"name": "JAMELA + LUNCHSET",
+"name": "WASHBAG",
+"offer_type": "single",
+"units": 4,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "STANDARD + MANBAG",
+"offer_type": "combo",
+"units": 4,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "ALPHA  + DOUBLEPRESS",
 "offer_type": "combo",
 "units": 2,
 "value": null,
@@ -1108,7 +1612,15 @@
 },
 {
 "region": "Sinza",
-"name": "ALPHA  + DOUBLEPRESS",
+"name": "JAMELA + LUNCHSET",
+"offer_type": "combo",
+"units": 2,
+"value": null,
+"stock": null
+},
+{
+"region": "Sinza",
+"name": "SCHOOL BAG + SCHOOL BAG",
 "offer_type": "combo",
 "units": 2,
 "value": null,
@@ -1124,9 +1636,9 @@
 },
 {
 "region": "Sinza",
-"name": "SCHOOL BAG + SCHOOL BAG",
-"offer_type": "combo",
-"units": 2,
+"name": "LEGACY",
+"offer_type": "single",
+"units": 1,
 "value": null,
 "stock": null
 },
@@ -1140,9 +1652,9 @@
 },
 {
 "region": "Sinza",
-"name": "LEGACY",
+"name": "IMANI",
 "offer_type": "single",
-"units": 1,
+"units": 0,
 "value": null,
 "stock": null
 },
@@ -1150,14 +1662,6 @@
 "region": "Sinza",
 "name": "CESS + MINIZURI",
 "offer_type": "combo",
-"units": 0,
-"value": null,
-"stock": null
-},
-{
-"region": "Sinza",
-"name": "IMANI",
-"offer_type": "single",
 "units": 0,
 "value": null,
 "stock": null
@@ -1276,21 +1780,27 @@
 },
 {
 "region": "Uganda",
-"name": "zane man",
-"offer_type": null,
-"units": 0,
-"value": null,
-"stock": 21
-},
-{
-"region": "Uganda",
 "name": "PIONEER",
 "offer_type": null,
 "units": 0,
 "value": null,
 "stock": 5
+},
+{
+"region": "Uganda",
+"name": "zane man",
+"offer_type": null,
+"units": 0,
+"value": null,
+"stock": 21
 }
-]
+],
+"timedOffers": [],
+"selfMade": {
+"summary": null,
+"sales": [],
+"requests": []
+}
 }
 ]
 }
@@ -1309,6 +1819,7 @@ var GRID = C.grid;
 function nf(n){ return (n==null||isNaN(n)) ? '—' : Math.round(Number(n)).toLocaleString('en-US'); }
 function money(n){ return Math.round(Number(n)||0).toLocaleString('en-US'); }
 function pf(n){ return (n==null||isNaN(n)) ? '—' : Number(n).toFixed(1)+'%'; }
+function hesc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function fmtDate(s){ if(!s) return '—'; var p=String(s).split('-'); if(p.length<3) return s;
   var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return Number(p[2])+' '+(mo[Number(p[1])-1]||p[1])+' '+p[0]; }
@@ -1399,6 +1910,24 @@ function render(idx){
     + '<b style="color:#22d3ee">Singles '+_pc(_szg.single.u,_szU)+'%</b> · '
     + '<b style="color:#f472b6">Specials '+_pc(_szg.special.u,_szU)+'%</b>';
 
+  // Report comments (from Supabase) — grouped so each section's notes sit
+  // directly UNDER the charts they describe, like the monthly report itself.
+  var _cmts = m.comments || [];
+  function secCmt(kw){
+    var k = kw.toLowerCase();
+    var list = _cmts.filter(function(c){ return String(c.section||'').toLowerCase().indexOf(k) >= 0; });
+    if (!list.length) return '';
+    var tc = { bottom:'#34d399', insight:'#fbbf24', rec:'#22d3ee', impact:'#a78bfa', bullet:'#94a3b8' };
+    return '<div style="margin:0.5rem 1.4rem 0.2rem;padding-top:0.5rem;border-top:1px dashed #2d3148">'
+      + '<div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;margin-bottom:0.15rem">From the monthly report</div>'
+      + list.map(function(c){ var col = tc[c.type] || '#94a3b8';
+          return '<div style="display:flex;gap:0.7rem;padding:0.35rem 0">'
+            + '<span style="flex-shrink:0;width:104px;font-size:0.6rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:'+col+';line-height:1.5">'+hesc(c.label||'')+'</span>'
+            + '<span style="font-size:0.83rem;color:#cbd5e1;line-height:1.55">'+hesc(c.text||'')+'</span></div>';
+        }).join('')
+      + '</div>';
+  }
+
   var html = ''
     + '<div class="exec"><div class="lbl">'+m.month+' '+m.year+' — the bottom line</div>'
     + '<div class="headline">Closed at <b>'+pf(achieved)+' of target</b> — '+nf(d.total_sales)+' of '+nf(d.total_target)+' bags'
@@ -1412,6 +1941,7 @@ function render(idx){
     +   '<div class="kpi"><div class="k-lbl">Avg Weekly Sales</div><div class="k-val cyan">'+nf(d.avg_weekly)+'</div><div class="k-sub">'+(wk.length)+' weeks recorded</div></div>'
     +   '<div class="kpi"><div class="k-lbl">Posting Sales-Achieved</div><div class="k-val green">'+pf(d.posting_kenya_pct)+'</div><div class="k-sub">Kenya '+pf(d.posting_kenya_pct)+' · Sinza '+pf(d.posting_sinza_pct)+' · Uganda '+pf(d.posting_uganda_pct)+'</div></div>'
     + '</div>'
+    + secCmt('Executive')
 
     /* 1 · Current Performance — live Weekly Performance card */
     + '<div class="sec flush"><div class="sec-head"><div class="sec-num" style="background:#facc15">1</div><h2>Current Performance</h2></div>'
@@ -1424,6 +1954,7 @@ function render(idx){
     + '</tr></thead><tbody>'+rows+'</tbody></table></div>'
     + '<div class="legend-note"><span class="g">▲ green</span> = the week cleared its <b>target to beat</b> (the bare-minimum floor); '
     +   '<span class="r">red</span> = it fell short. Beat the floor every week and the next month’s <b>Forward Projection</b> lifts with it — each week above the line pulls the month past target.</div>'
+    + secCmt('Current Performance')
     + '</div>'
 
     /* 2 · New Products — live report charts + sort */
@@ -1441,6 +1972,7 @@ function render(idx){
       + '<div class="chart-wrap tall"><canvas id="npChart"></canvas></div>'
       + '<div class="chart-cap">Each new product — posts done vs current stock (the dead-stock read)</div>'
       + '<div class="chart-wrap tall"><canvas id="npStockChart"></canvas></div>'
+      + secCmt('New Products')
       + '</div>') : '')
 
     /* 3 · Offer Type Analysis — all locations */
@@ -1459,6 +1991,7 @@ function render(idx){
     + '<div class="chart-wrap" style="height:520px"><canvas id="szChart"></canvas></div>'
     + '<div class="offer-mix">'+szMix+'</div>'
     + '<div class="chart-cap" style="margin-top:1.1rem">Uganda — top 5 &amp; bottom 5 movers, units moved vs stock available</div><div class="chart-wrap tall"><canvas id="ugChart"></canvas></div>'
+    + secCmt('Offer Type')
     + '</div>'
 
     /* 4 · Posting Yields */
@@ -1467,10 +2000,142 @@ function render(idx){
     + '<div class="grid2">'
     +   '<div><div class="chart-cap">Sales-achieved from posting, by region</div><div class="chart-wrap"><canvas id="pyChart"></canvas></div></div>'
     +   '<div><div class="chart-cap">Stock posted vs never posted</div><div class="chart-wrap"><canvas id="pyDonut"></canvas></div></div>'
-    + '</div></div>';
+    + '</div></div>'
+
+    /* 5 · Timed Offers — one block per campaign that ran in the month */
+    + timedOffersHtml(m)
+    + secCmt('Timed Offers')
+
+    /* 6 · Self-Made Combos — staff CBR combos vs running combos */
+    + selfMadeHtml(m)
+    + secCmt('Self-Made');
 
   document.getElementById('report').innerHTML = html;
   buildCharts(m, wk, prevM);
+}
+
+/* Section 6 · Self-Made Combos. Staff-created combos (the CBR/2026 requests) vs
+   the official running combos, with the full request log. Rendered only for
+   months that have the data (September onward). */
+function selfMadeHtml(m){
+  var sm = m.selfMade || {};
+  var s = sm.summary, reqs = sm.requests || [], sales = sm.sales || [];
+  if (!s && !reqs.length && !sales.length) return '';
+  s = s || {};
+  var smU = Number(s.sm_units)||0, runU = Number(s.run_units)||0, totU = smU + runU;
+  var share = totU ? Math.round(smU/totU*100) : 0;
+  var smAvg = smU ? Math.round((Number(s.sm_value)||0)/smU) : 0;
+  var runAvg = runU ? Math.round((Number(s.run_value)||0)/runU) : 0;
+
+  function stB(st){ st=(st||'').toLowerCase(); var col,bg;
+    if(st==='approved'){col='#34d399';bg='rgba(16,185,129,0.12)';}
+    else if(st==='rejected'||st==='reject'){col='#f87171';bg='rgba(239,68,68,0.12)';}
+    else {col='#fbbf24';bg='rgba(245,158,11,0.12)';}
+    return '<span style="font-size:0.6rem;font-weight:800;text-transform:uppercase;padding:0.1rem 0.42rem;border-radius:6px;color:'+col+';background:'+bg+';border:1px solid '+col+'55">'+hesc(st||'—')+'</span>';
+  }
+  var td = 'padding:0.4rem 0.7rem;border-top:1px solid #262a3d';
+  var th = 'text-align:left;padding:0.45rem 0.7rem;font-size:0.64rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148';
+  var thr = th.replace('text-align:left','text-align:right');
+
+  var reqRows = reqs.map(function(r){
+    var sold = Number(r.sold_units)||0;
+    var soldCell = sold ? '<td style="'+td+';text-align:right;color:#34d399;font-weight:700">'+nf(sold)+'</td>'
+                        : '<td style="'+td+';text-align:right;color:#475569">&mdash;</td>';
+    var lloyd = r.lloyd ? ' <span style="color:#34d399;font-weight:700" title="Approved by Lloyd">&#10003;L</span>' : '';
+    var rej = r.reject_reason ? '<div style="font-size:0.66rem;color:#f87171;margin-top:0.15rem">'+hesc(r.reject_reason)+'</div>' : '';
+    return '<tr><td style="'+td+';color:#fbbf24;font-weight:700;white-space:nowrap">'+hesc(r.cbr||'')+'</td>'
+      +'<td style="'+td+';color:#f1f5f9;font-weight:600">'+hesc(r.combo||'')+'</td>'
+      +'<td style="'+td+';color:#cbd5e1">'+hesc(r.shop||'')+'</td>'
+      +'<td style="'+td+';color:#cbd5e1">'+hesc(r.requested_by||'')+'</td>'
+      +'<td style="'+td+'">'+stB(r.state)+lloyd+rej+'</td>'
+      +'<td style="'+td+';text-align:right;color:#e2e8f0">'+nf(r.price)+'</td>'
+      +'<td style="'+td+';color:#94a3b8;white-space:nowrap">'+hesc(r.requested_on||'')+'</td>'
+      +soldCell+'</tr>';
+  }).join('');
+  var reqTable = reqs.length ? (
+      '<div class="chart-cap" style="margin-top:1.1rem">Combo request log — CBR/2026 refs (includes rejected &amp; pending)</div>'
+    + '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:0.8rem">'
+    + '<thead><tr><th style="'+th+'">CBR</th><th style="'+th+'">Combo</th><th style="'+th+'">Shop</th>'
+    +   '<th style="'+th+'">Requested by</th><th style="'+th+'">State</th><th style="'+thr+'">Price</th>'
+    +   '<th style="'+th+'">Requested</th><th style="'+thr+'">Sold</th></tr></thead>'
+    + '<tbody>'+reqRows+'</tbody></table></div>') : '';
+
+  return '<div class="sec"><div class="sec-head"><div class="sec-num" style="background:#fbbf24">6</div><h2>Self-Made Combos</h2></div>'
+    + '<div class="sec-sub">Staff-created combos (the CBR/2026 requests) vs the official running combos &mdash; Kenya tills. '
+    +   'Running combos offer a <b>wide colour range</b> at the till (avg '+nf(s.run_avg_colours)+' options); self-made ones are locked to one pairing (avg '+nf(s.sm_avg_colours)+').</div>'
+    + '<div class="minis">'
+    +   '<div class="mini"><div class="bar" style="background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div><div class="m-lbl">Self-made (CBR)</div><div class="m-val">'+nf(smU)+'</div><div class="m-sub">'+nf(s.sm_count)+' combos · KES '+nf(s.sm_value)+' · avg KES '+nf(smAvg)+' · '+nf(s.sm_avg_colours)+' colours</div></div>'
+    +   '<div class="mini"><div class="bar" style="background:linear-gradient(90deg,#06b6d4,#22d3ee)"></div><div class="m-lbl">Running (official)</div><div class="m-val">'+nf(runU)+'</div><div class="m-sub">'+nf(s.run_count)+' combos · KES '+nf(s.run_value)+' · avg KES '+nf(runAvg)+' · '+nf(s.run_avg_colours)+' colours</div></div>'
+    +   '<div class="mini"><div class="bar" style="background:linear-gradient(90deg,#8b5cf6,#6366f1)"></div><div class="m-lbl">Self-made share</div><div class="m-val">'+share+'%</div><div class="m-sub">of all combo units</div></div>'
+    +   '<div class="mini"><div class="bar" style="background:linear-gradient(90deg,#94a3b8,#cbd5e1)"></div><div class="m-lbl">Combo requests</div><div class="m-val">'+nf(s.req_total)+'</div><div class="m-sub">'+nf(s.req_approved)+' approved · '+nf(s.req_rejected)+' rejected'+(Number(s.req_pending)?' · '+nf(s.req_pending)+' pending':'')+'</div></div>'
+    + '</div>'
+    + reqTable
+    + '</div>';
+}
+
+/* Section 5 · Timed Offers. Rendered only for months that actually ran one, so
+   a quiet month shows four sections rather than an empty fifth. */
+function timedOffersHtml(m){
+  var camps = m.timedOffers || [];
+  if (!camps.length) return '';
+
+  var blocks = camps.map(function(c, i){
+    var up = (c.lift_pct == null) ? null : (Number(c.lift_pct) >= 0);
+    var liftKpi = (up == null) ? ''
+      : '<span><b style="color:'+(up?'#34d399':'#f87171')+'">'+(up?'+':'')+nf(c.lift_pct)+'%</b> sales lift</span>';
+    // Per-day paces keep their decimal — rounding 77.5 to 78 loses the very
+    // precision the before/after comparison is making.
+    var pace = (c.base_per_day != null && c.offer_per_day != null)
+      ? '<div class="chart-cap">Daily bags — pre-offer (grey) vs offer window (green), '
+        + Number(c.base_per_day).toFixed(1)+'/day → '+Number(c.offer_per_day).toFixed(1)+'/day</div>'
+        + '<div class="chart-wrap" style="height:220px"><canvas id="toLift'+i+'"></canvas></div>'
+      : '';
+    var week = (c.weekly && c.weekly.length)
+      ? '<div class="chart-cap" style="margin-top:0.9rem">Week by week — bags/day for the 6 bags (offer week in green)</div>'
+        + '<div class="chart-wrap" style="height:200px"><canvas id="toWeek'+i+'"></canvas></div>'
+      : '';
+
+    var rows = (c.bags || []).map(function(b){
+      var noPosts = !Number(b.posts);
+      var bl = b.bag_lift;
+      var liftCell = (bl == null) ? '<span style="color:#64748b">—</span>'
+        : '<span style="color:'+(Number(bl)>=0?'#34d399':'#f87171')+';font-weight:700">'
+          + (Number(bl)>=0?'+':'')+nf(bl)+'%</span>';
+      return '<tr>'
+        + '<td>'+(b.name||'')+' <span style="color:#64748b;font-weight:400">'+(b.category||'')+'</span></td>'
+        + '<td style="color:#e2e8f0">'+nf(b.sold)+'</td>'
+        + '<td style="color:'+(noPosts?'#f87171':'#e2e8f0')+';font-weight:'+(noPosts?'700':'400')+'">'+nf(b.posts)+'</td>'
+        + '<td style="color:#94a3b8">'+(b.per_post==null?'—':Number(b.per_post).toFixed(1))+'</td>'
+        + '<td style="color:#94a3b8">'+nf(b.stock)+'</td>'
+        + '<td>'+liftCell+'</td>'
+        + '</tr>';
+    }).join('');
+
+    return '<div class="to-camp">'
+      + '<div class="to-name">'+(c.name||'Timed Offer')+'</div>'
+      + '<div class="to-win">'+(c.window_label||'')+' · '+(c.market||'')
+      +   (c.total_stock!=null ? ' · '+nf(c.total_stock)+' bags in stock' : '')+'</div>'
+      + '<div class="to-kpis">'
+      +   '<span><b style="color:#34d399">'+nf(c.total_sold)+'</b> bags sold</span>'
+      +   '<span><b style="color:#22d3ee">'+nf(c.total_posts)+'</b> posts</span>'
+      +   '<span><b style="color:#a78bfa">'+(c.per_post==null?'—':Number(c.per_post).toFixed(1))+'</b> bags/post</span>'
+      +   liftKpi
+      +   (c.best_name ? '<span>Top seller: <b style="color:#e2e8f0;font-size:0.86rem">'+c.best_name+'</b> ('+nf(c.best_sold)+')</span>' : '')
+      + '</div>'
+      + pace
+      + week
+      + (rows ? '<div style="overflow-x:auto"><table class="to-table"><thead><tr>'
+        + '<th>Bag</th><th>Sold</th><th>Posts</th><th>Sold/post</th><th>Stock</th><th>Bag lift</th>'
+        + '</tr></thead><tbody>'+rows+'</tbody></table></div>' : '')
+      + (c.verdict ? '<div class="to-verdict">'+c.verdict+'</div>' : '')
+      + '</div>';
+  }).join('');
+
+  var totalSold = camps.reduce(function(s, c){ return s + (Number(c.total_sold)||0); }, 0);
+  return '<div class="sec"><div class="sec-head"><div class="sec-num" style="background:#f59e0b">5</div><h2>Timed Offers</h2></div>'
+    + '<div class="sec-sub"><b>'+camps.length+'</b> campaign'+(camps.length===1?'':'s')+' ran this month · '
+    +   nf(totalSold)+' bags sold in their windows.</div>'
+    + blocks + '</div>';
 }
 
 function buildCharts(m, wk, prevM){
@@ -1635,6 +2300,54 @@ function buildCharts(m, wk, prevM){
       plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
         tooltip:{ callbacks:{ label:function(c){ return c.label+': '+money(c.parsed)+' bags'; } } } } },
     plugins:[ donutCentre(tot?Math.round(posted/tot*100)+'%':'—') ]
+  });
+
+  /* 5 · Timed offers — daily bags, offer window picked out in green so the
+     lift reads off the bars rather than only off the headline percentage. */
+  (m.timedOffers || []).forEach(function(c, i){
+    var days = c.daily || [];
+    if (!days.length) return;
+    var base = Number(c.base_per_day), offer = Number(c.offer_per_day);
+    mk('toLift'+i, {
+      type:'bar',
+      // Short axis labels ("1 Aug") — the full date lives in the tooltip title.
+      data:{ labels:days.map(function(x){ return fmtDate(x.day).replace(/ \d{4}$/, ''); }), datasets:[{
+        label:'Bags sold', data:days.map(function(x){ return x.bags; }),
+        backgroundColor:days.map(function(x){ return x.in_offer ? '#34d399' : '#475569'; }),
+        borderRadius:3 }] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{
+            label:function(t){ return money(t.parsed.y)+' bags'; },
+            afterLabel:function(t){
+              var x = days[t.dataIndex];
+              if (!x.in_offer) return isFinite(base) ? 'Pre-offer · baseline '+base.toFixed(1)+'/day' : 'Pre-offer';
+              return isFinite(offer) ? 'Offer window · '+offer.toFixed(1)+'/day' : 'Offer window';
+            } } } },
+        scales:{ y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
+                 x:{ grid:{display:false}, ticks:{ font:{size:10}, color:'#64748b', maxRotation:60, minRotation:60 } } } }
+    });
+  });
+
+  /* 5b · Timed Offers — week-by-week bags/day (offer week green) */
+  (m.timedOffers || []).forEach(function(c, i){
+    var wks = c.weekly || [];
+    if (!wks.length) return;
+    mk('toWeek'+i, {
+      type:'bar',
+      data:{ labels:wks.map(function(w){ return w.label; }), datasets:[{
+        label:'Bags/day', data:wks.map(function(w){ return w.per_day; }),
+        backgroundColor:wks.map(function(w){ return w.in_offer ? '#34d399' : '#475569'; }),
+        borderRadius:4 }] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{
+            title:function(t){ var w=wks[t[0].dataIndex]; return w.label+' ('+fmtDate(w.week_start).replace(/ \d{4}$/,'')+' → '+fmtDate(w.week_end).replace(/ \d{4}$/,'')+')'; },
+            label:function(t){ var w=wks[t.dataIndex]; return [Number(w.per_day).toFixed(1)+' bags/day', money(w.total)+' over '+nf(w.days)+' days'+(w.in_offer?' · OFFER':'')]; } } } },
+        scales:{ y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } },
+                     title:{display:true,text:'bags/day',color:'#64748b',font:{size:10}} },
+                 x:{ grid:{display:false}, ticks:{ color:'#94a3b8' } } } }
+    });
   });
 }
 

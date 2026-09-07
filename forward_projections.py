@@ -21,6 +21,8 @@ Reads live from Google Sheets (one connection, two sheets):
 import re, webbrowser, os, pathlib, calendar, subprocess, sys, json
 from datetime import date, timedelta
 
+from lib import report_month   # which month these figures belong to
+
 # ── SPREADSHEET ───────────────────────────────────────────────
 
 SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
@@ -158,7 +160,10 @@ def _live_bags(filename, key_field, key_value, bags_field):
 
 _today  = date.today()
 _sunday = _today - timedelta(days=(_today.weekday() + 1) % 7)
-_live_month = _live_bags("monthly_sales_db.json", "monthKey",  _today.strftime("%Y-%m"), "monthlyBags")
+# Match the monthly file against the LIVE month (today's month, unless pinned),
+# so the live dashboard projects the month we are actually in. The archived
+# report stays correct because month_end.py PINS the month it archives.
+_live_month = _live_bags("monthly_sales_db.json", "monthKey",  report_month.live_month_key(), "monthlyBags")
 _live_week  = _live_bags("weekly_sales_db.json",  "weekStart", _sunday.isoformat(),      "weeklyBags")
 sales_is_live = _live_month is not None
 if sales_is_live:
@@ -172,7 +177,15 @@ if _live_week is not None:
 # covers every complete day through YESTERDAY. Complete days = yesterday's
 # day-of-month.
 
-yesterday       = date.today() - timedelta(days=1)
+# Projection reference for the LIVE month. Pinned (archive) → the month's last
+# day (a complete month, velocity ×1). Live → complete days so far (data through
+# yesterday), floored to day 1 so the 1st of a new month reads day 1, not the
+# previous month's day 31.
+if report_month.is_pinned():
+    yesterday = report_month.live_anchor()
+else:
+    _la = report_month.live_anchor()
+    yesterday = max(_la - timedelta(days=1), _la.replace(day=1))
 current_day     = max(yesterday.day, 1)
 days_in_month   = calendar.monthrange(yesterday.year, yesterday.month)[1]
 proj_ref        = yesterday
@@ -271,9 +284,11 @@ def odoo_weekly_breakdown():
     if not ok:
         return None
 
-    today   = date.today()
-    m_start = today.replace(day=1)
-    m_end   = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+    # Anchored on the REPORTING month, not today — on the 1st those differ, and
+    # using today's rebuilt weekly_history.json as a single "Sep Wk 1" row,
+    # wiping August's whole weekly climb out of the August report.
+    today   = report_month.live_anchor()
+    m_start, m_end = report_month.live_month_window()
     ws      = m_start - timedelta(days=(m_start.weekday() + 1) % 7)   # Sunday of the week holding the 1st
 
     entries, idx, cum = [], 0, 0

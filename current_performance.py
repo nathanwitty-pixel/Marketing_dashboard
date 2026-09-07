@@ -15,6 +15,8 @@ Reads live from Google Sheets:
 
 import re, os, json, datetime
 
+from lib import report_month   # which month these figures belong to
+
 # ── SPREADSHEET ───────────────────────────────────────────────
 
 SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
@@ -88,32 +90,36 @@ def weekly_from_db(sheet_value):
     return sheet_value
 
 def monthly_from_db(sheet_value):
-    """Prefer the CURRENT month's real bags from Postgres (monthly_sales_db.json,
+    """Prefer the REPORTING month's real bags from Postgres (monthly_sales_db.json,
     written by monthly_sales.py) over the MONTHLY_TARGET sheet's SALES column.
-    Applies only when the file is for the current month; otherwise (a past/frozen
-    month, or the DB unreachable) falls back to the sheet value unchanged."""
+    Applies only when the file is for the reporting month; otherwise (a past/frozen
+    month, or the DB unreachable) falls back to the sheet value unchanged.
+
+    The key is matched against the REPORTING month (lib/report_month.py), not
+    today's — on the 1st those differ, and matching on today's is what let
+    September's 8 bags land in the August report."""
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "monthly_sales_db.json")
     if not os.path.exists(path):
         return sheet_value
     try:
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
-        if data.get("monthKey", "") == datetime.date.today().strftime("%Y-%m"):
+        if data.get("monthKey", "") == report_month.live_month_key():
             return int(round(float(data.get("monthlyBags", sheet_value))))
     except (ValueError, OSError, KeyError, TypeError):
         pass
     return sheet_value
 
 def master_from_db():
-    """Current month's NET catalogue bags from Postgres (monthly_sales_db.json,
-    written by monthly_sales.py). None if unavailable or not the current month."""
+    """Reporting month's NET catalogue bags from Postgres (monthly_sales_db.json,
+    written by monthly_sales.py). None if unavailable or not the reporting month."""
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "monthly_sales_db.json")
     if not os.path.exists(path):
         return None
     try:
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
-        if data.get("monthKey", "") == datetime.date.today().strftime("%Y-%m"):
+        if data.get("monthKey", "") == report_month.live_month_key():
             mb = data.get("masterBags")
             return int(mb) if mb is not None else None
     except (ValueError, OSError, KeyError, TypeError):
@@ -439,12 +445,40 @@ def fmt_signed_pct(p):
     return f"+{p:.2f}%" if p > 0 else f"{p:.2f}%"
 
 
+# ── Previous month's weekly climb (for the Sept-vs-Aug comparison line) ──
+# Same per-week "% of target" series the monthly report overlays: this month
+# solid, last month dashed. Read from monthly_report_history.json.
+_cp_prev_weekly, _cp_prev_label, _cp_cur_label = [], "", "This month"
+try:
+    _lk = report_month.live_month_key()          # e.g. "2026-09"
+    _ly, _lm = int(_lk[:4]), int(_lk[5:7])
+    _pm_num  = _lm - 1 if _lm > 1 else 12
+    _pm_year = _ly if _lm > 1 else _ly - 1
+    _pm_key  = f"{_pm_year}-{_pm_num:02d}"
+    _hist_p  = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "monthly_report_history.json")
+    import calendar as _cpcal
+    _cp_cur_label = f"{_cpcal.month_name[_lm]} {_ly}"
+    with open(_hist_p, encoding="utf-8") as _pf:
+        _pm_snap = json.load(_pf).get(_pm_key)
+    if _pm_snap:
+        _cp_prev_weekly = [{"label": w.get("label", ""),
+                            "pct": round(float(w.get("pct") or 0), 2)}
+                           for w in _pm_snap.get("currentPerformance", {}).get("weekly", [])]
+        _cp_prev_label = f"{_pm_snap.get('month', '')} {_pm_snap.get('year', '')}".strip()
+except (ValueError, OSError, KeyError, TypeError):
+    pass
+
+
 # ── INJECT INTO HTML ──────────────────────────────────────────
 
 inline_script = (
     "<!-- PERF_DATA_START -->\n"
     "<script>\n"
     "const PERF = {\n"
+    f'  cpPrevWeekly:       {json.dumps(_cp_prev_weekly)},\n'
+    f'  cpPrevLabel:        "{_cp_prev_label}",\n'
+    f'  cpCurLabel:         "{_cp_cur_label}",\n'
     f'  remainingTarget:    "{fmt_int(remaining_target)}",\n'
     f'  salesPctAchieved:   "{fmt_pct(sales_pct_achieved)}",\n'
     f'  sales:              "{fmt_int(sales)}",\n'
