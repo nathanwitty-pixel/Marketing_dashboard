@@ -81,6 +81,25 @@ GROUP BY pt."name", pt.id
 ORDER BY qty DESC, value DESC
 """
 
+# Per combo SALE, the bags actually printed — Odoo stores the chosen components in
+# pos_order_line.combo_product_attribute_values (e.g. "Mini Umbra Grey", "Mega Black").
+# This lets us attribute a combo like "Mega + Man Bag or Mini Umbra or Neo Man Bag"
+# to the specific bag the customer picked, instead of the bundle as a whole.
+COMBO_COMPONENTS_SQL = """
+SELECT pt.id AS tmpl_id, pl.qty::int AS qty,
+       COALESCE(pl.combo_product_attribute_values, '') AS attrs
+FROM pos_order p
+JOIN pos_order_line pl ON pl.order_id = p.id
+LEFT JOIN pos_session ps ON p.session_id = ps.id
+LEFT JOIN pos_config pc ON ps.config_id = pc.id
+LEFT JOIN product_product pp ON pl.product_id = pp.id
+LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
+WHERE p.date_order::date BETWEEN :start_date AND :end_date
+  AND p.state IN ('done', 'paid') AND pl.qty > 0
+  AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
+  AND pt."name" LIKE '%+%'
+"""
+
 # The combo-request log for the month (all states).
 REQUEST_SQL = """
 SELECT r.name        AS cbr,
@@ -658,6 +677,36 @@ def build_payload(m_start, m_end):
             sm_by_bag.setdefault(_b, []).append(
                 {"name": _r["name"], "qty": _r["qty"], "value": _r["value"]})
 
+    # Actual bags PRINTED inside each combo sale (per template) — Odoo records the
+    # chosen components in combo_product_attribute_values, so a bundle like
+    # "Mega + Man Bag or Mini Umbra or Neo Man Bag" is attributed to the exact bag
+    # the customer picked, not just the bundle.
+    import ast as _ast
+    comp_by_tmpl, comp_by_bag = {}, {}
+    _cc = db.run_query(COMBO_COMPONENTS_SQL, {"start_date": m_start.isoformat(),
+                                              "end_date": m_end.isoformat()})
+    if _cc is not None and not _cc.empty:
+        for _, _cr in _cc.iterrows():
+            _tid = int(_cr["tmpl_id"]) if pd.notna(_cr["tmpl_id"]) else None
+            _q = int(_cr["qty"] or 0)
+            _raw = str(_cr["attrs"] or "").strip()
+            _names = []
+            if _raw:
+                try:
+                    _parsed = _ast.literal_eval(_raw)
+                    for _d in (_parsed if isinstance(_parsed, list) else [_parsed]):
+                        if isinstance(_d, dict):
+                            for _v in _d.values():
+                                if isinstance(_v, dict) and _v.get("full_name_product"):
+                                    _names.append(str(_v["full_name_product"]))
+                except (ValueError, SyntaxError):
+                    _names = []
+            for _nm in _names:
+                _bag = _match_bag(_nm) or _nm.strip().upper().split(" ")[0]
+                _d = comp_by_tmpl.setdefault(_tid, {})
+                _d[_bag] = _d.get(_bag, 0) + _q
+                comp_by_bag[_bag] = comp_by_bag.get(_bag, 0) + _q
+
     running_cards = []
     for row in running:
         t = row.get("tmpl")
@@ -665,7 +714,8 @@ def build_payload(m_start, m_end):
         weeks = [{"label": "Wk %d" % i, "sold": pcw.get(i, 0)} for i in range(1, max_wk + 1)]
         total = row["qty"]
         all_b, picks = _combo_bags(row["name"])
-        bags = [{"name": b, "stock": stock_map.get(b, 0), "star": b in picks} for b in all_b]
+        _comp = comp_by_tmpl.get(t, {})
+        bags = [{"name": b, "stock": stock_map.get(b, 0), "star": b in picks, "sold": _comp.get(b, 0)} for b in all_b]
         last = weeks[-1]["sold"] if weeks else 0
         prev = weeks[-2]["sold"] if len(weeks) > 1 else last
         # Guidance (same rule as Offer Sales vs Stock Guidance): remaining-to-target
