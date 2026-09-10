@@ -216,14 +216,25 @@ for _r in np_combined:
 # window falls in THIS report month are included.
 def _read_timed_offers():
     blk = read_block("timed_offers.html", "<!-- TIMED_DATA_START -->", "<!-- TIMED_DATA_END -->")
-    m = re.search(r"const\s+TO\s*=\s*(\{.*\}|\[.*\])\s*;", blk, re.DOTALL)
-    if not m:
-        return []
-    try:
-        data = json.loads(m.group(1))
-    except (ValueError, TypeError):
-        return []
-    camps = data if isinstance(data, list) else [data]
+    camps = []
+    # New multi-offer payload: const TO_DATA = {"month": ..., "offers": [...]};
+    m = re.search(r"const\s+TO_DATA\s*=\s*(\{.*?\})\s*;\s*\r?\n\s*const\s+TO_LIST", blk, re.DOTALL)
+    if m:
+        try:
+            data = json.loads(m.group(1))
+            camps = data.get("offers", []) if isinstance(data, dict) else []
+        except (ValueError, TypeError):
+            camps = []
+    else:
+        # Back-compat: legacy single payload const TO = {...} (or a bare list).
+        m = re.search(r"const\s+TO\s*=\s*(\{.*\}|\[.*\])\s*;", blk, re.DOTALL)
+        if not m:
+            return []
+        try:
+            data = json.loads(m.group(1))
+        except (ValueError, TypeError):
+            return []
+        camps = data if isinstance(data, list) else [data]
     month_key = f"{year}-{_fin_num:02d}"
     out = []
     for c in camps:

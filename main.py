@@ -134,14 +134,21 @@ def run_scripts():
 
 
 def _offer_active_today():
-    """True if a timed-offer window is set and today falls inside it."""
+    """True if ANY timed-offer window is set and today falls inside it.
+    Handles the multi-offer config ({"offers": [...]}) and the legacy single-offer
+    file ({"startDate", "endDate"})."""
     cfg_path = os.path.join(BASE_DIR, "timed_offers_config.json")
     try:
         with open(cfg_path, "r", encoding="utf-8") as f:
             raw = json.load(f)
-        start, end = raw.get("startDate", ""), raw.get("endDate", "")
-        if start and end:
-            return date.fromisoformat(start) <= date.today() <= date.fromisoformat(end)
+        offers = raw.get("offers") if isinstance(raw.get("offers"), list) else [raw]
+        today = date.today()
+        for o in offers:
+            if not isinstance(o, dict):
+                continue
+            start, end = o.get("startDate", ""), o.get("endDate", "")
+            if start and end and date.fromisoformat(start) <= today <= date.fromisoformat(end):
+                return True
     except (ValueError, OSError):
         pass
     return False
@@ -248,17 +255,27 @@ def start_server():
                 shops_raw = params.get("shops", ["ALL"])[0].strip()
                 start = params.get("start", [""])[0].strip()
                 end   = params.get("end", [""])[0].strip()
-                shops = "ALL" if (not shops_raw or shops_raw.upper() == "ALL") \
+                shops = [] if (not shops_raw or shops_raw.upper() == "ALL") \
                     else [s.strip() for s in shops_raw.split(",") if s.strip()]
-                cfg = {
-                    "_help": ("shops: \"ALL\" or a list of shop names exactly as in the "
-                              "sheet headers. startDate/endDate: YYYY-MM-DD; snapshots "
-                              "record only while today is inside this window."),
-                    "shops": shops, "startDate": start, "endDate": end,
-                }
+                # Edit the FIRST offer's scope/window in place (keeping its bags/prices
+                # and any additional offers). Full multi-offer editing is done in the file.
+                try:
+                    with open(cfg_path, "r", encoding="utf-8") as f:
+                        raw = json.load(f)
+                except (ValueError, OSError):
+                    raw = {}
+                if not (isinstance(raw, dict) and isinstance(raw.get("offers"), list)):
+                    raw = {"month": (start[:7] if len(start) >= 7 else ""), "offers": []}
+                if not raw["offers"]:
+                    raw["offers"] = [{"name": "", "market": "Kenya", "bags": [], "prices": {}}]
+                raw["offers"][0]["shops"]     = shops
+                raw["offers"][0]["startDate"] = start
+                raw["offers"][0]["endDate"]   = end
+                if len(start) >= 7:
+                    raw["month"] = start[:7]
                 try:
                     with open(cfg_path, "w", encoding="utf-8") as f:
-                        json.dump(cfg, f, indent=2)
+                        json.dump(raw, f, indent=2, ensure_ascii=False)
                 except OSError as exc:
                     self._json(500, {"ok": False, "error": str(exc)})
                     return
@@ -283,16 +300,21 @@ def start_server():
                     return
                 self._json(200, {"ok": True})
                 return
-            # No save → return current config
+            # No save → return the first offer's scope/window (legacy shape for the
+            # inline editor). Full list lives in the file.
             cfg = {"shops": "ALL", "startDate": "", "endDate": ""}
             if os.path.exists(cfg_path):
                 try:
                     with open(cfg_path, "r", encoding="utf-8") as f:
                         raw = json.load(f)
-                    cfg = {"shops": raw.get("shops", "ALL"),
-                           "startDate": raw.get("startDate", ""),
-                           "endDate": raw.get("endDate", "")}
-                except (ValueError, OSError):
+                    o = (raw.get("offers") or [raw])[0] if isinstance(raw, dict) else {}
+                    if not isinstance(o, dict):
+                        o = {}
+                    shops = o.get("shops", "ALL")
+                    cfg = {"shops": (shops if shops else "ALL"),
+                           "startDate": o.get("startDate", ""),
+                           "endDate": o.get("endDate", "")}
+                except (ValueError, OSError, IndexError):
                     pass
             self._json(200, {"ok": True, "config": cfg})
 

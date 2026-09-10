@@ -1,8 +1,337 @@
 {
-  "_help": "Timed-offer campaign. name: the campaign's real name (shown everywhere). Sales come LIVE from Odoo POS for the exact window (startDate..endDate, end-of-day inclusive), scoped to the market. Posting is the last week's Kenya marketing posting (WEEKLY_MARKETING_POST, col E) for the listed bags. Lift = offer-window bags/day vs the pre-offer month-to-date bags/day for the same bags. market: 'Kenya' excludes the Sinza/Dar/Uganda tills. bags: bag-type names, matched to Odoo product names by prefix. PRICES ARE AUTOMATIC: 'was' = the product's Odoo Sales Price incl. tax (list_price x1.16), 'now' = the offer pricelist's fixed price incl. tax overlapping the window. No need to type prices. (Optional: a 'prices' object {BagName:{was,now}} may be added here to override a bag Odoo can't resolve.)",
-  "name": "Back to School Edition",
-  "market": "Kenya",
-  "startDate": "2026-08-17",
-  "endDate": "2026-08-21",
-  "bags": ["Kai", "Pioneer", "Double Press", "Antitheft", "Code 3", "School bag"]
+  "_help": "Timed offers for the month. Add each new offer as an item in 'offers'; all run live and stack on the page. At month rollover the generator archives these to Supabase and clears the list. Each offer: name, market, shops (list; empty=whole market), startDate/endDate (YYYY-MM-DD), bags (list), prices {BAG:{was,now}}.",
+  "month": "2026-09",
+  "offers": [
+    {
+      "name": "KES 300 Off — Bags Not On Offer (CBD)",
+      "market": "Kenya",
+      "shops": [
+        "Hazina",
+        "Hilton",
+        "Starmall",
+        "KTDA Shop"
+      ],
+      "startDate": "2026-09-10",
+      "endDate": "2026-09-11",
+      "bags": [
+        "Reo Travel",
+        "Loop Bp",
+        "Cathy Handbag",
+        "Taji",
+        "Claire Handbag",
+        "Cosmo",
+        "Monah Bp",
+        "Zula",
+        "Kaz",
+        "Scooby",
+        "Zipped Lunchset",
+        "Double Press",
+        "Lamora",
+        "Ace",
+        "Tyler",
+        "Feroz",
+        "Legacy",
+        "Aria Pro",
+        "Jade",
+        "Lanka",
+        "Don",
+        "Lunchset",
+        "Mini Manbag",
+        "Zelus",
+        "Alpha Travel",
+        "College Hb",
+        "Esmeralda",
+        "Leila",
+        "Spark",
+        "Washbag",
+        "Mini School",
+        "Nala",
+        "Bello",
+        "Butterfly Sling",
+        "Zeno",
+        "Arlo Man Bag",
+        "Pocket Travel",
+        "Travolta",
+        "Arm Band",
+        "Code 9",
+        "Elektra",
+        "Fanny Pack",
+        "Nyla Bp",
+        "Umbra",
+        "Zuri",
+        "Ankara Travel",
+        "Chase",
+        "Daria",
+        "Imani",
+        "Marley",
+        "Maya",
+        "Safiri Bp",
+        "Wander Luxe",
+        "Adrian",
+        "Callista",
+        "Diaper Bag",
+        "Luca",
+        "Montana",
+        "Nina",
+        "Satchel",
+        "Skye Hb",
+        "Splash Backpack",
+        "Vanity"
+      ],
+      "prices": {
+        "REO TRAVEL": {
+          "was": 2800,
+          "now": 2500
+        },
+        "LOOP BP": {
+          "was": 2700,
+          "now": 2400
+        },
+        "CATHY HANDBAG": {
+          "was": 2000,
+          "now": 1700
+        },
+        "TAJI": {
+          "was": 3000,
+          "now": 2700
+        },
+        "CLAIRE HANDBAG": {
+          "was": 3000,
+          "now": 2700
+        },
+        "COSMO": {
+          "was": 1900,
+          "now": 1600
+        },
+        "MONAH BP": {
+          "was": 2000,
+          "now": 1700
+        },
+        "ZULA": {
+          "was": 2200,
+          "now": 1900
+        },
+        "KAZ": {
+          "was": 2000,
+          "now": 1700
+        },
+        "SCOOBY": {
+          "was": 2600,
+          "now": 2300
+        },
+        "ZIPPED LUNCHSET": {
+          "was": 1600,
+          "now": 1300
+        },
+        "DOUBLE PRESS": {
+          "was": 2600,
+          "now": 2300
+        },
+        "LAMORA": {
+          "was": 4000,
+          "now": 3700
+        },
+        "ACE": {
+          "was": 1600,
+          "now": 1300
+        },
+        "TYLER": {
+          "was": 2600,
+          "now": 2300
+        },
+        "FEROZ": {
+          "was": 3100,
+          "now": 2800
+        },
+        "LEGACY": {
+          "was": 3500,
+          "now": 3200
+        },
+        "ARIA PRO": {
+          "was": 1600,
+          "now": 1300
+        },
+        "JADE": {
+          "was": 3100,
+          "now": 2800
+        },
+        "LANKA": {
+          "was": 1800,
+          "now": 1500
+        },
+        "DON": {
+          "was": 1600,
+          "now": 1300
+        },
+        "LUNCHSET": {
+          "was": 1600,
+          "now": 1300
+        },
+        "MINI MANBAG": {
+          "was": 1600,
+          "now": 1300
+        },
+        "ZELUS": {
+          "was": 2600,
+          "now": 2300
+        },
+        "ALPHA TRAVEL": {
+          "was": 3600,
+          "now": 3300
+        },
+        "COLLEGE HB": {
+          "was": 2600,
+          "now": 2300
+        },
+        "ESMERALDA": {
+          "was": 2600,
+          "now": 2300
+        },
+        "LEILA": {
+          "was": 1600,
+          "now": 1300
+        },
+        "SPARK": {
+          "was": 2500,
+          "now": 2200
+        },
+        "WASHBAG": {
+          "was": 1600,
+          "now": 1300
+        },
+        "MINI SCHOOL": {
+          "was": 1800,
+          "now": 1500
+        },
+        "NALA": {
+          "was": 5000,
+          "now": 4700
+        },
+        "BELLO": {
+          "was": 2600,
+          "now": 2300
+        },
+        "BUTTERFLY SLING": {
+          "was": 1600,
+          "now": 1300
+        },
+        "ZENO": {
+          "was": 1600,
+          "now": 1300
+        },
+        "ARLO MAN BAG": {
+          "was": 1600,
+          "now": 1300
+        },
+        "POCKET TRAVEL": {
+          "was": 3600,
+          "now": 3300
+        },
+        "TRAVOLTA": {
+          "was": 3600,
+          "now": 3300
+        },
+        "ARM BAND": {
+          "was": 1200,
+          "now": 900
+        },
+        "CODE 9": {
+          "was": 2100,
+          "now": 1800
+        },
+        "ELEKTRA": {
+          "was": 1600,
+          "now": 1300
+        },
+        "FANNY PACK": {
+          "was": 1600,
+          "now": 1300
+        },
+        "NYLA BP": {
+          "was": 3000,
+          "now": 2700
+        },
+        "UMBRA": {
+          "was": 2100,
+          "now": 1800
+        },
+        "ZURI": {
+          "was": 3600,
+          "now": 3300
+        },
+        "ANKARA TRAVEL": {
+          "was": 2600,
+          "now": 2300
+        },
+        "CHASE": {
+          "was": 1500,
+          "now": 1200
+        },
+        "DARIA": {
+          "was": 1600,
+          "now": 1300
+        },
+        "IMANI": {
+          "was": 3000,
+          "now": 2700
+        },
+        "MARLEY": {
+          "was": 2400,
+          "now": 2100
+        },
+        "MAYA": {
+          "was": 1600,
+          "now": 1300
+        },
+        "SAFIRI BP": {
+          "was": 2600,
+          "now": 2300
+        },
+        "WANDER LUXE": {
+          "was": 3100,
+          "now": 2800
+        },
+        "ADRIAN": {
+          "was": 3000,
+          "now": 2700
+        },
+        "CALLISTA": {
+          "was": 2800,
+          "now": 2500
+        },
+        "DIAPER BAG": {
+          "was": 4600,
+          "now": 4300
+        },
+        "LUCA": {
+          "was": 2600,
+          "now": 2300
+        },
+        "MONTANA": {
+          "was": 1500,
+          "now": 1200
+        },
+        "NINA": {
+          "was": 2800,
+          "now": 2500
+        },
+        "SATCHEL": {
+          "was": 3100,
+          "now": 2800
+        },
+        "SKYE HB": {
+          "was": 2000,
+          "now": 1700
+        },
+        "SPLASH BACKPACK": {
+          "was": 2100,
+          "now": 1800
+        },
+        "VANITY": {
+          "was": 1100,
+          "now": 800
+        }
+      }
+    }
+  ]
 }

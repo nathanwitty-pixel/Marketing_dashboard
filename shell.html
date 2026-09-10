@@ -104,10 +104,10 @@
       background: transparent; border: 1px solid var(--border);
       color: var(--text-mid); font-size: 0.71rem;
       padding: 0.3rem 0.7rem; border-radius: 6px;
-      cursor: pointer; transition: border-color 0.15s, color 0.15s;
+      cursor: pointer; transition: border-color 0.16s cubic-bezier(0.16, 1, 0.3, 1), color 0.16s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .btn-ref:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-ref svg { transition: transform 0.35s; }
+    .btn-ref svg { transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1); }
     .btn-ref.spinning svg { animation: spin 0.6s linear infinite; }
 
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -119,7 +119,7 @@
       background: var(--bg-sidebar); border: 1px solid var(--border);
       border-radius: 8px; padding: 0.3rem; min-width: 168px;
       box-shadow: 0 12px 32px rgba(0,0,0,0.5);
-      display: none; z-index: 50;
+      display: none; z-index: 50; transform-origin: top right;
     }
     .export-menu.open { display: block; }
     .export-item {
@@ -127,7 +127,7 @@
       width: 100%; padding: 0.45rem 0.6rem;
       background: transparent; border: none; border-radius: 5px;
       color: var(--text-mid); font-size: 0.73rem; text-align: left;
-      cursor: pointer; transition: background 0.12s, color 0.12s;
+      cursor: pointer; transition: background 0.16s cubic-bezier(0.16, 1, 0.3, 1), color 0.16s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .export-item:hover { background: rgba(255,255,255,0.05); color: var(--text-hi); }
     .export-item .fmt {
@@ -188,7 +188,7 @@
       color: var(--text-mid);
       cursor: pointer; position: relative;
       font-size: 0;                    /* hides the text label */
-      transition: background 0.14s, color 0.14s;
+      transition: background 0.16s cubic-bezier(0.16, 1, 0.3, 1), color 0.16s cubic-bezier(0.16, 1, 0.3, 1);
       user-select: none; flex-shrink: 0;
     }
     .nav-item:hover { background: rgba(255,255,255,0.07); color: var(--text-hi); }
@@ -217,7 +217,7 @@
       display: flex; align-items: center; justify-content: center;
       background: rgba(255,255,255,0.05); border: none; border-radius: 11px;
       color: var(--text-mid); cursor: pointer; margin-bottom: 0.45rem;
-      transition: background 0.14s, color 0.14s;
+      transition: background 0.16s cubic-bezier(0.16, 1, 0.3, 1), color 0.16s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .sidebar-toggle:hover { background: rgba(255,255,255,0.1); color: var(--text-hi); }
     .toggle-icon { width: 18px; height: 18px; }
@@ -267,7 +267,7 @@
         position: fixed; top: 0; left: 0; height: 100vh; z-index: 300;
         width: 250px; max-width: 82vw;
         transform: translateX(-100%);
-        transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         align-items: stretch; padding: 0.7rem 0.6rem;
         box-shadow: 0 0 50px rgba(0,0,0,0.6);
       }
@@ -285,7 +285,7 @@
       .mobile-backdrop {
         display: block; position: fixed; inset: 0; z-index: 250;
         background: rgba(0,0,0,0.55); opacity: 0; visibility: hidden;
-        transition: opacity 0.26s ease, visibility 0.26s;
+        transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       }
       .mobile-backdrop.show { opacity: 1; visibility: visible; }
 
@@ -301,9 +301,31 @@
       .topbar-right { gap: 0.35rem; }
       .btn-ref { padding: 0.4rem 0.55rem; font-size: 0.7rem; }
     }
-  </style>
+
+    @media (prefers-reduced-motion: reduce){
+      *,*::before,*::after{ transition-duration:.12s!important; transition-property:opacity!important;
+        animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; }
+    }
+  
+    /* Spectral Edge — aura backdrop (decorative; fixed, behind all content). */
+    body{ background-color:#100e0b; }
+    .aura-layer-1,.aura-layer-2,.aura-layer-3{ position:fixed; inset:0; z-index:-1;
+      pointer-events:none; transform:translateZ(0); will-change:transform; }
+    .aura-layer-1{ mix-blend-mode:screen; filter:blur(108px);
+      background:linear-gradient(90deg, transparent 0%, rgba(59,130,246,0.04) 32%, rgba(6,182,212,0.12) 45%, rgba(34,197,94,0.13) 51%, rgba(250,204,21,0.12) 57%, rgba(244,63,94,0.11) 64%, transparent 82%); }
+    .aura-layer-2{ mix-blend-mode:screen; filter:blur(58px); opacity:0.24;
+      background:linear-gradient(102deg, transparent 38%, rgba(255,255,255,0.08) 46%, rgba(125,211,252,0.06) 51%, transparent 60%); }
+    .aura-layer-3{ mix-blend-mode:screen; filter:blur(126px); opacity:0.55;
+      background:radial-gradient(ellipse 25% 65% at 92% 50%, rgba(139,92,246,0.16) 0%, transparent 78%); }
+    @media (max-width:640px){
+      .aura-layer-1{ filter:blur(75px); } .aura-layer-2{ filter:blur(40px); } .aura-layer-3{ filter:blur(88px); }
+    }
+</style>
 </head>
 <body>
+<div class="aura-layer-1" aria-hidden="true"></div>
+<div class="aura-layer-2" aria-hidden="true"></div>
+<div class="aura-layer-3" aria-hidden="true"></div>
 
 <!-- ── Sidebar ───────────────────────────────────────────── -->
 <aside class="sidebar expanded" id="sidebar">

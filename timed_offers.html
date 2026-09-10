@@ -15,25 +15,25 @@
     .wrap { width: 100%; max-width: 960px; margin: 0 auto; }
     .head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.4rem; flex-wrap: wrap; }
     .pill { color: #fff; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
-            padding: 0.3rem 0.75rem; border-radius: 999px; background: linear-gradient(135deg, #f59e0b, #ef4444); }
+            padding: 0.3rem 0.75rem; border-radius: 999px; background: #f59e0b; }
     .head h1 { font-size: 1.5rem; font-weight: 800; color: #f8fafc; letter-spacing: 0.01em; }
     .sub { font-size: 0.82rem; color: #64748b; margin-bottom: 1.6rem; line-height: 1.5; }
     .sub b { color: #94a3b8; }
 
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.6rem; }
-    .card { background: #1e2130; border: 1px solid #2d3148; border-radius: 14px; padding: 1.2rem 1.4rem;
+    .card { background: #1e2130; border: 1px solid #2d3148; border-radius: 10px; padding: 1.2rem 1.4rem;
             position: relative; overflow: hidden; }
     .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-                    background: linear-gradient(90deg, #f59e0b, #ef4444); }
-    .card.g::before { background: linear-gradient(90deg, #10b981, #06b6d4); }
-    .card.c::before { background: linear-gradient(90deg, #06b6d4, #3b82f6); }
-    .card.v::before { background: linear-gradient(90deg, #8b5cf6, #6366f1); }
+                    background: #f59e0b; }
+    .card.g::before { background: #10b981; }
+    .card.c::before { background: #06b6d4; }
+    .card.v::before { background: #8b5cf6; }
     .k-lbl { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #94a3b8; margin-bottom: 0.5rem; }
     .k-val { font-size: 2rem; font-weight: 800; color: #f8fafc; line-height: 1.1; font-variant-numeric: tabular-nums; }
     .k-val.green { color: #34d399; } .k-val.cyan { color: #22d3ee; } .k-val.violet { color: #a78bfa; }
     .k-sub { font-size: 0.76rem; color: #64748b; margin-top: 0.35rem; line-height: 1.4; }
 
-    .panel { background: #1e2130; border: 1px solid #2d3148; border-radius: 14px; padding: 1.3rem 1.4rem; margin-bottom: 1.6rem; }
+    .panel { background: #1e2130; border: 1px solid #2d3148; border-radius: 10px; padding: 1.3rem 1.4rem; margin-bottom: 1.6rem; }
     .panel h2 { font-size: 0.95rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.2rem; }
     .panel .cap { font-size: 0.76rem; color: #64748b; margin-bottom: 1rem; }
     .chart-wrap { position: relative; height: 320px; }
@@ -48,311 +48,386 @@
     .zero { color: #f87171; font-weight: 700; }
     .note { font-size: 0.78rem; color: #94a3b8; line-height: 1.55; }
     .note b { color: #cbd5e1; }
-  </style>
+    @media (prefers-reduced-motion: reduce){
+      *,*::before,*::after{ transition-duration:.12s!important; transition-property:opacity!important;
+        animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; }
+    }
+  
+    /* Spectral Edge — aura backdrop (decorative; fixed, behind all content). */
+    body{ background-color:#100e0b; }
+    .aura-layer-1,.aura-layer-2,.aura-layer-3{ position:fixed; inset:0; z-index:-1;
+      pointer-events:none; transform:translateZ(0); will-change:transform; }
+    .aura-layer-1{ mix-blend-mode:screen; filter:blur(108px);
+      background:linear-gradient(90deg, transparent 0%, rgba(59,130,246,0.04) 32%, rgba(6,182,212,0.12) 45%, rgba(34,197,94,0.13) 51%, rgba(250,204,21,0.12) 57%, rgba(244,63,94,0.11) 64%, transparent 82%); }
+    .aura-layer-2{ mix-blend-mode:screen; filter:blur(58px); opacity:0.24;
+      background:linear-gradient(102deg, transparent 38%, rgba(255,255,255,0.08) 46%, rgba(125,211,252,0.06) 51%, transparent 60%); }
+    .aura-layer-3{ mix-blend-mode:screen; filter:blur(126px); opacity:0.55;
+      background:radial-gradient(ellipse 25% 65% at 92% 50%, rgba(139,92,246,0.16) 0%, transparent 78%); }
+    @media (max-width:640px){
+      .aura-layer-1{ filter:blur(75px); } .aura-layer-2{ filter:blur(40px); } .aura-layer-3{ filter:blur(88px); }
+    }
+</style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
+<div class="aura-layer-1" aria-hidden="true"></div>
+<div class="aura-layer-2" aria-hidden="true"></div>
+<div class="aura-layer-3" aria-hidden="true"></div>
   <div class="wrap">
     <div class="head">
-      <span class="pill">Timed Offer</span>
-      <h1 id="to-title">Timed Offer</h1>
+      <span class="pill">Timed Offers</span>
+      <h1 id="page-title">Timed Offers</h1>
     </div>
-    <div class="sub" id="to-sub"></div>
+    <div class="sub" id="page-sub"></div>
 
-    <div class="grid" id="to-kpis"></div>
+    <div id="to-offers"></div>
 
-    <div class="panel" id="to-lift-panel" style="display:none">
-      <h2>Did the offer lift sales?</h2>
-      <div class="cap" id="to-lift-cap"></div>
-      <div class="grid" id="to-lift-kpis" style="margin-bottom:1rem"></div>
-      <div class="chart-wrap"><canvas id="to-lift-chart"></canvas></div>
-    </div>
-
-    <div class="panel" id="to-weekly-panel" style="display:none">
-      <h2>Week by week — the 6 bags</h2>
-      <div class="cap" id="to-weekly-cap"></div>
-      <div class="chart-wrap"><canvas id="to-weekly-chart"></canvas></div>
-    </div>
-
-    <div class="panel" id="to-why-panel" style="display:none">
-      <h2>Why these bags — and was it a good move?</h2>
-      <div class="cap"><b>Price was</b> = the product's Odoo Sales Price incl. tax; <b>Price now</b> = the offer pricelist price incl. tax — both pulled live from Odoo (not typed, not an average). <b>Discount</b> = the real cut. <b>Sales lift</b> = the bag's own units/day during vs before the offer.</div>
-      <div style="overflow-x:auto">
-        <table>
-          <thead><tr>
-            <th>Bag</th><th class="r">Sold</th><th class="r">In stock</th>
-            <th class="r">Price was</th><th class="r">Price now</th><th class="r">Discount</th><th class="r">Sales lift</th><th>Category</th>
-          </tr></thead>
-          <tbody id="to-why-tbody"></tbody>
-        </table>
-      </div>
-      <div id="to-why-insights" style="margin-top:1rem"></div>
-      <div id="to-why-verdict" style="margin-top:0.9rem;padding:0.9rem 1rem;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.28);border-radius:10px;font-size:0.9rem;color:#e2e8f0;line-height:1.55"></div>
-    </div>
-
-    <div class="panel" id="to-priceweeks-panel" style="display:none">
-      <h2>Price week by week — were they already on offer?</h2>
-      <div class="cap">Each cell = the bag's <b>realised average selling price</b> that week (incl-tax; units sold in parentheses). Compare to <b>Was</b> (list) and <b>Now</b> (offer): a cell already near/below <b>Now</b> means the bag was effectively on offer that week — so its sales weren't down to the campaign cut. The offer week is highlighted.</div>
-      <div style="overflow-x:auto">
-        <table><thead id="to-pw-head"></thead><tbody id="to-pw-body"></tbody></table>
-      </div>
-      <div class="cap" style="margin-top:0.6rem"><span style="color:#34d399;font-weight:700">green</span> = at/below the offer price · <span style="color:#94a3b8;font-weight:700">grey</span> ≈ full price · <span style="color:#fbbf24;font-weight:700">amber</span> = part-way</div>
-    </div>
-
-    <div class="panel">
-      <h2>Bags sold per bag</h2>
-      <div class="cap" id="to-chart-cap">Kenya POS · offer window</div>
-      <div class="chart-wrap"><canvas id="to-chart"></canvas></div>
-    </div>
-
-    <div class="panel">
-      <h2>Bag-by-bag — sales vs posting</h2>
-      <div class="cap">Sales from Odoo POS (exact window). Posts = last week's Kenya marketing posting.</div>
-      <div style="overflow-x:auto">
-        <table>
-          <thead><tr>
-            <th>Bag</th>
-            <th class="r">Bags sold</th>
-            <th class="r">Posts (Kenya)</th>
-            <th class="r">Sold / post</th>
-          </tr></thead>
-          <tbody id="to-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="note" id="to-note"></div>
+    <div class="panel" id="to-empty" style="display:none">
+      <div class="note">No active timed offers this month. Add offers to
+      <b>timed_offers_config.json</b> (the <code>offers</code> list) and refresh —
+      they stack here, and roll over to Supabase automatically at month end.</div>
     </div>
   </div>
 
+  <!-- One offer's card stack — cloned per offer in TO_LIST. Data hooks use
+       data-el="…" (not id) so several offers can render on one page. -->
+  <template id="to-offer-tpl">
+    <section class="offer">
+      <div class="head">
+        <span class="pill">Timed Offer</span>
+        <h1 data-el="title">Timed Offer</h1>
+      </div>
+      <div class="sub" data-el="sub"></div>
+
+      <div class="grid" data-el="kpis"></div>
+
+      <div class="panel" data-el="lift-panel" style="display:none">
+        <h2>Did the offer lift sales?</h2>
+        <div class="cap" data-el="lift-cap"></div>
+        <div class="grid" data-el="lift-kpis" style="margin-bottom:1rem"></div>
+        <div class="chart-wrap"><canvas data-el="lift-chart"></canvas></div>
+      </div>
+
+      <div class="panel" data-el="weekly-panel" style="display:none">
+        <h2>Week by week — the offer bags</h2>
+        <div class="cap" data-el="weekly-cap"></div>
+        <div class="chart-wrap"><canvas data-el="weekly-chart"></canvas></div>
+      </div>
+
+      <div class="panel" data-el="why-panel" style="display:none">
+        <h2>Why these bags — and was it a good move?</h2>
+        <div class="cap"><b>Price was</b> = the product's Odoo Sales Price incl. tax; <b>Price now</b> = the offer pricelist price incl. tax — both pulled live from Odoo (not typed, not an average). <b>Discount</b> = the real cut. <b>Sales lift</b> = the bag's own units/day during vs before the offer.</div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>Bag</th><th class="r">Sold</th><th class="r">In stock</th>
+              <th class="r">Price was</th><th class="r">Price now</th><th class="r">Discount</th><th class="r">Sales lift</th><th>Category</th>
+            </tr></thead>
+            <tbody data-el="why-tbody"></tbody>
+          </table>
+        </div>
+        <div data-el="why-insights" style="margin-top:1rem"></div>
+        <div data-el="why-verdict" style="margin-top:0.9rem;padding:0.9rem 1rem;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.28);border-radius:10px;font-size:0.9rem;color:#e2e8f0;line-height:1.55"></div>
+      </div>
+
+      <div class="panel" data-el="priceweeks-panel" style="display:none">
+        <h2>Price week by week — were they already on offer?</h2>
+        <div class="cap">Each cell = the bag's <b>realised average selling price</b> that week (incl-tax; units sold in parentheses). Compare to <b>Was</b> (list) and <b>Now</b> (offer): a cell already near/below <b>Now</b> means the bag was effectively on offer that week — so its sales weren't down to the campaign cut. The offer week is highlighted.</div>
+        <div style="overflow-x:auto">
+          <table><thead data-el="pw-head"></thead><tbody data-el="pw-body"></tbody></table>
+        </div>
+        <div class="cap" style="margin-top:0.6rem"><span style="color:#34d399;font-weight:700">green</span> = at/below the offer price · <span style="color:#94a3b8;font-weight:700">grey</span> ≈ full price · <span style="color:#fbbf24;font-weight:700">amber</span> = part-way</div>
+      </div>
+
+      <div class="panel">
+        <h2>Bags sold per bag</h2>
+        <div class="cap" data-el="chart-cap">Kenya POS · offer window</div>
+        <div class="chart-wrap"><canvas data-el="chart"></canvas></div>
+      </div>
+
+      <div class="panel">
+        <h2>Bag-by-bag — sales vs posting</h2>
+        <div class="cap">Sales from Odoo POS (exact window). Posts = last week's Kenya marketing posting.</div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>Bag</th>
+              <th class="r">Bags sold</th>
+              <th class="r">Posts (Kenya)</th>
+              <th class="r">Sold / post</th>
+            </tr></thead>
+            <tbody data-el="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="note" data-el="note"></div>
+      </div>
+    </section>
+  </template>
+
 <!-- TIMED_DATA_START -->
 <script>
-const TO = {"name": "Back to School Edition", "market": "Kenya", "startDate": "2026-08-17", "endDate": "2026-08-21", "windowLabel": "17–21 Aug 2026", "lift": {"baseStart": "2026-08-01", "baseEnd": "2026-08-16", "baseDays": 16, "baseTotal": 1240, "basePerDay": 77.5, "offerDays": 5, "offerTotal": 695, "offerPerDay": 139.0, "liftPct": 79, "daily": [{"date": "2026-08-01", "bags": 85, "off": false}, {"date": "2026-08-02", "bags": 27, "off": false}, {"date": "2026-08-03", "bags": 91, "off": false}, {"date": "2026-08-04", "bags": 81, "off": false}, {"date": "2026-08-05", "bags": 81, "off": false}, {"date": "2026-08-06", "bags": 88, "off": false}, {"date": "2026-08-07", "bags": 92, "off": false}, {"date": "2026-08-08", "bags": 103, "off": false}, {"date": "2026-08-09", "bags": 29, "off": false}, {"date": "2026-08-10", "bags": 93, "off": false}, {"date": "2026-08-11", "bags": 91, "off": false}, {"date": "2026-08-12", "bags": 95, "off": false}, {"date": "2026-08-13", "bags": 85, "off": false}, {"date": "2026-08-14", "bags": 77, "off": false}, {"date": "2026-08-15", "bags": 100, "off": false}, {"date": "2026-08-16", "bags": 22, "off": false}, {"date": "2026-08-17", "bags": 111, "off": true}, {"date": "2026-08-18", "bags": 130, "off": true}, {"date": "2026-08-19", "bags": 134, "off": true}, {"date": "2026-08-20", "bags": 153, "off": true}, {"date": "2026-08-21", "bags": 167, "off": true}], "weekly": [{"label": "Wk 1", "start": "2026-08-01", "end": "2026-08-01", "total": 85, "days": 1, "perDay": 85.0, "off": false}, {"label": "Wk 2", "start": "2026-08-02", "end": "2026-08-08", "total": 563, "days": 7, "perDay": 80.4, "off": false}, {"label": "Wk 3", "start": "2026-08-09", "end": "2026-08-15", "total": 570, "days": 7, "perDay": 81.4, "off": false}, {"label": "Wk 4", "start": "2026-08-16", "end": "2026-08-22", "total": 849, "days": 7, "perDay": 121.3, "off": true}, {"label": "Wk 5", "start": "2026-08-23", "end": "2026-08-29", "total": 912, "days": 7, "perDay": 130.3, "off": false}, {"label": "Wk 6", "start": "2026-08-30", "end": "2026-09-05", "total": 800, "days": 7, "perDay": 114.3, "off": false}, {"label": "Wk 7", "start": "2026-09-06", "end": "2026-09-07", "total": 28, "days": 2, "perDay": 14.0, "off": false}]}, "why": {"totalStock": 1270, "categories": ["BACKPACK", "SCHOOL BAG"], "allCut": false, "bags": [{"name": "Code 3", "sold": 225, "posts": 28, "stock": 327, "priceWas": 2100, "priceNow": 54068, "discountKes": -51968, "discountPct": 2475, "discounted": false, "soldAt": 1444, "prePerDay": 28.8, "offerPerDay": 45.0, "bagLift": 56, "category": "BACKPACK"}, {"name": "Antitheft", "sold": 204, "posts": 0, "stock": 243, "priceWas": 2200, "priceNow": 66356, "discountKes": -64156, "discountPct": 2916, "discounted": false, "soldAt": 1812, "prePerDay": 30.7, "offerPerDay": 40.8, "bagLift": 33, "category": "BACKPACK"}, {"name": "School bag", "sold": 106, "posts": 0, "stock": 208, "priceWas": 2100, "priceNow": 54068, "discountKes": -51968, "discountPct": 2475, "discounted": false, "soldAt": 1711, "prePerDay": 3.2, "offerPerDay": 21.2, "bagLift": 562, "category": "SCHOOL BAG"}, {"name": "Kai", "sold": 80, "posts": 0, "stock": 144, "priceWas": 2800, "priceNow": 71271, "discountKes": -68471, "discountPct": 2445, "discounted": false, "soldAt": 2335, "prePerDay": 9.7, "offerPerDay": 16.0, "bagLift": 65, "category": "BACKPACK"}, {"name": "Pioneer", "sold": 55, "posts": 0, "stock": 113, "priceWas": 2600, "priceNow": 2300, "discountKes": 300, "discountPct": -12, "discounted": true, "soldAt": 1955, "prePerDay": 3.6, "offerPerDay": 11.0, "bagLift": 206, "category": "BACKPACK"}, {"name": "Double Press", "sold": 25, "posts": 0, "stock": 235, "priceWas": 2600, "priceNow": 66356, "discountKes": -63756, "discountPct": 2452, "discounted": false, "soldAt": 2000, "prePerDay": 1.6, "offerPerDay": 5.0, "bagLift": 212, "category": "BACKPACK"}], "insights": [{"tag": "On offer?", "text": "On offer (real cut): Pioneer (-12%)."}, {"tag": "Stock", "text": "Mostly backpacks with real inventory behind them — <b>1,270 still in Kenya stock</b> even after the push (led by Code 3 at 327). The offer draws down a genuine stock position, not a token one."}, {"tag": "Season", "text": "All six sit in <b>Backpack, School Bag</b> — school categories — and the step-up landed in the offer week as schools opened. Antitheft and School bag even sold on zero marketing posts (pure demand). The timing fits the sales pattern as much as the price cut does."}], "verdict": "<b>Good move.</b> Sales rose <b>+79%</b> per day during back-to-school. Match the cut depth to demand — the popular school lines carried the volume.", "priceWeeks": {"weeks": [{"label": "Wk 1", "start": "2026-08-01", "end": "2026-08-01", "off": false}, {"label": "Wk 2", "start": "2026-08-02", "end": "2026-08-08", "off": false}, {"label": "Wk 3", "start": "2026-08-09", "end": "2026-08-15", "off": false}, {"label": "Wk 4", "start": "2026-08-16", "end": "2026-08-22", "off": true}, {"label": "Wk 5", "start": "2026-08-23", "end": "2026-08-29", "off": false}, {"label": "Wk 6", "start": "2026-08-30", "end": "2026-09-05", "off": false}, {"label": "Wk 7", "start": "2026-09-06", "end": "2026-09-07", "off": false}], "bags": [{"name": "Code 3", "was": 2100, "now": 54068, "cells": [{"avg": 1866, "qty": 32}, {"avg": 1604, "qty": 215}, {"avg": 1311, "qty": 203}, {"avg": 1407, "qty": 283}, {"avg": 1596, "qty": 346}, {"avg": 1572, "qty": 217}, {"avg": 1680, "qty": 5}]}, {"name": "Antitheft", "was": 2200, "now": 66356, "cells": [{"avg": 1758, "qty": 40}, {"avg": 1944, "qty": 217}, {"avg": 1567, "qty": 228}, {"avg": 1849, "qty": 233}, {"avg": 1942, "qty": 231}, {"avg": 2103, "qty": 356}, {"avg": 1818, "qty": 17}]}, {"name": "School bag", "was": 2100, "now": 54068, "cells": [{"avg": 2100, "qty": 2}, {"avg": 2015, "qty": 20}, {"avg": 2007, "qty": 27}, {"avg": 1753, "qty": 134}, {"avg": 1974, "qty": 129}, {"avg": 1946, "qty": 59}, {"avg": null, "qty": 0}]}, {"name": "Kai", "was": 2800, "now": 71271, "cells": [{"avg": 2660, "qty": 5}, {"avg": 2440, "qty": 80}, {"avg": 2437, "qty": 68}, {"avg": 2328, "qty": 95}, {"avg": 2540, "qty": 122}, {"avg": 2414, "qty": 112}, {"avg": 2400, "qty": 4}]}, {"name": "Pioneer", "was": 2600, "now": 2300, "cells": [{"avg": 2080, "qty": 5}, {"avg": 1809, "qty": 23}, {"avg": 1579, "qty": 28}, {"avg": 1952, "qty": 73}, {"avg": 2156, "qty": 64}, {"avg": 1564, "qty": 39}, {"avg": null, "qty": 0}]}, {"name": "Double Press", "was": 2600, "now": 66356, "cells": [{"avg": 2600, "qty": 1}, {"avg": 2275, "qty": 8}, {"avg": 2261, "qty": 16}, {"avg": 2045, "qty": 31}, {"avg": 2600, "qty": 20}, {"avg": 2424, "qty": 17}, {"avg": 1300, "qty": 2}]}]}}, "salesLive": true, "bags": [{"name": "Code 3", "sold": 225, "posts": 28, "perPost": 8.0}, {"name": "Antitheft", "sold": 204, "posts": 0, "perPost": null}, {"name": "School bag", "sold": 106, "posts": 0, "perPost": null}, {"name": "Kai", "sold": 80, "posts": 0, "perPost": null}, {"name": "Pioneer", "sold": 55, "posts": 0, "perPost": null}, {"name": "Double Press", "sold": 25, "posts": 0, "perPost": null}], "totalSold": 695, "totalPosts": 28, "perPost": 24.8, "bestName": "Code 3", "bestSold": 225, "mostPName": "Code 3", "mostPosts": 28};
+const TO_DATA = {"month": "2026-09", "offers": [{"name": "KES 300 Off — Bags Not On Offer (CBD)", "market": "Kenya", "shops": ["Hazina", "Hilton", "Starmall", "KTDA Shop"], "scopeLabel": "Nairobi CBD &middot; Hazina, Hilton, Starmall, KTDA Shop", "startDate": "2026-09-10", "endDate": "2026-09-11", "windowLabel": "10–11 Sep 2026", "lift": {"baseStart": "2026-09-01", "baseEnd": "2026-09-09", "baseDays": 9, "baseTotal": 454, "basePerDay": 50.4, "offerDays": 2, "offerTotal": 41, "offerPerDay": 20.5, "liftPct": -59, "daily": [{"date": "2026-09-01", "bags": 50, "off": false}, {"date": "2026-09-02", "bags": 51, "off": false}, {"date": "2026-09-03", "bags": 52, "off": false}, {"date": "2026-09-04", "bags": 50, "off": false}, {"date": "2026-09-05", "bags": 71, "off": false}, {"date": "2026-09-06", "bags": 7, "off": false}, {"date": "2026-09-07", "bags": 39, "off": false}, {"date": "2026-09-08", "bags": 67, "off": false}, {"date": "2026-09-09", "bags": 67, "off": false}, {"date": "2026-09-10", "bags": 41, "off": true}, {"date": "2026-09-11", "bags": 0, "off": true}], "weekly": [{"label": "Wk 1", "start": "2026-09-01", "end": "2026-09-05", "total": 274, "days": 5, "perDay": 54.8, "off": false}, {"label": "Wk 2", "start": "2026-09-06", "end": "2026-09-11", "total": 221, "days": 6, "perDay": 36.8, "off": true}]}, "why": {"totalStock": 3092, "categories": ["BABY BAG", "BACKPACK", "BRIEFCASE", "CHEST BAG", "HANDBAG", "LUNCH BAG", "MAKE UP", "MAN BAG", "SCHOOL BAG", "SLING", "SPORT", "THIGH BAG", "TRAVEL", "WAIST BAG", "WASHBAG"], "allCut": true, "bags": [{"name": "Reo Travel", "sold": 5, "posts": 0, "stock": 175, "priceWas": 2800, "priceNow": 2500, "discountKes": 300, "discountPct": -11, "discounted": true, "soldAt": 2333, "prePerDay": 9.6, "offerPerDay": 6.0, "bagLift": -38, "category": "TRAVEL"}, {"name": "Loop Bp", "sold": 3, "posts": 0, "stock": 44, "priceWas": 2700, "priceNow": 2400, "discountKes": 300, "discountPct": -11, "discounted": true, "soldAt": 2160, "prePerDay": 5.7, "offerPerDay": 2.5, "bagLift": -56, "category": "BACKPACK"}, {"name": "Cathy Handbag", "sold": 3, "posts": 0, "stock": 110, "priceWas": 2000, "priceNow": 1700, "discountKes": 300, "discountPct": -15, "discounted": true, "soldAt": 1625, "prePerDay": 4.2, "offerPerDay": 4.0, "bagLift": -5, "category": "HANDBAG"}, {"name": "Claire Handbag", "sold": 3, "posts": 10, "stock": 108, "priceWas": 3000, "priceNow": 2700, "discountKes": 300, "discountPct": -10, "discounted": true, "soldAt": 2825, "prePerDay": 4.0, "offerPerDay": 2.0, "bagLift": -50, "category": "HANDBAG"}, {"name": "Cosmo", "sold": 3, "posts": 0, "stock": 118, "priceWas": 1900, "priceNow": 1600, "discountKes": 300, "discountPct": -16, "discounted": true, "soldAt": 1267, "prePerDay": 4.0, "offerPerDay": 1.5, "bagLift": -62, "category": "SCHOOL BAG"}, {"name": "Monah Bp", "sold": 3, "posts": 0, "stock": 69, "priceWas": 2000, "priceNow": 1700, "discountKes": 300, "discountPct": -15, "discounted": true, "soldAt": 1900, "prePerDay": 3.8, "offerPerDay": 2.0, "bagLift": -47, "category": "BACKPACK"}, {"name": "Zipped Lunchset", "sold": 3, "posts": 0, "stock": 86, "priceWas": 1600, "priceNow": 1300, "discountKes": 300, "discountPct": -19, "discounted": true, "soldAt": 1600, "prePerDay": 2.8, "offerPerDay": 1.5, "bagLift": -46, "category": "LUNCH BAG"}, {"name": "Zula", "sold": 2, "posts": 9, "stock": 109, "priceWas": 2200, "priceNow": 1900, "discountKes": 300, "discountPct": -14, "discounted": true, "soldAt": 2125, "prePerDay": 3.9, "offerPerDay": 2.0, "bagLift": -49, "category": "MAN BAG"}, {"name": "Scooby", "sold": 2, "posts": 0, "stock": 63, "priceWas": 2600, "priceNow": 2300, "discountKes": 300, "discountPct": -12, "discounted": true, "soldAt": 1300, "prePerDay": 2.8, "offerPerDay": 1.0, "bagLift": -64, "category": "SCHOOL BAG"}, {"name": "Leila", "sold": 2, "posts": 0, "stock": 22, "priceWas": 1600, "priceNow": 1300, "discountKes": 300, "discountPct": -19, "discounted": true, "soldAt": 1600, "prePerDay": 1.2, "offerPerDay": 1.5, "bagLift": 25, "category": "SLING"}, {"name": "Spark", "sold": 2, "posts": 0, "stock": 38, "priceWas": 2500, "priceNow": 2200, "discountKes": 300, "discountPct": -12, "discounted": true, "soldAt": 2500, "prePerDay": 0.9, "offerPerDay": 1.0, "bagLift": 11, "category": "SCHOOL BAG"}, {"name": "Taji", "sold": 1, "posts": 0, "stock": 45, "priceWas": 3000, "priceNow": 2700, "discountKes": 300, "discountPct": -10, "discounted": true, "soldAt": 3000, "prePerDay": 4.7, "offerPerDay": 0.5, "bagLift": -89, "category": "TRAVEL"}, {"name": "Double Press", "sold": 1, "posts": 0, "stock": 303, "priceWas": 2600, "priceNow": 2300, "discountKes": 300, "discountPct": -12, "discounted": true, "soldAt": 2525, "prePerDay": 2.4, "offerPerDay": 2.0, "bagLift": -17, "category": "BACKPACK"}, {"name": "Lanka", "sold": 1, "posts": 0, "stock": 47, "priceWas": 1800, "priceNow": 1500, "discountKes": 300, "discountPct": -17, "discounted": true, "soldAt": 1800, "prePerDay": 1.7, "offerPerDay": 0.5, "bagLift": -71, "category": "HANDBAG"}, {"name": "Mini Manbag", "sold": 1, "posts": 0, "stock": 23, "priceWas": 1600, "priceNow": 1300, "discountKes": 300, "discountPct": -19, "discounted": true, "soldAt": 1600, "prePerDay": 1.3, "offerPerDay": 0.5, "bagLift": -62, "category": "MAN BAG"}, {"name": "Alpha Travel", "sold": 1, "posts": 0, "stock": 30, "priceWas": 3600, "priceNow": 3300, "discountKes": 300, "discountPct": -8, "discounted": true, "soldAt": 3600, "prePerDay": 1.1, "offerPerDay": 0.5, "bagLift": -55, "category": "TRAVEL"}, {"name": "Mini School", "sold": 1, "posts": 0, "stock": 51, "priceWas": 1800, "priceNow": 1500, "discountKes": 300, "discountPct": -17, "discounted": true, "soldAt": 1800, "prePerDay": 0.9, "offerPerDay": 0.5, "bagLift": -44, "category": "SCHOOL BAG"}, {"name": "Arlo Man Bag", "sold": 1, "posts": 0, "stock": 16, "priceWas": 1600, "priceNow": 1300, "discountKes": 300, "discountPct": -19, "discounted": true, "soldAt": 1300, "prePerDay": 0.7, "offerPerDay": 0.5, "bagLift": -29, "category": "MAN BAG"}, {"name": "Code 9", "sold": 1, "posts": 0, "stock": 53, "priceWas": 2100, "priceNow": 1800, "discountKes": 300, "discountPct": -14, "discounted": true, "soldAt": 2100, "prePerDay": 0.4, "offerPerDay": 1.0, "bagLift": 150, "category": "BACKPACK"}, {"name": "Fanny Pack", "sold": 1, "posts": 0, "stock": 98, "priceWas": 1600, "priceNow": 1300, "discountKes": 300, "discountPct": -19, "discounted": true, "soldAt": 1600, "prePerDay": 0.4, "offerPerDay": 0.5, "bagLift": 25, "category": "WAIST BAG"}, {"name": "Nyla Bp", "sold": 1, "posts": 0, "stock": 10, "priceWas": 3000, "priceNow": 2700, "discountKes": 300, "discountPct": -10, "discounted": true, "soldAt": 3000, "prePerDay": 0.3, "offerPerDay": 0.5, "bagLift": 67, "category": "BACKPACK"}, {"name": "Kaz", "sold": 0, "posts": 0, "stock": 60, "priceWas": 2000, "priceNow": 1700, "discountKes": 300, "discountPct": -15, "discounted": true, "soldAt": 1600, "prePerDay": 3.0, "offerPerDay": 0.5, "bagLift": -83, "category": "TRAVEL"}, {"name": "Lamora", "sold": 0, "posts": 33, "stock": 86, "priceWas": 4000, "priceNow": 3700, "discountKes": 300, "discountPct": -8, "discounted": true, "soldAt": 4000, "prePerDay": 2.6, "offerPerDay": 0.5, "bagLift": -81, "category": "SLING"}, {"name": "Ace", "sold": 0, "posts": 0, "stock": 64, "priceWas": 1600, "priceNow": 1300, "discountKes": 300, "discountPct": -19, "discounted": true, "soldAt": 1527, "prePerDay": 2.4, "offerPerDay": 0.0, "bagLift": -100, "category": "SLING"}, {"name": "Tyler", "sold": 0, "posts": 0, "stock": 50, "priceWas": 2600, "priceNow": 2300, "discountKes": 300, "discountPct": -12, "discounted": true, "soldAt": 2600, "prePerDay": 2.4, "offerPerDay": 0.5, "bagLift": -79, "category": "BACKPACK"}, {"name": "Feroz", "sold": 0, "posts": 0, "stock": 39, "priceWas": 3100, "priceNow": 2800, "discountKes": 300, "discountPct": -10, "discounted": true, "soldAt": 3100, "prePerDay": 2.4, "offerPerDay": 0.0, "bagLift": -100, "category": "BRIEFCASE"}, {"name": "Legacy", "sold": 0, "posts": 0, "stock": 53, "priceWas": 3500, "priceNow": 3200, "discountKes": 300, "discountPct": -9, "discounted": true, "soldAt": 3500, "prePerDay": 1.6, "offerPerDay": 2.5, "bagLift": 56, "category": "BRIEFCASE"}, {"name": "Aria Pro", "sold": 0, "posts": 12, "stock": 31, "priceWas": 1600, "priceNow": 1300, "discountKes": 300, "discountPct": -19, "discounted": true, "soldAt": 1600, "prePerDay": 1.9, "offerPerDay": 1.0, "bagLift": -47, "category": "SLING"}, {"name": "Jade", "sold": 0, "posts": 0, "stock": 115, "priceWas": 3100, "priceNow": 2800, "discountKes": 300, "discountPct": -10, "discounted": true, "soldAt": 2774, "prePerDay": 2.1, "offerPerDay": 0.0, "bagLift": -100, "category": "BRIEFCASE"}, {"name": "Don", "sold": 0, "posts": 0, "stock": 35, "priceWas": 1600, "priceNow": 1300, "discountKes": 300, "discountPct": -19, "discounted": true, "soldAt": 1600, "prePerDay": 1.4, "offerPerDay": 1.0, "bagLift": -29, "category": "MAN BAG"}, {"name": "Lunchset", "sold": 0, "posts": 9, "stock": 39, "priceWas": 1600, "priceNow": 1300, "discountKes": 300, "discountPct": -19, "discounted": true, "soldAt": 1371, "prePerDay": 1.6, "offerPerDay": 0.0, "bagLift": -100, "category": "LUNCH BAG"}, {"name": "Zelus", "sold": 0, "posts": 0, "stock": 58, "priceWas": 2600, "priceNow": 2300, "discountKes": 300, "discountPct": -12, "discounted": true, "soldAt": 2369, "prePerDay": 1.4, "offerPerDay": 0.0, "bagLift": -100, "category": "BACKPACK"}, {"name": "College Hb", "sold": 0, "posts": 0, "stock": 52, "priceWas": 2600, "priceNow": 2300, "discountKes": 300, "discountPct": -12, "discounted": true, "soldAt": 2600, "prePerDay": 1.1, "offerPerDay": 0.5, "bagLift": -55, "category": "HANDBAG"}, {"name": "Esmeralda", "sold": 0, "posts": 0, "stock": 26, "priceWas": 2600, "priceNow": 2300, "discountKes": 300, "discountPct": -12, "discounted": true, "soldAt": 2600, "prePerDay": 1.2, "offerPerDay": 0.0, "bagLift": -100, "category": "BACKPACK"}, {"name": "Washbag", "sold": 0, "posts": 0, "stock": 64, "priceWas": 1600, "priceNow": 1300, "discountKes": 300, "discountPct": -19, "discounted": true, "soldAt": 1600, "prePerDay": 1.0, "offerPerDay": 1.0, "bagLift": 0, "category": "WASHBAG"}, {"name": "Nala", "sold": 0, "posts": 12, "stock": 50, "priceWas": 5000, "priceNow": 4700, "discountKes": 300, "discountPct": -6, "discounted": true, "soldAt": 5000, "prePerDay": 0.9, "offerPerDay": 0.0, "bagLift": -100, "category": "HANDBAG"}, {"name": "Bello", "sold": 0, "posts": 0, "stock": 37, "priceWas": 2600, "priceNow": 2300, "discountKes": 300, "discountPct": -12, "discounted": true, "soldAt": 2229, "prePerDay": 0.8, "offerPerDay": 0.0, "bagLift": -100, "category": "BACKPACK"}, {"name": "Butterfly Sling", "sold": 0, "posts": 0, "stock": 139, "priceWas": 1600, "priceNow": 1300, "discountKes": 300, "discountPct": -19, "discounted": true, "soldAt": 1600, "prePerDay": 0.8, "offerPerDay": 0.0, "bagLift": -100, "category": "SLING"}, {"name": "Zeno", "sold": 0, "posts": 0, "stock": 7, "priceWas": 1600, "priceNow": 1300, "discountKes": 300, "discountPct": -19, "discounted": true, "soldAt": 1579, "prePerDay": 0.8, "offerPerDay": 0.0, "bagLift": -100, "category": "TRAVEL"}, {"name": "Pocket Travel", "sold": 0, "posts": 0, "stock": 20, "priceWas": 3600, "priceNow": 3300, "discountKes": 300, "discountPct": -8, "discounted": true, "soldAt": 3550, "prePerDay": 0.7, "offerPerDay": 0.0, "bagLift": -100, "category": "TRAVEL"}, {"name": "Travolta", "sold": 0, "posts": 0, "stock": 24, "priceWas": 3600, "priceNow": 3300, "discountKes": 300, "discountPct": -8, "discounted": true, "soldAt": 3600, "prePerDay": 0.4, "offerPerDay": 1.5, "bagLift": 275, "category": "TRAVEL"}, {"name": "Arm Band", "sold": 0, "posts": 0, "stock": 30, "priceWas": 1200, "priceNow": 900, "discountKes": 300, "discountPct": -25, "discounted": true, "soldAt": 1200, "prePerDay": 0.4, "offerPerDay": 0.0, "bagLift": -100, "category": "SPORT"}, {"name": "Elektra", "sold": 0, "posts": 0, "stock": 1, "priceWas": 1600, "priceNow": 1300, "discountKes": 300, "discountPct": -19, "discounted": true, "soldAt": 1600, "prePerDay": 0.4, "offerPerDay": 0.5, "bagLift": 25, "category": "THIGH BAG"}, {"name": "Umbra", "sold": 0, "posts": 9, "stock": 8, "priceWas": 2100, "priceNow": 1800, "discountKes": 300, "discountPct": -14, "discounted": true, "soldAt": 2100, "prePerDay": 0.4, "offerPerDay": 0.5, "bagLift": 25, "category": "CHEST BAG"}, {"name": "Zuri", "sold": 0, "posts": 15, "stock": 125, "priceWas": 3600, "priceNow": 3300, "discountKes": 300, "discountPct": -8, "discounted": true, "soldAt": 3600, "prePerDay": 0.3, "offerPerDay": 0.0, "bagLift": -100, "category": "HANDBAG"}, {"name": "Ankara Travel", "sold": 0, "posts": 0, "stock": 6, "priceWas": 2600, "priceNow": 2300, "discountKes": 300, "discountPct": -12, "discounted": true, "soldAt": 2600, "prePerDay": 0.2, "offerPerDay": 0.0, "bagLift": -100, "category": "TRAVEL"}, {"name": "Chase", "sold": 0, "posts": 0, "stock": 28, "priceWas": 1500, "priceNow": 1200, "discountKes": 300, "discountPct": -20, "discounted": true, "soldAt": 1500, "prePerDay": 0.2, "offerPerDay": 0.0, "bagLift": -100, "category": "THIGH BAG"}, {"name": "Daria", "sold": 0, "posts": 0, "stock": 9, "priceWas": 1600, "priceNow": 1300, "discountKes": 300, "discountPct": -19, "discounted": true, "soldAt": 1600, "prePerDay": 0.2, "offerPerDay": 0.5, "bagLift": 150, "category": "BACKPACK"}, {"name": "Imani", "sold": 0, "posts": 0, "stock": 88, "priceWas": 3000, "priceNow": 2700, "discountKes": 300, "discountPct": -10, "discounted": true, "soldAt": 3000, "prePerDay": 0.2, "offerPerDay": 0.0, "bagLift": -100, "category": "HANDBAG"}, {"name": "Marley", "sold": 0, "posts": 0, "stock": 11, "priceWas": 2400, "priceNow": 2100, "discountKes": 300, "discountPct": -12, "discounted": true, "soldAt": 2250, "prePerDay": 0.2, "offerPerDay": 0.0, "bagLift": -100, "category": "HANDBAG"}, {"name": "Maya", "sold": 0, "posts": 0, "stock": 14, "priceWas": 1600, "priceNow": 1300, "discountKes": 300, "discountPct": -19, "discounted": true, "soldAt": 1850, "prePerDay": 0.2, "offerPerDay": 0.0, "bagLift": -100, "category": "SLING"}, {"name": "Safiri Bp", "sold": 0, "posts": 0, "stock": 4, "priceWas": 2600, "priceNow": 2300, "discountKes": 300, "discountPct": -12, "discounted": true, "soldAt": 2600, "prePerDay": 0.2, "offerPerDay": 0.0, "bagLift": -100, "category": "BACKPACK"}, {"name": "Wander Luxe", "sold": 0, "posts": 0, "stock": 2, "priceWas": 3100, "priceNow": 2800, "discountKes": 300, "discountPct": -10, "discounted": true, "soldAt": 3100, "prePerDay": 0.2, "offerPerDay": 0.0, "bagLift": -100, "category": "TRAVEL"}, {"name": "Adrian", "sold": 0, "posts": 0, "stock": 0, "priceWas": 3000, "priceNow": 2700, "discountKes": 300, "discountPct": -10, "discounted": true, "soldAt": 3000, "prePerDay": 0.1, "offerPerDay": 0.0, "bagLift": -100, "category": "BACKPACK"}, {"name": "Callista", "sold": 0, "posts": 0, "stock": 0, "priceWas": 2800, "priceNow": 2500, "discountKes": 300, "discountPct": -11, "discounted": true, "soldAt": 2800, "prePerDay": 0.1, "offerPerDay": 0.0, "bagLift": -100, "category": "TRAVEL"}, {"name": "Diaper Bag", "sold": 0, "posts": 0, "stock": 1, "priceWas": 4600, "priceNow": 4300, "discountKes": 300, "discountPct": -7, "discounted": true, "soldAt": 5000, "prePerDay": 0.1, "offerPerDay": 1.0, "bagLift": 900, "category": "BABY BAG"}, {"name": "Luca", "sold": 0, "posts": 0, "stock": 0, "priceWas": 2600, "priceNow": 2300, "discountKes": 300, "discountPct": -12, "discounted": true, "soldAt": 2600, "prePerDay": 0.1, "offerPerDay": 0.0, "bagLift": -100, "category": "BABY BAG"}, {"name": "Montana", "sold": 0, "posts": 0, "stock": 24, "priceWas": 1500, "priceNow": 1200, "discountKes": 300, "discountPct": -20, "discounted": true, "soldAt": 1500, "prePerDay": 0.0, "offerPerDay": 0.5, "bagLift": null, "category": "SLING"}, {"name": "Nina", "sold": 0, "posts": 0, "stock": 2, "priceWas": 2800, "priceNow": 2500, "discountKes": 300, "discountPct": -11, "discounted": true, "soldAt": 2800, "prePerDay": 0.1, "offerPerDay": 0.0, "bagLift": -100, "category": "HANDBAG"}, {"name": "Satchel", "sold": 0, "posts": 0, "stock": 8, "priceWas": 3100, "priceNow": 2800, "discountKes": 300, "discountPct": -10, "discounted": true, "soldAt": 3100, "prePerDay": 0.1, "offerPerDay": 0.0, "bagLift": -100, "category": "BRIEFCASE"}, {"name": "Skye Hb", "sold": 0, "posts": 0, "stock": 14, "priceWas": 2000, "priceNow": 1700, "discountKes": 300, "discountPct": -15, "discounted": true, "soldAt": 2000, "prePerDay": 0.1, "offerPerDay": 0.0, "bagLift": -100, "category": "HANDBAG"}, {"name": "Splash Backpack", "sold": 0, "posts": 0, "stock": 33, "priceWas": 2100, "priceNow": 1800, "discountKes": 300, "discountPct": -14, "discounted": true, "soldAt": 2100, "prePerDay": 0.1, "offerPerDay": 0.0, "bagLift": -100, "category": "SPORT"}, {"name": "Vanity", "sold": 0, "posts": 0, "stock": 17, "priceWas": 1100, "priceNow": 800, "discountKes": 300, "discountPct": -27, "discounted": true, "soldAt": 1100, "prePerDay": 0.1, "offerPerDay": 0.0, "bagLift": -100, "category": "MAKE UP"}], "insights": [{"tag": "On offer?", "text": "<b>All six were genuinely on offer</b> — real list-price cuts of KES 300–300 (6–27% off): Reo Travel −300 (-11%), Loop Bp −300 (-11%), Cathy Handbag −300 (-15%), Claire Handbag −300 (-10%), Cosmo −300 (-16%), Monah Bp −300 (-15%), Zipped Lunchset −300 (-19%), Zula −300 (-14%), Scooby −300 (-12%), Leila −300 (-19%), Spark −300 (-12%), Taji −300 (-10%), Double Press −300 (-12%), Lanka −300 (-17%), Mini Manbag −300 (-19%), Alpha Travel −300 (-8%), Mini School −300 (-17%), Arlo Man Bag −300 (-19%), Code 9 −300 (-14%), Fanny Pack −300 (-19%), Nyla Bp −300 (-10%), Kaz −300 (-15%), Lamora −300 (-8%), Ace −300 (-19%), Tyler −300 (-12%), Feroz −300 (-10%), Legacy −300 (-9%), Aria Pro −300 (-19%), Jade −300 (-10%), Don −300 (-19%), Lunchset −300 (-19%), Zelus −300 (-12%), College Hb −300 (-12%), Esmeralda −300 (-12%), Washbag −300 (-19%), Nala −300 (-6%), Bello −300 (-12%), Butterfly Sling −300 (-19%), Zeno −300 (-19%), Pocket Travel −300 (-8%), Travolta −300 (-8%), Arm Band −300 (-25%), Elektra −300 (-19%), Umbra −300 (-14%), Zuri −300 (-8%), Ankara Travel −300 (-12%), Chase −300 (-20%), Daria −300 (-19%), Imani −300 (-10%), Marley −300 (-12%), Maya −300 (-19%), Safiri Bp −300 (-12%), Wander Luxe −300 (-10%), Adrian −300 (-10%), Callista −300 (-11%), Diaper Bag −300 (-7%), Luca −300 (-12%), Montana −300 (-20%), Nina −300 (-11%), Satchel −300 (-10%), Skye Hb −300 (-15%), Splash Backpack −300 (-14%), Vanity −300 (-27%)."}, {"tag": "Discount vs demand", "text": "Because <b>every bag was cut</b>, the discount and back-to-school timing can't be fully separated — both applied at once. But <b>discount depth didn't decide the winners</b>: the deepest cut, Vanity (-27%), sold only 0, while Reo Travel led with 5 on a shallower -11% cut. The cut opened the door, but <b>demand — which bags people wanted for school — chose what actually moved</b>."}, {"tag": "Stock", "text": "Mostly backpacks with real inventory behind them — <b>3,092 still in Kenya stock</b> even after the push (led by Double Press at 303). The offer draws down a genuine stock position, not a token one."}, {"tag": "Season", "text": "All six sit in <b>Baby Bag, Backpack, Briefcase, Chest Bag, Handbag, Lunch Bag, Make Up, Man Bag, School Bag, Sling, Sport, Thigh Bag, Travel, Waist Bag, Washbag</b> — school categories — and the step-up landed in the offer week as schools opened. Reo Travel and Loop Bp even sold on zero marketing posts (pure demand). The timing fits the sales pattern as much as the price cut does."}], "verdict": "<b>Good move.</b> All six ran a real <b>6–27% cut</b> and daily sales rose <b>+-59%</b> during back-to-school. The catch: <b>discount depth didn't pick the winners</b> — the deepest cut (Vanity, -27%) sold least, while the popular school lines led. Repeat the timing; you can likely <b>trim the deepest cuts</b> on the slow movers without losing volume.", "priceWeeks": {"weeks": [{"label": "Wk 1", "start": "2026-09-01", "end": "2026-09-05", "off": false}, {"label": "Wk 2", "start": "2026-09-06", "end": "2026-09-11", "off": true}], "bags": [{"name": "Reo Travel", "was": 2800, "now": 2500, "cells": [{"avg": 2400, "qty": 31}, {"avg": 2215, "qty": 26}]}, {"name": "Loop Bp", "was": 2700, "now": 2400, "cells": [{"avg": 2775, "qty": 12}, {"avg": 2814, "qty": 29}]}, {"name": "Cathy Handbag", "was": 2000, "now": 1700, "cells": [{"avg": 1600, "qty": 12}, {"avg": 1600, "qty": 13}]}, {"name": "Claire Handbag", "was": 3000, "now": 2700, "cells": [{"avg": 2727, "qty": 11}, {"avg": 2980, "qty": 15}]}, {"name": "Cosmo", "was": 1900, "now": 1600, "cells": [{"avg": 1900, "qty": 10}, {"avg": 1733, "qty": 6}]}, {"name": "Monah Bp", "was": 2000, "now": 1700, "cells": [{"avg": 1976, "qty": 17}, {"avg": 2140, "qty": 10}]}, {"name": "Zipped Lunchset", "was": 1600, "now": 1300, "cells": [{"avg": 1600, "qty": 11}, {"avg": 1670, "qty": 10}]}, {"name": "Zula", "was": 2200, "now": 1900, "cells": [{"avg": 2200, "qty": 9}, {"avg": 1956, "qty": 9}]}, {"name": "Scooby", "was": 2600, "now": 2300, "cells": [{"avg": 2564, "qty": 11}, {"avg": 1300, "qty": 2}]}, {"name": "Leila", "was": 1600, "now": 1300, "cells": [{"avg": 1525, "qty": 4}, {"avg": 1600, "qty": 4}]}, {"name": "Spark", "was": 2500, "now": 2200, "cells": [{"avg": 2500, "qty": 3}, {"avg": 2500, "qty": 3}]}, {"name": "Taji", "was": 3000, "now": 2700, "cells": [{"avg": 2625, "qty": 8}, {"avg": 3000, "qty": 4}]}, {"name": "Double Press", "was": 2600, "now": 2300, "cells": [{"avg": 2600, "qty": 6}, {"avg": 2550, "qty": 6}]}, {"name": "Lanka", "was": 1800, "now": 1500, "cells": [{"avg": null, "qty": 0}, {"avg": 1800, "qty": 2}]}, {"name": "Mini Manbag", "was": 1600, "now": 1300, "cells": [{"avg": 1600, "qty": 6}, {"avg": 1600, "qty": 4}]}, {"name": "Alpha Travel", "was": 3600, "now": 3300, "cells": [{"avg": 3600, "qty": 1}, {"avg": 3600, "qty": 5}]}, {"name": "Mini School", "was": 1800, "now": 1500, "cells": [{"avg": 1725, "qty": 4}, {"avg": 1800, "qty": 2}]}, {"name": "Arlo Man Bag", "was": 1600, "now": 1300, "cells": [{"avg": 1600, "qty": 5}, {"avg": 1450, "qty": 2}]}, {"name": "Code 9", "was": 2100, "now": 1800, "cells": [{"avg": 2100, "qty": 2}, {"avg": 2100, "qty": 1}]}, {"name": "Fanny Pack", "was": 1600, "now": 1300, "cells": [{"avg": 1600, "qty": 2}, {"avg": 0, "qty": 1}]}, {"name": "Nyla Bp", "was": 3000, "now": 2700, "cells": [{"avg": 3000, "qty": 1}, {"avg": 3000, "qty": 2}]}, {"name": "Kaz", "was": 2000, "now": 1700, "cells": [{"avg": 2000, "qty": 4}, {"avg": 2000, "qty": 3}]}, {"name": "Lamora", "was": 4000, "now": 3700, "cells": [{"avg": 4000, "qty": 7}, {"avg": 4000, "qty": 3}]}, {"name": "Ace", "was": 1600, "now": 1300, "cells": [{"avg": 1400, "qty": 8}, {"avg": 1600, "qty": 1}]}, {"name": "Tyler", "was": 2600, "now": 2300, "cells": [{"avg": 2433, "qty": 9}, {"avg": 2600, "qty": 4}]}, {"name": "Feroz", "was": 3100, "now": 2800, "cells": [{"avg": 3100, "qty": 8}, {"avg": 3100, "qty": 6}]}, {"name": "Legacy", "was": 3500, "now": 3200, "cells": [{"avg": 3000, "qty": 7}, {"avg": 3500, "qty": 2}]}, {"name": "Aria Pro", "was": 1600, "now": 1300, "cells": [{"avg": 1600, "qty": 8}, {"avg": 1600, "qty": 4}]}, {"name": "Jade", "was": 3100, "now": 2800, "cells": [{"avg": 3100, "qty": 4}, {"avg": 2712, "qty": 8}]}, {"name": "Don", "was": 1600, "now": 1300, "cells": [{"avg": 1600, "qty": 6}, {"avg": null, "qty": 0}]}, {"name": "Lunchset", "was": 1600, "now": 1300, "cells": [{"avg": 960, "qty": 5}, {"avg": 1600, "qty": 6}]}, {"name": "Zelus", "was": 2600, "now": 2300, "cells": [{"avg": 2229, "qty": 7}, {"avg": null, "qty": 0}]}, {"name": "College Hb", "was": 2600, "now": 2300, "cells": [{"avg": 2600, "qty": 6}, {"avg": 2600, "qty": 3}]}, {"name": "Esmeralda", "was": 2600, "now": 2300, "cells": [{"avg": 2600, "qty": 6}, {"avg": 2600, "qty": 4}]}, {"name": "Washbag", "was": 1600, "now": 1300, "cells": [{"avg": 1067, "qty": 3}, {"avg": 1600, "qty": 1}]}, {"name": "Nala", "was": 5000, "now": 4700, "cells": [{"avg": 5000, "qty": 2}, {"avg": 5000, "qty": 1}]}, {"name": "Bello", "was": 2600, "now": 2300, "cells": [{"avg": 1733, "qty": 3}, {"avg": 2600, "qty": 1}]}, {"name": "Butterfly Sling", "was": 1600, "now": 1300, "cells": [{"avg": 1600, "qty": 3}, {"avg": 1600, "qty": 2}]}, {"name": "Zeno", "was": 1600, "now": 1300, "cells": [{"avg": 1600, "qty": 2}, {"avg": 1600, "qty": 2}]}, {"name": "Pocket Travel", "was": 3600, "now": 3300, "cells": [{"avg": null, "qty": 0}, {"avg": 3600, "qty": 3}]}, {"name": "Travolta", "was": 3600, "now": 3300, "cells": [{"avg": null, "qty": 0}, {"avg": 3600, "qty": 3}]}, {"name": "Arm Band", "was": 1200, "now": 900, "cells": [{"avg": 1200, "qty": 2}, {"avg": 1200, "qty": 1}]}, {"name": "Elektra", "was": 1600, "now": 1300, "cells": [{"avg": 1600, "qty": 2}, {"avg": null, "qty": 0}]}, {"name": "Umbra", "was": 2100, "now": 1800, "cells": [{"avg": null, "qty": 0}, {"avg": null, "qty": 0}]}, {"name": "Zuri", "was": 3600, "now": 3300, "cells": [{"avg": 3600, "qty": 1}, {"avg": null, "qty": 0}]}, {"name": "Ankara Travel", "was": 2600, "now": 2300, "cells": [{"avg": 2600, "qty": 1}, {"avg": 2600, "qty": 1}]}, {"name": "Chase", "was": 1500, "now": 1200, "cells": [{"avg": null, "qty": 0}, {"avg": null, "qty": 0}]}, {"name": "Daria", "was": 1600, "now": 1300, "cells": [{"avg": 1600, "qty": 2}, {"avg": null, "qty": 0}]}, {"name": "Imani", "was": 3000, "now": 2700, "cells": [{"avg": 3000, "qty": 1}, {"avg": 3000, "qty": 1}]}, {"name": "Marley", "was": 2400, "now": 2100, "cells": [{"avg": null, "qty": 0}, {"avg": 2400, "qty": 1}]}, {"name": "Maya", "was": 1600, "now": 1300, "cells": [{"avg": null, "qty": 0}, {"avg": 1800, "qty": 1}]}, {"name": "Safiri Bp", "was": 2600, "now": 2300, "cells": [{"avg": 2600, "qty": 1}, {"avg": 2600, "qty": 1}]}, {"name": "Wander Luxe", "was": 3100, "now": 2800, "cells": [{"avg": null, "qty": 0}, {"avg": 3100, "qty": 1}]}, {"name": "Adrian", "was": 3000, "now": 2700, "cells": [{"avg": null, "qty": 0}, {"avg": null, "qty": 0}]}, {"name": "Callista", "was": 2800, "now": 2500, "cells": [{"avg": null, "qty": 0}, {"avg": null, "qty": 0}]}, {"name": "Diaper Bag", "was": 4600, "now": 4300, "cells": [{"avg": null, "qty": 0}, {"avg": null, "qty": 0}]}, {"name": "Luca", "was": 2600, "now": 2300, "cells": [{"avg": null, "qty": 0}, {"avg": null, "qty": 0}]}, {"name": "Montana", "was": 1500, "now": 1200, "cells": [{"avg": null, "qty": 0}, {"avg": null, "qty": 0}]}, {"name": "Nina", "was": 2800, "now": 2500, "cells": [{"avg": null, "qty": 0}, {"avg": null, "qty": 0}]}, {"name": "Satchel", "was": 3100, "now": 2800, "cells": [{"avg": null, "qty": 0}, {"avg": 3100, "qty": 1}]}, {"name": "Skye Hb", "was": 2000, "now": 1700, "cells": [{"avg": null, "qty": 0}, {"avg": null, "qty": 0}]}, {"name": "Splash Backpack", "was": 2100, "now": 1800, "cells": [{"avg": null, "qty": 0}, {"avg": null, "qty": 0}]}, {"name": "Vanity", "was": 1100, "now": 800, "cells": [{"avg": null, "qty": 0}, {"avg": null, "qty": 0}]}]}}, "salesLive": true, "bags": [{"name": "Reo Travel", "sold": 5, "posts": 0, "perPost": null}, {"name": "Loop Bp", "sold": 3, "posts": 0, "perPost": null}, {"name": "Cathy Handbag", "sold": 3, "posts": 0, "perPost": null}, {"name": "Claire Handbag", "sold": 3, "posts": 10, "perPost": 0.3}, {"name": "Cosmo", "sold": 3, "posts": 0, "perPost": null}, {"name": "Monah Bp", "sold": 3, "posts": 0, "perPost": null}, {"name": "Zipped Lunchset", "sold": 3, "posts": 0, "perPost": null}, {"name": "Zula", "sold": 2, "posts": 9, "perPost": 0.2}, {"name": "Scooby", "sold": 2, "posts": 0, "perPost": null}, {"name": "Leila", "sold": 2, "posts": 0, "perPost": null}, {"name": "Spark", "sold": 2, "posts": 0, "perPost": null}, {"name": "Taji", "sold": 1, "posts": 0, "perPost": null}, {"name": "Double Press", "sold": 1, "posts": 0, "perPost": null}, {"name": "Lanka", "sold": 1, "posts": 0, "perPost": null}, {"name": "Mini Manbag", "sold": 1, "posts": 0, "perPost": null}, {"name": "Alpha Travel", "sold": 1, "posts": 0, "perPost": null}, {"name": "Mini School", "sold": 1, "posts": 0, "perPost": null}, {"name": "Arlo Man Bag", "sold": 1, "posts": 0, "perPost": null}, {"name": "Code 9", "sold": 1, "posts": 0, "perPost": null}, {"name": "Fanny Pack", "sold": 1, "posts": 0, "perPost": null}, {"name": "Nyla Bp", "sold": 1, "posts": 0, "perPost": null}, {"name": "Kaz", "sold": 0, "posts": 0, "perPost": null}, {"name": "Lamora", "sold": 0, "posts": 33, "perPost": 0.0}, {"name": "Ace", "sold": 0, "posts": 0, "perPost": null}, {"name": "Tyler", "sold": 0, "posts": 0, "perPost": null}, {"name": "Feroz", "sold": 0, "posts": 0, "perPost": null}, {"name": "Legacy", "sold": 0, "posts": 0, "perPost": null}, {"name": "Aria Pro", "sold": 0, "posts": 12, "perPost": 0.0}, {"name": "Jade", "sold": 0, "posts": 0, "perPost": null}, {"name": "Don", "sold": 0, "posts": 0, "perPost": null}, {"name": "Lunchset", "sold": 0, "posts": 9, "perPost": 0.0}, {"name": "Zelus", "sold": 0, "posts": 0, "perPost": null}, {"name": "College Hb", "sold": 0, "posts": 0, "perPost": null}, {"name": "Esmeralda", "sold": 0, "posts": 0, "perPost": null}, {"name": "Washbag", "sold": 0, "posts": 0, "perPost": null}, {"name": "Nala", "sold": 0, "posts": 12, "perPost": 0.0}, {"name": "Bello", "sold": 0, "posts": 0, "perPost": null}, {"name": "Butterfly Sling", "sold": 0, "posts": 0, "perPost": null}, {"name": "Zeno", "sold": 0, "posts": 0, "perPost": null}, {"name": "Pocket Travel", "sold": 0, "posts": 0, "perPost": null}, {"name": "Travolta", "sold": 0, "posts": 0, "perPost": null}, {"name": "Arm Band", "sold": 0, "posts": 0, "perPost": null}, {"name": "Elektra", "sold": 0, "posts": 0, "perPost": null}, {"name": "Umbra", "sold": 0, "posts": 9, "perPost": 0.0}, {"name": "Zuri", "sold": 0, "posts": 15, "perPost": 0.0}, {"name": "Ankara Travel", "sold": 0, "posts": 0, "perPost": null}, {"name": "Chase", "sold": 0, "posts": 0, "perPost": null}, {"name": "Daria", "sold": 0, "posts": 0, "perPost": null}, {"name": "Imani", "sold": 0, "posts": 0, "perPost": null}, {"name": "Marley", "sold": 0, "posts": 0, "perPost": null}, {"name": "Maya", "sold": 0, "posts": 0, "perPost": null}, {"name": "Safiri Bp", "sold": 0, "posts": 0, "perPost": null}, {"name": "Wander Luxe", "sold": 0, "posts": 0, "perPost": null}, {"name": "Adrian", "sold": 0, "posts": 0, "perPost": null}, {"name": "Callista", "sold": 0, "posts": 0, "perPost": null}, {"name": "Diaper Bag", "sold": 0, "posts": 0, "perPost": null}, {"name": "Luca", "sold": 0, "posts": 0, "perPost": null}, {"name": "Montana", "sold": 0, "posts": 0, "perPost": null}, {"name": "Nina", "sold": 0, "posts": 0, "perPost": null}, {"name": "Satchel", "sold": 0, "posts": 0, "perPost": null}, {"name": "Skye Hb", "sold": 0, "posts": 0, "perPost": null}, {"name": "Splash Backpack", "sold": 0, "posts": 0, "perPost": null}, {"name": "Vanity", "sold": 0, "posts": 0, "perPost": null}], "totalSold": 41, "totalPosts": 109, "perPost": 0.4, "bestName": "Reo Travel", "bestSold": 5, "mostPName": "Lamora", "mostPosts": 33}]};
+const TO_LIST = TO_DATA.offers;
+const TO = TO_LIST[0] || null;
 </script>
 <!-- TIMED_DATA_END -->
 
 <script>
 (function(){
   var fmt = function(n){ return Number(n||0).toLocaleString(); };
-  var set = function(id, txt){ var el = document.getElementById(id); if (el) el.textContent = txt; };
 
-  set('to-title', TO.name || 'Timed Offer');
-  var sub = document.getElementById('to-sub');
-  if (sub) sub.innerHTML = '<b>' + (TO.windowLabel || '') + '</b> · ' + TO.bags.length + ' bags · <b>'
-    + (TO.market || 'Kenya') + '</b> market · sales <b>live from Odoo POS</b> for the exact window · '
-    + 'posting = <b>last week (Kenya)</b>'
-    + (TO.salesLive ? '' : ' · <span style="color:#f87171">DB unreachable — sales showing 0</span>');
-  var cap = document.getElementById('to-chart-cap');
-  if (cap) cap.textContent = 'Kenya POS · ' + (TO.windowLabel || 'offer window');
+  function renderOffer(TO, root){
+    var set = function(sel, txt){ var el = root.querySelector('[data-el="'+sel+'"]'); if (el) el.textContent = txt; };
 
-  // ── KPI cards ──
-  var perPost = TO.perPost != null ? TO.perPost.toFixed(1) : '—';
-  var kpis = [
-    ['g', 'Bags Sold',       'green',  fmt(TO.totalSold),  'across ' + TO.bags.length + ' bags, ' + (TO.market||'Kenya')],
-    ['c', 'Marketing Posts', 'cyan',   fmt(TO.totalPosts), 'last week, Kenya side'],
-    ['v', 'Bags per Post',   'violet', perPost,            'sales ÷ posts'],
-    ['',  'Top Seller',      '',       TO.bestName || '—', fmt(TO.bestSold) + ' bags sold']
-  ];
-  var kg = document.getElementById('to-kpis');
-  if (kg) kg.innerHTML = kpis.map(function(k){
-    return '<div class="card ' + k[0] + '"><div class="k-lbl">' + k[1] + '</div>'
-         + '<div class="k-val ' + k[2] + '">' + k[3] + '</div>'
-         + '<div class="k-sub">' + k[4] + '</div></div>';
-  }).join('');
 
-  // ── Lift: did the offer improve sales? (before vs during) ──
-  var L = TO.lift;
-  if (L && L.basePerDay != null) {
-    var panel = document.getElementById('to-lift-panel');
-    if (panel) panel.style.display = '';
-    var up = (L.liftPct || 0) >= 0;
-    set('to-lift-cap', 'Same 6 bags, Kenya · offer window (' + L.offerDays + ' days) vs the '
-      + L.baseDays + ' pre-offer days this month (' + L.baseStart + ' → ' + L.baseEnd + '), per day.');
-    var lk = [
-      ['', 'Sales Lift', (up ? 'green' : ''), (up ? '+' : '') + (L.liftPct != null ? L.liftPct : 0) + '%',
-        'offer vs pre-offer, per day'],
-      ['c', 'Before (per day)', 'cyan',  (L.basePerDay).toFixed(1),  L.baseTotal + ' over ' + L.baseDays + ' days'],
-      ['g', 'During (per day)', 'green', (L.offerPerDay).toFixed(1), L.offerTotal + ' over ' + L.offerDays + ' days']
+
+    set('title', TO.name || 'Timed Offer');
+    var sub = root.querySelector('[data-el="sub"]');
+    if (sub) sub.innerHTML = '<b>' + (TO.windowLabel || '') + '</b> · ' + TO.bags.length + ' bags · <b>'
+      + (TO.scopeLabel || TO.market || 'Kenya') + '</b> · sales <b>live from Odoo POS</b> for the exact window · '
+      + 'posting = <b>last week (Kenya)</b>'
+      + (TO.salesLive ? '' : ' · <span style="color:#f87171">DB unreachable — sales showing 0</span>');
+    var cap = root.querySelector('[data-el="chart-cap"]');
+    if (cap) cap.textContent = 'Kenya POS · ' + (TO.windowLabel || 'offer window');
+
+    // ── KPI cards ──
+    var perPost = TO.perPost != null ? TO.perPost.toFixed(1) : '—';
+    var kpis = [
+      ['g', 'Bags Sold',       'green',  fmt(TO.totalSold),  'across ' + TO.bags.length + ' bags, ' + (TO.shops && TO.shops.length ? 'Nairobi CBD' : (TO.market||'Kenya'))],
+      ['c', 'Marketing Posts', 'cyan',   fmt(TO.totalPosts), 'last week, Kenya side'],
+      ['v', 'Bags per Post',   'violet', perPost,            'sales ÷ posts'],
+      ['',  'Top Seller',      '',       TO.bestName || '—', fmt(TO.bestSold) + ' bags sold']
     ];
-    var lg = document.getElementById('to-lift-kpis');
-    if (lg) lg.innerHTML = lk.map(function(k){
+    var kg = root.querySelector('[data-el="kpis"]');
+    if (kg) kg.innerHTML = kpis.map(function(k){
       return '<div class="card ' + k[0] + '"><div class="k-lbl">' + k[1] + '</div>'
-           + '<div class="k-val ' + k[2] + '">' + k[3] + '</div><div class="k-sub">' + k[4] + '</div></div>';
+           + '<div class="k-val ' + k[2] + '">' + k[3] + '</div>'
+           + '<div class="k-sub">' + k[4] + '</div></div>';
     }).join('');
 
-    var lel = document.getElementById('to-lift-chart');
-    if (lel && typeof Chart !== 'undefined' && (L.daily || []).length) {
-      var dd = L.daily;
-      // dashed baseline (pre-offer per-day average) to see the jump
-      var BASE = { id:'baseline', afterDatasetsDraw:function(ch){
-        var y = ch.scales.y.getPixelForValue(L.basePerDay); if (!isFinite(y)) return;
-        var c = ch.ctx, a = ch.chartArea; c.save();
-        c.strokeStyle='#f59e0b'; c.setLineDash([5,4]); c.lineWidth=1.5;
-        c.beginPath(); c.moveTo(a.left,y); c.lineTo(a.right,y); c.stroke();
-        c.setLineDash([]); c.fillStyle='#fbbf24'; c.font='700 0.62rem "Segoe UI",system-ui,sans-serif';
-        c.textAlign='right'; c.fillText('pre-offer avg ' + L.basePerDay.toFixed(0) + '/day', a.right-4, y-6);
+    // ── Lift: did the offer improve sales? (before vs during) ──
+    var L = TO.lift;
+    if (L && L.basePerDay != null) {
+      var panel = root.querySelector('[data-el="lift-panel"]');
+      if (panel) panel.style.display = '';
+      var up = (L.liftPct || 0) >= 0;
+      set('lift-cap', 'Same 6 bags, Kenya · offer window (' + L.offerDays + ' days) vs the '
+        + L.baseDays + ' pre-offer days this month (' + L.baseStart + ' → ' + L.baseEnd + '), per day.');
+      var lk = [
+        ['', 'Sales Lift', (up ? 'green' : ''), (up ? '+' : '') + (L.liftPct != null ? L.liftPct : 0) + '%',
+          'offer vs pre-offer, per day'],
+        ['c', 'Before (per day)', 'cyan',  (L.basePerDay).toFixed(1),  L.baseTotal + ' over ' + L.baseDays + ' days'],
+        ['g', 'During (per day)', 'green', (L.offerPerDay).toFixed(1), L.offerTotal + ' over ' + L.offerDays + ' days']
+      ];
+      var lg = root.querySelector('[data-el="lift-kpis"]');
+      if (lg) lg.innerHTML = lk.map(function(k){
+        return '<div class="card ' + k[0] + '"><div class="k-lbl">' + k[1] + '</div>'
+             + '<div class="k-val ' + k[2] + '">' + k[3] + '</div><div class="k-sub">' + k[4] + '</div></div>';
+      }).join('');
+
+      var lel = root.querySelector('[data-el="lift-chart"]');
+      if (lel && typeof Chart !== 'undefined' && (L.daily || []).length) {
+        var dd = L.daily;
+        // dashed baseline (pre-offer per-day average) to see the jump
+        var BASE = { id:'baseline', afterDatasetsDraw:function(ch){
+          var y = ch.scales.y.getPixelForValue(L.basePerDay); if (!isFinite(y)) return;
+          var c = ch.ctx, a = ch.chartArea; c.save();
+          c.strokeStyle='#f59e0b'; c.setLineDash([5,4]); c.lineWidth=1.5;
+          c.beginPath(); c.moveTo(a.left,y); c.lineTo(a.right,y); c.stroke();
+          c.setLineDash([]); c.fillStyle='#fbbf24'; c.font='700 0.62rem "Segoe UI",system-ui,sans-serif';
+          c.textAlign='right'; c.fillText('pre-offer avg ' + L.basePerDay.toFixed(0) + '/day', a.right-4, y-6);
+          c.restore();
+        }};
+        new Chart(lel, { type:'bar', plugins:[BASE],
+          data:{ labels: dd.map(function(x){ return x.date.slice(8); }),   // day-of-month
+            datasets:[{ label:'Bags sold', data: dd.map(function(x){ return x.bags; }),
+              backgroundColor: dd.map(function(x){ return x.off ? '#10b981' : '#3b4256'; }),
+              borderRadius:3 }] },
+          options:{ responsive:true, maintainAspectRatio:false,
+            plugins:{ legend:{ display:false },
+              tooltip:{ backgroundColor:'#1e2130', borderColor:'#2d3148', borderWidth:1,
+                titleColor:'#f8fafc', bodyColor:'#94a3b8', padding:10, cornerRadius:6,
+                callbacks:{ title:function(t){ return dd[t[0].dataIndex].date; },
+                  label:function(c){ var x = dd[c.dataIndex];
+                    return x.bags + ' bags' + (x.off ? '  · OFFER' : '  · pre-offer'); } } } },
+            scales:{ x:{ grid:{ display:false }, ticks:{ color:'#94a3b8', font:{ size:10 } },
+                         title:{ display:true, text:'Day of ' + (L.baseStart.slice(0,7) || 'month'), color:'#64748b', font:{ size:10 } } },
+                     y:{ beginAtZero:true, grid:{ color:'rgba(45,49,72,0.55)' }, ticks:{ color:'#94a3b8' } } } } });
+      }
+
+      // ── Week by week ──
+      var wk = L.weekly || [];
+      if (wk.length) {
+        var wp = root.querySelector('[data-el="weekly-panel"]'); if (wp) wp.style.display = '';
+        set('weekly-cap', 'Bags/day for the 6 bags, week by week (offer week in green). Steady ≈'
+          + (L.basePerDay).toFixed(0) + '/day, then the offer week jumps.');
+        var wel = root.querySelector('[data-el="weekly-chart"]');
+        if (wel && typeof Chart !== 'undefined') {
+          new Chart(wel, { type:'bar',
+            data:{ labels: wk.map(function(w){ return w.label; }),
+              datasets:[{ label:'Bags/day', data: wk.map(function(w){ return w.perDay; }),
+                backgroundColor: wk.map(function(w){ return w.off ? '#10b981' : '#3b4256'; }), borderRadius:4 }] },
+            options:{ responsive:true, maintainAspectRatio:false,
+              plugins:{ legend:{ display:false },
+                tooltip:{ backgroundColor:'#1e2130', borderColor:'#2d3148', borderWidth:1, titleColor:'#f8fafc', bodyColor:'#94a3b8', padding:10, cornerRadius:6,
+                  callbacks:{ title:function(t){ var w=wk[t[0].dataIndex]; return w.label+' ('+w.start+' → '+w.end+')'; },
+                    label:function(c){ var w=wk[c.dataIndex]; return [w.perDay+' bags/day', w.total+' bags over '+w.days+' days'+(w.off?' · OFFER week':'')]; } } } },
+              scales:{ x:{ grid:{ display:false }, ticks:{ color:'#94a3b8' } },
+                       y:{ beginAtZero:true, grid:{ color:'rgba(45,49,72,0.55)' }, ticks:{ color:'#94a3b8' },
+                           title:{ display:true, text:'bags / day', color:'#64748b', font:{ size:10 } } } } } });
+        }
+      }
+    }
+
+    // ── Why these bags? (stock · price · season · discount check) ──
+    var W = TO.why;
+    if (W && (W.bags || []).length) {
+      var wpn = root.querySelector('[data-el="why-panel"]'); if (wpn) wpn.style.display = '';
+      var wtb = root.querySelector('[data-el="why-tbody"]');
+      if (wtb) wtb.innerHTML = W.bags.map(function(b){
+        var was = b.priceWas != null ? 'KES ' + fmt(b.priceWas) : '—';
+        var now = b.priceNow != null ? 'KES ' + fmt(b.priceNow) : '—';
+        var disc = (b.discountKes != null && b.discountKes > 0)
+          ? '<span style="color:#34d399;font-weight:700">−' + fmt(b.discountKes) + '</span> <span style="color:#94a3b8;font-size:0.74rem">(' + b.discountPct + '%)</span>'
+          : '<span style="color:#64748b">—</span>';
+        // Sales lift — the bag's own pace change (green up / red down)
+        var lift;
+        if (b.bagLift == null) lift = '<span style="color:#64748b">—</span>';
+        else { var up = b.bagLift >= 0;
+          lift = '<span style="color:' + (up ? '#34d399' : '#f87171') + ';font-weight:700">' + (up ? '+' : '') + b.bagLift + '%</span>'; }
+        return '<tr><td class="name">' + b.name + '</td>'
+          + '<td class="r">' + fmt(b.sold) + '</td>'
+          + '<td class="r">' + fmt(b.stock) + '</td>'
+          + '<td class="r">' + was + '</td>'
+          + '<td class="r">' + now + '</td>'
+          + '<td class="r">' + disc + '</td>'
+          + '<td class="r">' + lift + '</td>'
+          + '<td>' + (b.category || '') + '</td></tr>';
+      }).join('');
+      var ins = root.querySelector('[data-el="why-insights"]');
+      if (ins) ins.innerHTML = (W.insights || []).map(function(x){
+        return '<div style="display:flex;gap:0.6rem;align-items:flex-start;padding:0.55rem 0;border-top:1px solid #262a3d">'
+          + '<span style="flex-shrink:0;font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;'
+          + 'color:#fbbf24;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:5px;padding:0.12rem 0.5rem">'
+          + x.tag + '</span><span style="font-size:0.86rem;color:#cbd5e1;line-height:1.55">' + x.text + '</span></div>';
+      }).join('');
+      var vd = root.querySelector('[data-el="why-verdict"]');
+      if (vd) vd.innerHTML = W.verdict || '';
+    }
+
+    // ── Price week by week (realised avg vs list/offer) ──
+    var PW = W && W.priceWeeks;
+    if (PW && (PW.bags || []).length && (PW.weeks || []).length) {
+      var pwp = root.querySelector('[data-el="priceweeks-panel"]'); if (pwp) pwp.style.display = '';
+      var offCol = 'background:rgba(16,185,129,0.10)';
+      var head = root.querySelector('[data-el="pw-head"]');
+      if (head) head.innerHTML = '<tr><th>Bag</th>'
+        + PW.weeks.map(function(w){ return '<th class="r" title="' + w.start + ' → ' + w.end + '"'
+            + (w.off ? ' style="' + offCol + ';color:#34d399"' : '') + '>' + w.label + (w.off ? ' ·offer' : '') + '</th>'; }).join('')
+        + '<th class="r">Was</th><th class="r">Now</th></tr>';
+      var body = root.querySelector('[data-el="pw-body"]');
+      if (body) body.innerHTML = PW.bags.map(function(b){
+        var cells = b.cells.map(function(c, i){
+          var off = PW.weeks[i] && PW.weeks[i].off;
+          if (c.avg == null) return '<td class="r"' + (off ? ' style="' + offCol + '"' : '') + '><span style="color:#475569">—</span></td>';
+          var col = '#94a3b8';                                   // ~full price
+          if (b.now && c.avg <= b.now * 1.03) col = '#34d399';   // at/below offer
+          else if (b.was && c.avg < b.was * 0.97) col = '#fbbf24'; // part-way
+          return '<td class="r"' + (off ? ' style="' + offCol + '"' : '') + '>'
+            + '<span style="color:' + col + ';font-weight:700">' + fmt(c.avg) + '</span>'
+            + ' <span style="color:#64748b;font-size:0.72rem">(' + fmt(c.qty) + ')</span></td>';
+        }).join('');
+        return '<tr><td class="name">' + b.name + '</td>' + cells
+          + '<td class="r" style="color:#94a3b8">' + (b.was != null ? fmt(b.was) : '—') + '</td>'
+          + '<td class="r" style="color:#34d399">' + (b.now != null ? fmt(b.now) : '—') + '</td></tr>';
+      }).join('');
+    }
+
+    // ── Table ──
+    var tb = root.querySelector('[data-el="tbody"]');
+    if (tb) tb.innerHTML = TO.bags.map(function(b){
+      var pp = b.perPost != null ? b.perPost.toFixed(1) : '—';
+      var postsCell = b.posts > 0 ? fmt(b.posts) : '<span class="zero">0</span>';
+      return '<tr><td class="name">' + b.name + '</td>'
+           + '<td class="r">' + fmt(b.sold) + '</td>'
+           + '<td class="r">' + postsCell + '</td>'
+           + '<td class="r">' + pp + '</td></tr>';
+    }).join('') + '<tr style="border-top:2px solid #2d3148"><td class="name">Total</td>'
+      + '<td class="r" style="font-weight:800;color:#f8fafc">' + fmt(TO.totalSold) + '</td>'
+      + '<td class="r" style="font-weight:800;color:#f8fafc">' + fmt(TO.totalPosts) + '</td>'
+      + '<td class="r">' + perPost + '</td></tr>';
+
+    // ── Note ──
+    var zeros = TO.bags.filter(function(b){ return b.posts === 0 && b.sold > 0; }).map(function(b){ return b.name; });
+    var note = root.querySelector('[data-el="note"]');
+    if (note) {
+      var msg = '<b>Reading it:</b> ' + fmt(TO.totalSold) + ' bags moved on ' + fmt(TO.totalPosts)
+        + ' Kenya posts (' + perPost + ' bags per post). ';
+      if (zeros.length) msg += '<b>' + zeros.join(' and ') + '</b> sold with <b>0 recorded posts</b> — moving without marketing. ';
+      msg += 'Sales are the exact ' + (TO.windowLabel || 'window') + ' from Odoo (Sinza/Uganda tills excluded, combos/delivery/samples filtered). '
+        + 'Posting is the last week’s Kenya figure from the marketing sheet — the closest available, since posts aren’t stored per day.';
+      note.innerHTML = msg;
+    }
+
+    // ── Chart: bags sold per bag (single series, direct labels) ──
+    var el = root.querySelector('[data-el="chart"]');
+    if (el && typeof Chart !== 'undefined' && TO.bags.length) {
+      var rows = TO.bags.slice();   // already sorted by sold desc
+      var VAL = { id:'v', afterDatasetsDraw:function(ch){
+        var c = ch.ctx, m = ch.getDatasetMeta(0); c.save();
+        c.font='700 0.66rem "Segoe UI", system-ui, sans-serif'; c.fillStyle='#f8fafc';
+        c.textAlign='left'; c.textBaseline='middle';
+        m.data.forEach(function(bar,i){ var v = rows[i].sold; if (v==null) return;
+          c.fillText(fmt(v), bar.x + 6, bar.y); });
         c.restore();
       }};
-      new Chart(lel, { type:'bar', plugins:[BASE],
-        data:{ labels: dd.map(function(x){ return x.date.slice(8); }),   // day-of-month
-          datasets:[{ label:'Bags sold', data: dd.map(function(x){ return x.bags; }),
-            backgroundColor: dd.map(function(x){ return x.off ? '#10b981' : '#3b4256'; }),
-            borderRadius:3 }] },
-        options:{ responsive:true, maintainAspectRatio:false,
+      new Chart(el, { type:'bar', plugins:[VAL],
+        data:{ labels: rows.map(function(r){ return r.name; }),
+          datasets:[{ label:'Bags sold', data: rows.map(function(r){ return r.sold; }),
+            backgroundColor:'#10b981', borderRadius:4, maxBarThickness:34 }] },
+        options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+          layout:{ padding:{ right: 42 } },
+          interaction:{ mode:'index', axis:'y', intersect:false },
           plugins:{ legend:{ display:false },
             tooltip:{ backgroundColor:'#1e2130', borderColor:'#2d3148', borderWidth:1,
               titleColor:'#f8fafc', bodyColor:'#94a3b8', padding:10, cornerRadius:6,
-              callbacks:{ title:function(t){ return dd[t[0].dataIndex].date; },
-                label:function(c){ var x = dd[c.dataIndex];
-                  return x.bags + ' bags' + (x.off ? '  · OFFER' : '  · pre-offer'); } } } },
-          scales:{ x:{ grid:{ display:false }, ticks:{ color:'#94a3b8', font:{ size:10 } },
-                       title:{ display:true, text:'Day of ' + (L.baseStart.slice(0,7) || 'month'), color:'#64748b', font:{ size:10 } } },
-                   y:{ beginAtZero:true, grid:{ color:'rgba(45,49,72,0.55)' }, ticks:{ color:'#94a3b8' } } } } });
+              callbacks:{ label:function(c){ var r = rows[c.dataIndex];
+                return [ fmt(r.sold) + ' bags sold',
+                         (r.posts>0 ? r.posts + ' posts · ' + (r.perPost!=null?r.perPost.toFixed(1):'—') + ' sold/post'
+                                    : '0 posts — sold without marketing') ]; } } } },
+          scales:{ x:{ beginAtZero:true, grid:{ color:'rgba(45,49,72,0.55)' }, ticks:{ color:'#94a3b8' } },
+                   y:{ grid:{ display:false }, ticks:{ color:'#cbd5e1', font:{ size:12 } } } } } });
     }
 
-    // ── Week by week ──
-    var wk = L.weekly || [];
-    if (wk.length) {
-      var wp = document.getElementById('to-weekly-panel'); if (wp) wp.style.display = '';
-      set('to-weekly-cap', 'Bags/day for the 6 bags, week by week (offer week in green). Steady ≈'
-        + (L.basePerDay).toFixed(0) + '/day, then the offer week jumps.');
-      var wel = document.getElementById('to-weekly-chart');
-      if (wel && typeof Chart !== 'undefined') {
-        new Chart(wel, { type:'bar',
-          data:{ labels: wk.map(function(w){ return w.label; }),
-            datasets:[{ label:'Bags/day', data: wk.map(function(w){ return w.perDay; }),
-              backgroundColor: wk.map(function(w){ return w.off ? '#10b981' : '#3b4256'; }), borderRadius:4 }] },
-          options:{ responsive:true, maintainAspectRatio:false,
-            plugins:{ legend:{ display:false },
-              tooltip:{ backgroundColor:'#1e2130', borderColor:'#2d3148', borderWidth:1, titleColor:'#f8fafc', bodyColor:'#94a3b8', padding:10, cornerRadius:6,
-                callbacks:{ title:function(t){ var w=wk[t[0].dataIndex]; return w.label+' ('+w.start+' → '+w.end+')'; },
-                  label:function(c){ var w=wk[c.dataIndex]; return [w.perDay+' bags/day', w.total+' bags over '+w.days+' days'+(w.off?' · OFFER week':'')]; } } } },
-            scales:{ x:{ grid:{ display:false }, ticks:{ color:'#94a3b8' } },
-                     y:{ beginAtZero:true, grid:{ color:'rgba(45,49,72,0.55)' }, ticks:{ color:'#94a3b8' },
-                         title:{ display:true, text:'bags / day', color:'#64748b', font:{ size:10 } } } } } });
-      }
-    }
   }
 
-  // ── Why these bags? (stock · price · season · discount check) ──
-  var W = TO.why;
-  if (W && (W.bags || []).length) {
-    var wpn = document.getElementById('to-why-panel'); if (wpn) wpn.style.display = '';
-    var wtb = document.getElementById('to-why-tbody');
-    if (wtb) wtb.innerHTML = W.bags.map(function(b){
-      var was = b.priceWas != null ? 'KES ' + fmt(b.priceWas) : '—';
-      var now = b.priceNow != null ? 'KES ' + fmt(b.priceNow) : '—';
-      var disc = (b.discountKes != null && b.discountKes > 0)
-        ? '<span style="color:#34d399;font-weight:700">−' + fmt(b.discountKes) + '</span> <span style="color:#94a3b8;font-size:0.74rem">(' + b.discountPct + '%)</span>'
-        : '<span style="color:#64748b">—</span>';
-      // Sales lift — the bag's own pace change (green up / red down)
-      var lift;
-      if (b.bagLift == null) lift = '<span style="color:#64748b">—</span>';
-      else { var up = b.bagLift >= 0;
-        lift = '<span style="color:' + (up ? '#34d399' : '#f87171') + ';font-weight:700">' + (up ? '+' : '') + b.bagLift + '%</span>'; }
-      return '<tr><td class="name">' + b.name + '</td>'
-        + '<td class="r">' + fmt(b.sold) + '</td>'
-        + '<td class="r">' + fmt(b.stock) + '</td>'
-        + '<td class="r">' + was + '</td>'
-        + '<td class="r">' + now + '</td>'
-        + '<td class="r">' + disc + '</td>'
-        + '<td class="r">' + lift + '</td>'
-        + '<td>' + (b.category || '') + '</td></tr>';
-    }).join('');
-    var ins = document.getElementById('to-why-insights');
-    if (ins) ins.innerHTML = (W.insights || []).map(function(x){
-      return '<div style="display:flex;gap:0.6rem;align-items:flex-start;padding:0.55rem 0;border-top:1px solid #262a3d">'
-        + '<span style="flex-shrink:0;font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;'
-        + 'color:#fbbf24;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:5px;padding:0.12rem 0.5rem">'
-        + x.tag + '</span><span style="font-size:0.86rem;color:#cbd5e1;line-height:1.55">' + x.text + '</span></div>';
-    }).join('');
-    var vd = document.getElementById('to-why-verdict');
-    if (vd) vd.innerHTML = W.verdict || '';
-  }
-
-  // ── Price week by week (realised avg vs list/offer) ──
-  var PW = W && W.priceWeeks;
-  if (PW && (PW.bags || []).length && (PW.weeks || []).length) {
-    var pwp = document.getElementById('to-priceweeks-panel'); if (pwp) pwp.style.display = '';
-    var offCol = 'background:rgba(16,185,129,0.10)';
-    var head = document.getElementById('to-pw-head');
-    if (head) head.innerHTML = '<tr><th>Bag</th>'
-      + PW.weeks.map(function(w){ return '<th class="r" title="' + w.start + ' → ' + w.end + '"'
-          + (w.off ? ' style="' + offCol + ';color:#34d399"' : '') + '>' + w.label + (w.off ? ' ·offer' : '') + '</th>'; }).join('')
-      + '<th class="r">Was</th><th class="r">Now</th></tr>';
-    var body = document.getElementById('to-pw-body');
-    if (body) body.innerHTML = PW.bags.map(function(b){
-      var cells = b.cells.map(function(c, i){
-        var off = PW.weeks[i] && PW.weeks[i].off;
-        if (c.avg == null) return '<td class="r"' + (off ? ' style="' + offCol + '"' : '') + '><span style="color:#475569">—</span></td>';
-        var col = '#94a3b8';                                   // ~full price
-        if (b.now && c.avg <= b.now * 1.03) col = '#34d399';   // at/below offer
-        else if (b.was && c.avg < b.was * 0.97) col = '#fbbf24'; // part-way
-        return '<td class="r"' + (off ? ' style="' + offCol + '"' : '') + '>'
-          + '<span style="color:' + col + ';font-weight:700">' + fmt(c.avg) + '</span>'
-          + ' <span style="color:#64748b;font-size:0.72rem">(' + fmt(c.qty) + ')</span></td>';
-      }).join('');
-      return '<tr><td class="name">' + b.name + '</td>' + cells
-        + '<td class="r" style="color:#94a3b8">' + (b.was != null ? fmt(b.was) : '—') + '</td>'
-        + '<td class="r" style="color:#34d399">' + (b.now != null ? fmt(b.now) : '—') + '</td></tr>';
-    }).join('');
-  }
-
-  // ── Table ──
-  var tb = document.getElementById('to-tbody');
-  if (tb) tb.innerHTML = TO.bags.map(function(b){
-    var pp = b.perPost != null ? b.perPost.toFixed(1) : '—';
-    var postsCell = b.posts > 0 ? fmt(b.posts) : '<span class="zero">0</span>';
-    return '<tr><td class="name">' + b.name + '</td>'
-         + '<td class="r">' + fmt(b.sold) + '</td>'
-         + '<td class="r">' + postsCell + '</td>'
-         + '<td class="r">' + pp + '</td></tr>';
-  }).join('') + '<tr style="border-top:2px solid #2d3148"><td class="name">Total</td>'
-    + '<td class="r" style="font-weight:800;color:#f8fafc">' + fmt(TO.totalSold) + '</td>'
-    + '<td class="r" style="font-weight:800;color:#f8fafc">' + fmt(TO.totalPosts) + '</td>'
-    + '<td class="r">' + perPost + '</td></tr>';
-
-  // ── Note ──
-  var zeros = TO.bags.filter(function(b){ return b.posts === 0 && b.sold > 0; }).map(function(b){ return b.name; });
-  var note = document.getElementById('to-note');
-  if (note) {
-    var msg = '<b>Reading it:</b> ' + fmt(TO.totalSold) + ' bags moved on ' + fmt(TO.totalPosts)
-      + ' Kenya posts (' + perPost + ' bags per post). ';
-    if (zeros.length) msg += '<b>' + zeros.join(' and ') + '</b> sold with <b>0 recorded posts</b> — moving without marketing. ';
-    msg += 'Sales are the exact ' + (TO.windowLabel || 'window') + ' from Odoo (Sinza/Uganda tills excluded, combos/delivery/samples filtered). '
-      + 'Posting is the last week’s Kenya figure from the marketing sheet — the closest available, since posts aren’t stored per day.';
-    note.innerHTML = msg;
-  }
-
-  // ── Chart: bags sold per bag (single series, direct labels) ──
-  var el = document.getElementById('to-chart');
-  if (el && typeof Chart !== 'undefined' && TO.bags.length) {
-    var rows = TO.bags.slice();   // already sorted by sold desc
-    var VAL = { id:'v', afterDatasetsDraw:function(ch){
-      var c = ch.ctx, m = ch.getDatasetMeta(0); c.save();
-      c.font='700 0.66rem "Segoe UI", system-ui, sans-serif'; c.fillStyle='#f8fafc';
-      c.textAlign='left'; c.textBaseline='middle';
-      m.data.forEach(function(bar,i){ var v = rows[i].sold; if (v==null) return;
-        c.fillText(fmt(v), bar.x + 6, bar.y); });
-      c.restore();
-    }};
-    new Chart(el, { type:'bar', plugins:[VAL],
-      data:{ labels: rows.map(function(r){ return r.name; }),
-        datasets:[{ label:'Bags sold', data: rows.map(function(r){ return r.sold; }),
-          backgroundColor:'#10b981', borderRadius:4, maxBarThickness:34 }] },
-      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
-        layout:{ padding:{ right: 42 } },
-        interaction:{ mode:'index', axis:'y', intersect:false },
-        plugins:{ legend:{ display:false },
-          tooltip:{ backgroundColor:'#1e2130', borderColor:'#2d3148', borderWidth:1,
-            titleColor:'#f8fafc', bodyColor:'#94a3b8', padding:10, cornerRadius:6,
-            callbacks:{ label:function(c){ var r = rows[c.dataIndex];
-              return [ fmt(r.sold) + ' bags sold',
-                       (r.posts>0 ? r.posts + ' posts · ' + (r.perPost!=null?r.perPost.toFixed(1):'—') + ' sold/post'
-                                  : '0 posts — sold without marketing') ]; } } } },
-        scales:{ x:{ beginAtZero:true, grid:{ color:'rgba(45,49,72,0.55)' }, ticks:{ color:'#94a3b8' } },
-                 y:{ grid:{ display:false }, ticks:{ color:'#cbd5e1', font:{ size:12 } } } } } });
+  // ── Driver: stack every offer in the month ──
+  var LIST = (typeof TO_LIST !== 'undefined' && TO_LIST) ? TO_LIST
+           : ((typeof TO !== 'undefined' && TO) ? [TO] : []);
+  var month = (typeof TO_DATA !== 'undefined' && TO_DATA && TO_DATA.month) ? TO_DATA.month : '';
+  var monthLbl = '';
+  if (month) { var dp = new Date(month + '-01T00:00:00');
+    if (!isNaN(dp)) monthLbl = dp.toLocaleDateString(undefined, {month:'long', year:'numeric'}); }
+  var pt = document.getElementById('page-title');
+  if (pt) pt.textContent = 'Timed Offers' + (monthLbl ? ' \u2014 ' + monthLbl : '');
+  var ps = document.getElementById('page-sub');
+  if (ps) ps.innerHTML = LIST.length
+    ? '<b>' + LIST.length + '</b> offer' + (LIST.length > 1 ? 's' : '') + ' this month \u00b7 sales <b>live from Odoo POS</b> for each exact window \u00b7 stacked below'
+    : '';
+  var cont = document.getElementById('to-offers');
+  var tpl  = document.getElementById('to-offer-tpl');
+  if (!LIST.length) {
+    var emp = document.getElementById('to-empty'); if (emp) emp.style.display = '';
+  } else if (cont && tpl) {
+    LIST.forEach(function(offer){
+      if (!offer) return;
+      var node = tpl.content.firstElementChild.cloneNode(true);
+      cont.appendChild(node);
+      renderOffer(offer, node);
+    });
   }
 })();
 </script>

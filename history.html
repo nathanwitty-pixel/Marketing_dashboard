@@ -11,7 +11,7 @@
 
   /* Header + month switcher */
   .rpt-head { margin-bottom: 1.4rem; }
-  .rpt-pill { display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg,#10b981,#06b6d4); color: #fff; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.32rem 0.8rem; border-radius: 999px; margin-bottom: 0.7rem; }
+  .rpt-pill { display: inline-flex; align-items: center; gap: 0.5rem; background: #10b981; color: #fff; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.32rem 0.8rem; border-radius: 999px; margin-bottom: 0.7rem; }
   .rpt-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: #d1fae5; box-shadow: 0 0 0 0 rgba(255,255,255,0.6); animation: pulse 1.9s ease-out infinite; }
   @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); } 70% { box-shadow: 0 0 0 6px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
   .rpt-head h1 { font-size: 1.85rem; font-weight: 800; color: #f8fafc; letter-spacing: -0.01em; }
@@ -19,14 +19,14 @@
 
   .switcher { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 1.1rem 0 0.4rem; }
   .switcher .lbl { font-size: 0.64rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; margin-right: 0.2rem; }
-  .mbtn { background: #171a27; border: 1px solid #2d3148; color: #cbd5e1; font-size: 0.8rem; font-weight: 600; padding: 0.4rem 0.85rem; border-radius: 9px; cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
+  .mbtn { background: #171a27; border: 1px solid #2d3148; color: #cbd5e1; font-size: 0.8rem; font-weight: 600; padding: 0.4rem 0.85rem; border-radius: 9px; cursor: pointer; transition: border-color 160ms cubic-bezier(0.16, 1, 0.3, 1), color 160ms cubic-bezier(0.16, 1, 0.3, 1), background-color 160ms cubic-bezier(0.16, 1, 0.3, 1); }
   .mbtn:hover { border-color: #3d4a5c; color: #f8fafc; }
-  .mbtn.active { background: linear-gradient(135deg,#10b981,#06b6d4); border-color: transparent; color: #fff; }
+  .mbtn.active { background: #10b981; border-color: transparent; color: #fff; }
   .src-note { font-size: 0.72rem; color: #475569; margin-top: 0.3rem; }
   .src-note b { color: #6ee7b7; }
 
   /* Exec headline */
-  .exec { background: linear-gradient(160deg, #1b2333, #171a27); border: 1px solid #2d3148; border-left: 4px solid #34d399; border-radius: 16px; padding: 1.4rem 1.5rem; margin: 1rem 0 1.8rem; }
+  .exec { background: linear-gradient(160deg, #1b2333, #171a27); border: 1px solid #2d3148; border-left: 4px solid #34d399; border-radius: 10px; padding: 1.4rem 1.5rem; margin: 1rem 0 1.8rem; }
   .exec .lbl { font-size: 0.66rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: #6ee7b7; margin-bottom: 0.5rem; }
   .exec .headline { font-size: 1.12rem; font-weight: 700; color: #f8fafc; }
   .exec .headline b { color: #facc15; }
@@ -35,14 +35,14 @@
 
   /* KPI tiles */
   .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 0.8rem; margin-bottom: 1.8rem; }
-  .kpi { background: #1e2130; border: 1px solid #2d3148; border-radius: 12px; padding: 0.9rem 1rem; }
+  .kpi { background: #1e2130; border: 1px solid #2d3148; border-radius: 10px; padding: 0.9rem 1rem; }
   .kpi .k-lbl { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #64748b; }
   .kpi .k-val { font-size: 1.6rem; font-weight: 800; color: #f8fafc; line-height: 1.1; margin-top: 0.2rem; font-variant-numeric: tabular-nums; }
   .kpi .k-sub { font-size: 0.72rem; color: #94a3b8; margin-top: 0.2rem; }
   .k-val.amber { color: #fbbf24; } .k-val.red { color: #f87171; } .k-val.green { color: #34d399; } .k-val.cyan { color: #22d3ee; }
 
   /* Sections */
-  .sec { background: #1e2130; border: 1px solid #2d3148; border-radius: 16px; padding: 1.4rem 1.5rem; margin-bottom: 1.4rem; }
+  .sec { background: #1e2130; border: 1px solid #2d3148; border-radius: 10px; padding: 1.4rem 1.5rem; margin-bottom: 1.4rem; }
   .sec.flush { padding: 0; overflow: hidden; }
   .sec-head { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.4rem; }
   .sec.flush .sec-head { padding: 1.4rem 1.5rem 0; }
@@ -67,7 +67,7 @@
   .legend-note b { color: #94a3b8; } .legend-note .g { color: #34d399; } .legend-note .r { color: #f87171; }
 
   .minis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: 0.7rem; margin: 0.4rem 0 0.2rem; }
-  .mini { position: relative; background: #171a27; border: 1px solid #2d3148; border-radius: 13px; padding: 1rem 1.1rem; overflow: hidden; }
+  .mini { position: relative; background: #171a27; border: 1px solid #2d3148; border-radius: 10px; padding: 1rem 1.1rem; overflow: hidden; }
   .mini .bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
   .mini .m-lbl { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #64748b; }
   .mini .m-val { font-size: 1.7rem; font-weight: 800; color: #f8fafc; line-height: 1.15; margin: 0.2rem 0 0.15rem; font-variant-numeric: tabular-nums; }
@@ -98,12 +98,33 @@
   .to-table td:first-child { text-align: left; color: #f1f5f9; font-weight: 600; }
 
   .foot { font-size: 0.72rem; color: #475569; text-align: center; margin-top: 1.4rem; }
-  .empty { background: #1e2130; border: 1px dashed #2d3148; border-radius: 16px; padding: 3rem 2rem; text-align: center; color: #64748b; }
+  .empty { background: #1e2130; border: 1px dashed #2d3148; border-radius: 10px; padding: 3rem 2rem; text-align: center; color: #64748b; }
   .empty h3 { color: #cbd5e1; font-size: 1rem; margin-bottom: 0.4rem; }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{ transition-duration:.12s!important; transition-property:opacity!important;
+      animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; }
+  }
+
+    /* Spectral Edge — aura backdrop (decorative; fixed, behind all content). */
+    body{ background-color:#100e0b; }
+    .aura-layer-1,.aura-layer-2,.aura-layer-3{ position:fixed; inset:0; z-index:-1;
+      pointer-events:none; transform:translateZ(0); will-change:transform; }
+    .aura-layer-1{ mix-blend-mode:screen; filter:blur(108px);
+      background:linear-gradient(90deg, transparent 0%, rgba(59,130,246,0.04) 32%, rgba(6,182,212,0.12) 45%, rgba(34,197,94,0.13) 51%, rgba(250,204,21,0.12) 57%, rgba(244,63,94,0.11) 64%, transparent 82%); }
+    .aura-layer-2{ mix-blend-mode:screen; filter:blur(58px); opacity:0.24;
+      background:linear-gradient(102deg, transparent 38%, rgba(255,255,255,0.08) 46%, rgba(125,211,252,0.06) 51%, transparent 60%); }
+    .aura-layer-3{ mix-blend-mode:screen; filter:blur(126px); opacity:0.55;
+      background:radial-gradient(ellipse 25% 65% at 92% 50%, rgba(139,92,246,0.16) 0%, transparent 78%); }
+    @media (max-width:640px){
+      .aura-layer-1{ filter:blur(75px); } .aura-layer-2{ filter:blur(40px); } .aura-layer-3{ filter:blur(88px); }
+    }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
+<div class="aura-layer-1" aria-hidden="true"></div>
+<div class="aura-layer-2" aria-hidden="true"></div>
+<div class="aura-layer-3" aria-hidden="true"></div>
 <div class="wrap">
 
   <div class="rpt-head">
@@ -123,7 +144,7 @@
 <script id="history-data" type="application/json">
 {
 "source": "Supabase",
-"generatedOn": "2026-09-07",
+"generatedOn": "2026-09-10",
 "months": [
 {
 "key": "2026-08",
@@ -1979,10 +2000,10 @@ function render(idx){
     + '<div class="sec"><div class="sec-head"><div class="sec-num" style="background:#a78bfa">3</div><h2>Offer Type Analysis — All Locations</h2></div>'
     + '<div class="sec-sub">Kenya combos vs power deals, plus every Sinza &amp; Uganda offer stored for the month.</div>'
     + '<div class="minis">'
-    +   '<div class="mini"><div class="bar" style="background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div><div class="m-lbl">Kenya · Combos</div><div class="m-val">'+nf(d.kenya_combo_units)+'</div><div class="m-sub">KES '+nf(d.kenya_combo_value)+(d.kenya_combo_avg!=null?' · avg '+nf(d.kenya_combo_avg):'')+'</div></div>'
-    +   '<div class="mini"><div class="bar" style="background:linear-gradient(90deg,#a78bfa,#8b5cf6)"></div><div class="m-lbl">Kenya · Power Deals</div><div class="m-val">'+nf(d.kenya_deal_units)+'</div><div class="m-sub">KES '+nf(d.kenya_deal_value)+(d.kenya_deal_avg!=null?' · avg '+nf(d.kenya_deal_avg):'')+'</div></div>'
-    +   '<div class="mini"><div class="bar" style="background:linear-gradient(90deg,#818cf8,#22d3ee)"></div><div class="m-lbl">Sinza · Cleared</div><div class="m-val">'+pf(d.sinza_cleared)+'</div><div class="m-sub">'+nf(d.sinza_units)+' units · KES '+nf(d.sinza_value)+'</div></div>'
-    +   '<div class="mini"><div class="bar" style="background:linear-gradient(90deg,#34d399,#a78bfa)"></div><div class="m-lbl">Uganda · Cleared</div><div class="m-val">'+pf(d.uganda_cleared)+'</div><div class="m-sub">'+nf(d.uganda_units)+' units · KES '+nf(d.uganda_value)+'</div></div>'
+    +   '<div class="mini"><div class="bar" style="background:#f59e0b"></div><div class="m-lbl">Kenya · Combos</div><div class="m-val">'+nf(d.kenya_combo_units)+'</div><div class="m-sub">KES '+nf(d.kenya_combo_value)+(d.kenya_combo_avg!=null?' · avg '+nf(d.kenya_combo_avg):'')+'</div></div>'
+    +   '<div class="mini"><div class="bar" style="background:#a78bfa"></div><div class="m-lbl">Kenya · Power Deals</div><div class="m-val">'+nf(d.kenya_deal_units)+'</div><div class="m-sub">KES '+nf(d.kenya_deal_value)+(d.kenya_deal_avg!=null?' · avg '+nf(d.kenya_deal_avg):'')+'</div></div>'
+    +   '<div class="mini"><div class="bar" style="background:#818cf8"></div><div class="m-lbl">Sinza · Cleared</div><div class="m-val">'+pf(d.sinza_cleared)+'</div><div class="m-sub">'+nf(d.sinza_units)+' units · KES '+nf(d.sinza_value)+'</div></div>'
+    +   '<div class="mini"><div class="bar" style="background:#34d399"></div><div class="m-lbl">Uganda · Cleared</div><div class="m-val">'+pf(d.uganda_cleared)+'</div><div class="m-sub">'+nf(d.uganda_units)+' units · KES '+nf(d.uganda_value)+'</div></div>'
     + '</div>'
     + '<div class="chart-cap">Kenya — each offer, units moved (amber = combo, violet = power deal)</div>'
     + '<div class="chart-wrap" style="height:440px"><canvas id="keChart"></canvas></div>'
@@ -2064,10 +2085,10 @@ function selfMadeHtml(m){
     + '<div class="sec-sub">Staff-created combos (the CBR/2026 requests) vs the official running combos &mdash; Kenya tills. '
     +   'Running combos offer a <b>wide colour range</b> at the till (avg '+nf(s.run_avg_colours)+' options); self-made ones are locked to one pairing (avg '+nf(s.sm_avg_colours)+').</div>'
     + '<div class="minis">'
-    +   '<div class="mini"><div class="bar" style="background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div><div class="m-lbl">Self-made (CBR)</div><div class="m-val">'+nf(smU)+'</div><div class="m-sub">'+nf(s.sm_count)+' combos · KES '+nf(s.sm_value)+' · avg KES '+nf(smAvg)+' · '+nf(s.sm_avg_colours)+' colours</div></div>'
-    +   '<div class="mini"><div class="bar" style="background:linear-gradient(90deg,#06b6d4,#22d3ee)"></div><div class="m-lbl">Running (official)</div><div class="m-val">'+nf(runU)+'</div><div class="m-sub">'+nf(s.run_count)+' combos · KES '+nf(s.run_value)+' · avg KES '+nf(runAvg)+' · '+nf(s.run_avg_colours)+' colours</div></div>'
-    +   '<div class="mini"><div class="bar" style="background:linear-gradient(90deg,#8b5cf6,#6366f1)"></div><div class="m-lbl">Self-made share</div><div class="m-val">'+share+'%</div><div class="m-sub">of all combo units</div></div>'
-    +   '<div class="mini"><div class="bar" style="background:linear-gradient(90deg,#94a3b8,#cbd5e1)"></div><div class="m-lbl">Combo requests</div><div class="m-val">'+nf(s.req_total)+'</div><div class="m-sub">'+nf(s.req_approved)+' approved · '+nf(s.req_rejected)+' rejected'+(Number(s.req_pending)?' · '+nf(s.req_pending)+' pending':'')+'</div></div>'
+    +   '<div class="mini"><div class="bar" style="background:#f59e0b"></div><div class="m-lbl">Self-made (CBR)</div><div class="m-val">'+nf(smU)+'</div><div class="m-sub">'+nf(s.sm_count)+' combos · KES '+nf(s.sm_value)+' · avg KES '+nf(smAvg)+' · '+nf(s.sm_avg_colours)+' colours</div></div>'
+    +   '<div class="mini"><div class="bar" style="background:#06b6d4"></div><div class="m-lbl">Running (official)</div><div class="m-val">'+nf(runU)+'</div><div class="m-sub">'+nf(s.run_count)+' combos · KES '+nf(s.run_value)+' · avg KES '+nf(runAvg)+' · '+nf(s.run_avg_colours)+' colours</div></div>'
+    +   '<div class="mini"><div class="bar" style="background:#8b5cf6"></div><div class="m-lbl">Self-made share</div><div class="m-val">'+share+'%</div><div class="m-sub">of all combo units</div></div>'
+    +   '<div class="mini"><div class="bar" style="background:#94a3b8"></div><div class="m-lbl">Combo requests</div><div class="m-val">'+nf(s.req_total)+'</div><div class="m-sub">'+nf(s.req_approved)+' approved · '+nf(s.req_rejected)+' rejected'+(Number(s.req_pending)?' · '+nf(s.req_pending)+' pending':'')+'</div></div>'
     + '</div>'
     + reqTable
     + '</div>';

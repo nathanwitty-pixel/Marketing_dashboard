@@ -32,10 +32,12 @@ Requires SUPABASE_DB_URL in .env (the Supabase SESSION POOLER connection string)
 
 import os
 import sys
+import json
 import subprocess
 import datetime
 
 BASE = os.path.dirname(os.path.abspath(__file__))
+TIMED_CFG = os.path.join(BASE, "timed_offers_config.json")
 
 # The current-month chain, regenerated PINNED to the month being archived so
 # current_performance.html (which monthly_report.py reads) holds that month's
@@ -60,6 +62,35 @@ def target_month():
         return pinned
     yesterday = datetime.date.today() - datetime.timedelta(days=1)
     return f"{yesterday.year}-{yesterday.month:02d}"
+
+
+def clear_timed_offers(archived_month):
+    """After the closing month's timed offers are safely in Supabase, empty the
+    config so the new month starts with no timed offers ("leaving them free").
+
+    Only clears when the config still holds the month we just archived — if
+    someone has already added offers for the new month, they're left untouched.
+    Returns a short status string for the summary."""
+    try:
+        with open(TIMED_CFG, encoding="utf-8") as f:
+            raw = json.load(f)
+    except (ValueError, OSError):
+        return "no config"
+    if not isinstance(raw, dict):
+        return "unrecognised config"
+    cfg_month = str(raw.get("month", "") or "")
+    offers = raw.get("offers") if isinstance(raw.get("offers"), list) else []
+    if cfg_month != archived_month or not offers:
+        return f"left as-is (month={cfg_month or '—'}, {len(offers)} offer(s))"
+    new_month = datetime.date.today().strftime("%Y-%m")
+    raw["month"] = new_month
+    raw["offers"] = []
+    try:
+        with open(TIMED_CFG, "w", encoding="utf-8") as f:
+            json.dump(raw, f, indent=2, ensure_ascii=False)
+    except OSError as e:
+        return f"clear failed: {e}"
+    return f"cleared {len(offers)} offer(s) from {archived_month}; now {new_month}, free"
 
 
 def run(script, env):
@@ -90,6 +121,15 @@ def main():
         if run(script, env_pin) != 0:
             failures.append(script)
 
+    # Clear the finished month's timed offers now that they're archived \u2014 but only
+    # on a real 1st-of-month rollover (no explicit pin) and only if every archive
+    # step succeeded, so a manual re-archive or a failed push never wipes the list.
+    to_status = "skipped"
+    if not failures and not os.getenv("DENRI_REPORT_MONTH", "").strip():
+        to_status = clear_timed_offers(tm)
+        # Rebuild the (now-empty) timed offers page so it reflects the cleared list.
+        run("timed_offers.py", env_live)
+
     print("\n\u2014 restoring the live current-month view \u2014")
     for script in LIVE_RESTORE:               # return the dashboard to today's month (unpinned)
         run(script, env_live)
@@ -100,6 +140,7 @@ def main():
         print("  Fix the cause and re-run; every step is idempotent (safe to repeat).")
         return 1
     print(f"  {tm} archived to Supabase \u2014 metrics + comments now in History.")
+    print(f"  Timed offers      : {to_status}")
     print("  Live dashboards restored to the current month.")
     return 0
 

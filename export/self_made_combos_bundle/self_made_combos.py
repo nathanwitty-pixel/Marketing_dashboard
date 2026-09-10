@@ -732,10 +732,7 @@ def _load_bag_prices():
 
 # Standalone bag sales this month (any single bag, not a combo) — to find which bags
 # are NOT on any offer (running combo, Deal of the Week, or Power Deal).
-def _bag_sales_sql(market_sql):
-    """Standalone bag sales (units + revenue) for a market, given the POS-till WHERE
-    clause. Same product filters as Total Sales; returns netted (`qty <> 0`)."""
-    return f"""
+BAG_SALES_SQL = """
 SELECT UPPER(pt."name") AS name, SUM(pl.qty)::int AS units,
        ROUND(SUM(pl.price_subtotal_incl))::int AS revenue
 FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
@@ -744,29 +741,18 @@ LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid') AND pl.qty <> 0
-  {market_sql}
+  AND lower(COALESCE(pc."name",'')) NOT IN ('sinza','dar-es-alam','uganda')
   AND pt."name" NOT LIKE '%+%'
   AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
   AND pt."name" NOT ILIKE '%strap%' AND pt."name" NOT ILIKE 'gift bag%'
 GROUP BY UPPER(pt."name")
 """
 
-# Kenya = every till except the non-Kenya markets. Sinza is served by the Sinza and
-# Dar-es-Salaam tills; Uganda by the Uganda till.
-BAG_SALES_SQL        = _bag_sales_sql("AND lower(COALESCE(pc.\"name\",'')) NOT IN ('sinza','dar-es-alam','uganda')")
-BAG_SALES_SINZA_SQL  = _bag_sales_sql("AND lower(COALESCE(pc.\"name\",'')) IN ('sinza','dar-es-alam')")
-BAG_SALES_UGANDA_SQL = _bag_sales_sql("AND lower(COALESCE(pc.\"name\",'')) = 'uganda'")
 
-
-def _bags_not_on_offer(m_start, m_end, on_offer_raw, sql=BAG_SALES_SQL, currency="KES"):
-    """Bags with sales this month (in the market `sql` scopes to) that are on NO offer.
-
-    `on_offer_raw` = the raw product/bag names that ARE on offer for that market:
-      • Kenya  — running-combo components + Deal-of-Week + Power-Deal products.
-      • Sinza / Uganda — the component bags of that region's sheet combos/singles/specials.
-    Each Odoo product is resolved to its bag type via the price-list catalogue
-    (longest-prefix match); the catalogue bag NAMES are shared across markets, so the
-    same keys resolve Sinza/Uganda products too (revenue stays in the local `currency`)."""
+def _bags_not_on_offer(m_start, m_end, combo_bags, deals):
+    """Bags with sales this month that are on NO offer — i.e. not a running-combo
+    component, a Deal of the Week, or a Power Deal. Each Odoo product is resolved to
+    its bag type via the price-list catalogue (longest-prefix match)."""
     keys = sorted(_load_bag_prices().keys(), key=len, reverse=True)
     # Promo wording ↔ catalogue bag (e.g. a "Cairo backpack" deal is the CAIRO BP bag).
     _ALIAS = {"CAIRO BACKPACK": "CAIRO BP", "LAPTOP BACKPACK": "CODE 3",
@@ -787,16 +773,20 @@ def _bags_not_on_offer(m_start, m_end, on_offer_raw, sql=BAG_SALES_SQL, currency
                 return k
         return None
 
-    # On-offer names, normalised (aliases applied). Matched to a sold bag by either being
-    # equal or one being a word-prefix of the other (so a "AVANA" deal covers "AVANA HB").
-    on_offer_names = {_norm(b) for b in (on_offer_raw or set()) if str(b).strip()}
+    # On-offer names: running-combo components + Deal-of-Week + Power-Deal products,
+    # normalised (aliases applied). Matched to a sold bag by either being equal or one
+    # being a word-prefix of the other (so a "AVANA" deal covers the "AVANA HB" bag).
+    on_offer_names = {_norm(b) for b in (combo_bags or set())}
+    for grp in ("dealOfWeek", "powerDeals"):
+        for x in (deals or {}).get(grp, []):
+            on_offer_names.add(_norm(x.get("product", "")))
 
     def _is_on_offer(bt):
         return any(d == bt or bt.startswith(d + " ") or d.startswith(bt + " ")
                    for d in on_offer_names)
 
     sold = {}
-    df = db.run_query(sql, {"s": m_start.isoformat(), "e": m_end.isoformat()})
+    df = db.run_query(BAG_SALES_SQL, {"s": m_start.isoformat(), "e": m_end.isoformat()})
     if df is not None and not df.empty:
         for _, r in df.iterrows():
             bt = _infer(r["name"])
@@ -811,7 +801,6 @@ def _bags_not_on_offer(m_start, m_end, on_offer_raw, sql=BAG_SALES_SQL, currency
     not_on.sort(key=lambda x: -x["units"])
     on_sold = [bt for bt in sold if _is_on_offer(bt) and sold[bt]["units"] > 0]
     return {
-        "currency": currency,
         "notOnOffer": not_on,
         "notOnOfferCount": len(not_on),
         "notOnOfferUnits": sum(x["units"] for x in not_on),
@@ -819,19 +808,6 @@ def _bags_not_on_offer(m_start, m_end, on_offer_raw, sql=BAG_SALES_SQL, currency
         "onOfferCount": len(on_sold),
         "onOfferUnits": sum(sold[bt]["units"] for bt in on_sold),
     }
-
-
-def _region_on_offer_bags(payload, region_key):
-    """The component bag names across a region's sheet combos/singles/specials cards
-    (already catalogue names) — the 'on offer' set for that region."""
-    names = set()
-    reg = (payload.get("regions") or {}).get(region_key) or {}
-    for g in reg.get("groups", []):
-        for c in g.get("cards", []):
-            for b in c.get("bags", []):
-                if b.get("name"):
-                    names.add(b["name"])
-    return names
 
 
 # Per-shop combo-button usage: how many of each running combo were actually rung
@@ -1549,19 +1525,8 @@ def fetch():
         _stock = _AUGMENTED_STOCK or (_read_offer_analysis() or {}).get("stockMap", {})
         _enrich_deals(deals, m_start, m_end, _stock, set(payload.get("comboBags", [])))
     payload["deals"] = deals
-    # ── Bags not on offer, per market ──
-    # Kenya: running-combo components + Deal-of-Week + Power-Deal products are "on offer".
-    kenya_on = set(payload.get("comboBags", []))
-    for grp in ("dealOfWeek", "powerDeals"):
-        for x in (deals or {}).get(grp, []):
-            kenya_on.add(x.get("product", ""))
     payload["bagsNotOnOffer"] = _bags_not_on_offer(
-        m_start, m_end, kenya_on, BAG_SALES_SQL, "KES")
-    # Sinza & Uganda: the region's sheet combos/singles/specials component bags are "on offer".
-    payload["bagsNotOnOfferSinza"] = _bags_not_on_offer(
-        m_start, m_end, _region_on_offer_bags(payload, "sinza"), BAG_SALES_SINZA_SQL, "TSh")
-    payload["bagsNotOnOfferUganda"] = _bags_not_on_offer(
-        m_start, m_end, _region_on_offer_bags(payload, "uganda"), BAG_SALES_UGANDA_SQL, "USh")
+        m_start, m_end, set(payload.get("comboBags", [])), deals)
     return payload
 
 

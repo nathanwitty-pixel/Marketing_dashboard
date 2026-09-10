@@ -110,6 +110,10 @@ def match_odoo_bags(bag_type, odoo_list):
     total, hits = 0, []
     for name, bags in odoo_list:
         p = str(name).upper().strip()
+        # Odoo prepends an internal-reference code to full_product_name for some
+        # variants, e.g. "[S_0] Lamora Sky Blue" — drop it before prefix-matching
+        # so the variant isn't silently missed.
+        p = re.sub(r"^\[[^\]]*\]\s*", "", p)
         if p == b or p.startswith(b + " ") or p.startswith(b + "-"):
             total += bags
             hits.append(name)
@@ -138,7 +142,7 @@ def odoo_sales_window(start, end):
     LEFT JOIN pos_config pc ON ps.config_id = pc.id
     LEFT JOIN product_product pp ON pl.product_id = pp.id
     LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
-    WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'paid') AND pl.qty > 0
+    WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'paid') AND pl.qty <> 0
     GROUP BY UPPER(pt."name")
     """
     df = db.run_query(sql, {"s": start.isoformat(), "e": end.isoformat()})
@@ -418,6 +422,20 @@ def fetch_new_products_data():
             r["weeklySales"] = (s["kenya"] if s else 0)   # WEEKLY_SALES col X is Kenya
         print("  Weekly sales source   : Odoo (Kenya, this week to date)")
 
+    # Last COMPLETE Sun-Sat week — for the "last week's performance" hover, useful in
+    # early-week (Mon-Wed) presentations when this week's numbers are still thin.
+    _lw_end   = _wk_start - timedelta(days=1)          # Saturday before this week
+    _lw_start = _lw_end - timedelta(days=6)            # that week's Sunday
+    _odoo_lw  = odoo_sales_window(_lw_start, _lw_end)
+    if _odoo_lw is not None:
+        _lwn = {_norm(k): v for k, v in _odoo_lw.items()}
+        for r in weekly_combined:
+            k = str(r["productName"]).upper().strip()
+            s = _odoo_lw.get(k) or _lwn.get(_norm(k))
+            r["lastWeekKenya"]   = (s["kenya"] if s else 0)
+            r["lastWeekOutside"] = (s["outside"] if s else 0)
+        print("  Last-week sales source: Odoo (previous Sun-Sat week)")
+
     # Full catalogue (every product) vs. the new-products subset used by cards/charts
     all_monthly_combined = ms_base
     all_weekly_combined  = weekly_combined
@@ -449,6 +467,9 @@ m_srestock       = sum(r["sRestock"]     for r in monthly_combined)
 weekly_total     = sum(r["weeklySales"]  for r in weekly_combined)
 wpost_kenya      = sum(r["wpostKenya"]   for r in weekly_combined)
 wpost_outside    = sum(r["wpostOutside"] for r in weekly_combined)
+last_week_kenya   = sum(r.get("lastWeekKenya", 0)   for r in weekly_combined)
+last_week_outside = sum(r.get("lastWeekOutside", 0) for r in weekly_combined)
+last_week_total   = last_week_kenya + last_week_outside
 w_skenya         = sum(r["sKenya"]       for r in weekly_combined)
 w_soutside       = sum(r["sOutside"]     for r in weekly_combined)
 w_srestock       = sum(r["sRestock"]     for r in weekly_combined)
@@ -568,6 +589,10 @@ inline_script = (
     f'  weeklyTotal:     "{fmt_int(weekly_total)}",\n'
     f'  weeklyTarget:    "{fmt_int(weekly_target)}",\n'
     f'  weeklySalesPct:  "{fmt_pct(weekly_sales_pct)}",\n'
+    f'  lastWeekTotal:   "{fmt_int(last_week_total)}",\n'
+    f'  lastWeekKenya:   "{fmt_int(last_week_kenya)}",\n'
+    f'  lastWeekOutside: "{fmt_int(last_week_outside)}",\n'
+    f'  lastWeekPct:     "{fmt_pct((last_week_total / weekly_target * 100) if weekly_target else 0)}",\n'
     f'  perfectWeeks:    {np_complete_weeks},\n'
     f'  wpostKenya:      "{fmt_int(wpost_kenya)}",\n'
     f'  wpostOutside:    "{fmt_int(wpost_outside)}",\n'
