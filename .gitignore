@@ -1,6 +1,7 @@
 # ── SECRETS — NEVER COMMIT THESE ──────────────────────────────
 google_credentials.json
 google_token.json
+.streamlit/secrets.toml
 
 # ── Python ────────────────────────────────────────────────────
 __pycache__/

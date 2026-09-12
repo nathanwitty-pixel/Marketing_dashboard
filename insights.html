@@ -55,9 +55,29 @@
     .distortion-banner .icon { font-size: 1.2rem; flex-shrink: 0; }
     .distortion-banner h3 { font-size: 0.84rem; font-weight: 700; color: #fbbf24; margin-bottom: 0.3rem; }
     .distortion-banner p { font-size: 0.78rem; color: #b45309; }
+
+    /* ── Consistency with the other pages: reduced-motion, glass cards, aura ── */
+    @media (prefers-reduced-motion: reduce){
+      *,*::before,*::after{ transition-duration:.12s!important; transition-property:opacity!important;
+        animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; }
+    }
+    .kpi{ background-color:rgba(24,27,40,0.52) !important; background-image:none !important;
+      backdrop-filter:blur(14px) saturate(1.08); -webkit-backdrop-filter:blur(14px) saturate(1.08); }
+    @media (prefers-reduced-transparency: reduce){
+      .kpi{ background-color:#141824 !important; backdrop-filter:none; -webkit-backdrop-filter:none; } }
+    /* Spectral Edge aura backdrop (decorative, fixed, behind all content) */
+    body{ background-color:#100e0b; }
+    .aura-layer-1,.aura-layer-2,.aura-layer-3{ position:fixed; inset:0; z-index:-1; pointer-events:none; transform:translateZ(0); will-change:transform; }
+    .aura-layer-1{ mix-blend-mode:screen; filter:blur(108px); background:linear-gradient(90deg, transparent 0%, rgba(59,130,246,0.04) 32%, rgba(6,182,212,0.12) 45%, rgba(34,197,94,0.13) 51%, rgba(250,204,21,0.12) 57%, rgba(244,63,94,0.11) 64%, transparent 82%); }
+    .aura-layer-2{ mix-blend-mode:screen; filter:blur(58px); opacity:0.24; background:linear-gradient(102deg, transparent 38%, rgba(255,255,255,0.08) 46%, rgba(125,211,252,0.06) 51%, transparent 60%); }
+    .aura-layer-3{ mix-blend-mode:screen; filter:blur(126px); opacity:0.55; background:radial-gradient(ellipse 25% 65% at 92% 50%, rgba(139,92,246,0.16) 0%, transparent 78%); }
+    @media (max-width:640px){ .aura-layer-1{ filter:blur(75px);} .aura-layer-2{ filter:blur(40px);} .aura-layer-3{ filter:blur(88px);} }
   </style>
 </head>
 <body>
+<div class="aura-layer-1" aria-hidden="true"></div>
+<div class="aura-layer-2" aria-hidden="true"></div>
+<div class="aura-layer-3" aria-hidden="true"></div>
 <div class="container">
 
   <div class="page-header">
@@ -68,17 +88,17 @@
   <div class="section-title">Headline Numbers</div>
   <div class="kpi-grid">
     <div class="kpi"><div class="kpi-label">Monthly Sales</div>
-      <div class="kpi-value amber">6,837</div>
-      <div class="kpi-sub">27.94% of 24,468 target</div></div>
+      <div class="kpi-value amber">6,898</div>
+      <div class="kpi-sub">28.19% of 24,468 target</div></div>
     <div class="kpi"><div class="kpi-label">Bags Still Needed</div>
-      <div class="kpi-value red">17,631</div>
+      <div class="kpi-value red">17,570</div>
       <div class="kpi-sub">to hit monthly target</div></div>
     <div class="kpi"><div class="kpi-label">Last Week Sales</div>
-      <div class="kpi-value muted">3,558</div>
-      <div class="kpi-sub">WoW +3021.1%</div></div>
+      <div class="kpi-value muted">3,619</div>
+      <div class="kpi-sub">WoW +3074.6%</div></div>
     <div class="kpi"><div class="kpi-label">Bare Minimum</div>
       <div class="kpi-value amber">6,117</div>
-      <div class="kpi-sub">weekly floor &bull; missed by 2,559</div></div>
+      <div class="kpi-sub">weekly floor &bull; missed by 2,498</div></div>
     <div class="kpi"><div class="kpi-label">Kenya Post Rate</div>
       <div class="kpi-value green">68.3%</div>
       <div class="kpi-sub">weekly sales from posts</div></div>
@@ -88,10 +108,10 @@
   </div>
 
   <div class="section-title">What&rsquo;s Going Well</div>
-  <div class="insight-card"><h3><span class="tag tag-green">Growing</span> Weekly Sales Growing +3021.1% WoW</h3><p><span class="number">3,558</span> bags last week vs <span class="number">114</span> prior.</p></div><div class="insight-card"><h3><span class="tag tag-green">Strong</span> Kenya Marketing Conversion Above Target</h3><p><span class="number">68.3%</span> of weekly Kenya sales came from posted bags (monthly: <span class="number">82.2%</span>) — above the 40% benchmark. Posts last week: <span class="number">376</span>.</p></div><div class="insight-card"><h3><span class="tag tag-green">Strong</span> Sinza Marketing Conversion Above Target</h3><p><span class="number">50.0%</span> of weekly Sinza sales came from posted bags (monthly: <span class="number">63.3%</span>) — above the 40% benchmark. Posts last week: <span class="number">30</span>.</p></div>
+  <div class="insight-card"><h3><span class="tag tag-green">Growing</span> Weekly Sales Growing +3074.6% WoW</h3><p><span class="number">3,619</span> bags last week vs <span class="number">114</span> prior.</p></div><div class="insight-card"><h3><span class="tag tag-green">Strong</span> Kenya Marketing Conversion Above Target</h3><p><span class="number">68.3%</span> of weekly Kenya sales came from posted bags (monthly: <span class="number">82.2%</span>) — above the 40% benchmark. Posts last week: <span class="number">376</span>.</p></div><div class="insight-card"><h3><span class="tag tag-green">Strong</span> Sinza Marketing Conversion Above Target</h3><p><span class="number">50.0%</span> of weekly Sinza sales came from posted bags (monthly: <span class="number">63.3%</span>) — above the 40% benchmark. Posts last week: <span class="number">30</span>.</p></div>
 
   <div class="section-title">What Needs Attention</div>
-  <div class="insight-card"><h3><span class="tag tag-amber">Behind</span> Sales Behind Pace — 27.94% vs 36.7% Expected</h3><p><span class="number">6,837</span> bags sold; the calendar says 36.7% of target should be done by day 11. <span class="number">17,631</span> bags still needed.</p></div><div class="insight-card"><h3><span class="tag tag-red">Critical</span> Weekly Bare Minimum Missed by 2,559 Bags</h3><p>Weekly sales <span class="number">3,558</span> vs bare minimum <span class="number">6,117</span>. Recoverable via posting: <span class="number">3,806</span> bags (unposted stock × Kenya 68.3% conversion) — <strong>enough to close the gap</strong>.</p></div><div class="insight-card"><h3><span class="tag tag-red">Critical</span> 5,572 Bags In Stock Are Not Posted — 53% of Stock Invisible</h3><p>Only <span class="number">5,011</span> bags are posted and visible to buyers. At Kenya's 68.3% weekly conversion, posting the rest is worth roughly <span class="number">3,806</span> additional sales.</p></div><div class="insight-card"><h3><span class="tag tag-red">Critical</span> Uganda Marketing Conversion at 7.4% — Below Critical Threshold</h3><p>Only <span class="number">7.4%</span> of weekly Uganda sales came from posts (benchmark: 40%). Posts made: <span class="number">63</span>. Monthly rate: <span class="number">35.3%</span>.</p></div><div class="insight-card"><h3><span class="tag tag-amber">Watch</span> New Products at 31.4% of Target</h3><p><span class="number">201</span> of <span class="number">640</span> target — deficit of <span class="number">439</span> bags across 7 products.</p></div>
+  <div class="insight-card"><h3><span class="tag tag-amber">Behind</span> Sales Behind Pace — 28.19% vs 36.7% Expected</h3><p><span class="number">6,898</span> bags sold; the calendar says 36.7% of target should be done by day 11. <span class="number">17,570</span> bags still needed.</p></div><div class="insight-card"><h3><span class="tag tag-red">Critical</span> Weekly Bare Minimum Missed by 2,498 Bags</h3><p>Weekly sales <span class="number">3,619</span> vs bare minimum <span class="number">6,117</span>. Recoverable via posting: <span class="number">3,806</span> bags (unposted stock × Kenya 68.3% conversion) — <strong>enough to close the gap</strong>.</p></div><div class="insight-card"><h3><span class="tag tag-red">Critical</span> 5,572 Bags In Stock Are Not Posted — 53% of Stock Invisible</h3><p>Only <span class="number">5,011</span> bags are posted and visible to buyers. At Kenya's 68.3% weekly conversion, posting the rest is worth roughly <span class="number">3,806</span> additional sales.</p></div><div class="insight-card"><h3><span class="tag tag-red">Critical</span> Uganda Marketing Conversion at 7.4% — Below Critical Threshold</h3><p>Only <span class="number">7.4%</span> of weekly Uganda sales came from posts (benchmark: 40%). Posts made: <span class="number">63</span>. Monthly rate: <span class="number">35.3%</span>.</p></div><div class="insight-card"><h3><span class="tag tag-amber">Watch</span> New Products at 31.4% of Target</h3><p><span class="number">201</span> of <span class="number">640</span> target — deficit of <span class="number">439</span> bags across 7 products.</p></div>
 
   <div class="section-title">Regional Posting Comparison</div>
   <div class="region-grid">
@@ -133,7 +153,7 @@
   </div>
   <div class="section-title">Recommended Actions &mdash; This Week</div>
   <div class="insight-card">
-    <ul class="actions-list"><li><div><strong>Close the pace gap.</strong> Sales are at 27.94% vs a calendar pace of 36.7%. The remaining 17,631 bags require ~928 bags/day for the rest of the month.</div></li><li><div><strong>Post unposted stock to close the bare-minimum gap.</strong> 5,572 unposted bags × 68.3% conversion ≈ 3,806 recoverable bags vs the 2,559-bag shortfall.</div></li><li><div><strong>Uganda needs a posting intervention.</strong> Weekly conversion is 7.4% vs the 40% benchmark with only 63 posts made.</div></li><li><div><strong>Push the new-product leaders.</strong> LOOP BP, TAJI, ZULA are the top sellers — concentrate posts on them to close the 439-bag deficit.</div></li></ul>
+    <ul class="actions-list"><li><div><strong>Close the pace gap.</strong> Sales are at 28.19% vs a calendar pace of 36.7%. The remaining 17,570 bags require ~925 bags/day for the rest of the month.</div></li><li><div><strong>Post unposted stock to close the bare-minimum gap.</strong> 5,572 unposted bags × 68.3% conversion ≈ 3,806 recoverable bags vs the 2,498-bag shortfall.</div></li><li><div><strong>Uganda needs a posting intervention.</strong> Weekly conversion is 7.4% vs the 40% benchmark with only 63 posts made.</div></li><li><div><strong>Push the new-product leaders.</strong> LOOP BP, TAJI, ZULA are the top sellers — concentrate posts on them to close the 439-bag deficit.</div></li></ul>
   </div>
 
 </div>

@@ -521,10 +521,34 @@ HEAD = """<!DOCTYPE html>
   .foot { font-size: 0.72rem; color: #475569; text-align: center; margin-top: 1.5rem; }
   .chart-wrap { position: relative; height: 240px; margin: 0.2rem 0 1.2rem; }
   .chart-cap { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; margin: 0 0 0.5rem; font-weight: 700; }
+
+  /* ── Consistency with the other pages: reduced-motion, flat accent, glass, aura ── */
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{ transition-duration:.12s!important; transition-property:opacity!important;
+      animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; }
+  }
+  .rpt-pill{ background:#8b5cf6 !important; }              /* flat accent (was a gradient) */
+  .exec, .kpi, .sec{ border-radius:10px !important; }
+  /* Frosted-glass card surfaces — the aura shows through */
+  .exec, .kpi, .sec, .mini{
+    background-color:rgba(24,27,40,0.52) !important; background-image:none !important;
+    backdrop-filter:blur(14px) saturate(1.08); -webkit-backdrop-filter:blur(14px) saturate(1.08); }
+  @media (prefers-reduced-transparency: reduce){
+    .exec, .kpi, .sec, .mini{ background-color:#141824 !important; backdrop-filter:none; -webkit-backdrop-filter:none; } }
+  /* Spectral Edge aura backdrop (decorative, fixed, behind all content) */
+  body{ background-color:#100e0b; }
+  .aura-layer-1,.aura-layer-2,.aura-layer-3{ position:fixed; inset:0; z-index:-1; pointer-events:none; transform:translateZ(0); will-change:transform; }
+  .aura-layer-1{ mix-blend-mode:screen; filter:blur(108px); background:linear-gradient(90deg, transparent 0%, rgba(59,130,246,0.04) 32%, rgba(6,182,212,0.12) 45%, rgba(34,197,94,0.13) 51%, rgba(250,204,21,0.12) 57%, rgba(244,63,94,0.11) 64%, transparent 82%); }
+  .aura-layer-2{ mix-blend-mode:screen; filter:blur(58px); opacity:0.24; background:linear-gradient(102deg, transparent 38%, rgba(255,255,255,0.08) 46%, rgba(125,211,252,0.06) 51%, transparent 60%); }
+  .aura-layer-3{ mix-blend-mode:screen; filter:blur(126px); opacity:0.55; background:radial-gradient(ellipse 25% 65% at 92% 50%, rgba(139,92,246,0.16) 0%, transparent 78%); }
+  @media (max-width:640px){ .aura-layer-1{ filter:blur(75px);} .aura-layer-2{ filter:blur(40px);} .aura-layer-3{ filter:blur(88px);} }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
+<div class="aura-layer-1" aria-hidden="true"></div>
+<div class="aura-layer-2" aria-hidden="true"></div>
+<div class="aura-layer-3" aria-hidden="true"></div>
 <div class="wrap">
 """
 
