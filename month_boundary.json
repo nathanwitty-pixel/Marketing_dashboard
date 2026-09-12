@@ -2,7 +2,11 @@
   "last_run": {
     "date": "2026-09-12",
     "week_start": "2026-09-06",
+<<<<<<< HEAD
     "weekly_sales_total": 3519
+=======
+    "weekly_sales_total": 8787
+>>>>>>> bfb35b07ad34b827b2c9a16c9928fcedbcace940
   },
   "carryover": {},
   "prev_month": {
