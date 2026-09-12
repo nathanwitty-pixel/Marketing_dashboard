@@ -90,9 +90,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No data changes this run."
           else
-            git commit -m "chore(data): auto-refresh dashboards $(date -u +'%Y-%m-%d %H:%M UTC')
-
-Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
+            git commit -m "chore(data): auto-refresh dashboards $(date -u +'%Y-%m-%d %H:%M UTC')" -m "Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
             git push
             echo "Pushed fresh data — Vercel will redeploy."
           fi
