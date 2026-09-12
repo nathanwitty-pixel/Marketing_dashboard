@@ -1,14 +1,8 @@
 {
   "weekStart": "2026-09-06",
   "weekEnd": "2026-09-12",
-<<<<<<< HEAD
-  "weeklyBags": 3519,
-  "weeklyValue": 6032061,
-  "lines": 3587,
-=======
-  "weeklyBags": 8787,
-  "weeklyValue": 19529577,
-  "lines": 3551,
->>>>>>> bfb35b07ad34b827b2c9a16c9928fcedbcace940
+  "weeklyBags": 3558,
+  "weeklyValue": 6090261,
+  "lines": 3626,
   "computedOn": "2026-09-12"
 }
