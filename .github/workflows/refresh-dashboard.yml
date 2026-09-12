@@ -21,7 +21,12 @@ on:
     # Every 2 hours, 06:00–18:00 UTC, Mon–Sat  (= 09:00–21:00 EAT).
     # Tighten to hourly with '0 5-17 * * 1-6' if you want; mind Actions minutes on a private repo.
     - cron: '0 6-18/2 * * 1-6'
-  workflow_dispatch: {}          # adds a manual "Run workflow" button in the Actions tab
+  workflow_dispatch:             # manual "Run workflow" button + on-demand trigger from the dashboard
+    inputs:
+      dashboard:
+        description: "Single page HTML filename to refresh (blank = every page)"
+        required: false
+        default: ""
 
 permissions:
   contents: write                # allow the job to push the regenerated files
@@ -57,23 +62,32 @@ jobs:
         run: printf '%s\n' "$ENV_FILE" > .env
 
       - name: Regenerate dashboards
+        env:
+          DASHBOARD: ${{ github.event.inputs.dashboard }}
         run: |
-          scripts=(
-            weekly_sales.py
-            monthly_sales.py
-            current_performance.py
-            forward_projections.py
-            new_products.py
-            timed_offers.py
-            self_made_combos.py
-            "POSTING (SALES YIELDS FROM ACCURATE POSTING).py"
-            shops_dispatch.py
-            shops_efficiency.py
-            generate_insights.py
-            monthly_report.py
-            push_to_supabase.py
-            history.py
-          )
+          # Which generators to run. If the dashboard tapped Refresh on ONE page,
+          # rebuild only that page's scripts (mirrors main.py's SCRIPT_MAP) so the
+          # run + redeploy is quick. Scheduled runs (blank input) rebuild everything.
+          case "$DASHBOARD" in
+            current_performance.html) scripts=(weekly_sales.py monthly_sales.py current_performance.py forward_projections.py) ;;
+            forward_projections.html) scripts=(forward_projections.py) ;;
+            new_products.html)        scripts=(new_products.py) ;;
+            timed_offers.html)        scripts=(timed_offers.py) ;;
+            self_made_combos.html)    scripts=(self_made_combos.py) ;;
+            "POSTING (SALES YIELDS FROM ACCURATE POSTING).html") scripts=("POSTING (SALES YIELDS FROM ACCURATE POSTING).py") ;;
+            shops_efficiency.html)    scripts=(shops_dispatch.py shops_efficiency.py) ;;
+            insights.html)            scripts=(generate_insights.py) ;;
+            monthly_report.html)      scripts=(monthly_report.py push_to_supabase.py) ;;
+            history.html)             scripts=(push_to_supabase.py history.py) ;;
+            *) scripts=(
+                 weekly_sales.py monthly_sales.py current_performance.py forward_projections.py
+                 new_products.py timed_offers.py self_made_combos.py
+                 "POSTING (SALES YIELDS FROM ACCURATE POSTING).py"
+                 shops_dispatch.py shops_efficiency.py generate_insights.py
+                 monthly_report.py push_to_supabase.py history.py
+               ) ;;
+          esac
+          echo "Refreshing: ${scripts[*]:-<all>}"
           for s in "${scripts[@]}"; do
             echo "::group::$s"
             python "$s" || echo "::warning::$s failed — continuing"

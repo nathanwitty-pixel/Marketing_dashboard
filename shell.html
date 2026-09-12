@@ -622,14 +622,33 @@
       fetch('/api/refresh?dashboard=' + encodeURIComponent(filename) + '&_ts=' + Date.now())
         .then(function(r) { return r.json(); })
         .then(function(data) {
+          // Deployed (Vercel): /api/refresh dispatches the cloud rebuild — it isn't
+          // instant, so wait out the run + redeploy, then reload THIS page only.
+          if (data && data.dispatched) {
+            var eta = (data.etaSeconds || 210);
+            var mins = Math.max(1, Math.round(eta / 60));
+            btnRef.classList.remove('spinning');
+            document.getElementById('overlay-text').innerHTML =
+              (data.message || 'Refreshing from Odoo…') +
+              '<br><span style="opacity:.75;font-size:0.92em">Fresh data in ~' + mins +
+              ' min — this page reloads itself.</span>';
+            setTimeout(function() { overlay.classList.remove('show'); }, 6000);   // let them keep viewing
+            setTimeout(function() {
+              overlay.classList.add('show');
+              document.getElementById('overlay-text').textContent = 'Loading fresh data…';
+              frame.src = bust(filename);                                          // reload current page only
+            }, (eta + 45) * 1000);
+            return;
+          }
+          // Local (main.py): the generator already ran — reload now.
           document.getElementById('overlay-text').textContent = 'Loading…';
-          if (data.ok) {
+          if (data && data.ok) {
             frame.src = 'about:blank';
             setTimeout(function() { frame.src = bust(filename); }, 80);
           } else {
             overlay.classList.remove('show');
             btnRef.classList.remove('spinning');
-            alert('Refresh failed:\n' + (data.error || 'unknown error'));
+            alert('Refresh failed:\n' + ((data && data.error) || 'unknown error'));
           }
         })
         .catch(function() {

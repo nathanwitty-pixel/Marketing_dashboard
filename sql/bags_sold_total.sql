@@ -28,7 +28,7 @@ LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
 WHERE p.date_order::date BETWEEN dp.start_date AND dp.end_date
   AND p.state IN ('done', 'paid')                          -- drop draft / cancelled
-  AND pl.qty > 0                                           -- drop refund / return lines
+  AND pl.qty <> 0                                          -- NET refunds: a returned sale subtracts (was qty>0, which double-counted refunded bulk orders)
   AND COALESCE(pt."name", '') NOT LIKE '%+%'
   AND COALESCE(pt."name", '') NOT ILIKE '%delivery%'
   AND COALESCE(pt."name", '') NOT ILIKE '%customization%'
