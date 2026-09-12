@@ -206,13 +206,29 @@ with hc2:
     if st.button("🔄 Refresh this page", use_container_width=True, type="primary", key="refresh_btn"):
         with st.spinner(f"Refreshing {label} from Odoo…"):
             logs = run_scripts(scripts)          # current page's generators only
-        if all(rc == 0 for _, rc, _ in logs):
-            st.toast("Refreshed with live data ✓")
-            st.rerun()
-        else:
-            for s, rc, out in logs:
-                if rc != 0:
-                    st.warning(f"⚠ {s}: {out[:200] or 'error'}")
+        fails = [(s, out) for s, rc, out in logs if rc != 0]
+        unreachable = any(("not reachable" in (out or "").lower())
+                          or ("unreachable" in (out or "").lower())
+                          for _, _, out in logs)
+        # Stash the result so it survives the rerun (a toast would vanish immediately).
+        st.session_state.refresh_msg = {
+            "when": datetime.datetime.now().strftime("%H:%M:%S"),
+            "fails": fails, "unreachable": unreachable,
+        }
+        st.rerun()
+
+# Persistent refresh feedback (shown after the rerun re-reads the regenerated page)
+_rm = st.session_state.pop("refresh_msg", None)
+if _rm:
+    if _rm["fails"]:
+        for s, out in _rm["fails"]:
+            st.warning(f"⚠ {s} failed: {out[:250] or 'error'}")
+    elif _rm["unreachable"]:
+        st.warning("⚠ Couldn’t reach Odoo / Google Sheets — showing the last data. "
+                   "On the deployed app this means the DB secrets are missing or the "
+                   "database is refusing the connection.")
+    else:
+        st.success(f"✓ Refreshed from Odoo at {_rm['when']}")
 
 # ── Render the selected page ──
 # Injected into each embedded page so it (a) doesn't force a full-viewport black
@@ -261,6 +277,10 @@ if os.path.exists(html_path):
         html = html.replace("</body>", EMBED_FIX + "</body>", 1)
     else:
         html += EMBED_FIX
+    # Cache-buster: a unique marker each run forces components.html to rebuild the
+    # iframe from the freshly-read file, so a refresh actually shows the new data
+    # instead of a stale cached frame.
+    html += "\n<!-- v:" + datetime.datetime.now().strftime("%H%M%S%f") + " -->"
     # Initial height is a fallback only; the script sizes the frame to the EXACT content
     # height so the scroll ends at the last info, with no endless empty space.
     components.html(html, height=700, scrolling=True)
