@@ -54,6 +54,30 @@ def _load_secrets_into_env():
                 os.environ[key] = str(secrets[key])
         except Exception:
             pass
+
+    # Robust Google service-account handling. A raw-JSON string in secrets is easy to
+    # break (pasting with """ mangles the private key's \n). If SERVICE_ACCOUNT_JSON is
+    # missing OR doesn't parse, fall back to a standard TOML table — [gcp_service_account]
+    # or [service_account] — and rebuild valid JSON from it (this round-trips the key
+    # newlines correctly regardless of quoting).
+    import json as _json
+
+    def _valid_json(s):
+        try:
+            _json.loads(s)
+            return True
+        except Exception:
+            return False
+
+    if not _valid_json(os.environ.get("SERVICE_ACCOUNT_JSON", "")):
+        for tkey in ("gcp_service_account", "service_account"):
+            try:
+                if tkey in secrets:
+                    os.environ["SERVICE_ACCOUNT_JSON"] = _json.dumps(dict(secrets[tkey]))
+                    break
+            except Exception:
+                pass
+
     os.environ.setdefault("DENRI_LAUNCHER", "1")
     os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 

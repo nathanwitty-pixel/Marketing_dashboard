@@ -75,7 +75,11 @@ def get_engine() -> Engine | None:
     # installed in whichever Python runs the dashboard, return None so callers
     # fall back to the sheet instead of the whole refresh crashing.
     try:
-        return create_engine(url, pool_pre_ping=True, future=True)
+        # connect_timeout caps how long a connection attempt waits. Without it, a
+        # blocked/unreachable DB (e.g. a firewall dropping packets from a cloud host)
+        # hangs for a minute+ per attempt, making a refresh drag on. 10s → fail fast.
+        return create_engine(url, pool_pre_ping=True, future=True,
+                             connect_args={"connect_timeout": 20})
     except ImportError as e:   # psycopg2 missing in this Python, etc.
         print(f"  DB driver not installed ({e}) — falling back to sheet data.")
         return None
