@@ -28,19 +28,19 @@
       "ELDORET": 24,
       "KISUMU": 54,
       "MERU": 30,
-      "THIKA": 19,
-      "HAZINA": 58,
-      "KITENGELA": 22,
+      "THIKA": 24,
+      "HAZINA": 94,
+      "KITENGELA": 23,
       "NANYUKI": 38,
       "KAKAMEGA": 11,
-      "HILTON": 374,
+      "HILTON": 475,
       "KISII": 17,
       "KTDA": 630,
       "BUSIA": 10,
       "RONGAI": 25
     },
     "sold": {
-      "STARMALL": 135,
+      "STARMALL": 141,
       "MOMBASA": 117,
       "NAKURU": 100,
       "ELDORET": 98,
@@ -50,165 +50,14 @@
       "HAZINA": 86,
       "KITENGELA": 42,
       "NANYUKI": 34,
-      "KAKAMEGA": 38,
+      "KAKAMEGA": 42,
       "HILTON": 441,
       "KISII": 61,
-      "KTDA": 231,
+      "KTDA": 233,
       "BUSIA": 27,
       "RONGAI": 34
     },
-    "receiving": {
-      "ELDORET": {
-        "sent": 125,
-        "sameDay": 0,
-        "nextDay": 6,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 119,
-        "score": 2.9,
-        "medianDays": 1.0
-      },
-      "HAZINA": {
-        "sent": 51,
-        "sameDay": 4,
-        "nextDay": 30,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 17,
-        "score": 43.1,
-        "medianDays": 1.0
-      },
-      "HILTON": {
-        "sent": 368,
-        "sameDay": 26,
-        "nextDay": 0,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 342,
-        "score": 7.1,
-        "medianDays": 0.0
-      },
-      "KAKAMEGA": {
-        "sent": 37,
-        "sameDay": 0,
-        "nextDay": 0,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 37,
-        "score": 0.0,
-        "medianDays": null
-      },
-      "KISII": {
-        "sent": 39,
-        "sameDay": 0,
-        "nextDay": 4,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 35,
-        "score": 6.2,
-        "medianDays": 1.0
-      },
-      "KISUMU": {
-        "sent": 43,
-        "sameDay": 0,
-        "nextDay": 4,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 39,
-        "score": 5.6,
-        "medianDays": 1.0
-      },
-      "KITENGELA": {
-        "sent": 35,
-        "sameDay": 4,
-        "nextDay": 0,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 31,
-        "score": 11.4,
-        "medianDays": 0.0
-      },
-      "KTDA": {
-        "sent": 523,
-        "sameDay": 419,
-        "nextDay": 4,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 100,
-        "score": 80.6,
-        "medianDays": 0.0
-      },
-      "MERU": {
-        "sent": 34,
-        "sameDay": 0,
-        "nextDay": 8,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 26,
-        "score": 14.1,
-        "medianDays": 1.0
-      },
-      "MOMBASA": {
-        "sent": 256,
-        "sameDay": 0,
-        "nextDay": 4,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 252,
-        "score": 0.9,
-        "medianDays": 1.0
-      },
-      "NAKURU": {
-        "sent": 79,
-        "sameDay": 0,
-        "nextDay": 6,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 73,
-        "score": 4.6,
-        "medianDays": 1.0
-      },
-      "NANYUKI": {
-        "sent": 12,
-        "sameDay": 0,
-        "nextDay": 2,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 10,
-        "score": 10.0,
-        "medianDays": 1.0
-      },
-      "RONGAI": {
-        "sent": 24,
-        "sameDay": 0,
-        "nextDay": 0,
-        "twoDays": 13,
-        "later": 0,
-        "inTransit": 11,
-        "score": 19.0,
-        "medianDays": 2.0
-      },
-      "STARMALL": {
-        "sent": 156,
-        "sameDay": 3,
-        "nextDay": 0,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 153,
-        "score": 1.9,
-        "medianDays": 0.0
-      },
-      "THIKA": {
-        "sent": 88,
-        "sameDay": 0,
-        "nextDay": 6,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 82,
-        "score": 4.1,
-        "medianDays": 1.0
-      }
-    }
+    "receiving": {}
   },
   "monthly": {
     "start": "2026-09-01",
@@ -220,19 +69,19 @@
       "ELDORET": 97,
       "KISUMU": 123,
       "MERU": 77,
-      "THIKA": 52,
-      "HAZINA": 393,
-      "KITENGELA": 109,
+      "THIKA": 57,
+      "HAZINA": 429,
+      "KITENGELA": 110,
       "NANYUKI": 71,
       "KAKAMEGA": 36,
-      "HILTON": 1281,
+      "HILTON": 1382,
       "KISII": 64,
       "KTDA": 1703,
       "BUSIA": 41,
       "RONGAI": 62
     },
     "sold": {
-      "STARMALL": 471,
+      "STARMALL": 477,
       "MOMBASA": 383,
       "NAKURU": 318,
       "ELDORET": 1085,
@@ -242,174 +91,13 @@
       "HAZINA": 376,
       "KITENGELA": 152,
       "NANYUKI": 116,
-      "KAKAMEGA": 152,
+      "KAKAMEGA": 156,
       "HILTON": 1441,
       "KISII": 210,
-      "KTDA": 730,
+      "KTDA": 732,
       "BUSIA": 96,
       "RONGAI": 124
     },
-    "receiving": {
-      "BUSIA": {
-        "sent": 126,
-        "sameDay": 0,
-        "nextDay": 5,
-        "twoDays": 3,
-        "later": 5,
-        "inTransit": 113,
-        "score": 3.8,
-        "medianDays": 2.0
-      },
-      "ELDORET": {
-        "sent": 294,
-        "sameDay": 0,
-        "nextDay": 24,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 270,
-        "score": 4.9,
-        "medianDays": 1.0
-      },
-      "HAZINA": {
-        "sent": 362,
-        "sameDay": 211,
-        "nextDay": 134,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 17,
-        "score": 80.5,
-        "medianDays": 0.0
-      },
-      "HILTON": {
-        "sent": 1269,
-        "sameDay": 89,
-        "nextDay": 1,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 1179,
-        "score": 7.1,
-        "medianDays": 0.0
-      },
-      "KAKAMEGA": {
-        "sent": 166,
-        "sameDay": 0,
-        "nextDay": 9,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 157,
-        "score": 3.3,
-        "medianDays": 1.0
-      },
-      "KISII": {
-        "sent": 211,
-        "sameDay": 0,
-        "nextDay": 10,
-        "twoDays": 6,
-        "later": 2,
-        "inTransit": 193,
-        "score": 4.0,
-        "medianDays": 1.0
-      },
-      "KISUMU": {
-        "sent": 368,
-        "sameDay": 0,
-        "nextDay": 31,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 337,
-        "score": 5.1,
-        "medianDays": 1.0
-      },
-      "KITENGELA": {
-        "sent": 226,
-        "sameDay": 20,
-        "nextDay": 3,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 203,
-        "score": 9.6,
-        "medianDays": 0.0
-      },
-      "KTDA": {
-        "sent": 1495,
-        "sameDay": 911,
-        "nextDay": 131,
-        "twoDays": 10,
-        "later": 16,
-        "inTransit": 427,
-        "score": 66.6,
-        "medianDays": 0.0
-      },
-      "MERU": {
-        "sent": 186,
-        "sameDay": 0,
-        "nextDay": 31,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 155,
-        "score": 10.0,
-        "medianDays": 1.0
-      },
-      "MOMBASA": {
-        "sent": 470,
-        "sameDay": 0,
-        "nextDay": 13,
-        "twoDays": 0,
-        "later": 4,
-        "inTransit": 453,
-        "score": 1.8,
-        "medianDays": 1.0
-      },
-      "NAKURU": {
-        "sent": 294,
-        "sameDay": 0,
-        "nextDay": 28,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 266,
-        "score": 5.7,
-        "medianDays": 1.0
-      },
-      "NANYUKI": {
-        "sent": 126,
-        "sameDay": 0,
-        "nextDay": 20,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 106,
-        "score": 9.5,
-        "medianDays": 1.0
-      },
-      "RONGAI": {
-        "sent": 92,
-        "sameDay": 9,
-        "nextDay": 0,
-        "twoDays": 13,
-        "later": 0,
-        "inTransit": 70,
-        "score": 14.7,
-        "medianDays": 0.0
-      },
-      "STARMALL": {
-        "sent": 365,
-        "sameDay": 8,
-        "nextDay": 1,
-        "twoDays": 4,
-        "later": 2,
-        "inTransit": 350,
-        "score": 2.8,
-        "medianDays": 0.0
-      },
-      "THIKA": {
-        "sent": 192,
-        "sameDay": 7,
-        "nextDay": 9,
-        "twoDays": 0,
-        "later": 0,
-        "inTransit": 176,
-        "score": 6.5,
-        "medianDays": 1.0
-      }
-    }
+    "receiving": {}
   }
 }
