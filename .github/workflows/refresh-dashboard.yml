@@ -1,0 +1,98 @@
+name: Refresh dashboard data
+
+# Regenerates every dashboard page from live Odoo + Google Sheets and pushes the
+# updated HTML back to the repo, so Vercel auto-redeploys with fresh data — no
+# manual "generate + push" needed.
+#
+# ── One-time setup (repo → Settings → Secrets and variables → Actions) ──
+#   ENV_FILE              paste the ENTIRE contents of your local .env
+#                         (DB_HOST/DB_PORT/DB_NAME/DB_USER/DB_PASSWORD + SUPABASE_DB_URL)
+#   SERVICE_ACCOUNT_JSON  paste the ENTIRE contents of service_account.json
+#                         (the Google service-account key; the sheets must be shared
+#                          with its client_email — they already are locally)
+#
+# The Odoo Postgres must accept connections from GitHub's runners. It's on a public
+# IP with a reporting user, so it should — but if runs fail with a connection/timeout
+# error, the DB firewall is IP-locked; allow GitHub Actions IP ranges, or use the
+# "scheduled task on your PC" approach instead.
+
+on:
+  schedule:
+    # Every 2 hours, 06:00–18:00 UTC, Mon–Sat  (= 09:00–21:00 EAT).
+    # Tighten to hourly with '0 5-17 * * 1-6' if you want; mind Actions minutes on a private repo.
+    - cron: '0 6-18/2 * * 1-6'
+  workflow_dispatch: {}          # adds a manual "Run workflow" button in the Actions tab
+
+permissions:
+  contents: write                # allow the job to push the regenerated files
+
+concurrency:
+  group: refresh-dashboard       # never let two refreshes overlap
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DENRI_LAUNCHER: "1"                              # never try to open a browser tab
+      PYTHONIOENCODING: "utf-8"
+      SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}   # Google Sheets auth (headless)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Write .env from secret
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+        run: printf '%s\n' "$ENV_FILE" > .env
+
+      - name: Regenerate dashboards
+        run: |
+          scripts=(
+            weekly_sales.py
+            monthly_sales.py
+            current_performance.py
+            forward_projections.py
+            new_products.py
+            timed_offers.py
+            self_made_combos.py
+            "POSTING (SALES YIELDS FROM ACCURATE POSTING).py"
+            shops_dispatch.py
+            shops_efficiency.py
+            generate_insights.py
+            monthly_report.py
+            push_to_supabase.py
+            history.py
+          )
+          for s in "${scripts[@]}"; do
+            echo "::group::$s"
+            python "$s" || echo "::warning::$s failed — continuing"
+            echo "::endgroup::"
+          done
+
+      - name: Commit & push if data changed
+        run: |
+          rm -f .env service_account.json google_token.json    # belt-and-braces: never commit secrets
+          git config user.name  "denri-dashboard-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git reset -q -- .env service_account.json google_token.json google_credentials.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No data changes this run."
+          else
+            git commit -m "chore(data): auto-refresh dashboards $(date -u +'%Y-%m-%d %H:%M UTC')
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
+            git push
+            echo "Pushed fresh data — Vercel will redeploy."
+          fi

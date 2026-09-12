@@ -52,6 +52,10 @@ def _norm_offer(raw):
     o["market"]    = str(raw.get("market", "Kenya") or "Kenya").strip()
     o["startDate"] = str(raw.get("startDate", "") or "").strip()
     o["endDate"]   = str(raw.get("endDate", "") or "").strip()
+    # Optional: limit the offer to a time-of-day window (Nairobi wall time, HH:MM),
+    # e.g. an evening 16:00–19:00 flash. Empty = the whole day.
+    o["startTime"] = str(raw.get("startTime", "") or "").strip()
+    o["endTime"]   = str(raw.get("endTime", "") or "").strip()
     # Optional: limit sales to specific POS tills (e.g. Nairobi CBD shops only).
     if isinstance(raw.get("shops"), list):
         o["shops"] = [str(s).strip() for s in raw["shops"] if str(s).strip()]
@@ -100,13 +104,24 @@ def _shop_sql(shops):
     inlist = ", ".join("'" + s.strip().lower().replace("'", "''") + "'" for s in shops)
     return '  AND lower(COALESCE(pc."name",\'\')) IN (' + inlist + ') '
 
-# Per-offer globals — the SQL helpers below read _BAGS_UP / _SHOP_SQL, and the build
-# block reads CFG / BAGS; build_offer() rebinds all four before each offer is computed.
+# Optional time-of-day scoping. Odoo stores date_order as UTC; convert to Nairobi wall
+# time so an evening "4pm–7pm" window counts the right sales. Applied to both the offer
+# window AND the pre-offer baseline, so the daily/lift comparison is like-for-like.
+_TIME_RE = re.compile(r"^([01]?\d|2[0-3]):([0-5]\d)$")
+def _time_sql(start_time, end_time):
+    if not (_TIME_RE.match(start_time or "") and _TIME_RE.match(end_time or "")):
+        return ""
+    local = "(p.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::time"
+    return f"  AND {local} >= TIME '{start_time}' AND {local} < TIME '{end_time}' "
+
+# Per-offer globals — the SQL helpers below read _BAGS_UP / _SHOP_SQL / _TIME_SQL, and the
+# build block reads CFG / BAGS; build_offer() rebinds all of them before each offer is computed.
 CFG = {"name": "", "market": "Kenya", "startDate": "", "endDate": "",
        "bags": list(_DEFAULT_BAGS), "prices": {}, "shops": []}
 BAGS = CFG["bags"]
 _BAGS_UP = [b.upper() for b in BAGS]
 _SHOP_SQL = ""
+_TIME_SQL = ""
 
 
 def _bucket(name):
@@ -155,7 +170,7 @@ def odoo_window_sales(bags, start, end, market):
     WHERE p.date_order::date BETWEEN CAST(:s AS date) AND CAST(:e AS date)
       AND p.state IN ('done','paid') AND pl.qty > 0
       AND lower(COALESCE(pc."name",'')) NOT IN {non_kenya}
-    {_SHOP_SQL}
+    {_SHOP_SQL}{_TIME_SQL}
       AND COALESCE(pt."name",'') NOT LIKE '%+%'
       AND COALESCE(pt."name",'') NOT ILIKE '%delivery%'
       AND COALESCE(pt."name",'') NOT ILIKE '%customization%'
@@ -202,7 +217,7 @@ def odoo_daily_kenya(bags, start, end):
     WHERE p.date_order::date BETWEEN CAST(:s AS date) AND CAST(:e AS date)
       AND p.state IN ('done','paid') AND pl.qty > 0
       AND lower(COALESCE(pc."name",'')) NOT IN ('sinza','dar-es-alam','uganda')
-    {_SHOP_SQL}
+    {_SHOP_SQL}{_TIME_SQL}
       AND COALESCE(pt."name",'') NOT LIKE '%+%'
       AND COALESCE(pt."name",'') NOT ILIKE '%delivery%'
       AND COALESCE(pt."name",'') NOT ILIKE '%customization%'
@@ -370,7 +385,7 @@ def odoo_bag_daily_value(bags, start, end):
          'WHERE p.date_order::date BETWEEN CAST(:s AS date) AND CAST(:e AS date) '
          "  AND p.state IN ('done','paid') AND pl.qty > 0 "
          '  AND lower(COALESCE(pc."name",\'\')) NOT IN (\'sinza\',\'dar-es-alam\',\'uganda\') '
-         + _SHOP_SQL +
+         + _SHOP_SQL + _TIME_SQL +
          '  AND COALESCE(pt."name",\'\') NOT LIKE \'%+%\' '
          '  AND COALESCE(pt."name",\'\') NOT ILIKE \'%delivery%\' '
          '  AND COALESCE(pt."name",\'\') NOT ILIKE \'%sample%\' '
@@ -411,11 +426,12 @@ def weekly_kenya_posts(bags):
 def build_offer(offer):
     """Compute the full TO payload for a single offer dict. Rebinds the
     per-offer module globals the SQL helpers and build logic read."""
-    global BAGS, _BAGS_UP, _SHOP_SQL, CFG
+    global BAGS, _BAGS_UP, _SHOP_SQL, _TIME_SQL, CFG
     CFG = offer
     BAGS = offer["bags"]
     _BAGS_UP = [b.upper() for b in BAGS]
     _SHOP_SQL = _shop_sql(offer.get("shops"))
+    _TIME_SQL = _time_sql(offer.get("startTime"), offer.get("endTime"))
 
     print("Fetching timed-offer data (Odoo sales + weekly posting)...")
     sales_map, sales_live = odoo_window_sales(BAGS, CFG["startDate"], CFG["endDate"], CFG["market"])
@@ -512,6 +528,19 @@ def build_offer(offer):
             return f"{ds:%d %b} – {de:%d %b %Y}"
         except ValueError:
             return f"{s} – {e}"
+
+    # "16:00" -> "4pm", "16:30" -> "4:30pm"
+    def _fmt_time(hm):
+        try:
+            h, m = (int(x) for x in hm.split(":"))
+            ap = "am" if h < 12 else "pm"
+            h12 = h % 12 or 12
+            return f"{h12}:{m:02d}{ap}" if m else f"{h12}{ap}"
+        except (ValueError, AttributeError):
+            return hm or ""
+
+    _time_label = (_fmt_time(CFG.get("startTime")) + "–" + _fmt_time(CFG.get("endTime"))) \
+        if (CFG.get("startTime") and CFG.get("endTime")) else ""
 
     best  = max(bag_rows, key=lambda r: r["sold"]) if bag_rows else None
     mostp = max(bag_rows, key=lambda r: r["posts"]) if bag_rows else None
@@ -680,7 +709,9 @@ def build_offer(offer):
         "scopeLabel": ("Nairobi CBD &middot; " + ", ".join(CFG["shops"])) if CFG.get("shops") else CFG["market"],
         "startDate":  CFG["startDate"],
         "endDate":    CFG["endDate"],
-        "windowLabel": _win_label(CFG["startDate"], CFG["endDate"]),
+        "timeLabel":  _time_label,
+        "windowLabel": _win_label(CFG["startDate"], CFG["endDate"])
+                       + (" &middot; " + _time_label + " daily" if _time_label else ""),
         "lift":       lift,
         "why":        why,
         "salesLive":  sales_live,
