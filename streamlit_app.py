@@ -96,8 +96,9 @@ st.markdown("""
      or the control that opens the side menu on narrow screens disappears. */
   #MainMenu, footer {visibility: hidden;}
   header[data-testid="stHeader"] {background: transparent;}
-  [data-testid="stToolbarActions"] {visibility: hidden;}
-  .block-container {padding: 0.5rem 0.7rem 0 0.7rem; max-width: 100%;}
+  /* Leave Streamlit's Deploy/toolbar alone in the top-right; just start the app's
+     content lower so the header/date/refresh never sit under it. */
+  .block-container {padding: 3.2rem 0.7rem 0 0.7rem; max-width: 100%;}
   section[data-testid="stSidebar"] {background:#0b0d16;}
   section[data-testid="stSidebar"] > div {padding-top: 0.6rem;}
 
@@ -199,23 +200,26 @@ HEADER_HTML = """
 </script>
 """
 
-hc1, hc2 = st.columns([0.76, 0.24])
-with hc1:
-    components.html(HEADER_HTML, height=54)
-with hc2:
-    if st.button("🔄 Refresh this page", use_container_width=True, type="primary", key="refresh_btn"):
-        with st.spinner(f"Refreshing {label} from Odoo…"):
-            logs = run_scripts(scripts)          # current page's generators only
-        fails = [(s, out) for s, rc, out in logs if rc != 0]
-        unreachable = any(("not reachable" in (out or "").lower())
-                          or ("unreachable" in (out or "").lower())
-                          for _, _, out in logs)
-        # Stash the result so it survives the rerun (a toast would vanish immediately).
-        st.session_state.refresh_msg = {
-            "when": datetime.datetime.now().strftime("%H:%M:%S"),
-            "fails": fails, "unreachable": unreachable,
-        }
-        st.rerun()
+components.html(HEADER_HTML, height=54)
+
+# Small Refresh button, right-aligned just under the date / clock.
+_sp, _rc = st.columns([0.8, 0.2])
+with _rc:
+    _do_refresh = st.button("🔄 Refresh", use_container_width=True,
+                            type="primary", key="refresh_btn")
+if _do_refresh:
+    with st.spinner(f"Refreshing {label} from Odoo…"):
+        logs = run_scripts(scripts)          # current page's generators only
+    fails = [(s, out) for s, rc, out in logs if rc != 0]
+    unreachable = any(("not reachable" in (out or "").lower())
+                      or ("unreachable" in (out or "").lower())
+                      for _, _, out in logs)
+    # Stash the result so it survives the rerun (a toast would vanish immediately).
+    st.session_state.refresh_msg = {
+        "when": datetime.datetime.now().strftime("%H:%M:%S"),
+        "fails": fails, "unreachable": unreachable,
+    }
+    st.rerun()
 
 # Persistent refresh feedback (shown after the rerun re-reads the regenerated page)
 _rm = st.session_state.pop("refresh_msg", None)
