@@ -91,7 +91,12 @@ st.set_page_config(page_title="Denri · Marketing Dashboard",
 # ── Styling: hide Streamlit chrome + make the sidebar buttons read as nav items ──
 st.markdown("""
 <style>
-  #MainMenu, footer, header {visibility: hidden;}
+  /* Keep Streamlit's header (it holds the sidebar open/close arrow) — just hide the
+     ⋮ menu + footer, and make the header transparent. Never hide the whole header,
+     or the control that opens the side menu on narrow screens disappears. */
+  #MainMenu, footer {visibility: hidden;}
+  header[data-testid="stHeader"] {background: transparent;}
+  [data-testid="stToolbarActions"] {visibility: hidden;}
   .block-container {padding: 0.5rem 0.7rem 0 0.7rem; max-width: 100%;}
   section[data-testid="stSidebar"] {background:#0b0d16;}
   section[data-testid="stSidebar"] > div {padding-top: 0.6rem;}
@@ -121,14 +126,16 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ── Sidebar: brand + grouped icon nav ──
+# ── Sidebar: grouped icon nav ──
+# (Use Streamlit's built-in « chevron at the top of the sidebar to minimize/hide it —
+#  a custom icon-rail fights Streamlit's sidebar width and can hide the whole menu.)
+if "page" not in st.session_state:
+    st.session_state.page = ALL_ITEMS[0][0]
+
 st.sidebar.markdown(
     "<div class='brand'><div class='mark'>DA</div>"
     "<div><div class='nm'>Denri Africa</div><div class='sb'>Marketing Analytics</div></div></div>",
     unsafe_allow_html=True)
-
-if "page" not in st.session_state:
-    st.session_state.page = ALL_ITEMS[0][0]
 
 for section, items in NAV:
     st.sidebar.markdown(f"<div class='nav-sec'>{section}</div>", unsafe_allow_html=True)
@@ -161,30 +168,101 @@ def run_scripts(script_list):
     return logs
 
 
-# ── Header row: page title + refresh ──
-h_left, h_right = st.columns([0.7, 0.3])
-with h_left:
-    st.markdown(f"#### {label}")
-    if os.path.exists(html_path):
-        mtime = datetime.datetime.fromtimestamp(os.path.getmtime(html_path))
-        st.caption(f"Data as of {mtime:%d %b %Y · %H:%M}")
-with h_right:
-    if st.button("🔄 Refresh from Odoo", use_container_width=True, type="primary"):
+# ── Header: user card + live status dot + ticking clock (left) · refresh (right) ──
+HEADER_HTML = """
+<div style="display:flex;align-items:center;justify-content:space-between;font-family:'Segoe UI',system-ui,sans-serif">
+  <div>
+    <div style="font-weight:700;color:#f1f5f9;font-size:0.92rem;line-height:1.15">Jonathan Owiti</div>
+    <div style="font-size:0.66rem;color:#64748b;letter-spacing:0.03em">Business Intelligence (BI) Analyst</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:0.5rem">
+    <span style="width:8px;height:8px;border-radius:50%;background:#10b981;display:inline-block;animation:pulse 1.8s ease-out infinite"></span>
+    <span id="clk" style="font-size:0.84rem;color:#94a3b8;font-weight:600;font-variant-numeric:tabular-nums"></span>
+  </div>
+</div>
+<style>
+  body{margin:0;background:transparent}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,0.5)}70%{box-shadow:0 0 0 7px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<script>
+  function tick(){
+    var n=new Date();
+    var d=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var p=function(x){return String(x).padStart(2,'0')};
+    document.getElementById('clk').textContent =
+      d[n.getDay()]+', '+n.getDate()+' '+m[n.getMonth()]+' '+n.getFullYear()+
+      ' \\u00b7 '+p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());
+  }
+  tick(); setInterval(tick,1000);
+</script>
+"""
+
+hc1, hc2 = st.columns([0.76, 0.24])
+with hc1:
+    components.html(HEADER_HTML, height=54)
+with hc2:
+    if st.button("🔄 Refresh this page", use_container_width=True, type="primary", key="refresh_btn"):
         with st.spinner(f"Refreshing {label} from Odoo…"):
-            logs = run_scripts(scripts)
+            logs = run_scripts(scripts)          # current page's generators only
         if all(rc == 0 for _, rc, _ in logs):
-            st.success("Refreshed with live data.")
+            st.toast("Refreshed with live data ✓")
             st.rerun()
         else:
-            st.error("Some steps failed:")
             for s, rc, out in logs:
                 if rc != 0:
-                    st.caption(f"⚠ {s}: {out[:200] or 'error'}")
+                    st.warning(f"⚠ {s}: {out[:200] or 'error'}")
 
 # ── Render the selected page ──
+# Injected into each embedded page so it (a) doesn't force a full-viewport black
+# body inside the iframe, and (b) auto-sizes the iframe to its real content height
+# — which makes it fit correctly on both mobile and desktop with no dead space.
+EMBED_FIX = """
+<style id="st-embed-fix">
+  /* Kill viewport-height rules inside the frame so the page is only as tall as its
+     real content — otherwise min-height:100vh leaves empty scroll below the info. */
+  html, body { min-height:0 !important; height:auto !important; overflow-y:visible !important;
+               overflow-x:hidden !important; max-width:100% !important; }
+  .wrap, .container, .app-body, main, [class*="-wrap"] { min-height:0 !important; }
+  /* Mobile: fit the content to the phone width (no side cut-off), trim big padding. */
+  @media (max-width: 640px){
+    body { padding-left:0.6rem !important; padding-right:0.6rem !important; }
+    .wrap, .container { max-width:100% !important; }
+  }
+</style>
+<script>
+(function(){
+  var last = 0;
+  function fit(){
+    try{
+      var h = document.body ? document.body.scrollHeight
+                            : document.documentElement.scrollHeight;
+      if (window.frameElement && h && Math.abs(h - last) > 2){
+        last = h;
+        window.frameElement.style.height = h + 'px';
+        window.frameElement.style.minHeight = h + 'px';
+      }
+    }catch(e){}
+  }
+  window.addEventListener('load', fit);
+  window.addEventListener('resize', fit);
+  [150, 500, 1200, 2500].forEach(function(t){ setTimeout(fit, t); });
+  try { new MutationObserver(function(){ setTimeout(fit, 50); })
+        .observe(document.documentElement, {subtree:true, childList:true, attributes:true}); } catch(e){}
+})();
+</script>
+"""
+
 if os.path.exists(html_path):
     with open(html_path, encoding="utf-8") as f:
         html = f.read()
-    components.html(html, height=3200, scrolling=True)
+    if "</body>" in html:
+        html = html.replace("</body>", EMBED_FIX + "</body>", 1)
+    else:
+        html += EMBED_FIX
+    # Initial height is a fallback only; the script sizes the frame to the EXACT content
+    # height so the scroll ends at the last info, with no endless empty space.
+    components.html(html, height=700, scrolling=True)
 else:
-    st.warning(f"“{html_file}” hasn't been generated yet. Click **Refresh from Odoo** to build it.")
+    st.warning(f"“{html_file}” hasn't been generated yet. Click **Refresh this page** to build it.")
