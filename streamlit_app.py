@@ -250,7 +250,11 @@ _rm = st.session_state.pop("refresh_msg", None)
 if _rm:
     if _rm["fails"]:
         for s, out in _rm["fails"]:
-            st.warning(f"⚠ {s} failed: {out[:250] or 'error'}")
+            # Show the LAST line of the traceback — that's the actual exception,
+            # e.g. "JSONDecodeError: ..." or "ValueError: Could not deserialize key".
+            _lines = [ln for ln in (out or "").splitlines() if ln.strip()]
+            _msg = _lines[-1] if _lines else "error"
+            st.warning(f"⚠ {s}: {_msg[:300]}")
     elif _rm["unreachable"]:
         st.warning("⚠ Couldn’t reach Odoo / Google Sheets — showing the last data. "
                    "On the deployed app this means the DB secrets are missing or the "
