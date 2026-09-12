@@ -18,7 +18,7 @@ Reads live from Google Sheets (five sheets):
 ─────────────────────────────────────────────────────────────────
 """
 
-import re, webbrowser, os, pathlib, json, calendar
+import re, webbrowser, os, pathlib, json
 from datetime import date, timedelta
 
 # ── SPREADSHEET ───────────────────────────────────────────────

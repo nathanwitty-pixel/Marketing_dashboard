@@ -21,7 +21,7 @@ Reads live from Google Sheets (three sheets) — KENYA focus:
 ─────────────────────────────────────────────────────────────────
 """
 
-import re, os, json
+import json
 
 # ── SPREADSHEET ───────────────────────────────────────────────
 
