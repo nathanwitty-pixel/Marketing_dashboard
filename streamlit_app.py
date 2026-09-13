@@ -70,22 +70,24 @@ def _load_secrets_into_env():
         except Exception:
             return False
 
-    # (1) SERVICE_ACCOUNT_B64 — the whole service_account.json, base64-encoded. This is
-    # the most robust: a single ASCII blob, immune to newline/quote/smart-character
-    # corruption that breaks a hand-pasted PEM key.
-    if not _valid_json(os.environ.get("SERVICE_ACCOUNT_JSON", "")):
-        blob = ""
+    # (1) SERVICE_ACCOUNT_B64 takes PRIORITY — the whole service_account.json,
+    # base64-encoded. A single ASCII blob, immune to the newline/quote/smart-character
+    # corruption that breaks a hand-pasted PEM key. It overrides any SERVICE_ACCOUNT_JSON
+    # string, which can parse as JSON yet still hold a corrupted key.
+    blob = ""
+    try:
+        if "SERVICE_ACCOUNT_B64" in secrets and secrets["SERVICE_ACCOUNT_B64"]:
+            blob = str(secrets["SERVICE_ACCOUNT_B64"])
+    except Exception:
+        pass
+    blob = blob or os.environ.get("SERVICE_ACCOUNT_B64", "")
+    if blob:
         try:
-            if "SERVICE_ACCOUNT_B64" in secrets and secrets["SERVICE_ACCOUNT_B64"]:
-                blob = str(secrets["SERVICE_ACCOUNT_B64"])
+            decoded = _b64.b64decode(blob).decode("utf-8")
+            if _valid_json(decoded):
+                os.environ["SERVICE_ACCOUNT_JSON"] = decoded
         except Exception:
             pass
-        blob = blob or os.environ.get("SERVICE_ACCOUNT_B64", "")
-        if blob:
-            try:
-                os.environ["SERVICE_ACCOUNT_JSON"] = _b64.b64decode(blob).decode("utf-8")
-            except Exception:
-                pass
 
     # (2) TOML table [gcp_service_account]/[service_account] → rebuild JSON.
     if not _valid_json(os.environ.get("SERVICE_ACCOUNT_JSON", "")):
