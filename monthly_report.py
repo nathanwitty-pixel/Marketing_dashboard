@@ -1070,7 +1070,7 @@ _rpt = {
              "keNotOffer": ke_notoffer_stock, "szNotOffer": sz_notoffer_stock, "ugNotOffer": ug_notoffer_stock},
     "timed": timed_offers,
 }
-chart_data = "<script>const RPT = " + json.dumps(_rpt) + ";</script>\n"
+chart_data = "<script>const RPT = " + json.dumps(_rpt, separators=(",", ":")) + ";</script>\n"
 
 chart_js = r"""<script>
 (function(){

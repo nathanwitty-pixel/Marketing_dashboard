@@ -152,6 +152,18 @@ def odoo_sales_window(start, end):
             for _, r in df.iterrows()}
 
 
+def odoo_stock_kenya_outside():
+    """({UPPER name: kenya on-hand}, {UPPER name: outside on-hand}) — live Odoo stock.
+    Kenya = Kenya shop locations; outside = Sinza (Dar) + Uganda. ({}, {}) when
+    Postgres is unreachable — callers then show 0 (the sheet is not read for stock)."""
+    try:
+        from lib import stock as _stock
+    except Exception:                                        # noqa: BLE001
+        return {}, {}
+    return (_stock.odoo_stock_by_product("kenya"),
+            _stock.odoo_stock_by_product("outside"))
+
+
 # ── FETCH ─────────────────────────────────────────────────────
 
 def fetch_new_products_data():
@@ -289,43 +301,16 @@ def fetch_new_products_data():
         mpost_lookup[key]["kenya"]        += safe_int(row[4]) if len(row) > 4 else 0
         mpost_lookup[key]["outsideKenya"] += safe_int(row[7]) if len(row) > 7 else 0
 
-    # ── STOCK_LEVELS ──────────────────────────────────────────
-    # per-colour lookup shared by both monthly and weekly merges
-    # col D (idx  3) = BAG TYPE, col A (idx  0) = COLOUR
-    # col Y (idx 24) = KENYA, col Z (idx 25) = OUTSIDE KENYA, col AA (idx 26) = RESTOCK
+    # ── STOCK: LIVE Odoo on-hand ONLY (the STOCK_LEVELS sheet is not read) ──
+    # sKenya / sOutside are set from live Odoo stock further below (odoo_stock_kenya_outside).
+    # sRestock is a sheet planning number with no Odoo on-hand equivalent, so it is 0.
 
-    sl      = sh.worksheet("STOCK_LEVELS")
-    sl_rows = sl.get_all_values()
-
-    stock_lookup = {}   # (bag_upper, colour_upper) -> {sKenya, sOutside, sRestock}
-
-    for row in sl_rows[1:]:
-        if len(row) < 4:
-            continue
-        bag_type = str(row[3]).strip()
-        if not bag_type or bag_type.upper() in ("SUM TOTAL", "TOTAL", "GRAND TOTAL"):
-            continue
-        colour  = str(row[0]).strip()
-        s_kenya = safe_int(row[24]) if len(row) > 24 else 0
-        s_out   = safe_int(row[25]) if len(row) > 25 else 0
-        s_rst   = safe_int(row[26]) if len(row) > 26 else 0
-        key     = (bag_type.upper(), colour.upper())
-        if key not in stock_lookup:
-            stock_lookup[key] = {"sKenya": 0, "sOutside": 0, "sRestock": 0}
-        stock_lookup[key]["sKenya"]   += s_kenya
-        stock_lookup[key]["sOutside"] += s_out
-        stock_lookup[key]["sRestock"] += s_rst
-
-    # Merge posts + stock into each monthly colour-level row
+    # Merge posts into each monthly colour-level row (stock is applied later, from Odoo)
     for r in ms_base:
         lk   = (r["bagType"].upper(), r["colour"].upper())
         post = mpost_lookup.get(lk, {"kenya": 0, "outsideKenya": 0})
-        stk  = stock_lookup.get(lk, {"sKenya": 0, "sOutside": 0, "sRestock": 0})
         r["mpostKenya"]   = post["kenya"]
         r["mpostOutside"] = post["outsideKenya"]
-        r["sKenya"]       = stk["sKenya"]
-        r["sOutside"]     = stk["sOutside"]
-        r["sRestock"]     = stk["sRestock"]
 
     monthly_combined = ms_base
 
@@ -374,7 +359,6 @@ def fetch_new_products_data():
         colour  = str(row[0]).strip()
         lk      = (bag_type.upper(), colour.upper())
         post    = wpost_lookup.get(lk, {"kenya": 0, "outsideKenya": 0})
-        stk     = stock_lookup.get(lk, {"sKenya": 0, "sOutside": 0, "sRestock": 0})
         weekly_combined.append({
             "colour":       colour,
             "category":     str(row[1]).strip(),
@@ -383,9 +367,9 @@ def fetch_new_products_data():
             "weeklySales":  safe_int(row[23]) if len(row) > 23 else 0,
             "wpostKenya":   post["kenya"],
             "wpostOutside": post["outsideKenya"],
-            "sKenya":       stk["sKenya"],
-            "sOutside":     stk["sOutside"],
-            "sRestock":     stk["sRestock"]
+            "sKenya":       0,    # set from live Odoo stock below
+            "sOutside":     0,    # set from live Odoo stock below
+            "sRestock":     0     # no Odoo on-hand equivalent (sheet planning number)
         })
 
     # ── Sales from Odoo — the single source of truth for EVERY sales figure ──
@@ -394,6 +378,28 @@ def fetch_new_products_data():
     # each row by product name (exact upper, then alphanumeric-normalised). Falls
     # back to the sheet only if Postgres is unreachable.
     _norm = lambda s: re.sub(r"[^A-Z0-9]", "", str(s).upper())
+
+    # ── STOCK from Odoo — LIVE on-hand ONLY (the STOCK_LEVELS sheet is not read) ──
+    # sKenya = Kenya shop on-hand, sOutside = Sinza(Dar)+Uganda on-hand, matched to each
+    # colour-level row by product name (exact upper, then alphanumeric-normalised — the
+    # same matching the sales merge uses). A row Odoo has no on-hand for — or an
+    # unreachable DB — shows 0; the sheet is never a fallback. sRestock has no Odoo
+    # equivalent, so it is 0.
+    _sk_odoo, _so_odoo = odoo_stock_kenya_outside()
+    _skn = {_norm(k): v for k, v in _sk_odoo.items()}
+    _son = {_norm(k): v for k, v in _so_odoo.items()}
+
+    def _apply_stock(rows):
+        for r in rows:
+            k = str(r["productName"]).upper().strip()
+            r["sKenya"]   = int(_sk_odoo.get(k, _skn.get(_norm(k), 0)))
+            r["sOutside"] = int(_so_odoo.get(k, _son.get(_norm(k), 0)))
+            r["sRestock"] = 0
+    _apply_stock(ms_base)
+    _apply_stock(weekly_combined)
+    print("  Stock source          : Odoo (live on-hand only; sRestock=0, no sheet)"
+          if (_sk_odoo or _so_odoo) else
+          "  Stock source          : Odoo unreachable — stock shown as 0 (no sheet fallback)")
 
     try:
         from lib import report_month as _rm
@@ -585,7 +591,7 @@ inline_script = (
     f'  mSKenya:         "{fmt_int(m_skenya)}",\n'
     f'  mSOutside:       "{fmt_int(m_soutside)}",\n'
     f'  mSRestock:       "{fmt_int(m_srestock)}",\n'
-    f'  productTargets:  {json.dumps(product_targets, ensure_ascii=False)},\n'
+    f'  productTargets:  {json.dumps(product_targets, ensure_ascii=False, separators=(",", ":"))},\n'
     f'  weeklyTotal:     "{fmt_int(weekly_total)}",\n'
     f'  weeklyTarget:    "{fmt_int(weekly_target)}",\n'
     f'  weeklySalesPct:  "{fmt_pct(weekly_sales_pct)}",\n'
@@ -599,12 +605,12 @@ inline_script = (
     f'  wSKenya:         "{fmt_int(w_skenya)}",\n'
     f'  wSOutside:       "{fmt_int(w_soutside)}",\n'
     f'  wSRestock:       "{fmt_int(w_srestock)}",\n'
-    f'  productNames:    {json.dumps(new_product_names, ensure_ascii=False)},\n'
-    f'  monthlyCombined: {json.dumps(monthly_combined, ensure_ascii=False)},\n'
-    f'  weeklyCombined:  {json.dumps(weekly_combined, ensure_ascii=False)},\n'
-    f'  allMonthlyCombined: {json.dumps(all_monthly_combined, ensure_ascii=False)},\n'
-    f'  allWeeklyCombined:  {json.dumps(all_weekly_combined, ensure_ascii=False)},\n'
-    f'  weeklyPostsHistory: {json.dumps(np_weekly_history)}\n'
+    f'  productNames:    {json.dumps(new_product_names, ensure_ascii=False, separators=(",", ":"))},\n'
+    f'  monthlyCombined: {json.dumps(monthly_combined, ensure_ascii=False, separators=(",", ":"))},\n'
+    f'  weeklyCombined:  {json.dumps(weekly_combined, ensure_ascii=False, separators=(",", ":"))},\n'
+    f'  allMonthlyCombined: {json.dumps(all_monthly_combined, ensure_ascii=False, separators=(",", ":"))},\n'
+    f'  allWeeklyCombined:  {json.dumps(all_weekly_combined, ensure_ascii=False, separators=(",", ":"))},\n'
+    f'  weeklyPostsHistory: {json.dumps(np_weekly_history, separators=(",", ":"))}\n'
     "};\n"
     "</script>\n"
     "<!-- NEW_PROD_DATA_END -->"

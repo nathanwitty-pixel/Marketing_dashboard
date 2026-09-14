@@ -286,8 +286,10 @@ def odoo_bag_prices(bags, start, end):
     return prices, catalog
 
 
-def kenya_stock_by_bag(bags):
-    """{BAG_UPPER: {stock, category}} from STOCK_LEVELS (col Y=24 Kenya, col B=category)."""
+def _sheet_category_by_bag(bags):
+    """{BAG_UPPER: category} from STOCK_LEVELS col B — the bag's category label only.
+    Category is a non-stock label; STOCK is never read from the sheet (see
+    kenya_stock_by_bag)."""
     out = {}
     gc = get_gspread_client()
     sh = gc.open_by_key(SPREADSHEET_ID)
@@ -296,12 +298,35 @@ def kenya_stock_by_bag(bags):
         if len(row) < 4:
             continue
         b = _bucket(row[3])
-        if not b:
+        if not b or b in out:
             continue
-        e = out.setdefault(b, {"stock": 0, "category": ""})
-        e["stock"] += safe_int(row[24]) if len(row) > 24 else 0
-        if not e["category"] and len(row) > 1:
-            e["category"] = str(row[1]).strip()
+        out[b] = str(row[1]).strip() if len(row) > 1 else ""
+    return out
+
+
+def kenya_stock_by_bag(bags):
+    """{BAG_UPPER: {stock, category}} for the configured bags.
+
+    STOCK is LIVE Kenya Odoo on-hand ONLY (internal shop locations), bucketed to
+    each configured bag via _bucket(); the sheet is never used for stock, so a bag
+    Odoo has no on-hand for — or an unreachable DB — shows 0. CATEGORY is a
+    non-stock label and still comes from STOCK_LEVELS col B."""
+    cats = _sheet_category_by_bag(bags)
+    try:
+        from lib import stock as _stock
+        odoo = _stock.odoo_stock_by_product("kenya")
+    except Exception:                                        # noqa: BLE001
+        odoo = {}
+    agg = {}
+    for name, qty in odoo.items():
+        b = _bucket(name)
+        if b:
+            agg[b] = agg.get(b, 0) + int(qty or 0)
+    out = {}
+    for b in _BAGS_UP:
+        out[b] = {"stock": agg.get(b, 0), "category": cats.get(b, "")}
+    print("  Stock source     : Odoo (live Kenya shop on-hand)" if odoo
+          else "  Stock source     : Odoo unreachable — stock shown as 0 (no sheet fallback)")
     return out
 
 

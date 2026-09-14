@@ -302,7 +302,7 @@ EMBED_FIX = """
 </style>
 <script>
 (function(){
-  var last = 0;
+  var last = 0, pend = null;
   function fit(){
     try{
       var h = document.body ? document.body.scrollHeight
@@ -314,11 +314,19 @@ EMBED_FIX = """
       }
     }catch(e){}
   }
+  // Debounce: coalesce bursts of events into one measure, so we never re-fit on every
+  // single mutation (chart animations fire hundreds) — that thrashed layout and made
+  // the big pages feel sluggish, especially on phones.
+  function schedule(){ if(pend) return; pend = setTimeout(function(){ pend=null; fit(); }, 120); }
   window.addEventListener('load', fit);
-  window.addEventListener('resize', fit);
+  window.addEventListener('resize', schedule);
+  document.addEventListener('change', schedule, true);   // period dropdowns change chart heights
+  document.addEventListener('click',  schedule, true);   // toggles / sort buttons
   [150, 500, 1200, 2500].forEach(function(t){ setTimeout(fit, t); });
-  try { new MutationObserver(function(){ setTimeout(fit, 50); })
-        .observe(document.documentElement, {subtree:true, childList:true, attributes:true}); } catch(e){}
+  // Observe inserted/removed content only — NOT attribute mutations, which fire
+  // constantly while charts animate and were the main source of the jank.
+  try { new MutationObserver(schedule)
+        .observe(document.documentElement, {subtree:true, childList:true}); } catch(e){}
 })();
 </script>
 """
@@ -326,14 +334,28 @@ EMBED_FIX = """
 if os.path.exists(html_path):
     with open(html_path, encoding="utf-8") as f:
         html = f.read()
+    # Preconnect to the chart CDN in the <head> so Chart.js starts downloading a beat
+    # sooner (saves the DNS/TLS handshake before the blocking <script> that loads it).
+    _preconnect = ('<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>'
+                   '<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">')
+    if "<head>" in html:
+        html = html.replace("<head>", "<head>" + _preconnect, 1)
+    else:
+        html = _preconnect + html
     if "</body>" in html:
         html = html.replace("</body>", EMBED_FIX + "</body>", 1)
     else:
         html += EMBED_FIX
-    # Cache-buster: a unique marker each run forces components.html to rebuild the
-    # iframe from the freshly-read file, so a refresh actually shows the new data
-    # instead of a stale cached frame.
-    html += "\n<!-- v:" + datetime.datetime.now().strftime("%H%M%S%f") + " -->"
+    # Cache token keyed to the file's last-modified time — NOT a fresh timestamp each run.
+    # The embedded content string then only changes when the page is actually regenerated
+    # (a Refresh rewrites the file → new mtime → the frame rebuilds and shows new data),
+    # so plain navigation and reruns reuse the cached iframe instead of re-rendering the
+    # whole ~600 KB page every time.
+    try:
+        _ver = int(os.path.getmtime(html_path))
+    except OSError:
+        _ver = 0
+    html += "\n<!-- v:" + str(_ver) + " -->"
     # Initial height is a fallback only; the script sizes the frame to the EXACT content
     # height so the scroll ends at the last info, with no endless empty space.
     components.html(html, height=700, scrolling=True)

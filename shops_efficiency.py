@@ -162,6 +162,42 @@ def parse_sheet(rows):
     return data, meta
 
 
+# Odoo stock-location top-code → the shop's uppercase name (the header parse_sheet
+# keys shop columns by, and the names KENYA_SHOPS / SHOP_REGION_MAP use). Website /
+# KTDA main store are online/warehouse, not retail shops, so they are left out.
+STOCK_CODE_TO_SHOP = {
+    "STAR": "STARMALL", "MSA": "MOMBASA", "NAKS": "NAKURU", "ELD": "ELDORET",
+    "KSM": "KISUMU", "MERU": "MERU", "THK": "THIKA", "HAZ": "HAZINA",
+    "KITE": "KITENGELA", "NAN": "NANYUKI", "KAK": "KAKAMEGA", "HTN": "HILTON",
+    "KSI": "KISII", "KTDA": "KTDA", "BUSIA": "BUSIA", "RONG": "RONGAI",
+}
+
+
+def odoo_stock_levels():
+    """Live per-shop Odoo on-hand in the SAME shape parse_sheet(STOCK_LEVELS) returns:
+    {(PRODUCTNAME, ''): {SHOP_UPPER: qty}}. Only the per-shop totals are consumed
+    downstream (via sum_by_shop / the region aggregation), so the colour key is left
+    blank. Returns {} if Postgres is unreachable (the caller then shows 0 — the
+    STOCK_LEVELS sheet is never read for stock)."""
+    try:
+        from lib import stock as _stock
+        by_code = _stock.odoo_stock_by_shop_code(list(STOCK_CODE_TO_SHOP.keys()))
+    except Exception:                                        # noqa: BLE001
+        return {}
+    if not by_code:
+        return {}
+    shops = list(STOCK_CODE_TO_SHOP.values())
+    out = {}
+    for code, names in by_code.items():
+        shop = STOCK_CODE_TO_SHOP.get(str(code).strip().upper())
+        if not shop:
+            continue
+        for name, qty in names.items():
+            rec = out.setdefault((str(name).upper(), ""), {s: 0 for s in shops})
+            rec[shop] += int(qty or 0)
+    return out
+
+
 def sum_by_shop(parsed, locations=None):
     """Total per location across all bag rows (Kenya shops by default)."""
     locs = locations if locations is not None else KENYA_SHOPS
@@ -437,7 +473,12 @@ wk_dispatch, wk_d_meta = parse_sheet(load("WEEKLY_DISPATCH"))
 mo_dispatch, mo_d_meta = parse_sheet(load("MONTHLY_DISPATCH"))
 wk_sales,    wk_s_meta = parse_sheet(load("WEEKLY_SALES"))
 mo_sales,    mo_s_meta = parse_sheet(load("MONTHLY_SALES"))
-stock,       _         = parse_sheet(load("STOCK_LEVELS"))
+
+# STOCK (bags at each shop) is LIVE Odoo per-shop on-hand ONLY — the STOCK_LEVELS
+# sheet is never read for stock. If Odoo is unreachable, shop stock shows 0.
+stock = odoo_stock_levels()
+print("  Stock source: Odoo (live per-shop on-hand)" if stock
+      else "  Stock source: Odoo unreachable — shop stock shown as 0 (no sheet fallback)")
 
 # Dispatch meta wins (it carries CATEGORY); sales meta fills any gaps
 wk_meta = {**wk_s_meta, **wk_d_meta}
@@ -685,7 +726,7 @@ SE = {
 inline = (
     "<!-- SHOPS_DATA_START -->\n"
     "<script>\n"
-    "const SE = " + json.dumps(SE, ensure_ascii=False) + ";\n"
+    "const SE = " + json.dumps(SE, ensure_ascii=False, separators=(",", ":")) + ";\n"
     "</script>\n"
     "<!-- SHOPS_DATA_END -->"
 )

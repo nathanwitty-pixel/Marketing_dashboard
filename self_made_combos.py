@@ -1127,23 +1127,26 @@ def build_payload(m_start, m_end):
                 picks.append(best)
         return all_b, picks
 
-    # ── Odoo live-stock fallback ──────────────────────────────────
-    # The offer sheet is the primary stock source; where it reports 0 (or doesn't
-    # list a bag), fall back to live Odoo on-hand for that region's shops. Each
-    # product variant is resolved to its bag type.
+    # ── Stock is LIVE Odoo on-hand ONLY (the sheet is never used for stock) ──
+    # Every bag's stock value is replaced with its live Odoo on-hand for that
+    # region's shop locations; the sheet-derived value is discarded. A bag Odoo has
+    # no on-hand for (or an unreachable DB) shows 0 — the sheet is not a fallback.
+    # The bag KEYS are kept (they are bag identity, used for matching), only the
+    # VALUES are re-sourced. Each Odoo product variant → its bag type.
     def _fill_from_odoo(bag_stock, codes, label):
         agg = {}
         for _n, _q in _odoo_stock_for(codes).items():
             _b = _match_bag(_n)
             if _b:
                 agg[_b] = agg.get(_b, 0) + _q
-        _f = 0
+        for _b in list(bag_stock.keys()):
+            bag_stock[_b] = agg.get(_b, 0)   # Odoo-only; sheet stock discarded (0 if Odoo silent)
         for _b, _q in agg.items():
-            if not bag_stock.get(_b):        # sheet stock is 0 or missing → use Odoo
-                bag_stock[_b] = _q
-                _f += 1
-        if _f:
-            print(f"  Stock fallback ({label}): filled {_f} bag(s) the sheet had at 0")
+            bag_stock[_b] = _q               # Odoo bags not already keyed
+        if agg:
+            print(f"  Stock ({label}): Odoo live on-hand only — {len(agg)} bag(s) with stock")
+        else:
+            print(f"  Stock ({label}): Odoo unreachable/empty — stock shown as 0 (no sheet fallback)")
         return bag_stock
 
     _fill_from_odoo(stock_map, _KENYA_SHOP_CODES, "Kenya shops")
@@ -1267,9 +1270,14 @@ def build_payload(m_start, m_end):
         return out
 
     offer_trend = _offer_trend()
+    # Total Kenya on-hand = live Odoo on-hand across ALL standalone bags in the Kenya
+    # shops (not just offer products, and never the sheet). kenyaStock is the offer
+    # products' share of that total.
+    _kenya_all_total = sum(_odoo_stock_for(_KENYA_SHOP_CODES).values())
     offer_kpis = {
         "combos": offer.get("comboCount"), "powerDeals": offer.get("powerDealCount"),
-        "kenyaStock": offer.get("totalKenyaStock"), "kenyaTotal": 10192,
+        "kenyaStock": sum(stock_map.values()),
+        "kenyaTotal": _kenya_all_total,   # live Odoo on-hand total (all Kenya-shop bags)
     }
 
     # ── Top bags clients keep pairing in self-made combos ─────────
@@ -1458,7 +1466,7 @@ def build_payload(m_start, m_end):
     regions = {
         "sinza": {
             "label": "Sinza", "currency": "TSh",
-            "totalStock": offer.get("totalSinzaStock"),
+            "totalStock": sum(_sz_stock.values()),   # live Odoo on-hand total
             "groups": _groups([
                 ("combos",   "Combos",   "sinzaCombos",   "sinzaComboHeaders"),
                 ("singles",  "Singles",  "sinzaSingles",  "sinzaSinglesHeaders"),
@@ -1467,7 +1475,7 @@ def build_payload(m_start, m_end):
         },
         "uganda": {
             "label": "Uganda", "currency": "USh",
-            "totalStock": offer.get("totalUgandaStock"),
+            "totalStock": sum(_ug_stock.values()),   # live Odoo on-hand total
             "groups": _groups([
                 ("combos",  "Combos",  "ugCombos",  "ugComboHeaders"),
                 ("singles", "Singles", "ugSingles", "ugSinglesHeaders"),
@@ -1569,7 +1577,7 @@ def inject(payload):
     with open(HTML, "r", encoding="utf-8") as f:
         html = f.read()
     block = ("<!-- SMC_DATA_START -->\n<script>\nconst SMC = "
-             + json.dumps(payload, ensure_ascii=False) + ";\n</script>\n<!-- SMC_DATA_END -->")
+             + json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + ";\n</script>\n<!-- SMC_DATA_END -->")
     html = re.sub(r"<!-- SMC_DATA_START -->.*?<!-- SMC_DATA_END -->", block, html, flags=re.DOTALL)
     # Embed the offer/combo data block here too, so the Monthly Report reads it from
     # this page (Offer Type Analysis has been retired). Function replacement avoids
