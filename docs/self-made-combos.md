@@ -32,6 +32,22 @@ Three areas, all scoped to the **current live month** (`report_month.live_month_
      `Jumbo + Jumbo` + `Jumbo green+Jumbo black` → JUMBO+JUMBO). They're collapsed into a
      single running card (`running_products` keeps the unmerged list for the usage calc;
      `running` is merged, carrying a `tmpls` list so weekly + component data aggregate).
+     The **weekly breakdown** (`combos_goal.weeklyDetail`, from `week_combos`) also maps
+     each product to its sheet label via `_matches_sheet`, so every Jumbo+Jumbo pairing
+     rolls into one **JUMBO+JUMBO** row per week — week 1 carries the early self-made-style
+     CBRs that ran before the official product existed, and it keeps tracking as
+     JUMBO+JUMBO from week 2 on. Self-made combos keep their own name in the breakdown.
+   - **Week-1 JUMBO+JUMBO "sold as singles" backfill** (`JJ_WK1_PAIRS_SQL`, `jj_wk1_pairs`):
+     in week 1 the combo button wasn't in use, so pairs were rung as two separate single
+     Jumbos. We count them at the **receipt level** — a sale with 2+ single Jumbos =
+     `floor(units/2)` combos (a lone single Jumbo is a genuine one-bag customer and is
+     NOT counted) — and add that to JUMBO+JUMBO's **week-1 sold + unit total** (both the
+     card `weeks[0]` and the weekly breakdown). Applied to **week 1 only** (button is used
+     from week 2). **Units only** — the credit is added *after* `monetary_implication`, so
+     revenue / discount % stay on the actual button-rung combos (the pairs' money is
+     already counted as single-bag sales). The card shows a note: "Wk 1 includes N rung as
+     single Jumbos". Validated Sep 2026: 10 rung + 51 sold-as-singles = 61 (Hilton 10,
+     Mombasa 7, Hazina 6, … matching the shops' own tallies).
    - **The sheet is the source of truth for the monthly running list** — any extra combo
      in Odoo that isn't on it is self-made. If the sheet can't be read, the code falls
      back to the old heuristic (`include_all` AND not CBR).
@@ -166,7 +182,10 @@ performing shop in its own region**. The shop→region map is read from
 - **Rung** — combo-product units recorded in Odoo this month (`COMBO_BY_SHOP_SQL`),
   matched to the combo via `_matches_sheet`.
 - **Adherence %** = rung ÷ expected; rows sorted worst-first, so an under-rung combo
-  (e.g. Jumbo+Jumbo, rung ≈ 1 vs expected 45) leads.
+  leads. (The original Jumbo+Jumbo finding was `rung ≈ 1` vs a sheet 45 — the tills rang
+  two **single** Jumbos, and some got tangled with self-made CBR pairings. **Now resolved:**
+  the bag-composition match routes every all-Jumbo pairing to the running combo, which
+  rings ~84/mo — no self-made leakage.)
 - **Per-shop** (click a row): each shop's `rung` and `implied` "potential" — the combos
   that shop's single-bag sales *could* have formed, computed as the **min across slots**
   of component-bag singles ÷ how many that slot repeats (`SINGLES_BY_SHOP_SQL`,
@@ -174,8 +193,28 @@ performing shop in its own region**. The shop→region map is read from
   separate bags). **`implied` is an upper bound** — most single-bag sales are genuine
   standalone demand — so it's a ceiling to investigate, never a target.
 
+**Reading `rung` vs `pot.` (green vs salmon).** The green **`rung` is the number of combos
+actually sold** on the combo button; `pot.` is the ceiling of combos the shop's loose-bag
+sales *could* have formed. The gap is **opportunity, not lost money** — a combo is a ~20%
+bundling *discount* (see Monetary implication), so a pair sold as two **separate full-price
+bags** earns **more** than the same pair rung as a combo. Worked example — Hilton,
+`AMAYA/ELYSE+MOON/NIZANA` (combo KES 3,799 vs KES 4,753 for the two bags apart):
+
+| Scenario | Revenue |
+|---|--:|
+| Ring all 42 as combos | 42 × 3,799 = **159,558** |
+| 26 combos + 16 sold separately | 26 × 3,799 + 16 × 4,753 = **174,822** |
+| Difference | **+15,264** for the mix |
+
+So `pot.` measures **attachment opportunity**: chasing it only wins where the discount is
+what tips a one-bag customer into buying two. Where the customer would have bought both
+bags anyway, keeping them as full-price singles is the better outcome — a "missed" combo
+is not automatically a loss.
+
 This exists because combos sold as individual bags never enter Odoo as combos (the
-Jumbo+Jumbo finding: 45 on the sheet, 1 in Odoo — the tills rang two single Jumbos).
+original Jumbo+Jumbo finding: 45 on the sheet, 1 in Odoo — the tills rang two single
+Jumbos). That specific case is now fixed (all-Jumbo pairings route to the running combo,
+~84 rung/mo); the panel remains to catch the same pattern on other combos.
 
 ## Rank chip — follows the active Sort filter (whole menu)
 

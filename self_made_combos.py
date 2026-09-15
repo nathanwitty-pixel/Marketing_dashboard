@@ -863,6 +863,28 @@ WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid') AND pl
 GROUP BY shop, UPPER(pt."name")
 """
 
+# Week-1 Jumbo+Jumbo "combos sold as singles": before the official combo button was in
+# use, staff rang the pair as two separate single Jumbos. Count them at the RECEIPT level
+# — a sale with 2+ single Jumbos on it = floor(units/2) combos (so a lone Jumbo, a genuine
+# one-bag customer, is NOT counted). Kenya tills, week 1 only.
+JJ_WK1_PAIRS_SQL = f"""
+WITH jj AS (
+  SELECT p.id AS oid, SUM(pl.qty)::int AS jumbos
+  FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+  LEFT JOIN pos_session ps ON p.session_id = ps.id
+  LEFT JOIN pos_config pc ON ps.config_id = pc.id
+  LEFT JOIN product_product pp ON pl.product_id = pp.id
+  LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
+  WHERE {_WK_EXPR} = 1
+    AND p.date_order::date BETWEEN :start_date AND :end_date
+    AND p.state IN ('done', 'paid') AND pl.qty > 0
+    AND pt."name" ILIKE '%jumbo%' AND pt."name" NOT LIKE '%+%'
+    AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
+  GROUP BY p.id
+)
+SELECT COALESCE(SUM(jumbos / 2), 0)::int AS pairs FROM jj WHERE jumbos >= 2
+"""
+
 
 def _combo_button_usage(m_start, m_end, offer, sheet_slots, running):
     """Per running combo: units rung through the combo button (Odoo) vs the sheet's
@@ -1177,8 +1199,33 @@ def build_payload(m_start, m_end):
             per_combo.setdefault(t, {})[w] = u
             max_wk = max(max_wk, w)
             _nm = str(x["product"]).strip()
+            # Collapse every running-combo VARIANT to its offer-sheet label so the weekly
+            # breakdown tracks one line per official combo. All Jumbo+Jumbo pairings — the
+            # early self-made-style CBRs (Jumbo Grey + Jumbo Black, …) that ran before the
+            # official product existed AND the official "Jumbo + Jumbo" — roll up into a
+            # single JUMBO+JUMBO row each week (so week 1 carries them all, and it keeps
+            # tracking as JUMBO+JUMBO from week 2 on). Self-made combos keep their own name.
+            _lbl = _matches_sheet(_nm, sheet_slots) or _nm
             _wc = week_combos.setdefault(w, {})
-            _wc[_nm] = _wc.get(_nm, 0) + u
+            _wc[_lbl] = _wc.get(_lbl, 0) + u
+
+    # ── Week-1 JUMBO+JUMBO backfill: combos rung as two single Jumbos ──────────
+    # In week 1 the official Jumbo+Jumbo button wasn't in use yet, so the pairs were rung
+    # as separate single Jumbos. Count them at the receipt level and credit JUMBO+JUMBO's
+    # week-1 sales (units only; revenue stays button-based — see monetary_implication).
+    # Week 1 ONLY: from week 2 the button is used, so those weeks need no adjustment.
+    jj_wk1_pairs = 0
+    try:
+        _pdf = db.run_query(JJ_WK1_PAIRS_SQL, {"start_date": m_start.isoformat(),
+                                               "end_date": m_end.isoformat(),
+                                               "anchor": _anchor_sunday(m_start)})
+        if _pdf is not None and not _pdf.empty:
+            jj_wk1_pairs = int(_pdf.iloc[0]["pairs"] or 0)
+    except Exception:                                        # noqa: BLE001
+        jj_wk1_pairs = 0
+    if jj_wk1_pairs:
+        _w1 = week_combos.setdefault(1, {})
+        _w1["JUMBO+JUMBO"] = _w1.get("JUMBO+JUMBO", 0) + jj_wk1_pairs
 
     # September-so-far combos (all combos) + August baseline
     sept_wk = _month_weekly(m_start, m_end)
@@ -1523,6 +1570,19 @@ def build_payload(m_start, m_end):
         "selfMade": sorted(mi_self, key=lambda x: -x["implication"]),
         "runTotals": _mi_tot(mi_running), "smTotals": _mi_tot(mi_self),
     }
+
+    # Credit the week-1 "sold as singles" Jumbo+Jumbo pairs to the JUMBO+JUMBO card's
+    # week-1 sold + unit total. Done AFTER monetary_implication so revenue/discount stay
+    # on the actual button-rung combos (the pairs' money is already counted as singles).
+    if jj_wk1_pairs:
+        for _rc in running_cards:
+            if (_rc.get("sheetLabel") or "").upper() == "JUMBO+JUMBO":
+                if _rc.get("weeks"):
+                    _rc["weeks"][0]["sold"] = (_rc["weeks"][0]["sold"] or 0) + jj_wk1_pairs
+                _rc["total"] = (_rc.get("total") or 0) + jj_wk1_pairs
+                _rc["avg"] = round(_rc["total"] / max_wk) if max_wk else 0
+                _rc["wk1SoldAsSingles"] = jj_wk1_pairs
+                break
 
     return {
         "month": month,
