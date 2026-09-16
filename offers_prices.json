@@ -1,0 +1,828 @@
+{
+  "_lock": false,
+  "_note": "Local copy of the offers-sheet prices (price = full price col D, offer = offer price col F, category = col C). Auto-refreshed on every successful run and consulted automatically when the Google Sheet is unreachable. Set \"_lock\": true to use THIS file as the source of truth — your hand edits then win and are never overwritten by the sheet.",
+  "_source": "offers sheet 1I68VLBA1UaEcVklTT09chGXXXotVj0Ha4t7vr5NOTtg (worksheet 0)",
+  "_updated": "2026-09-16 12:42:35",
+  "offers": {
+    "ACE": {
+      "category": "SLING",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "ADRIAN": {
+      "category": "BACKPACK",
+      "offer": 2600.0,
+      "price": 3000.0
+    },
+    "ALPHA TRAVEL": {
+      "category": "TRAVEL",
+      "offer": 3200.0,
+      "price": 3600.0
+    },
+    "AMARI": {
+      "category": "BRIEFCASE",
+      "offer": 2400.0,
+      "price": 2800.0
+    },
+    "AMAYA": {
+      "category": "HANDBAG",
+      "offer": 2800.0,
+      "price": 3200.0
+    },
+    "AMORA": {
+      "category": "SLING",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "ANA": {
+      "category": "SLING",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "ANKARA TRAVEL": {
+      "category": "TRAVEL",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "ANTITHEFT": {
+      "category": "BACKPACK",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "ARIA PRO": {
+      "category": "SLING",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "ARIA SLING": {
+      "category": "SLING",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "ARLO MAN BAG": {
+      "category": "MAN BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "ARM BAND": {
+      "category": "SPORT",
+      "offer": 800.0,
+      "price": 1200.0
+    },
+    "ATLAS": {
+      "category": "BACKPACK",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "AURORA": {
+      "category": "HANDBAG",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "AVANA HB": {
+      "category": "SLING",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "BABY BAG": {
+      "category": "BABY BAG",
+      "offer": 4200.0,
+      "price": 4600.0
+    },
+    "BELLO": {
+      "category": "BACKPACK",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "BELT BAG": {
+      "category": "WAIST BAG",
+      "offer": 1000.0,
+      "price": 1400.0
+    },
+    "BIG MAN BAG": {
+      "category": "MAN BAG",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "BLISS": {
+      "category": "CHEST BAG",
+      "offer": 1600.0,
+      "price": 2000.0
+    },
+    "BONITA": {
+      "category": "TRAVEL",
+      "offer": 3500.0,
+      "price": 3900.0
+    },
+    "BRIEF CASE": {
+      "category": "BRIEFCASE",
+      "offer": 2400.0,
+      "price": 2800.0
+    },
+    "BUTTERFLY SLING": {
+      "category": "SLING",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "CAIRO BP": {
+      "category": "BACKPACK",
+      "offer": 1600.0,
+      "price": 2000.0
+    },
+    "CALLISTA": {
+      "category": "TRAVEL",
+      "offer": 2400.0,
+      "price": 2800.0
+    },
+    "CATHY HANDBAG": {
+      "category": "HANDBAG",
+      "offer": 1600.0,
+      "price": 2000.0
+    },
+    "CELINE SLING BAG": {
+      "category": "SLING",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "CESS": {
+      "category": "HANDBAG",
+      "offer": 3100.0,
+      "price": 3500.0
+    },
+    "CHARLOTTE": {
+      "category": "SLING",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "CHASE": {
+      "category": "THIGH BAG",
+      "offer": 1100.0,
+      "price": 1500.0
+    },
+    "CLAIRE HANDBAG": {
+      "category": "HANDBAG",
+      "offer": 2600.0,
+      "price": 3000.0
+    },
+    "CLEO": {
+      "category": "HANDBAG",
+      "offer": 1600.0,
+      "price": 2000.0
+    },
+    "CODE 3": {
+      "category": "BACKPACK",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "CODE 4 ANKARA": {
+      "category": "BACKPACK",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "CODE 9": {
+      "category": "BACKPACK",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "COLLEGE HB": {
+      "category": "HANDBAG",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "COSMO": {
+      "category": "SCHOOL BAG",
+      "offer": 1500.0,
+      "price": 1900.0
+    },
+    "DARIA": {
+      "category": "BACKPACK",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "DELICA": {
+      "category": "HANDBAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "DIAPER BAG": {
+      "category": "BABY BAG",
+      "offer": 4200.0,
+      "price": 4600.0
+    },
+    "DON": {
+      "category": "MAN BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "DOUBLE PRESS": {
+      "category": "BACKPACK",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "ELEKTRA": {
+      "category": "THIGH BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "ELLA SLING": {
+      "category": "SLING",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "ELYSE": {
+      "category": "HANDBAG",
+      "offer": 2700.0,
+      "price": 3100.0
+    },
+    "EROS": {
+      "category": "THIGH BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "ESMERALDA": {
+      "category": "BACKPACK",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "FABELA": {
+      "category": "TRAVEL",
+      "offer": 2000.0,
+      "price": 2400.0
+    },
+    "FANNY AMAPIANO": {
+      "category": "WAIST BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "FANNY PACK": {
+      "category": "WAIST BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "FAYOLA": {
+      "category": "MESSENGER",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "FENA CHEST": {
+      "category": "",
+      "offer": 1400.0,
+      "price": 1800.0
+    },
+    "FENA SETS": {
+      "category": "",
+      "offer": 3600.0,
+      "price": 4000.0
+    },
+    "FEROZ": {
+      "category": "BRIEFCASE",
+      "offer": 2700.0,
+      "price": 3100.0
+    },
+    "FOXY": {
+      "category": "SLING",
+      "offer": 1600.0,
+      "price": 2000.0
+    },
+    "GIFT BAG": {
+      "category": "GIFT BAG",
+      "offer": -150.0,
+      "price": 250.0
+    },
+    "GYM BAG": {
+      "category": "SPORT",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "HOOD": {
+      "category": "HOOD",
+      "offer": 2100.0,
+      "price": 2500.0
+    },
+    "ICON": {
+      "category": "HANDBAG",
+      "offer": 2600.0,
+      "price": 3000.0
+    },
+    "IMANI": {
+      "category": "HANDBAG",
+      "offer": 2600.0,
+      "price": 3000.0
+    },
+    "JABARI": {
+      "category": "BACKPACK",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "JADE": {
+      "category": "BRIEFCASE",
+      "offer": 2700.0,
+      "price": 3100.0
+    },
+    "JAMELA": {
+      "category": "HANDBAG",
+      "offer": 3200.0,
+      "price": 3600.0
+    },
+    "JAYDEN MAN": {
+      "category": "MAN BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "JUMBO": {
+      "category": "TRAVEL",
+      "offer": 3200.0,
+      "price": 3600.0
+    },
+    "KAI": {
+      "category": "BACKPACK",
+      "offer": 2400.0,
+      "price": 2800.0
+    },
+    "KANJI": {
+      "category": "SLING",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "KAOS": {
+      "category": "BACKPACK",
+      "offer": 1500.0,
+      "price": 1900.0
+    },
+    "KARINA": {
+      "category": "HANDBAG",
+      "offer": 2100.0,
+      "price": 2500.0
+    },
+    "KATE": {
+      "category": "SLING",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "KAYLA": {
+      "category": "HANDBAG",
+      "offer": 1600.0,
+      "price": 2000.0
+    },
+    "KAZ": {
+      "category": "TRAVEL",
+      "offer": 1600.0,
+      "price": 2000.0
+    },
+    "LADONA": {
+      "category": "SLING",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "LAMORA": {
+      "category": "SLING",
+      "offer": 4000.0,
+      "price": 4000.0
+    },
+    "LANKA": {
+      "category": "HANDBAG",
+      "offer": 1400.0,
+      "price": 1800.0
+    },
+    "LEGACY": {
+      "category": "BRIEFCASE",
+      "offer": 3100.0,
+      "price": 3500.0
+    },
+    "LEILA": {
+      "category": "SLING",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "LIAM": {
+      "category": "TRAVEL",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "LITE": {
+      "category": "TRAVEL",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "LOLA": {
+      "category": "HANDBAG",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "LOOP BP": {
+      "category": "BACKPACK",
+      "offer": 2300.0,
+      "price": 2700.0
+    },
+    "LOTUS": {
+      "category": "BRIEFCASE",
+      "offer": 2700.0,
+      "price": 3100.0
+    },
+    "LUCA": {
+      "category": "BABY BAG",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "LUNA": {
+      "category": "MAN BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "LUNA AMAPIANO": {
+      "category": "MAN BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "LUNCHSET": {
+      "category": "LUNCH BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "MAKE UP POUCH": {
+      "category": "MAKE UP",
+      "offer": 700.0,
+      "price": 1100.0
+    },
+    "MAN BAG": {
+      "category": "MAN BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "MANDY HB": {
+      "category": "HANDBAG",
+      "offer": 1100.0,
+      "price": 1500.0
+    },
+    "MARLEY": {
+      "category": "HANDBAG",
+      "offer": 2000.0,
+      "price": 2400.0
+    },
+    "MAYA": {
+      "category": "SLING",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "MEGA": {
+      "category": "BACKPACK",
+      "offer": 2600.0,
+      "price": 3000.0
+    },
+    "MINI MANBAG": {
+      "category": "MAN BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "MINI MAYA": {
+      "category": "HANDBAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "MINI SCHOOL": {
+      "category": "SCHOOL BAG",
+      "offer": 1400.0,
+      "price": 1800.0
+    },
+    "MINI UMBRA": {
+      "category": "CHEST BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "MINI ZURI": {
+      "category": "HANDBAG",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "MODERN TRAVEL": {
+      "category": "TRAVEL",
+      "offer": 2800.0,
+      "price": 3200.0
+    },
+    "MONAH BP": {
+      "category": "BACKPACK",
+      "offer": 1600.0,
+      "price": 2000.0
+    },
+    "MONTANA": {
+      "category": "SLING BAG",
+      "offer": 1100.0,
+      "price": 1500.0
+    },
+    "MOON BAG": {
+      "category": "SLING",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "MRADI TRAVEL": {
+      "category": "TRAVEL",
+      "offer": 3200.0,
+      "price": 3600.0
+    },
+    "MYSTIQUE": {
+      "category": "MESSENGER",
+      "offer": 2700.0,
+      "price": 3100.0
+    },
+    "NALA": {
+      "category": "HANDBAG",
+      "offer": 5000.0,
+      "price": 5000.0
+    },
+    "NEO MAN": {
+      "category": "MAN BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "NEW WASH BAG": {
+      "category": "WASHBAG",
+      "offer": 800.0,
+      "price": 1000.0
+    },
+    "NINA": {
+      "category": "HANDBAG",
+      "offer": 2400.0,
+      "price": 2800.0
+    },
+    "NIZANA": {
+      "category": "SLING",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "NOVA": {
+      "category": "BRIEFCASE",
+      "offer": 2700.0,
+      "price": 3100.0
+    },
+    "NYLA BP": {
+      "category": "BACKPACK",
+      "offer": 2600.0,
+      "price": 3000.0
+    },
+    "OVAL HANDBAG": {
+      "category": "HANDBAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "PIONEER": {
+      "category": "BACKPACK",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "POCKET TRAVEL": {
+      "category": "TRAVEL",
+      "offer": 3200.0,
+      "price": 3600.0
+    },
+    "POH HAIRISTIC": {
+      "category": "MAKE UP",
+      "offer": 600.0,
+      "price": 1000.0
+    },
+    "PRIME": {
+      "category": "BACKPACK",
+      "offer": 2400.0,
+      "price": 2800.0
+    },
+    "REESTO CHEST": {
+      "category": "CHEST BAG",
+      "offer": 1300.0,
+      "price": 1700.0
+    },
+    "REMI": {
+      "category": "BACKPACK",
+      "offer": 2300.0,
+      "price": 2700.0
+    },
+    "REO TRAVEL": {
+      "category": "TRAVEL",
+      "offer": 2400.0,
+      "price": 2800.0
+    },
+    "ROZA": {
+      "category": "HANDBAG",
+      "offer": 3500.0,
+      "price": 3900.0
+    },
+    "SAFIRI BP": {
+      "category": "BACKPACK",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "SAFIRI TRAVEL": {
+      "category": "TRAVEL",
+      "offer": 3200.0,
+      "price": 3600.0
+    },
+    "SANTANA": {
+      "category": "HANDBAG",
+      "offer": 2100.0,
+      "price": 2500.0
+    },
+    "SARAI": {
+      "category": "TRAVEL",
+      "offer": 3700.0,
+      "price": 4100.0
+    },
+    "SATCHEL": {
+      "category": "BRIEFCASE",
+      "offer": 2700.0,
+      "price": 3100.0
+    },
+    "SATIS": {
+      "category": "TRAVEL",
+      "offer": 2700.0,
+      "price": 3100.0
+    },
+    "SAVANNAH SLING": {
+      "category": "SLING",
+      "offer": 3100.0,
+      "price": 3500.0
+    },
+    "SCARLET": {
+      "category": "HANDBAG",
+      "offer": 1800.0,
+      "price": 2200.0
+    },
+    "SCHOOL BAG": {
+      "category": "SCHOOL BAG",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "SCOOBY": {
+      "category": "SCHOOL BAG",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "SHUGLI BACKPACK": {
+      "category": "BACKPACK",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "SIERRA HANDBAG": {
+      "category": "HANDBAG",
+      "offer": 2300.0,
+      "price": 2700.0
+    },
+    "SKYE HB": {
+      "category": "HANDBAG",
+      "offer": 1600.0,
+      "price": 2000.0
+    },
+    "SLEEVE 1": {
+      "category": "BRIEFCASE",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "SLEEVE 2": {
+      "category": "BRIEFCASE",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "SPARK": {
+      "category": "SCHOOL BAG",
+      "offer": 2100.0,
+      "price": 2500.0
+    },
+    "SPLASH BACKPACK": {
+      "category": "SPORT",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "TAJI": {
+      "category": "TRAVEL",
+      "offer": 2600.0,
+      "price": 3000.0
+    },
+    "TITAN TRAVEL": {
+      "category": "TRAVEL",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "TRAVEL": {
+      "category": "TRAVEL",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "TRAVOLTA": {
+      "category": "TRAVEL",
+      "offer": 3200.0,
+      "price": 3600.0
+    },
+    "TRECENTO": {
+      "category": "SLING",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "TRIO": {
+      "category": "MAN BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "TRIO MIO": {
+      "category": "MAN BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "TWAIN TRAVEL": {
+      "category": "TRAVEL",
+      "offer": 2600.0,
+      "price": 3000.0
+    },
+    "TYLER": {
+      "category": "BACKPACK",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "UMBRA": {
+      "category": "CHEST BAG",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "VAL": {
+      "category": "SLING",
+      "offer": 1700.0,
+      "price": 2100.0
+    },
+    "VANITY": {
+      "category": "MAKE UP",
+      "offer": 700.0,
+      "price": 1100.0
+    },
+    "VENUS": {
+      "category": "HANDBAG",
+      "offer": 2100.0,
+      "price": 2500.0
+    },
+    "VOYAGE": {
+      "category": "TRAVEL",
+      "offer": 3500.0,
+      "price": 3900.0
+    },
+    "WANDER LUXE": {
+      "category": "TRAVEL",
+      "offer": 2700.0,
+      "price": 3100.0
+    },
+    "WASHBAG": {
+      "category": "WASHBAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "YARA": {
+      "category": "HANDBAG",
+      "offer": 2000.0,
+      "price": 2400.0
+    },
+    "ZANE MAN": {
+      "category": "MAN BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "ZELDA": {
+      "category": "WAISTBAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "ZELUS": {
+      "category": "BACKPACK",
+      "offer": 2200.0,
+      "price": 2600.0
+    },
+    "ZENO": {
+      "category": "TRAVEL",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "ZIARA MAN BAG": {
+      "category": "MAN BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "ZING SLING": {
+      "category": "SLING",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "ZIPPED LUNCHSET": {
+      "category": "LUNCH BAG",
+      "offer": 1200.0,
+      "price": 1600.0
+    },
+    "ZOEZI": {
+      "category": "SPORT",
+      "offer": 3200.0,
+      "price": 3600.0
+    },
+    "ZULA": {
+      "category": "MAN BAG",
+      "offer": 1800.0,
+      "price": 2200.0
+    },
+    "ZURI": {
+      "category": "HANDBAG",
+      "offer": 3200.0,
+      "price": 3600.0
+    }
+  }
+}

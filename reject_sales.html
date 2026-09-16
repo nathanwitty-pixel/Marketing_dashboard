@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reject Sale — Kitengela</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0b0d16; color: #94a3b8;
+         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; padding: 1.1rem 1.2rem 3rem; }
+  h1 { color: #f1f5f9; font-size: 1.35rem; margin: 0 0 0.15rem; }
+  .sub { font-size: 0.82rem; color: #64748b; margin-bottom: 0.9rem; }
+  .note { font-size: 0.72rem; color: #7c8aa0; background: rgba(34,211,238,0.06);
+          border: 1px solid #223244; border-radius: 8px; padding: 0.5rem 0.75rem; margin-bottom: 1rem; }
+  .kpis { display: flex; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
+  .kpi { background: #1e2130; border: 1px solid #2d3148; border-radius: 10px; padding: 0.7rem 0.95rem; flex: 1 1 160px; }
+  .kpi .l { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.09em; color: #64748b; }
+  .kpi .v { font-size: 1.25rem; font-weight: 800; color: #f1f5f9; font-variant-numeric: tabular-nums; margin-top: 0.15rem; }
+  .kpi .s { font-size: 0.68rem; color: #64748b; }
+  .card { background: #1e2130; border: 1px solid #2d3148; border-radius: 12px; padding: 1rem 1.15rem; margin-bottom: 1.1rem; }
+  .card h2 { color: #f1f5f9; font-size: 1rem; margin: 0 0 0.15rem; }
+  .card .cap { font-size: 0.74rem; color: #64748b; margin-bottom: 0.75rem; }
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  th, td { padding: 0.5rem 0.7rem; text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child, th.l, td.l { text-align: left; }
+  thead th { color: #94a3b8; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em;
+             border-bottom: 1px solid #2d3148; cursor: pointer; user-select: none; }
+  thead th.sortable:hover { color: #e2e8f0; }
+  tbody td { border-top: 1px solid #23273b; font-variant-numeric: tabular-nums; color: #cbd5e1; }
+  tbody tr:hover { background: #252840; }
+  .name { color: #f8fafc; font-weight: 600; }
+  .pill { font-size: 0.6rem; font-weight: 700; padding: 0.12rem 0.45rem; border-radius: 5px; }
+  .empty { border: 1px dashed #2d3148; border-radius: 10px; padding: 1.4rem; text-align: center; color: #64748b; font-size: 0.85rem; }
+  .tiers { display: flex; gap: 0.7rem; flex-wrap: wrap; }
+  .tier { flex: 1 1 200px; border: 1px solid #2d3148; border-radius: 10px; padding: 0.75rem 0.9rem; background: #161a27; }
+  .tier .p { font-size: 1.35rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .tier .m { font-size: 0.72rem; color: #64748b; margin-top: 0.1rem; }
+  .tier .bar { height: 7px; border-radius: 4px; margin-top: 0.55rem; background: #0d0f1a; overflow: hidden; }
+  .tier .bar > span { display: block; height: 100%; border-radius: 4px; }
+  .t1000 { color: #6ee7b7; } .b1000 { background: #10b981; }
+  .t1200 { color: #7dd3fc; } .b1200 { background: #38bdf8; }
+  .t1500 { color: #c4b5fd; } .b1500 { background: #8b5cf6; }
+  .flag-below { color: #fca5a5; } .flag-thin { color: #fcd34d; } .flag-nobom { color: #f0abfc; } .flag-pinned { color: #93c5fd; }
+  .search { width: 100%; max-width: 420px; background: #161824; border: 1px solid #2d3148; color: #e2e8f0;
+            border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.78rem; margin-bottom: 0.55rem; outline: none; }
+  .search:focus { border-color: #6366f1; }
+</style>
+</head>
+<body>
+  <h1>Reject Sale <span style="color:#8b5cf6">— <span id="rj-loc">Kitengela</span></span></h1>
+  <div class="sub" id="rj-sub">Clearance pricing for the reject stock — every bag put into a 1,000 / 1,200 / 1,500 tier by its BOM cost.</div>
+  <div class="note" id="rj-note"></div>
+
+  <div class="kpis" id="rj-kpis"></div>
+
+  <div class="card">
+    <h2>Price tiers</h2>
+    <div class="cap">How the reject stock splits across the three sale prices — bag count, units to clear and the revenue each tier brings if it all sells.</div>
+    <div class="tiers" id="rj-tiers"></div>
+  </div>
+
+  <div class="card">
+    <h2>Pricing board</h2>
+    <div class="cap" id="rj-rule"></div>
+    <input id="rj-search" class="search" type="text" placeholder="Search a bag (e.g. Jumbo, Travel)…">
+    <div id="rj-count" style="font-size:0.72rem;color:#64748b;margin-bottom:0.4rem"></div>
+    <div class="tbl-wrap"><table id="rj-table"><thead></thead><tbody></tbody></table></div>
+    <div id="rj-flags" style="margin-top:0.7rem;font-size:0.72rem;color:#64748b;line-height:1.5"></div>
+  </div>
+
+<!-- RJ_DATA_START -->
+<script>const RJ = {"location":"Kitengela","generated":"16 Sep 2026","tiers":[1000,1200,1500],"bands":{"b1":650,"b2":900,"thin":250,"default":1200},"costSource":"BOM sheet (live — downloaded copy refreshed)","bags":[{"bag":"JUMBO","canon":null,"units":27,"cost":1122,"price":1500,"tier":1500,"pinned":false,"marginUnit":378,"marginPct":25.2,"revenue":40500,"marginTotal":10211,"flag":"","colours":[{"c":"GREY","u":14},{"c":"BLACK","u":6},{"c":"BROWN","u":6},{"c":"NUDE","u":1}]},{"bag":"MAN BAG","canon":null,"units":32,"cost":662,"price":1200,"tier":1200,"pinned":false,"marginUnit":538,"marginPct":44.8,"revenue":38400,"marginTotal":17209,"flag":"","colours":[{"c":"BLACK","u":13},{"c":"GREY","u":10},{"c":"BROWN","u":5},{"c":"NUDE","u":2},{"c":"GREEN","u":2}]},{"bag":"KAI","canon":null,"units":24,"cost":1321,"price":1500,"tier":1500,"pinned":false,"marginUnit":179,"marginPct":11.9,"revenue":36000,"marginTotal":4295,"flag":"thin","colours":[{"c":"BLACK","u":23},{"c":"BROWN","u":1}]},{"bag":"TRAVEL","canon":null,"units":19,"cost":1020,"price":1500,"tier":1500,"pinned":false,"marginUnit":480,"marginPct":32.0,"revenue":28500,"marginTotal":9111,"flag":"","colours":[{"c":"BLACK","u":9},{"c":"GREY","u":4},{"c":"NUDE","u":3},{"c":"BROWN","u":2},{"c":"GREEN","u":1}]},{"bag":"ARIA SLING","canon":null,"units":28,"cost":531,"price":1000,"tier":1000,"pinned":false,"marginUnit":469,"marginPct":46.9,"revenue":28000,"marginTotal":13119,"flag":"","colours":[{"c":"BLACK","u":14},{"c":"GREY","u":7},{"c":"CRACKED","u":6},{"c":"SPICE","u":1}]},{"bag":"MEGA BAGPACK","canon":"MEGA","units":18,"cost":1097,"price":1500,"tier":1500,"pinned":false,"marginUnit":403,"marginPct":26.8,"revenue":27000,"marginTotal":7248,"flag":"","colours":[{"c":"BROWN","u":14},{"c":"BLACK","u":3},{"c":"GREEN","u":1}]},{"bag":"MINI MAYA","canon":null,"units":23,"cost":448,"price":1000,"tier":1000,"pinned":false,"marginUnit":552,"marginPct":55.2,"revenue":23000,"marginTotal":12688,"flag":"","colours":[{"c":"WOOVEN BLACK","u":14},{"c":"WOOVEN MAROON","u":8},{"c":"WOOVEN PURPLE","u":1}]},{"bag":"CODE 3","canon":null,"units":19,"cost":825,"price":1200,"tier":1200,"pinned":false,"marginUnit":375,"marginPct":31.2,"revenue":22800,"marginTotal":7120,"flag":"","colours":[{"c":"BLACK","u":7},{"c":"GREY","u":5},{"c":"GREEN","u":5},{"c":"NUDE","u":1},{"c":"BROWN","u":1}]},{"bag":"KATE","canon":null,"units":19,"cost":737,"price":1200,"tier":1200,"pinned":false,"marginUnit":463,"marginPct":38.5,"revenue":22800,"marginTotal":8789,"flag":"","colours":[{"c":"BLACK","u":8},{"c":"GREY","u":5},{"c":"DARK BROWN","u":2},{"c":"CHOCOLATE","u":2},{"c":"SPICE","u":1},{"c":"CRACKED","u":1}]},{"bag":"PRIME","canon":null,"units":15,"cost":1030,"price":1500,"tier":1500,"pinned":false,"marginUnit":470,"marginPct":31.3,"revenue":22500,"marginTotal":7045,"flag":"","colours":[{"c":"BLACK","u":12},{"c":"BROWN","u":1},{"c":"GREEN","u":1},{"c":"GREY","u":1}]},{"bag":"SCHOOL BAG","canon":null,"units":15,"cost":955,"price":1500,"tier":1500,"pinned":false,"marginUnit":545,"marginPct":36.4,"revenue":22500,"marginTotal":8182,"flag":"","colours":[{"c":"BLACK","u":8},{"c":"BROWN","u":4},{"c":"GREY","u":3}]},{"bag":"MOON BAGS","canon":"MOON BAG","units":21,"cost":425,"price":1000,"tier":1000,"pinned":false,"marginUnit":575,"marginPct":57.5,"revenue":21000,"marginTotal":12079,"flag":"","colours":[{"c":"BLACK","u":10},{"c":"CRACKED","u":5},{"c":"DARK BROWN","u":2},{"c":"SPICE","u":1},{"c":"GREY","u":1},{"c":"RED","u":1},{"c":"CHOCOLATE BROWN","u":1}]},{"bag":"ELYSE","canon":null,"units":13,"cost":1246,"price":1500,"tier":1500,"pinned":false,"marginUnit":254,"marginPct":16.9,"revenue":19500,"marginTotal":3302,"flag":"","colours":[{"c":"BLACK","u":7},{"c":"CRACKED","u":2},{"c":"GREY","u":1},{"c":"D.BROWN","u":1},{"c":"SPICE","u":1},{"c":"CHOCOLATE","u":1}]},{"bag":"MINI UMBRA","canon":null,"units":17,"cost":465,"price":1000,"tier":1000,"pinned":false,"marginUnit":535,"marginPct":53.5,"revenue":17000,"marginTotal":9095,"flag":"","colours":[{"c":"BLACK","u":13},{"c":"GREY","u":3},{"c":"SPICE","u":1}]},{"bag":"SAFIRI TRAVEL","canon":null,"units":11,"cost":1441,"price":1500,"tier":1500,"pinned":false,"marginUnit":59,"marginPct":3.9,"revenue":16500,"marginTotal":644,"flag":"thin","colours":[{"c":"GREY","u":7},{"c":"BLACK","u":2},{"c":"GREEN","u":2}]},{"bag":"BIG MAN BAG","canon":null,"units":13,"cost":733,"price":1200,"tier":1200,"pinned":false,"marginUnit":467,"marginPct":38.9,"revenue":15600,"marginTotal":6072,"flag":"","colours":[{"c":"BLACK","u":5},{"c":"BROWN","u":4},{"c":"GREY","u":3},{"c":"NUDE","u":1}]},{"bag":"ZANE MAN","canon":null,"units":13,"cost":659,"price":1200,"tier":1200,"pinned":false,"marginUnit":541,"marginPct":45.1,"revenue":15600,"marginTotal":7037,"flag":"","colours":[{"c":"BLACK","u":6},{"c":"CHOCOLATE","u":5},{"c":"BEIGE","u":1},{"c":"GREY","u":1}]},{"bag":"CLAIRE HANDBAG","canon":null,"units":10,"cost":1307,"price":1500,"tier":1500,"pinned":false,"marginUnit":193,"marginPct":12.9,"revenue":15000,"marginTotal":1932,"flag":"thin","colours":[{"c":"SPICE","u":7},{"c":"BLACK","u":2},{"c":"W.MAROON","u":1}]},{"bag":"FABELA","canon":null,"units":9,"cost":1076,"price":1500,"tier":1500,"pinned":false,"marginUnit":424,"marginPct":28.3,"revenue":13500,"marginTotal":3818,"flag":"","colours":[{"c":"BLACK","u":7},{"c":"BROWN","u":2}]},{"bag":"SKYE","canon":"SKYE HB","units":13,"cost":432,"price":1000,"tier":1000,"pinned":false,"marginUnit":568,"marginPct":56.8,"revenue":13000,"marginTotal":7384,"flag":"","colours":[{"c":"BLACK","u":7},{"c":"MAROON","u":6}]},{"bag":"ANTITHEFT","canon":null,"units":8,"cost":908,"price":1500,"tier":1500,"pinned":false,"marginUnit":592,"marginPct":39.5,"revenue":12000,"marginTotal":4739,"flag":"","colours":[{"c":"BROWN","u":4},{"c":"BLACK","u":2},{"c":"GREEN","u":2}]},{"bag":"FEROZ","canon":null,"units":8,"cost":1210,"price":1500,"tier":1500,"pinned":false,"marginUnit":290,"marginPct":19.3,"revenue":12000,"marginTotal":2321,"flag":"","colours":[{"c":"BLACK","u":6},{"c":"GREY","u":1},{"c":"GREEN","u":1}]},{"bag":"NIZANA","canon":null,"units":12,"cost":466,"price":1000,"tier":1000,"pinned":false,"marginUnit":534,"marginPct":53.4,"revenue":12000,"marginTotal":6403,"flag":"","colours":[{"c":"CRACKED","u":7},{"c":"BLACK","u":2},{"c":"DARK BROWN","u":2},{"c":"SPICE","u":1}]},{"bag":"AMAYA","canon":null,"units":7,"cost":1124,"price":1500,"tier":1500,"pinned":false,"marginUnit":376,"marginPct":25.1,"revenue":10500,"marginTotal":2635,"flag":"","colours":[{"c":"BLACK TT","u":3},{"c":"CHOCO","u":2},{"c":"SPICE","u":1},{"c":"GREY","u":1}]},{"bag":"BELT BAG","canon":null,"units":10,"cost":397,"price":1000,"tier":1000,"pinned":false,"marginUnit":603,"marginPct":60.3,"revenue":10000,"marginTotal":6029,"flag":"","colours":[{"c":"BLACK","u":4},{"c":"RED","u":1},{"c":"CRACKED","u":1},{"c":"SPICE","u":1},{"c":"GREY","u":1},{"c":"CHOCOLATE","u":1},{"c":"DARK BROWN","u":1}]},{"bag":"MONAH BP","canon":null,"units":8,"cost":680,"price":1200,"tier":1200,"pinned":false,"marginUnit":520,"marginPct":43.3,"revenue":9600,"marginTotal":4161,"flag":"","colours":[{"c":"BLACK","u":7},{"c":"MAROON","u":1}]},{"bag":"AURORA","canon":null,"units":9,"cost":647,"price":1000,"tier":1000,"pinned":false,"marginUnit":353,"marginPct":35.3,"revenue":9000,"marginTotal":3180,"flag":"","colours":[{"c":"SPICE","u":4},{"c":"CRACKED","u":2},{"c":"BLACK","u":1},{"c":"BEIGE","u":1},{"c":"GREY","u":1}]},{"bag":"LOLA","canon":null,"units":6,"cost":1031,"price":1500,"tier":1500,"pinned":false,"marginUnit":469,"marginPct":31.2,"revenue":9000,"marginTotal":2812,"flag":"","colours":[{"c":"GREY","u":1},{"c":"CHOCO","u":1},{"c":"CRACKED","u":1},{"c":"RED","u":1},{"c":"SPICE","u":1},{"c":"DARK BROWN","u":1}]},{"bag":"LUNA","canon":null,"units":9,"cost":531,"price":1000,"tier":1000,"pinned":false,"marginUnit":469,"marginPct":46.9,"revenue":9000,"marginTotal":4217,"flag":"","colours":[{"c":"GREY","u":5},{"c":"GREEN","u":2},{"c":"BROWN","u":1},{"c":"NUDE","u":1}]},{"bag":"REMI","canon":null,"units":6,"cost":1380,"price":1500,"tier":1500,"pinned":false,"marginUnit":120,"marginPct":8.0,"revenue":9000,"marginTotal":720,"flag":"thin","colours":[{"c":"BLACK","u":4},{"c":"GREY","u":1},{"c":"CHOCOLATE","u":1}]},{"bag":"SCOOBY","canon":null,"units":6,"cost":1168,"price":1500,"tier":1500,"pinned":false,"marginUnit":332,"marginPct":22.1,"revenue":9000,"marginTotal":1992,"flag":"","colours":[{"c":"BLACK","u":4},{"c":"SPICE","u":1},{"c":"CRACKED","u":1}]},{"bag":"LIAM","canon":null,"units":7,"cost":877,"price":1200,"tier":1200,"pinned":false,"marginUnit":323,"marginPct":26.9,"revenue":8400,"marginTotal":2262,"flag":"","colours":[{"c":"BLACK","u":4},{"c":"NUDE","u":1},{"c":"GREEN","u":1},{"c":"GREY","u":1}]},{"bag":"NEO MAN","canon":null,"units":8,"cost":624,"price":1000,"tier":1000,"pinned":false,"marginUnit":376,"marginPct":37.6,"revenue":8000,"marginTotal":3006,"flag":"","colours":[{"c":"BROWN","u":3},{"c":"GREY","u":2},{"c":"GREEN","u":2},{"c":"BLACK","u":1}]},{"bag":"ZIPPED LUNCHSET","canon":null,"units":8,"cost":503,"price":1000,"tier":1000,"pinned":false,"marginUnit":497,"marginPct":49.7,"revenue":8000,"marginTotal":3979,"flag":"","colours":[{"c":"BLACK","u":4},{"c":"BROWN","u":2},{"c":"GREY","u":1},{"c":"GREEN","u":1}]},{"bag":"JAMELA","canon":null,"units":5,"cost":1800,"price":1500,"tier":1500,"pinned":false,"marginUnit":-300,"marginPct":-20.0,"revenue":7500,"marginTotal":-1501,"flag":"below","colours":[{"c":"BLACK","u":2},{"c":"BEIGE","u":2},{"c":"CRACKED","u":1}]},{"bag":"ZURI","canon":null,"units":5,"cost":1135,"price":1500,"tier":1500,"pinned":false,"marginUnit":365,"marginPct":24.4,"revenue":7500,"marginTotal":1827,"flag":"","colours":[{"c":"SPICE","u":2},{"c":"GREY","u":2},{"c":"BLACK","u":1}]},{"bag":"KARINA","canon":null,"units":6,"cost":817,"price":1200,"tier":1200,"pinned":false,"marginUnit":383,"marginPct":31.9,"revenue":7200,"marginTotal":2299,"flag":"","colours":[{"c":"GREY","u":3},{"c":"BLACK","u":2},{"c":"SPICE","u":1}]},{"bag":"LEILA","canon":null,"units":6,"cost":668,"price":1200,"tier":1200,"pinned":false,"marginUnit":532,"marginPct":44.4,"revenue":7200,"marginTotal":3195,"flag":"","colours":[{"c":"CRACKED","u":5},{"c":"DARK BROWN","u":1}]},{"bag":"MINI ZURI","canon":null,"units":6,"cost":766,"price":1200,"tier":1200,"pinned":false,"marginUnit":434,"marginPct":36.2,"revenue":7200,"marginTotal":2603,"flag":"","colours":[{"c":"SPICE","u":4},{"c":"CRACKED","u":1},{"c":"CHOCOLATE","u":1}]},{"bag":"ACE","canon":null,"units":7,"cost":613,"price":1000,"tier":1000,"pinned":false,"marginUnit":387,"marginPct":38.7,"revenue":7000,"marginTotal":2706,"flag":"","colours":[{"c":"BLACK TT","u":4},{"c":"BEIGE","u":2},{"c":"SPICE","u":1}]},{"bag":"AVANA HB","canon":null,"units":5,"cost":758,"price":1200,"tier":1200,"pinned":false,"marginUnit":442,"marginPct":36.8,"revenue":6000,"marginTotal":2210,"flag":"","colours":[{"c":"CRACKED","u":2},{"c":"CHOCOLATE","u":2},{"c":"BLACK","u":1}]},{"bag":"BUTTERFLY SLING","canon":null,"units":6,"cost":570,"price":1000,"tier":1000,"pinned":false,"marginUnit":430,"marginPct":43.0,"revenue":6000,"marginTotal":2581,"flag":"","colours":[{"c":"CRACKED","u":4},{"c":"GREY","u":2}]},{"bag":"CATHY HANDBAG","canon":null,"units":6,"cost":493,"price":1000,"tier":1000,"pinned":false,"marginUnit":507,"marginPct":50.7,"revenue":6000,"marginTotal":3045,"flag":"","colours":[{"c":"CHOCO","u":2},{"c":"BLACK","u":1},{"c":"SPICE","u":1},{"c":"CRACKED","u":1},{"c":"GREY","u":1}]},{"bag":"JADE","canon":null,"units":4,"cost":1135,"price":1500,"tier":1500,"pinned":false,"marginUnit":365,"marginPct":24.4,"revenue":6000,"marginTotal":1461,"flag":"","colours":[{"c":"BLACK","u":3},{"c":"GREY","u":1}]},{"bag":"LUNCHSET","canon":null,"units":6,"cost":484,"price":1000,"tier":1000,"pinned":false,"marginUnit":516,"marginPct":51.6,"revenue":6000,"marginTotal":3095,"flag":"","colours":[{"c":"BLACK","u":2},{"c":"GREEN","u":2},{"c":"NUDE","u":1},{"c":"GREY","u":1}]},{"bag":"MINI SCHOOL","canon":null,"units":6,"cost":605,"price":1000,"tier":1000,"pinned":false,"marginUnit":395,"marginPct":39.5,"revenue":6000,"marginTotal":2371,"flag":"","colours":[{"c":"GREY","u":5},{"c":"GREEN","u":1}]},{"bag":"PIONEER","canon":null,"units":4,"cost":903,"price":1500,"tier":1500,"pinned":false,"marginUnit":597,"marginPct":39.8,"revenue":6000,"marginTotal":2387,"flag":"","colours":[{"c":"BLACK","u":3},{"c":"GREY","u":1}]},{"bag":"SPACK","canon":null,"units":4,"cost":null,"price":1200,"tier":1200,"pinned":false,"marginUnit":null,"marginPct":null,"revenue":4800,"marginTotal":null,"flag":"nobom","colours":[{"c":"BROWN","u":4}]},{"bag":"COSMO","canon":null,"units":3,"cost":939,"price":1500,"tier":1500,"pinned":false,"marginUnit":561,"marginPct":37.4,"revenue":4500,"marginTotal":1682,"flag":"","colours":[{"c":"BLACK","u":2},{"c":"GREY","u":1}]},{"bag":"POCKET TRAVEL","canon":null,"units":3,"cost":1588,"price":1500,"tier":1500,"pinned":false,"marginUnit":-88,"marginPct":-5.9,"revenue":4500,"marginTotal":-265,"flag":"below","colours":[{"c":"BLACK","u":1},{"c":"GREEN","u":1},{"c":"GREY","u":1}]},{"bag":"REO TRAVEL","canon":null,"units":3,"cost":1482,"price":1500,"tier":1500,"pinned":false,"marginUnit":18,"marginPct":1.2,"revenue":4500,"marginTotal":54,"flag":"thin","colours":[{"c":"BLACK","u":1},{"c":"BROWN","u":1},{"c":"GREEN","u":1}]},{"bag":"TRECENTO","canon":null,"units":4,"cost":513,"price":1000,"tier":1000,"pinned":false,"marginUnit":487,"marginPct":48.7,"revenue":4000,"marginTotal":1947,"flag":"","colours":[{"c":"GREY","u":1},{"c":"CRACKED","u":1},{"c":"BLACK","u":1},{"c":"DARK BROWN","u":1}]},{"bag":"LOOP BP","canon":null,"units":3,"cost":897,"price":1200,"tier":1200,"pinned":false,"marginUnit":303,"marginPct":25.3,"revenue":3600,"marginTotal":910,"flag":"","colours":[{"c":"GREY","u":3}]},{"bag":"OVAL HANDBAG","canon":null,"units":3,"cost":685,"price":1200,"tier":1200,"pinned":false,"marginUnit":515,"marginPct":43.0,"revenue":3600,"marginTotal":1546,"flag":"","colours":[{"c":"GREY","u":1},{"c":"GREEN","u":1},{"c":"BLACK","u":1}]},{"bag":"ALPHA TRAVEL","canon":null,"units":2,"cost":1746,"price":1500,"tier":1500,"pinned":false,"marginUnit":-246,"marginPct":-16.4,"revenue":3000,"marginTotal":-492,"flag":"below","colours":[{"c":"BROWN","u":1},{"c":"GREEN","u":1}]},{"bag":"BABY BAG","canon":null,"units":2,"cost":2725,"price":1500,"tier":1500,"pinned":false,"marginUnit":-1225,"marginPct":-81.7,"revenue":3000,"marginTotal":-2450,"flag":"below","colours":[{"c":"NUDE","u":1},{"c":"BROWN","u":1}]},{"bag":"BONITA","canon":null,"units":2,"cost":1197,"price":1500,"tier":1500,"pinned":false,"marginUnit":303,"marginPct":20.2,"revenue":3000,"marginTotal":605,"flag":"","colours":[{"c":"BLACK","u":1},{"c":"GREY","u":1}]},{"bag":"CELINE SLING BAG","canon":null,"units":2,"cost":908,"price":1500,"tier":1500,"pinned":false,"marginUnit":592,"marginPct":39.5,"revenue":3000,"marginTotal":1184,"flag":"","colours":[{"c":"BLACK","u":2}]},{"bag":"CESS","canon":null,"units":2,"cost":1247,"price":1500,"tier":1500,"pinned":false,"marginUnit":253,"marginPct":16.9,"revenue":3000,"marginTotal":507,"flag":"","colours":[{"c":"GREY","u":2}]},{"bag":"DOUBLE PRESS","canon":null,"units":2,"cost":931,"price":1500,"tier":1500,"pinned":false,"marginUnit":569,"marginPct":38.0,"revenue":3000,"marginTotal":1139,"flag":"","colours":[{"c":"GREY","u":1},{"c":"GREEN","u":1}]},{"bag":"FAYOLA","canon":null,"units":2,"cost":662,"price":1200,"tier":1200,"pinned":false,"marginUnit":538,"marginPct":44.9,"revenue":2400,"marginTotal":1077,"flag":"","colours":[{"c":"GREY","u":1},{"c":"GREEN","u":1}]},{"bag":"TYLER","canon":null,"units":2,"cost":773,"price":1200,"tier":1200,"pinned":false,"marginUnit":427,"marginPct":35.6,"revenue":2400,"marginTotal":854,"flag":"","colours":[{"c":"BROWN","u":1},{"c":"GREY","u":1}]},{"bag":"CHARLOTTE","canon":null,"units":2,"cost":572,"price":1000,"tier":1000,"pinned":false,"marginUnit":428,"marginPct":42.8,"revenue":2000,"marginTotal":856,"flag":"","colours":[{"c":"BLACK","u":1},{"c":"MUSTARD","u":1}]},{"bag":"MINI MANBAG","canon":null,"units":2,"cost":578,"price":1000,"tier":1000,"pinned":false,"marginUnit":422,"marginPct":42.2,"revenue":2000,"marginTotal":844,"flag":"","colours":[{"c":"GREY","u":1},{"c":"RED","u":1}]},{"bag":"KAYLA","canon":null,"units":1,"cost":952,"price":1500,"tier":1500,"pinned":false,"marginUnit":548,"marginPct":36.5,"revenue":1500,"marginTotal":548,"flag":"","colours":[{"c":"CRACKED","u":1}]},{"bag":"MARLEY","canon":null,"units":1,"cost":1034,"price":1500,"tier":1500,"pinned":false,"marginUnit":466,"marginPct":31.1,"revenue":1500,"marginTotal":466,"flag":"","colours":[{"c":"BEIGE","u":1}]},{"bag":"SARAI","canon":null,"units":1,"cost":1816,"price":1500,"tier":1500,"pinned":false,"marginUnit":-316,"marginPct":-21.1,"revenue":1500,"marginTotal":-316,"flag":"below","colours":[{"c":"BROWN","u":1}]},{"bag":"ZOEZI","canon":null,"units":1,"cost":1108,"price":1500,"tier":1500,"pinned":false,"marginUnit":392,"marginPct":26.1,"revenue":1500,"marginTotal":392,"flag":"","colours":[{"c":"GREEN","u":1}]},{"bag":"ARIA PRO","canon":null,"units":1,"cost":686,"price":1200,"tier":1200,"pinned":false,"marginUnit":514,"marginPct":42.8,"revenue":1200,"marginTotal":514,"flag":"","colours":[{"c":"BLACK","u":1}]},{"bag":"KAZ","canon":null,"units":1,"cost":863,"price":1200,"tier":1200,"pinned":false,"marginUnit":337,"marginPct":28.1,"revenue":1200,"marginTotal":337,"flag":"","colours":[{"c":"BLACK","u":1}]},{"bag":"MANDY HANDBAG","canon":null,"units":1,"cost":null,"price":1200,"tier":1200,"pinned":false,"marginUnit":null,"marginPct":null,"revenue":1200,"marginTotal":null,"flag":"nobom","colours":[{"c":"CRACKED","u":1}]},{"bag":"TRIO MIO","canon":null,"units":1,"cost":653,"price":1200,"tier":1200,"pinned":false,"marginUnit":547,"marginPct":45.6,"revenue":1200,"marginTotal":547,"flag":"","colours":[{"c":"SPICE","u":1}]},{"bag":"ARLO MAN BAG","canon":null,"units":1,"cost":649,"price":1000,"tier":1000,"pinned":false,"marginUnit":351,"marginPct":35.1,"revenue":1000,"marginTotal":351,"flag":"","colours":[{"c":"CRACKED","u":1}]},{"bag":"FANNY PACK","canon":null,"units":1,"cost":417,"price":1000,"tier":1000,"pinned":false,"marginUnit":583,"marginPct":58.3,"revenue":1000,"marginTotal":583,"flag":"","colours":[{"c":"BROWN","u":1}]},{"bag":"LANKA","canon":null,"units":1,"cost":561,"price":1000,"tier":1000,"pinned":false,"marginUnit":439,"marginPct":43.9,"revenue":1000,"marginTotal":439,"flag":"","colours":[{"c":"WOVEN BLACK","u":1}]},{"bag":"WASHBAG","canon":null,"units":1,"cost":424,"price":1000,"tier":1000,"pinned":false,"marginUnit":576,"marginPct":57.6,"revenue":1000,"marginTotal":576,"flag":"","colours":[{"c":"NUDE","u":1}]},{"bag":"ZENO","canon":null,"units":1,"cost":635,"price":1000,"tier":1000,"pinned":false,"marginUnit":365,"marginPct":36.5,"revenue":1000,"marginTotal":365,"flag":"","colours":[{"c":"CRACKED/BLACK","u":1}]}],"byTier":[{"price":1000,"bags":24,"units":202,"revenue":202000,"margin":100938},{"price":1200,"bags":20,"units":152,"revenue":182400,"margin":68742},{"price":1500,"bags":33,"units":245,"revenue":367500,"margin":78235}],"totals":{"bags":77,"units":599,"revenue":751900,"margin":247915},"flags":{"below":["ALPHA TRAVEL","BABY BAG","JAMELA","POCKET TRAVEL","SARAI"],"nobom":["MANDY HANDBAG","SPACK"],"thin":["CLAIRE HANDBAG","KAI","REMI","REO TRAVEL","SAFIRI TRAVEL"]}};</script>
+<!-- RJ_DATA_END -->
+
+<script>
+(function () {
+  var fmt = function (n) { return Number(n || 0).toLocaleString(); };
+  var kes = function (n) { return 'KES ' + fmt(Math.round(n || 0)); };
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function tierClass(p) { return p === 1000 ? '1000' : p === 1200 ? '1200' : '1500'; }
+
+  var bags = RJ.bags || [], T = RJ.totals || {}, tiers = RJ.tiers || [1000, 1200, 1500];
+
+  document.getElementById('rj-loc').textContent = RJ.location || 'Kitengela';
+  document.getElementById('rj-sub').textContent =
+    'Clearance pricing for the reject stock' + (RJ.generated ? ' · ' + RJ.generated : '') +
+    ' — every bag put into a ' + tiers.map(function (t) { return fmt(t); }).join(' / ') + ' tier by its BOM cost.';
+  document.getElementById('rj-note').innerHTML =
+    'Cost source: <b>' + esc(RJ.costSource || '—') + '</b>. Sale price is the cheapest tier that still clears the bag\'s production cost, so margins stay positive except where flagged.';
+
+  // KPIs
+  document.getElementById('rj-kpis').innerHTML =
+    kpi('Bag types', fmt(T.bags), fmt(T.units) + ' units to clear') +
+    kpi('Projected revenue', kes(T.revenue), 'if everything sells') +
+    kpi('Projected margin', kes(T.margin), (T.revenue ? Math.round(T.margin / T.revenue * 100) + '% of revenue' : '')) +
+    kpi('Tiers', tiers.map(function (t) { return fmt(t); }).join(' / '), 'KES sale prices');
+  function kpi(l, v, s) {
+    return '<div class="kpi"><div class="l">' + l + '</div><div class="v">' + v + '</div><div class="s">' + (s || '') + '</div></div>';
+  }
+
+  // Tier cards
+  var maxRev = Math.max.apply(null, (RJ.byTier || []).map(function (t) { return t.revenue; }).concat([1]));
+  document.getElementById('rj-tiers').innerHTML = (RJ.byTier || []).map(function (t) {
+    var cl = tierClass(t.price);
+    return '<div class="tier">' +
+      '<div class="p t' + cl + '">' + kes(t.price) + '</div>' +
+      '<div class="m"><b style="color:#e2e8f0">' + fmt(t.bags) + '</b> bag types · <b style="color:#e2e8f0">' + fmt(t.units) + '</b> units</div>' +
+      '<div class="m">Revenue <b style="color:#e2e8f0">' + kes(t.revenue) + '</b> · margin ' + kes(t.margin) + '</div>' +
+      '<div class="bar"><span class="b' + cl + '" style="width:' + Math.round(t.revenue / maxRev * 100) + '%"></span></div>' +
+      '</div>';
+  }).join('');
+
+  // Pricing rule caption
+  var bd = RJ.bands || {};
+  document.getElementById('rj-rule').innerHTML =
+    'Tier by BOM cost: cost ≤ <b>' + fmt(bd.b1) + '</b> → <span class="t1000">' + kes(1000) + '</span> · ' +
+    fmt(bd.b1) + '–<b>' + fmt(bd.b2) + '</b> → <span class="t1200">' + kes(1200) + '</span> · &gt; ' +
+    fmt(bd.b2) + ' → <span class="t1500">' + kes(1500) + '</span>. ' +
+    '<span class="flag-thin">Thin</span> = margin under KES ' + fmt(bd.thin) + '; <span class="flag-below">Below cost</span> = costs more than 1,500 (hold or price up); ' +
+    '<span class="flag-nobom">No BOM</span> = no cost on file (defaulted, verify); <span class="flag-pinned">Pinned</span> = set by hand. Click a header to sort.';
+
+  // Sortable + searchable table
+  var COLS = [
+    { k: 'bag', t: 'Bag', txt: true },
+    { k: 'units', t: 'Units' },
+    { k: 'ncol', t: 'Colours' },
+    { k: 'cost', t: 'BOM cost', money: true },
+    { k: 'price', t: 'Sale price', money: true },
+    { k: 'marginUnit', t: 'Margin/u', money: true },
+    { k: 'marginPct', t: 'Margin %', pct: true },
+    { k: 'revenue', t: 'Revenue', money: true, col: '#34d399' }
+  ];
+  var sk = 'revenue', sd = 'desc';
+  var thead = document.querySelector('#rj-table thead'), tbody = document.querySelector('#rj-table tbody');
+  var searchEl = document.getElementById('rj-search');
+  function v(b, k) { return k === 'ncol' ? (b.colours || []).length : b[k]; }
+
+  function flagPill(b) {
+    if (b.flag === 'below') return ' <span class="pill flag-below" style="background:rgba(248,113,113,0.15)" title="Costs more than KES 1,500 — 1,500 is below cost. Hold, or set a higher pinned price.">below cost</span>';
+    if (b.flag === 'nobom') return ' <span class="pill flag-nobom" style="background:rgba(240,171,252,0.15)" title="No BOM cost on file — priced at the default tier. Verify.">no BOM</span>';
+    if (b.flag === 'thin') return ' <span class="pill flag-thin" style="background:rgba(252,211,77,0.15)" title="Margin under the thin threshold.">thin</span>';
+    if (b.flag === 'pinned') return ' <span class="pill flag-pinned" style="background:rgba(147,197,253,0.15)" title="Price pinned by hand in reject_overrides.json.">pinned</span>';
+    return '';
+  }
+
+  function render() {
+    thead.innerHTML = '<tr>' + COLS.map(function (c) {
+      var ar = c.k === sk ? (sd === 'asc' ? ' ▲' : ' ▼') : '';
+      return '<th class="sortable ' + (c.txt ? 'l' : '') + '" data-k="' + c.k + '">' + c.t + ar + '</th>';
+    }).join('') + '</tr>';
+    thead.querySelectorAll('th').forEach(function (th) {
+      th.addEventListener('click', function () {
+        var k = th.getAttribute('data-k');
+        if (k === sk) sd = sd === 'asc' ? 'desc' : 'asc';
+        else { sk = k; sd = k === 'bag' ? 'asc' : 'desc'; }
+        render();
+      });
+    });
+    var q = (searchEl && searchEl.value || '').trim().toUpperCase();
+    var rows = bags.slice().filter(function (b) { return !q || b.bag.toUpperCase().indexOf(q) >= 0; })
+      .sort(function (a, b) {
+        var x = v(a, sk), y = v(b, sk);
+        if (x == null) x = -1; if (y == null) y = -1;
+        if (typeof x === 'string') return sd === 'asc' ? String(x).localeCompare(y) : String(y).localeCompare(x);
+        return sd === 'asc' ? (x - y) : (y - x);
+      });
+
+    var cnt = document.getElementById('rj-count');
+    if (q) {
+      var u = rows.reduce(function (a, b) { return a + b.units; }, 0);
+      var rev = rows.reduce(function (a, b) { return a + b.revenue; }, 0);
+      cnt.innerHTML = rows.length ? ('Matches for <b style="color:#e2e8f0">' + esc(q) + '</b>: <b>' + rows.length + '</b> bag types · <b>' + fmt(u) + '</b> units · revenue <b style="color:#34d399">' + kes(rev) + '</b>')
+        : 'No bag matches <b>' + esc(q) + '</b>.';
+    } else { cnt.textContent = ''; }
+
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="' + COLS.length + '" style="text-align:center;color:#64748b;padding:1rem">No bags.</td></tr>'; return; }
+    tbody.innerHTML = rows.map(function (b) {
+      var cl = tierClass(b.price);
+      var coltitle = (b.colours || []).map(function (x) { return x.c + ': ' + x.u; }).join(', ');
+      return '<tr>' + COLS.map(function (c) {
+        if (c.k === 'bag') return '<td class="l"><span class="name">' + esc(b.bag) + '</span>' +
+          (b.canon ? ' <span style="color:#64748b;font-size:0.68rem">(' + esc(b.canon) + ')</span>' : '') + flagPill(b) + '</td>';
+        if (c.k === 'ncol') return '<td title="' + esc(coltitle) + '" style="cursor:help">' + (b.colours || []).length + '</td>';
+        if (c.k === 'price') return '<td class="t' + cl + '" style="font-weight:800">' + kes(b.price) + '</td>';
+        if (c.k === 'cost') return '<td>' + (b.cost == null ? '—' : kes(b.cost)) + '</td>';
+        if (c.k === 'marginUnit') return '<td' + (b.marginUnit != null && b.marginUnit < 0 ? ' class="flag-below"' : '') + '>' + (b.marginUnit == null ? '—' : kes(b.marginUnit)) + '</td>';
+        if (c.k === 'marginPct') return '<td>' + (b.marginPct == null ? '—' : b.marginPct + '%') + '</td>';
+        if (c.k === 'revenue') return '<td style="color:#34d399;font-weight:700">' + kes(b.revenue) + '</td>';
+        return '<td>' + fmt(b[c.k]) + '</td>';
+      }).join('') + '</tr>';
+    }).join('');
+  }
+  render();
+  if (searchEl) searchEl.addEventListener('input', render);
+
+  // Flags footer
+  var fl = RJ.flags || {}, parts = [];
+  if ((fl.below || []).length) parts.push('<b class="flag-below">Below cost (' + fl.below.length + ')</b> — cost above KES 1,500, so 1,500 loses money; hold or pin a higher price: ' + fl.below.map(esc).join(', '));
+  if ((fl.nobom || []).length) parts.push('<b class="flag-nobom">No BOM cost (' + fl.nobom.length + ')</b> — priced at the default tier, verify: ' + fl.nobom.map(esc).join(', '));
+  if ((fl.thin || []).length) parts.push('<b class="flag-thin">Thin margin (' + fl.thin.length + ')</b>: ' + fl.thin.map(esc).join(', '));
+  parts.push('Edit <code style="color:#a5f3fc">reject_stock.csv</code> to change stock, or <code style="color:#a5f3fc">reject_overrides.json</code> to pin a bag\'s price.');
+  document.getElementById('rj-flags').innerHTML = parts.join('<br>');
+})();
+</script>
+</body>
+</html>

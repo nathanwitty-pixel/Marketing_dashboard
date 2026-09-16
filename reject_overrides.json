@@ -1,0 +1,3 @@
+{
+  "_note": "Pin a reject-sale price by hand: add \"BAG NAME\": price (one of 1000, 1200, 1500 — or any value). Keys starting with _ are ignored. The bag name must match reject_stock.csv (upper-case). Example: \"BABY BAG\": 2000. Delete an entry to go back to the cost-based tier. Re-run reject_sales.py to apply."
+}

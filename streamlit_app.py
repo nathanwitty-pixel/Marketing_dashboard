@@ -115,6 +115,8 @@ NAV = [
         ("New Products", "new_products.html", ["new_products.py"], "inventory_2"),
         ("Timed Offers", "timed_offers.html", ["timed_offers.py"], "schedule"),
         ("Self-made vs Running Combos", "self_made_combos.html", ["self_made_combos.py"], "shopping_bag"),
+        ("Offer Picking", "offer_picking.html", ["self_made_combos.py", "offer_picking.py"], "local_offer"),
+        ("Reject Sale", "reject_sales.html", ["reject_sales.py"], "sell"),
     ]),
     ("Marketing", [
         ("Posting Yields", "POSTING (SALES YIELDS FROM ACCURATE POSTING).html",
