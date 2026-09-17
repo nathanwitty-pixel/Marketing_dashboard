@@ -2,17 +2,16 @@
 """Reject Sale pricing (Kitengela)  →  reject_sales.html  (payload `RJ`).
 
 A clearance-sale pricing board. Reads the reject stock (reject_stock.csv: BAG TYPE, COLOR,
-UNITS) and the production **BOM cost** per bag, then puts every bag into one of three sale
-price tiers — **KES 1,000 / 1,200 / 1,500** — chosen by cost so nothing is knowingly sold
-below cost:
+UNITS) and the production **BOM cost** per bag, then puts every bag into one of two sale
+price tiers — **KES 1,000 / 1,500** — chosen by cost so nothing is knowingly sold below cost:
 
-    cost ≤ 650            → 1,000
-    650 < cost ≤ 900      → 1,200
+    cost ≤ 900            → 1,000
     cost > 900            → 1,500   (flagged "below cost" if cost > 1,500)
 
-Bigger/costlier bags land in the higher tiers, cheap ones in 1,000 — reject prices that still
-track value. Thresholds are the constants below; edit them to re-band. A bag can be pinned to
-a price by hand in reject_overrides.json ({ "BAG": 1500 }).
+Costlier bags land in 1,500, cheaper ones in 1,000. The mid-range bags are set one by one in
+reject_overrides.json ({ "BAG": 1500 }) — a hand pin overrides the cost rule. Also writes an
+Excel export (reject_sales_export.xlsx) of the whole pricing board — Bag, Category, Units,
+Colours, BOM cost, Sale price, Margin/unit, Margin %, Revenue, Flag.
 
 Sources
   • reject_stock.csv        — the physical reject stock for the sale (editable).
@@ -37,11 +36,12 @@ BOM_CACHE = os.path.join(BASE, "bom_costs.json")
 OVERRIDES = os.path.join(BASE, "reject_overrides.json")
 
 LOCATION = "Kitengela"
-TIERS = [1000, 1200, 1500]      # the three sale prices
-BAND1 = 650                     # cost ≤ BAND1        → 1,000
-BAND2 = 900                     # BAND1 < cost ≤ BAND2 → 1,200 ; else 1,500
+TIERS = [1000, 1500]            # the two sale prices (no 1,200)
+BAND = 900                      # cost ≤ BAND → 1,000 ; else 1,500 (unless pinned by hand)
 THIN = 250                      # margin below this = "thin" (flagged)
-DEFAULT_PRICE = 1200            # bag with no BOM cost → middle tier, flagged for review
+DEFAULT_PRICE = 1000            # bag with no BOM cost → 1,000, flagged for review
+EXPORT_XLSX = os.path.join(BASE, "reject_sales_export.xlsx")
+EXPORT_CSV = os.path.join(BASE, "reject_sales_export.csv")
 
 
 def _bom_costs():
@@ -67,6 +67,39 @@ def _bom_costs():
             "downloaded copy bom_costs.json (sheet unreachable)"
     except Exception:                                        # noqa: BLE001
         return {}, "unavailable (no BOM sheet, no downloaded copy)"
+
+
+# Category (col C of the offers sheet) — normalise a few synonyms; fallback keywords for
+# bags not on the offers sheet so every bag still gets a bucket.
+_CAT_ALIAS = {"SLING BAG": "SLING", "WAISTBAG": "WAIST BAG", "HAND BAG": "HANDBAG"}
+_CAT_KEYWORDS = [("HANDBAG", "HANDBAG"), ("HAND BAG", "HANDBAG"), (" HB", "HANDBAG"),
+                 ("MOON", "HANDBAG"), ("BAGPACK", "BACKPACK"), ("BACKPACK", "BACKPACK"),
+                 (" BP", "BACKPACK"), ("PACK", "BACKPACK"), ("MAN BAG", "MAN BAG"),
+                 ("MANBAG", "MAN BAG"), ("TRAVEL", "TRAVEL"), ("SLING", "SLING"),
+                 ("SCHOOL", "SCHOOL BAG"), ("LUNCH", "LUNCH BAG"), ("WASH", "WASHBAG"),
+                 ("BELT", "WAIST BAG"), ("WAIST", "WAIST BAG"), ("BABY", "BABY BAG"),
+                 ("MESSENGER", "MESSENGER"), ("BRIEF", "BRIEFCASE")]
+
+
+def _norm_cat(c):
+    c = str(c or "").strip().upper()
+    return _CAT_ALIAS.get(c, c) or "OTHER"
+
+
+def _category_of(name, offers):
+    """Category for a bag: the offers-sheet category (col C), else a keyword fallback."""
+    up = str(name).upper().strip()
+    for key in (up, _op._apply_alias(up)):
+        v = offers.get(key)
+        if v and v.get("category"):
+            return _norm_cat(v["category"])
+    for k, v in offers.items():                              # startswith match, word-boundary
+        if v.get("category") and (up == k or up.startswith(k + " ") or k.startswith(up + " ")):
+            return _norm_cat(v["category"])
+    for sub, cat in _CAT_KEYWORDS:
+        if sub in up:
+            return cat
+    return "OTHER"
 
 
 def _read_overrides():
@@ -105,15 +138,10 @@ def _read_stock():
 
 
 def _assign_price(cost):
-    """(price, flag) from BOM cost. flag ∈ {'', 'thin', 'below', 'nobom'}."""
+    """(price, flag) from BOM cost — two tiers. flag ∈ {'', 'thin', 'below', 'nobom'}."""
     if cost is None:
         return DEFAULT_PRICE, "nobom"
-    if cost <= BAND1:
-        price = 1000
-    elif cost <= BAND2:
-        price = 1200
-    else:
-        price = 1500
+    price = 1000 if cost <= BAND else 1500
     if price < cost:
         flag = "below"
     elif (price - cost) < THIN:
@@ -123,9 +151,55 @@ def _assign_price(cost):
     return price, flag
 
 
+def _write_export(bags):
+    """Write an Excel (xlsx, or CSV fallback) of EVERYTHING on the pricing board — Bag,
+    Category, Units, Colours, BOM cost, Sale price, Margin/unit, Margin %, Revenue, Flag.
+    Sorted by category then bag, with a TOTAL row. Returns the path written."""
+    ordered = sorted(bags, key=lambda b: (b["category"], b["bag"]))
+    cols = ["Bag", "Category", "Units", "Colours", "BOM Cost (KES)", "Sale Price (KES)",
+            "Margin/Unit (KES)", "Margin %", "Revenue (KES)", "Flag"]
+    _FLAG = {"below": "below cost", "thin": "thin", "nobom": "no BOM", "pinned": "pinned", "": ""}
+    rows = []
+    for b in ordered:
+        colours = ", ".join("%s: %d" % (c["c"], c["u"]) for c in b.get("colours", []))
+        rows.append([
+            b["bag"], b["category"].title(), b["units"], colours,
+            b["cost"] if b["cost"] is not None else "",
+            b["price"],
+            b["marginUnit"] if b["marginUnit"] is not None else "",
+            ("%.1f%%" % b["marginPct"]) if b.get("marginPct") is not None else "",
+            b["revenue"], _FLAG.get(b.get("flag", ""), b.get("flag", "")),
+        ])
+    tot_u = sum(b["units"] for b in bags)
+    tot_r = sum(b["revenue"] for b in bags)
+    tot_m = sum(b.get("marginTotal") or 0 for b in bags)
+    rows.append(["TOTAL · margin KES {:,}".format(tot_m), "", tot_u, "", "", "", "", "", tot_r, ""])
+    try:
+        import pandas as pd
+        df = pd.DataFrame(rows, columns=cols)
+        df.to_excel(EXPORT_XLSX, index=False, sheet_name="Reject Sale")
+        if os.path.exists(EXPORT_CSV):
+            try:
+                os.remove(EXPORT_CSV)
+            except OSError:
+                pass
+        return EXPORT_XLSX
+    except Exception:                                        # noqa: BLE001
+        import csv as _csv
+        with open(EXPORT_CSV, "w", encoding="utf-8-sig", newline="") as f:
+            w = _csv.writer(f)
+            w.writerow(cols)
+            w.writerows(rows)
+        return EXPORT_CSV
+
+
 def build():
     stock = _read_stock()
     cost, cost_source = _bom_costs()
+    try:
+        offers, _osrc = _op._read_offers()
+    except Exception:                                        # noqa: BLE001
+        offers = {}
     overrides = _read_overrides()
     bomkeys = sorted(cost.keys(), key=len, reverse=True)
 
@@ -143,6 +217,7 @@ def build():
         bags.append({
             "bag": name,
             "canon": None if canon == name else canon,
+            "category": _category_of(name, offers),
             "units": units,
             "cost": round(c) if c is not None else None,
             "price": price,
@@ -172,6 +247,16 @@ def build():
 
     by_tier = [_tier_row(p) for p in TIERS]
 
+    cats = {}
+    for b in bags:
+        r = cats.setdefault(b["category"], {"category": b["category"], "bags": 0, "units": 0,
+                                            "revenue": 0, "margin": 0})
+        r["bags"] += 1
+        r["units"] += b["units"]
+        r["revenue"] += b["revenue"]
+        r["margin"] += b["marginTotal"] or 0
+    by_category = sorted(cats.values(), key=lambda r: -r["revenue"])
+
     totals = {
         "bags": len(bags),
         "units": sum(b["units"] for b in bags),
@@ -188,13 +273,16 @@ def build():
         "location": LOCATION,
         "generated": _dt.date.today().strftime("%d %b %Y"),
         "tiers": TIERS,
-        "bands": {"b1": BAND1, "b2": BAND2, "thin": THIN, "default": DEFAULT_PRICE},
+        "bands": {"band": BAND, "thin": THIN, "default": DEFAULT_PRICE},
         "costSource": cost_source,
         "bags": bags,
         "byTier": by_tier,
+        "byCategory": by_category,
         "totals": totals,
         "flags": flags,
     }
+
+    payload["exportFile"] = os.path.basename(_write_export(bags))
 
     with open(HTML, encoding="utf-8") as f:
         html = f.read()
@@ -217,7 +305,11 @@ if __name__ == "__main__":
     for t in p["byTier"]:
         print(f"    KES {t['price']:>4}: {t['bags']:>2} bags  {t['units']:>4} units  "
               f"revenue KES {t['revenue']:>7,}  margin KES {t['margin']:>7,}")
+    print(f"  Categories  : {len(p['byCategory'])}")
+    for crow in p["byCategory"]:
+        print(f"    {crow['category']:<12} {crow['bags']:>2} bags  {crow['units']:>4} units  revenue KES {crow['revenue']:>7,}")
     if p["flags"]["below"]:
         print(f"  Below cost  : {', '.join(p['flags']['below'])}")
     if p["flags"]["nobom"]:
         print(f"  No BOM cost : {', '.join(p['flags']['nobom'])}")
+    print(f"  Export      : {p.get('exportFile', '')}")

@@ -33,7 +33,12 @@ A planning menu for **which offers/combos to run**. The page **leads with the Fo
    Candidates sort **best → least** (pick, then produce, then rest; by forecast units, then
    client demand). The Forecast card shows all **10 combos ranked 1–10** (rank, was→now, cost,
    margin, live buildable, forecast %, **Client req.**, status) and mirrors the picker live
-   (`renderForecast`). Self-made-driven picks (e.g. Jumbo+Standard/Antitheft, client demand 30,
+   (`renderForecast`). The **Status** cell has a **hover** (and the column header a legend
+   hover) spelling out the three gates for that row — *PRICE* (now vs the band), *DEMAND*
+   (sold that month last year, from the forecast %, **or** clients requesting its bags now,
+   from Client req.), and *STOCK* (buildable vs `stockMin`) — so it's clear whether a **★ Pick
+   — sells in Oct** came from last year's sales, **clients requesting it** from current
+   self-made demand, a **🔧 Make** from low stock, or **off-band** from price alone. Self-made-driven picks (e.g. Jumbo+Standard/Antitheft, client demand 30,
    no Oct sales history) surface here that pure seasonality would miss.
 5. **Seasonality** — the **2025 monthly combo calendar** (`MONTHLY_COMBOS_2025`, user-supplied)
    × **actual POS sales**. `_seasonality()` / `OP.seasonality`. Per combo: planned months

@@ -1,6 +1,6 @@
 {
   "_note": "Local copy of BOM production costs, refreshed on every successful run; used when the sheet is unreachable.",
-  "_updated": "2026-09-16 14:22:36",
+  "_updated": "2026-09-17 08:55:37",
   "costs": {
     "0LD MESSENGER": 768.83675,
     "ACE": 613.4381,

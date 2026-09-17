@@ -162,6 +162,33 @@ numbers, not the bag's Kenya-wide total:
   missing entirely. Website (`isWebL`) is judged on **sales alone** — `stk = null`, so it
   is never flagged out-of-stock, and the tooltip shows "online" instead of "0 stk".
 
+### Tier 1 vs Tier 2 gauge (`deals["tierCompare"]`, `tierGauge()`)
+
+A metric that gauges the two **Deal-of-the-Week phases** against each other. **Tier 1** runs
+the first fortnight (**Wk 1–2**); **Tier 2** runs the remaining weeks (**Wk 3+**, the "last two
+weeks"). Each tier is scored on **its own week window** (not the whole month), so the phases
+compare like-for-like. Per tier: **products**, **units sold**, **revenue** (window units ×
+deal price), **discount given** (window units × per-unit discount), and a **per-week
+run-rate** (units ÷ weeks elapsed in its window) — the headline, so a still-running Tier 2 is
+judged fairly against a finished Tier 1.
+
+- Tier membership is the sheet's **Tier** column (col A); a product listed under both tiers
+  runs in both phases and counts its own-window sales in each. Digit-matched (`_tdigit`), so
+  "Tier 1" / "1" both work.
+- `inProgress` = the tier's window includes the **live (partial) week** (`deals["curWeek"]`),
+  so the gauge marks it "· wk N live" and the verdict notes Tier 2 is still filling in — its
+  run-rate is a floor, not a final figure.
+- Rendered by `tierGauge(D.tierCompare)` as a panel **above the Deal of the Week table** in
+  `renderDeals()`; two colour-coded columns (Tier 1 amber, Tier 2 cyan) + a run-rate verdict
+  (`+/-%` Tier 2 vs Tier 1).
+
+**Deal of the Week split by tier** — the DoW panel itself carries a segmented control
+(**All tiers / Tier 1 / Tier 2**, with counts). Picking a tier re-renders `dowMetrics` for
+just that tier (`renderDowTier` → `dowTierList` filters `D.dealOfWeek` by `dowTierDigit`), so
+each phase's **selling / not-selling / out-of-stock / idle** breakdown and per-location table
+stand on their own. Only one tier is shown at a time, so the `dowCatDetail` / `dowLocDetail`
+hover globals stay consistent; `wireDowHover()` re-runs after each switch.
+
 ## Combo button usage (till check)
 
 Rendered **inside each running combo card** (in `renderRunningCards`). The headline

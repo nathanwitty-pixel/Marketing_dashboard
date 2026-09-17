@@ -11,6 +11,7 @@ Secrets (Cloud → Settings → Secrets), TOML — see .streamlit/secrets.toml.e
 """
 import os
 import sys
+import time
 import subprocess
 import datetime
 
@@ -216,6 +217,41 @@ def run_scripts(script_list):
     return logs
 
 
+# ── Auto-refresh every AUTO_REFRESH_MIN minutes ──────────────────────────────
+# The current page regenerates itself from Odoo once its data goes stale. The
+# generated HTML's mtime is the shared freshness clock (every viewer sees it), so
+# the first session to notice a stale page rebuilds it and the rest get the fresh
+# cache. A per-session guard makes each session attempt at most once per interval
+# (so a failed build doesn't loop), and a JS timer in the header reloads an idle
+# tab so the check keeps firing even with no clicks.
+AUTO_REFRESH_MIN = 30
+_AUTO_SECS = AUTO_REFRESH_MIN * 60
+
+
+def _page_age_secs(path):
+    try:
+        return time.time() - os.path.getmtime(path)
+    except OSError:
+        return float("inf")
+
+
+if (os.path.exists(html_path)
+        and (time.time() - st.session_state.get("auto_last_check", 0)) >= _AUTO_SECS
+        and _page_age_secs(html_path) >= _AUTO_SECS):
+    st.session_state.auto_last_check = time.time()
+    with st.spinner(f"Auto-refreshing {label} from Odoo…"):
+        _logs = run_scripts(scripts)
+    st.session_state.refresh_msg = {
+        "when": datetime.datetime.now().strftime("%H:%M:%S"),
+        "fails": [(s, out) for s, rc, out in _logs if rc != 0],
+        "unreachable": any(("not reachable" in (out or "").lower())
+                           or ("unreachable" in (out or "").lower())
+                           for _, _, out in _logs),
+        "auto": True,
+    }
+    st.rerun()
+
+
 # ── Header: user card + live status dot + ticking clock (left) · refresh (right) ──
 HEADER_HTML = """
 <div style="display:flex;align-items:center;justify-content:space-between;font-family:'Segoe UI',system-ui,sans-serif">
@@ -247,10 +283,35 @@ HEADER_HTML = """
 </script>
 """
 
+# Reload an idle tab every AUTO_REFRESH_MIN minutes so the auto-refresh check keeps
+# firing with no clicks. The reload reruns the app → the stale page rebuilds from Odoo.
+HEADER_HTML = HEADER_HTML.replace(
+    "tick(); setInterval(tick,1000);",
+    "tick(); setInterval(tick,1000);\n"
+    "  setTimeout(function(){ try{ (window.top||window.parent||window).location.reload(); }"
+    "catch(e){ location.reload(); } }, %d);" % (_AUTO_SECS * 1000))
+
 components.html(HEADER_HTML, height=54)
 
-# Small Refresh button, right-aligned just under the date / clock.
-_sp, _rc = st.columns([0.8, 0.2])
+# Small Refresh button, right-aligned just under the date / clock. The Reject Sale page also
+# gets an Excel export button (bags · units · sale price) beside it.
+_rj_export = os.path.join(BASE, "reject_sales_export.xlsx")
+_rj_export_csv = os.path.join(BASE, "reject_sales_export.csv")
+_show_export = (label == "Reject Sale") and (os.path.exists(_rj_export) or os.path.exists(_rj_export_csv))
+if _show_export:
+    _sp, _ex, _rc = st.columns([0.6, 0.2, 0.2])
+    with _ex:
+        if os.path.exists(_rj_export):
+            with open(_rj_export, "rb") as _fh:
+                st.download_button("⬇ Excel", _fh.read(), file_name="reject_sales.xlsx",
+                                   mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                   use_container_width=True, key="rj_export_btn")
+        else:
+            with open(_rj_export_csv, "rb") as _fh:
+                st.download_button("⬇ CSV", _fh.read(), file_name="reject_sales.csv",
+                                   mime="text/csv", use_container_width=True, key="rj_export_btn")
+else:
+    _sp, _rc = st.columns([0.8, 0.2])
 with _rc:
     _do_refresh = st.button("🔄 Refresh", use_container_width=True,
                             type="primary", key="refresh_btn")
@@ -283,7 +344,15 @@ if _rm:
                    "On the deployed app this means the DB secrets are missing or the "
                    "database is refusing the connection.")
     else:
-        st.success(f"✓ Refreshed from Odoo at {_rm['when']}")
+        _how = "Auto-refreshed" if _rm.get("auto") else "Refreshed"
+        st.success(f"✓ {_how} from Odoo at {_rm['when']}")
+
+# Freshness caption: how long ago this page's data was regenerated + the auto cadence.
+if os.path.exists(html_path):
+    _age_min = int(_page_age_secs(html_path) // 60)
+    _ago = "just now" if _age_min < 1 else (f"{_age_min} min ago" if _age_min < 60
+            else f"{_age_min // 60}h {_age_min % 60}m ago")
+    st.caption(f"Data updated {_ago} · auto-refreshes every {AUTO_REFRESH_MIN} min")
 
 # ── Render the selected page ──
 # Injected into each embedded page so it (a) doesn't force a full-viewport black

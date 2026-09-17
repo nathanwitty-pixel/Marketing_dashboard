@@ -554,6 +554,39 @@ def _enrich_deals(deals, m_start, m_end, stock_map, combo_bags=None):
     deals["powerSoldExCombo"] = sum(x.get("sold", 0) for x in deals.get("powerDeals", []) if not _is_combo_bag(x["product"]))
     deals["dowSoldExCombo"] = sum(x.get("sold", 0) for x in deals.get("dealOfWeek", []) if not _is_combo_bag(x["product"]))
 
+    # ── Tier 1 vs Tier 2 gauge (Deal of the Week) ──────────────────────────────
+    # Tier 1 deals run the first two weeks (Wk 1–2); Tier 2 runs the remaining weeks
+    # (Wk 3 onward). Each tier is scored on its OWN window: units, deal-price revenue,
+    # the KES discount it gives away, and a per-week run-rate (units ÷ weeks elapsed in
+    # its window) so a still-running Tier 2 is judged fairly against a finished Tier 1.
+    _maxwk = deals.get("curWeek", 1) or 1
+
+    def _tdigit(t):
+        m = re.search(r"\d", str(t or ""))
+        return m.group() if m else ""
+
+    def _tier_agg(tier_key, weeks_in_window):
+        items = [d for d in deals.get("dealOfWeek", []) if _tdigit(d.get("tier")) == tier_key]
+        units = revenue = discount = 0
+        for d in items:
+            wk = d.get("weeks", [])
+            wu = sum(wk[i - 1]["sold"] for i in weeks_in_window if 0 < i <= len(wk))
+            price = d.get("now") or ((d["revenue"] / d["sold"]) if d.get("sold") else 0)
+            units += wu
+            revenue += round(wu * price)
+            discount += round(wu * (d.get("disc", 0) or 0))
+        elapsed = len([i for i in weeks_in_window if i <= _maxwk])
+        return {"tier": tier_key, "products": len(items), "units": units,
+                "revenue": revenue, "discount": discount, "weeksElapsed": elapsed,
+                "inProgress": _maxwk in weeks_in_window,   # window includes the live (partial) week
+                "runRate": round(units / elapsed, 1) if elapsed else 0.0}
+
+    _t1 = _tier_agg("1", [1, 2]); _t1["label"] = "Tier 1"; _t1["window"] = "Wk 1–2"
+    _t2weeks = list(range(3, max(_maxwk, 4) + 1))              # Wk 3 onward (the remaining weeks)
+    _t2 = _tier_agg("2", _t2weeks); _t2["label"] = "Tier 2"
+    _t2["window"] = "Wk 3–%d" % max(_maxwk, 4) if max(_maxwk, 4) > 3 else "Wk 3+"
+    deals["tierCompare"] = {"maxWk": _maxwk, "tiers": [_t1, _t2]}
+
     # Cross-sell: which Power Deals are ALSO run as a Deal of the Week (same bag).
     # Matched by product name, so each card can show the same bag's rival pricing —
     # all-month Power price vs the Tier-1 weekly deal — like the running↔self-made hover.
