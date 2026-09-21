@@ -59,6 +59,32 @@ This once cost Lamora 4 units this month (10 vs 14) and 38 lifetime.
   all-time figure on the page).
 - Week numbering: the opening partial week = Wk 1 (`_np_perfect_week_index`).
 
+## KPI card layout
+
+All five KPIs sit in **one `card-grid`**, arranged like the Current Performance page: **Monthly
+Sales** is the `primary` card (spans two columns via `.card.primary`, larger value), followed by
+**New Products · Sales % Achieved · Weekly Target · Weekly Sales % Achieved** — no sub-header
+splits them. The **new-product name tags** (`#product-tags`, from `NP.productNames`) live **in
+the New Products hover popover** (`#np-target-popover`, which also shows Monthly Target) — hover
+the New Products card to see the list; the card itself says "· hover for the list". Each card
+keeps its hover popover (deficit, monthly target + product list, Kenya/Outside split, weekly
+posts & stock, weekly sales & restock). No sparklines on the tiles. The **Weekly Sales vs
+Marketing Posts** sub-header now heads the Weekly Performance chart section below, not the cards.
+
+## Weekly Performance chart (Week 1 → latest)
+
+In the **Weekly Sales vs Marketing Posts** subsection, a Current-Performance-style chart +
+table (mirrors the [Current Performance](current-performance.md) weekly panel). Chart: each
+week's **Weekly Sales % of the weekly target** as an amber line with value labels, **this
+month only** (no last-month dashed line). Table columns: Week · Sales % Achieved · Sales Bags
+(▲ green if it cleared the weekly floor, red if short) · Target to Beat (`weeklyTarget`) ·
+Declined By (`weeklyTotal − weeklyTarget`) · **Kenya Posts · Outside Posts** (the marketing
+effort behind each week). Fed by `NP.weeklyPostsHistory` **filtered to the current month by
+each entry's `month` field** (not `weekStart`, so the Aug-starting opening week of a month is
+attributed correctly) and `NP.weeklyTarget`. Per-week sales are **Kenya-only** (matching the
+`Weekly Sales % Achieved` KPI); the footer's "last week (incl. outside)" stat is the
+Kenya+Outside `lastWeekPct`/`lastWeekTotal`, labelled to flag the scope difference.
+
 ## Regenerate
 
 ```

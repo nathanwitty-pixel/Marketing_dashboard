@@ -12,6 +12,9 @@ __pycache__/
 dist/
 .vercel/
 
+# ── Odoo TTL disk-cache (regenerated at runtime) ──
+.odoo_cache/
+
 # ── OS junk ───────────────────────────────────────────────────
 Thumbs.db
 .DS_Store

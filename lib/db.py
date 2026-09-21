@@ -16,6 +16,10 @@ Named params use :name placeholders, e.g.
 from __future__ import annotations
 
 import os
+import time
+import json
+import pickle
+import hashlib
 import threading
 from functools import lru_cache
 
@@ -153,3 +157,47 @@ def run_query(sql: str, params: dict | None = None) -> pd.DataFrame | None:
             _drop_shared_conn()                              # maybe stale — reconnect & retry once
     print(f"  DB query failed: {last_err}")
     return None
+
+
+# ── TTL disk cache ────────────────────────────────────────────
+# Slow Odoo lookups (a month of POS lines, per-bag price scans, live stock) are cached to
+# disk keyed by the exact SQL + params, so a repeated identical query within `ttl_min` is
+# served from disk instead of re-hitting the high-latency pooler. Persists across the
+# short-lived generator subprocesses. A manual Refresh sets DENRI_FORCE_FRESH=1 to bypass
+# the read and repopulate; if the DB is unreachable, a stale cached copy is returned.
+_CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".odoo_cache")
+
+
+def _cache_path(sql: str, params: dict | None) -> str:
+    raw = " ".join(sql.split()) + "\x00" + json.dumps(params or {}, sort_keys=True, default=str)
+    return os.path.join(_CACHE_DIR, hashlib.sha1(raw.encode("utf-8")).hexdigest() + ".pkl")
+
+
+def run_query_cached(sql: str, params: dict | None = None, ttl_min: float = 30) -> pd.DataFrame | None:
+    """run_query with a TTL disk cache. Identical to run_query for callers, but a repeated
+    identical (sql, params) within ttl_min minutes is read from disk instead of Odoo.
+    DENRI_FORCE_FRESH=1 (set by a manual Refresh) skips the read and refreshes the file.
+    If the DB is unreachable, any cached copy (even expired) is returned as a fallback."""
+    path = _cache_path(sql, params)
+    if os.getenv("DENRI_FORCE_FRESH") != "1":
+        try:
+            if (time.time() - os.path.getmtime(path)) < ttl_min * 60:
+                with open(path, "rb") as f:
+                    return pickle.load(f)
+        except Exception:                                    # noqa: BLE001 — miss → fetch
+            pass
+    df = run_query(sql, params)
+    if df is not None:
+        try:
+            os.makedirs(_CACHE_DIR, exist_ok=True)
+            with open(path, "wb") as f:
+                pickle.dump(df, f, protocol=pickle.HIGHEST_PROTOCOL)
+        except Exception:                                    # noqa: BLE001 — cache write is best-effort
+            pass
+        return df
+    # DB unreachable — fall back to a stale cached copy if we have one.
+    try:
+        with open(path, "rb") as f:
+            return pickle.load(f)
+    except Exception:                                        # noqa: BLE001
+        return None

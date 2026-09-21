@@ -126,6 +126,21 @@ def master_from_db():
         pass
     return None
 
+def reject_from_db():
+    """Reporting month's reject-clearance bags ([REJECT] tag) from monthly_sales_db.json —
+    the subset of Sales that were rejects. 0 if unavailable / not the reporting month."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "monthly_sales_db.json")
+    if not os.path.exists(path):
+        return 0
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        if data.get("monthKey", "") == report_month.live_month_key():
+            return int(data.get("rejectBags") or 0)
+    except (ValueError, OSError, KeyError, TypeError):
+        pass
+    return 0
+
 def update_month_boundary(weekly_total):
     """Update the rolling snapshot.
     Returns (carryover_bags | None, captured_on, prev_month_record)."""
@@ -276,6 +291,11 @@ def corporate_from_db():
 corporate_bags = corporate_from_db()
 sales_pos      = total_sales                    # POS-only (Weekly / Net Bags basis)
 total_sales    = total_sales + corporate_bags   # Sales card = POS + corporate
+
+# Reject-clearance bags ([REJECT] tag) — a subset of the POS bags, so the Sales card can
+# split "of N sold, R were rejects". % is of the POS total (rejects are POS, not corporate).
+reject_bags = reject_from_db()
+reject_pct  = (reject_bags / sales_pos * 100) if sales_pos else 0
 
 # Month-boundary handling: split the straddling week's total by month.
 carryover_bags, carryover_date, prev_month_rec = update_month_boundary(weekly_sales_total)
@@ -484,6 +504,8 @@ inline_script = (
     f'  sales:              "{fmt_int(sales)}",\n'
     f'  salesPos:           "{fmt_int(sales_pos)}",\n'
     f'  corporateBags:      "{fmt_int(corporate_bags)}",\n'
+    f'  rejectBags:         "{fmt_int(reject_bags)}",\n'
+    f'  rejectPct:          "{fmt_pct(reject_pct)}",\n'
     f'  masterBags:         "{fmt_int(master_bags) if master_bags is not None else "—"}",\n'
     f'  previousSalesPct:   "{fmt_pct(previous_sales_pct)}",\n'
     f'  previousSalesBags:  "{fmt_int(previous_sales_bags)}",\n'

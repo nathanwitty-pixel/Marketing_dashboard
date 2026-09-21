@@ -501,6 +501,15 @@ HEAD = """<!DOCTYPE html>
   .kpi .k-val { font-size: 1.6rem; font-weight: 800; color: #f8fafc; line-height: 1.1; margin-top: 0.2rem; font-variant-numeric: tabular-nums; }
   .kpi .k-sub { font-size: 0.72rem; color: #94a3b8; margin-top: 0.2rem; }
   .k-val.amber { color: #fbbf24; } .k-val.red { color: #f87171; } .k-val.green { color: #34d399; } .k-val.cyan { color: #22d3ee; }
+  /* Response-ladder tag — the single appropriate response for a metric (Update … Collaborate),
+     with its one-line action. */
+  .lstrip { display: flex; flex-wrap: wrap; align-items: center; gap: 0.28rem; margin: 0.45rem 0 0.1rem; }
+  .lstep { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+           padding: 0.12rem 0.48rem; border-radius: 11px; border: 1px solid #262b3a; background: #14161f; color: #475569; }
+  .lstep.on { color: #cbd5e1; border-color: #3a3f52; background: #252a3a; }
+  .lstep.peak { color: #fcd34d; border-color: #7c5e12; background: #2a2410; }
+  .laction { font-size: 0.72rem; color: #94a3b8; margin-left: 0.15rem; }
+  .laction b { color: #e2e8f0; }
   .sec { background: #1e2130; border: 1px solid #2d3148; border-radius: 16px; padding: 1.5rem 1.6rem; margin-bottom: 1.5rem; }
   .sec-head { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 1rem; }
   .sec-num { width: 30px; height: 30px; flex-shrink: 0; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; color: #0b0d16; }
@@ -865,6 +874,36 @@ if self_made and (self_made.get("smTotals", {}).get("count") or self_made.get("r
       <p style="margin-top:0.5rem">The split also shows up at the till: an <b>official running combo offers a wide colour range</b> for the attendant to pick from (avg <b>{_run.get("avgColours",0):g} colour options</b>), while a <b>self-made combo is locked to one specific pairing</b> (avg <b>{_sm.get("avgColours",0):g}</b>) — the same divide the CBR link draws, from the shop floor’s point of view.</p></div>
   </div>"""
 
+# ── Response-ladder tag — the SINGLE appropriate response for a metric. Four steps
+# Update → New Timing → Acknowledge → Collaborate (Apologize dropped — it wasn't useful);
+# the metric picks the deepest one it needs (Update by default, each deeper step when it falls
+# below that threshold). Only that one step is shown, with its one-line action. Applied to each
+# Bottom Line point and each quantified section's headline metric.
+_LADDER = [("Update", 10**9), ("New Timing", 100), ("Acknowledge", 80), ("Collaborate", 65)]
+def ladder_strip(pct_val, action):
+    lit = [lab for lab, th in _LADDER if pct_val < th] or ["Update"]
+    step = lit[-1]                                   # the one appropriate response for this metric
+    cls = "lstep on" + (" peak" if step == _LADDER[-1][0] else "")
+    return ('<div class="lstrip" title="Response ladder — the appropriate response at ' + pct(pct_val) + '">'
+            + '<span class="' + cls + '">' + step + '</span>'
+            + '<span class="laction">&rarr; <b>' + step + ':</b> ' + action + '</span></div>')
+
+_post_cov = max(0.0, 100 - unposted_pct)                      # % of Kenya stock actually posted
+_wk_pace  = (avg_weekly / bare_min * 100) if bare_min else 0  # weekly output vs the floor
+_weak_reg = min(ke_mo_mkt, sz_mo_mkt, ug_mo_mkt)              # worst region's sales-achieved
+_np_pct   = num(gstr(np_, "salesPct"))                        # new-products sales % of target
+
+# The Bottom Line — one strip per point.
+bl1_strip = ladder_strip(achieved,  f"Own the {fmt(gap)}-bag miss vs the {fmt(total_target)} target — the gap is unmarketed stock, so the fix is posting, not demand.")
+bl2_strip = ladder_strip(_post_cov, f"Post the <b>{pct(unposted_pct)}</b> of Kenya stock left unmarketed — posted bags already sell at {pct(ke_mo_mkt)} of expectation.")
+bl3_strip = ladder_strip(_wk_pace,  f"Hold a hard <b>{fmt(bare_min)}/wk</b> commit reviewed every Monday; recover ~{fmt(weekly_short/2)}/wk to close the gap.")
+bl4_strip = ladder_strip(_weak_reg, f"Run the Kenya playbook ({pct(ke_mo_mkt)}) in Sinza ({pct(sz_mo_mkt)}) and Uganda ({pct(ug_mo_mkt)}) — same posting discipline everywhere.")
+
+# Section headline metrics.
+cp_strip   = ladder_strip(achieved, f"Recover ~<b>{fmt(weekly_short/2)}/wk</b> to lift {pct(achieved)} toward ~{pct(cp_new_pct)}; own the {fmt(gap)}-bag gap.")
+np_strip   = ladder_strip(_np_pct,  f"New products at <b>{pct(_np_pct)}</b> of target — {fmt(np_deficit)} bags to go; push the launched lines with posting.")
+post_strip = ladder_strip(ke_mo_mkt, f"Lift Sinza ({pct(sz_mo_mkt)}) and Uganda ({pct(ug_mo_mkt)}) posting to the Kenya <b>{pct(ke_mo_mkt)}</b> bar, and post the {pct(unposted_pct)} still unmarketed.")
+
 body = f"""
   <div class="rpt-head">
     <span class="rpt-pill">Monthly Report</span>
@@ -877,10 +916,11 @@ body = f"""
     <div class="headline">
       {_exec_lead}
     </div>
+    {bl1_strip}
     <ul>
-      <li><b>{pct(unposted_pct)} of Kenya stock ({fmt(notposted)} bags) was never posted</b> — yet posted bags sold at {pct(ke_mo_mkt)} of expectation. Marketing is the lever, and much of it went unused.</li>
-      <li><b>Weekly output (~{fmt(avg_weekly)} bags) ran below the {fmt(bare_min)}/week floor</b> needed to hit target — the problem is consistency, not a bad month.</li>
-      <li><b>Regions are uneven:</b> Kenya posts at {pct(ke_mo_mkt)} sales-achieved, Sinza {pct(sz_mo_mkt)}, Uganda {pct(ug_mo_mkt)}. The Kenya playbook isn't being run elsewhere.</li>
+      <li><b>{pct(unposted_pct)} of Kenya stock ({fmt(notposted)} bags) was never posted</b> — yet posted bags sold at {pct(ke_mo_mkt)} of expectation. Marketing is the lever, and much of it went unused.{bl2_strip}</li>
+      <li><b>Weekly output (~{fmt(avg_weekly)} bags) ran below the {fmt(bare_min)}/week floor</b> needed to hit target — the problem is consistency, not a bad month.{bl3_strip}</li>
+      <li><b>Regions are uneven:</b> Kenya posts at {pct(ke_mo_mkt)} sales-achieved, Sinza {pct(sz_mo_mkt)}, Uganda {pct(ug_mo_mkt)}. The Kenya playbook isn't being run elsewhere.{bl4_strip}</li>
     </ul>
   </div>
 
@@ -912,6 +952,7 @@ body = f"""
     <div class="row"><div class="tag impact">Business Impact</div>
       <div class="impact"><p>Closing even <b>half the weekly gap (~{fmt(weekly_short/2)} bags/week)</b> across the month adds <b>~{fmt(cp_add)} bags</b> — lifting achievement from {pct(achieved)} to <b>~{pct(cp_new_pct)}</b>.</p></div>
       <div class="assump">Assumes ~{fmt(weekly_short/2)} bags/week recovered × {weeks_n} weeks; at ~KES {fmt(AVG_PRICE)}/bag that is ≈ KES {fmt(cp_revenue)} of recovered sales.</div></div>
+    {cp_strip}
     {outlook_block}
   </div>
 
@@ -943,6 +984,7 @@ body = f"""
     <div class="row"><div class="tag impact">Business Impact</div>
       <div class="impact"><p>Recovering <b>half the deficit (~{fmt(np_recover)} bags)</b> is realistic within one cycle; a working outside-Kenya channel would add a comparable second stream.</p></div>
       <div class="assump">Assumes weak-launch recovery of 50% of the {fmt(np_deficit)}-bag deficit; outside-Kenya upside sized off the {fmt(np_posts)}-post base.</div></div>
+    {np_strip}
   </div>
 {timed_offers_section}
   <div class="sec">
@@ -998,6 +1040,7 @@ body = f"""
     <div class="row"><div class="tag impact">Business Impact</div>
       <div class="impact"><p>If the <b>{fmt(notposted)} unposted bags</b> converted at even a conservative <b>20%</b> once marketed, that is <b>~{fmt(post_convert)} bags</b> — enough to close <b>~{pct(post_gap_share)} of the entire target gap</b>. Bringing {weak_name} toward Kenya's rate compounds it further.</p></div>
       <div class="assump">Assumes a conservative 20% conversion on newly-posted stock (posted bags ran ~{posting_mult:.1f}× their expected rate, so this is deliberately cautious).</div></div>
+    {post_strip}
   </div>
 
   <div class="foot">Denri Africa · Marketing Analytics — {month} {year} report. Figures from the live dashboards (Current Performance, New Products, Offer Type Analysis, Posting Yields).</div>

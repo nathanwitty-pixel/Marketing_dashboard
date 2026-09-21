@@ -189,6 +189,44 @@ each phase's **selling / not-selling / out-of-stock / idle** breakdown and per-l
 stand on their own. Only one tier is shown at a time, so the `dowCatDetail` / `dowLocDetail`
 hover globals stay consistent; `wireDowHover()` re-runs after each switch.
 
+## Combo ⇄ Deal-of-the-Week cross-links (tier-aware hovers)
+
+Shared global helpers (top of the main `<script>`, keyed off the live `SMC`): `smcCurTier()` =
+the tier we're measuring now (the `tierCompare` tier whose window holds the live week — Tier 2
+in-period); `smcCombosForBag(name)` = running combos a bag is a component of (prefix-matched
+both ways); `smcDowForBag(name)` = the **current-tier** Deal-of-the-Week entry for a bag. Used in
+three places so the combo and DoW sides show how they affect each other:
+
+- **Combo card DoW overlap** — surfaced **only in the red shop-chip hover** (below), scoped to that
+  shop. (The earlier all-shops card-level note was removed as redundant — the per-shop hover already
+  explains it. `_dowov` is still computed for the hover.)
+- **Red shop chips → shop-specific explanation** (`u.shops`): a per-shop rung/pot chip is red when
+  it under-rings (below half its region's best shop). Its **hover carries the DoW-overlap reason
+  scoped to that shop** — "under-rings this combo; at [shop], its bags also sold solo on the Tier 2
+  Deal of the Week: [bag] N solo here — the sale likely went to the solo deal." The per-shop solo
+  counts come from `card.usage.shops[].soloTok` (a `{token: units}` map of that shop's single-bag
+  sales, restricted to the combo's tokens; built in `_combo_button_usage` from `shop_tok`). Each
+  combo bag carries its `tok` (`_combo_norm_option`), so `_dowov` matches a DoW bag to its shop
+  solo figure. If a red shop sold none of the DoW bags solo, the hover falls back to "ring the
+  combo button instead of separate bags."
+- **Shop hover → inline combo note** (`buildDowTip`, the per-shop DoW tooltip): each bag that is
+  also a running-combo component gets an inline "↳ in [combo]" — so you see a DoW bag that may be
+  tied up in / split with a combo (the reverse direction).
+- **Per-shop export → Shops Efficiency** (`combos_by_shop()` → `combos_by_shop.json`, written in
+  `main()`): a compact per-shop view — each shop's running combos (rung vs could-have, red
+  under-ringing, DoW overlap from `usage.shops[].soloTok`), its best combo, and its Power Deals /
+  Deal-of-the-Week sales (`deals.soldByLoc`). `shops_efficiency.py` reads it into `SE.combos` and
+  renders a shop-selector panel; needs no extra Odoo queries. `_LAST_SHOP_TOK` also exposes the
+  raw per-shop single-bag token sales.
+- **Same-bag-two-offers hover** (`dowConns`): the tier label now marks whether that deal's tier
+  is the **current** one (`· current`) or notes "now measuring Tier N", via `smcCurTier()`.
+
+**Click-to-pin tooltips** (`wireDowHover`): the shop (`.dow-loc`) and category (`.dow-cat`)
+tooltips can be **clicked to pin** — the tooltip stays open and becomes interactive
+(`pointer-events:auto`) so you can read/click inside it (e.g. the inline combo notes); clicking
+the same cell again, or anywhere outside, closes it, and hover still previews when nothing is
+pinned. A hint line ("click to pin" / "pinned — click outside to close") shows the state.
+
 ## Combo button usage (till check)
 
 Rendered **inside each running combo card** (in `renderRunningCards`). The headline

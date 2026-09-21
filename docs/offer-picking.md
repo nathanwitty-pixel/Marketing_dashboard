@@ -38,7 +38,13 @@ A planning menu for **which offers/combos to run**. The page **leads with the Fo
    (sold that month last year, from the forecast %, **or** clients requesting its bags now,
    from Client req.), and *STOCK* (buildable vs `stockMin`) — so it's clear whether a **★ Pick
    — sells in Oct** came from last year's sales, **clients requesting it** from current
-   self-made demand, a **🔧 Make** from low stock, or **off-band** from price alone. Self-made-driven picks (e.g. Jumbo+Standard/Antitheft, client demand 30,
+   self-made demand, a **🔧 Make** from low stock, or **off-band** from price alone.
+
+   **Baseline forecast (fixed)** — a second card (`#fc-baseline`) directly below the live
+   Forecast holds a **frozen snapshot** of the recommendation as first generated. The JS
+   captures the very first `renderForecast()` output once (`fcBaselineCaptured`) and never
+   touches it again, so as you edit combos the live Forecast changes while the baseline stays
+   put — the reference to compare your picks against. Self-made-driven picks (e.g. Jumbo+Standard/Antitheft, client demand 30,
    no Oct sales history) surface here that pure seasonality would miss.
 5. **Seasonality** — the **2025 monthly combo calendar** (`MONTHLY_COMBOS_2025`, user-supplied)
    × **actual POS sales**. `_seasonality()` / `OP.seasonality`. Per combo: planned months
@@ -74,6 +80,11 @@ col **D = full price** and col **F = offer price**, plus col **C = category**. T
 (`_build_catalog`) stores per bag `valueWas` (full D) and `valueNow` (offer F); bags not on
 the sheet fall back to **2 × production cost** for both.
 
+**Never-discounted bags** (`FULL_PRICE_BAGS` = MEGA, TAJI, LOOP, ZULA — matched by name /
+word-prefix via `_is_full_price`, so "LOOP" catches "LOOP BP", "MEGA" catches "MEGA BAGPACK")
+are priced at the **original full price for NOW too** — `valueNow` is forced equal to
+`valueWas`, so they carry no offer reduction anywhere they're used (combos, power deals).
+
 ### Downloaded copy & offline fallback — `offers_prices.json`
 
 The prices are also kept as a **local downloaded copy** in the dashboard root
@@ -101,6 +112,14 @@ the price is the **MAX** of its two slots; summed across pairs:
 - **price WAS** = Σ max(`valueWas`) per pair — the full price.
 - **cost** = the now-max bag's production cost per pair; **buildable** = min pair stock (each
   pair's stock = sum of its two slots, since either fills it).
+
+**Per-pair offer/BOM toggle.** Each pair carries a small **offer ⇄ BOM** toggle (`.basis-tog`,
+default `offer`). Flip a pair to **BOM** and that pair contributes the bag's **production cost**
+to **NOW** instead of its offer price — i.e. the bag is added to the combo *at cost* (that
+pair's margin becomes ~0), while WAS still shows the full price. Example: `SARAI + PRIME` with
+Sarai left at **offer** (e.g. 3,700) and Prime flipped to **BOM** → NOW = Sarai offer + Prime
+cost. It's client-side in `recompute()` (reads each pair's `data-basis`) and updates the live
+Forecast; the fixed baseline stays at the all-offer pricing, so you can compare.
 
 Verified against the sheet: `LOLA + MINI ZURI/TRECENTO` → now = 1,700 + max(2,200, 1,700) =
 **3,900** (exact), was = 2,100 + 2,600 = 4,700. Each combo pre-fills its grid from the

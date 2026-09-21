@@ -236,6 +236,8 @@ def _odoo_stock_by_shop(code_to_loc):
 
 
 _AUGMENTED_STOCK = {}   # Kenya bag stock (sheet + Odoo fallback), shared with _enrich_deals
+_SZ_STOCK = {}          # Sinza bag stock (live Odoo on-hand), for the not-on-offer stock column
+_UG_STOCK = {}          # Uganda bag stock (live Odoo on-hand)
 
 # The combo-request log for the month (all states).
 REQUEST_SQL = """
@@ -362,6 +364,16 @@ def _read_offer_analysis():
 
 
 DEALS_SHEET_ID = "1TAGv9bGnE88nEjn2d0QvBkRhKiK3E42VI2GfU-MmJEY"
+
+# Manual Power-Deal supplements, per month — bags that DO run as a Power Deal but aren't in the
+# deals sheet for that month yet. The reporting service account is read-only, so these can't be
+# written back to the sheet from here. Added only when not already present (so once the sheet
+# gets the row, this is a no-op), and enriched with live Odoo sales like any other deal.
+# Cathy: 2,000 → 1,600 (400 off), same as its July/August rows.
+MANUAL_POWER_DEALS = {
+    "September": [{"tier": "All", "product": "Cathy", "location": "All",
+                   "orig": 2000, "now": 1600, "disc": 400}],
+}
 
 # All Kenya bag sales this month by product template — to attach real sold/revenue
 # to each deal product (matched by name prefix, like the new-products page).
@@ -653,6 +665,15 @@ def _read_deals(month_name):
             if loc and loc not in e["locations"]:
                 e["locations"].append(loc)
 
+    # Manual Power-Deal supplements for the month (sheet is read-only from here) — added only if
+    # the sheet doesn't already carry that product as a power deal this month.
+    _existing_pd = {str(p["product"]).strip().upper() for p in power}
+    for m in MANUAL_POWER_DEALS.get(month_name, []):
+        if str(m["product"]).strip().upper() not in _existing_pd:
+            power.append({"tier": m.get("tier", "All"), "product": m["product"],
+                          "location": m.get("location", "All"),
+                          "orig": _pn(m.get("orig")), "now": _pn(m.get("now")), "disc": _pn(m.get("disc"))})
+
     # A mirror shop inherits every DoW product its parent runs.
     for parent, shops in DOW_MIRROR.items():
         for e in dow.values():
@@ -791,7 +812,7 @@ BAG_SALES_SINZA_SQL  = _bag_sales_sql("AND lower(COALESCE(pc.\"name\",'')) IN ('
 BAG_SALES_UGANDA_SQL = _bag_sales_sql("AND lower(COALESCE(pc.\"name\",'')) = 'uganda'")
 
 
-def _bags_not_on_offer(m_start, m_end, on_offer_raw, sql=BAG_SALES_SQL, currency="KES"):
+def _bags_not_on_offer(m_start, m_end, on_offer_raw, sql=BAG_SALES_SQL, currency="KES", stock_map=None):
     """Bags with sales this month (in the market `sql` scopes to) that are on NO offer.
 
     `on_offer_raw` = the raw product/bag names that ARE on offer for that market:
@@ -839,8 +860,22 @@ def _bags_not_on_offer(m_start, m_end, on_offer_raw, sql=BAG_SALES_SQL, currency
             e["units"] += int(r["units"] or 0)
             e["revenue"] += int(r["revenue"] or 0)
 
-    not_on = [{"bag": bt, "units": v["units"], "revenue": v["revenue"]}
-              for bt, v in sold.items() if not _is_on_offer(bt) and v["units"] > 0]
+    # Stock on hand per bag type + a stock-runway ("days of cover"): at this month's average
+    # daily pace (units sold ÷ days elapsed so far), how long the current stock will last —
+    # so we see which not-on-offer bag is pushing and whether stock is healthy (short cover =
+    # about to run out; very long = overstocked/slow). Keys matched case-insensitively.
+    import datetime as _dt
+    _elapsed = max(1, (min(m_end, _dt.date.today()) - m_start).days + 1)
+    _stk = {str(k).strip().upper(): int(v or 0) for k, v in (stock_map or {}).items()}
+    not_on = []
+    for bt, v in sold.items():
+        if _is_on_offer(bt) or v["units"] <= 0:
+            continue
+        _stock = _stk.get(bt, 0)
+        _avg = v["units"] / _elapsed                        # avg units/day this month so far
+        _cover = int(round(_stock / _avg)) if _avg > 0 else None   # days the stock will last
+        not_on.append({"bag": bt, "units": v["units"], "revenue": v["revenue"], "stock": _stock,
+                       "avgPerDay": round(_avg, 1), "daysCover": _cover})
     not_on.sort(key=lambda x: -x["units"])
     on_sold = [bt for bt in sold if _is_on_offer(bt) and sold[bt]["units"] > 0]
     return {
@@ -919,6 +954,9 @@ SELECT COALESCE(SUM(jumbos / 2), 0)::int AS pairs FROM jj WHERE jumbos >= 2
 """
 
 
+_LAST_SHOP_TOK = {}   # shop -> {token: units}; set by _combo_button_usage, read by combos_by_shop()
+
+
 def _combo_button_usage(m_start, m_end, offer, sheet_slots, running):
     """Per running combo: units rung through the combo button (Odoo) vs the sheet's
     expected figure, with a per-shop breakdown of combos rung and the combo's
@@ -985,13 +1023,22 @@ def _combo_button_usage(m_start, m_end, offer, sheet_slots, running):
 
     out = []
     for lbl, _ in sheet_slots:
+        # This combo's component tokens (for the per-shop solo-sales lookup below).
+        combo_toks = set()
+        for fs, _k in slot_sets[lbl]:
+            combo_toks |= set(fs)
         shops = sorted(set(list(rung[lbl]) + list(shop_tok)))
         shoprows = []
         for s in shops:
             rn = rung[lbl].get(s, 0)
             im = _implied(lbl, s)
             if rn or im:
-                shoprows.append({"shop": s, "rung": rn, "implied": im})
+                # Per-shop solo sales of THIS combo's component bags, keyed by token, so the
+                # red-chip Deal-of-the-Week overlap hover reads shop-specific (e.g. Starmall)
+                # numbers rather than the combo's all-shops total.
+                _toks = shop_tok.get(s, {})
+                solo = {t: _toks.get(t, 0) for t in combo_toks if _toks.get(t, 0)}
+                shoprows.append({"shop": s, "rung": rn, "implied": im, "soloTok": solo})
         # Red flag: a shop ringing less than half the best-performing shop in its region.
         region_best = {}
         for x in shoprows:
@@ -1010,6 +1057,81 @@ def _combo_button_usage(m_start, m_end, offer, sheet_slots, running):
     # Worst combo-button adherence first (rung ÷ sheet-expected); combos with no
     # sheet target fall to the end.
     out.sort(key=lambda x: (x["rung"] / x["expected"]) if x["expected"] else 9e9)
+    # Expose the per-shop single-bag sales (shop -> {token: units}) so a per-shop view
+    # (Shops Efficiency) can read power-deal / Deal-of-the-Week sales at each shop.
+    global _LAST_SHOP_TOK
+    _LAST_SHOP_TOK = shop_tok
+    return out
+
+
+def combos_by_shop(running_cards, deals):
+    """Per-shop view for Shops Efficiency, keyed by shop-location label (e.g. 'Hilton'):
+      - combos : each running combo rung at that shop — rung vs 'could-have' (pot), whether it
+                 RED under-rings (below half its region's best shop), and its Deal-of-the-Week
+                 overlap bags with that shop's own solo-sale counts.
+      - best   : the highest-rung combo at the shop.
+      - powerDeals / dow : how the shop's Power Deals / Deal-of-the-Week are selling (soldByLoc).
+    Built from data already computed for the combos page (usage.shops + deals.soldByLoc), so it
+    needs no extra queries."""
+    cur = "2"                                  # current DoW tier (matches smcCurTier on the page)
+    dow   = (deals or {}).get("dealOfWeek", [])
+    power = (deals or {}).get("powerDeals", [])
+
+    def _norm(s): return str(s or "").strip().upper()
+    def _tdig(t):
+        m = re.search(r"\d", str(t or ""))
+        return m.group(0) if m else ""
+    def _tokmatch(product, tok):
+        a, b = _norm(_combo_norm_option(product)), _norm(tok)
+        return bool(a and b and (a == b or a.startswith(b) or b.startswith(a)))
+
+    shops = set()
+    for rc in running_cards:
+        for s in (rc.get("usage") or {}).get("shops", []):
+            shops.add(s["shop"])
+    for d in list(dow) + list(power):
+        for loc in (d.get("soldByLoc") or {}):
+            shops.add(loc)
+
+    out = {}
+    for shop in sorted(shops):
+        combos = []
+        for rc in running_cards:
+            row = next((s for s in (rc.get("usage") or {}).get("shops", []) if s["shop"] == shop), None)
+            if not row:
+                continue
+            solo = row.get("soloTok") or {}
+            dow_bags = []
+            for b in rc.get("bags", []):
+                tok = b.get("tok") or _combo_norm_option(b.get("name", ""))
+                is_dow = any(_tdig(d.get("tier")) == cur and _tokmatch(d.get("product"), tok) for d in dow)
+                if is_dow and solo.get(tok, 0) > 0:
+                    dow_bags.append({"name": b.get("name"), "sold": int(solo.get(tok, 0))})
+            dow_bags.sort(key=lambda x: -x["sold"])
+            combos.append({
+                "label": rc.get("sheetLabel") or rc.get("name"),
+                "name": rc.get("name"),
+                "rung": int(row.get("rung", 0)), "pot": int(row.get("implied", 0)),
+                "red": bool(row.get("red")), "region": row.get("region", ""),
+                "dow": dow_bags,
+            })
+        combos.sort(key=lambda c: -c["rung"])
+        pd = sorted(
+            [{"bag": d.get("product"), "tier": d.get("tier"),
+              "sold": int((d.get("soldByLoc") or {}).get(shop, 0)),
+              "orig": d.get("orig"), "now": d.get("now")}
+             for d in power if int((d.get("soldByLoc") or {}).get(shop, 0)) > 0],
+            key=lambda x: -x["sold"])
+        # Only the Deal-of-the-Week deals ASSIGNED to this shop (its own DoW lineup, per each
+        # deal's `locations` incl. DOW_MIRROR) — not every deal that happened to sell here.
+        dw = sorted(
+            [{"bag": d.get("product"), "tier": d.get("tier"),
+              "sold": int((d.get("soldByLoc") or {}).get(shop, 0))}
+             for d in dow if shop in (d.get("locations") or [])],
+            key=lambda x: -x["sold"])
+        out[shop] = {"combos": combos, "best": (combos[0] if combos else None),
+                     "powerDeals": pd, "dow": dw,
+                     "region": (combos[0]["region"] if combos else "")}
     return out
 
 
@@ -1446,7 +1568,8 @@ def build_payload(m_start, m_end):
         for _t in tmpls:
             for _b, _q in comp_by_tmpl.get(_t, {}).items():
                 _comp[_b] = _comp.get(_b, 0) + _q
-        bags = [{"name": b, "stock": stock_map.get(b, 0), "star": b in picks, "sold": _comp.get(b, 0)} for b in all_b]
+        bags = [{"name": b, "stock": stock_map.get(b, 0), "star": b in picks, "sold": _comp.get(b, 0),
+                 "tok": _combo_norm_option(b)} for b in all_b]
         last = weeks[-1]["sold"] if weeks else 0
         prev = weeks[-2]["sold"] if len(weeks) > 1 else last
         # Guidance (same rule as Offer Sales vs Stock Guidance): remaining-to-target
@@ -1543,6 +1666,8 @@ def build_payload(m_start, m_end):
     _sz_stock, _ug_stock = offer.get("sinzaStock", {}), offer.get("ugStock", {})
     _fill_from_odoo(_sz_stock, _SINZA_CODES, "Sinza/Dar")
     _fill_from_odoo(_ug_stock, _UGANDA_CODES, "Uganda")
+    global _SZ_STOCK, _UG_STOCK
+    _SZ_STOCK, _UG_STOCK = _sz_stock, _ug_stock       # for the not-on-offer stock column
     regions = {
         "sinza": {
             "label": "Sinza", "currency": "TSh",
@@ -1650,6 +1775,9 @@ def fetch():
         _stock = _AUGMENTED_STOCK or (_read_offer_analysis() or {}).get("stockMap", {})
         _enrich_deals(deals, m_start, m_end, _stock, set(payload.get("comboBags", [])))
     payload["deals"] = deals
+    # Per-shop combo / power-deal view for Shops Efficiency (written to combos_by_shop.json
+    # in main(); also carried in the payload so the combos page could use it if needed).
+    payload["combosByShop"] = combos_by_shop(payload.get("runningCards", []), deals)
     # ── Bags not on offer, per market ──
     # Kenya: running-combo components + Deal-of-Week + Power-Deal products are "on offer".
     kenya_on = set(payload.get("comboBags", []))
@@ -1657,12 +1785,12 @@ def fetch():
         for x in (deals or {}).get(grp, []):
             kenya_on.add(x.get("product", ""))
     payload["bagsNotOnOffer"] = _bags_not_on_offer(
-        m_start, m_end, kenya_on, BAG_SALES_SQL, "KES")
+        m_start, m_end, kenya_on, BAG_SALES_SQL, "KES", stock_map=_AUGMENTED_STOCK)
     # Sinza & Uganda: the region's sheet combos/singles/specials component bags are "on offer".
     payload["bagsNotOnOfferSinza"] = _bags_not_on_offer(
-        m_start, m_end, _region_on_offer_bags(payload, "sinza"), BAG_SALES_SINZA_SQL, "TSh")
+        m_start, m_end, _region_on_offer_bags(payload, "sinza"), BAG_SALES_SINZA_SQL, "TSh", stock_map=_SZ_STOCK)
     payload["bagsNotOnOfferUganda"] = _bags_not_on_offer(
-        m_start, m_end, _region_on_offer_bags(payload, "uganda"), BAG_SALES_UGANDA_SQL, "USh")
+        m_start, m_end, _region_on_offer_bags(payload, "uganda"), BAG_SALES_UGANDA_SQL, "USh", stock_map=_UG_STOCK)
     return payload
 
 
@@ -1691,6 +1819,14 @@ def main():
     if payload is None:
         return
     inject(payload)
+    # Shared per-shop combo / power-deal file for Shops Efficiency to read & inject.
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "combos_by_shop.json"),
+                  "w", encoding="utf-8") as f:
+            json.dump({"month": payload.get("month", ""),
+                       "byShop": payload.get("combosByShop", {})}, f, ensure_ascii=False)
+    except OSError:
+        pass
     sm, run = payload["smTotals"], payload["runTotals"]
     rc = payload["reqCounts"]
     print(f"self_made_combos.html updated — {payload['month']} (Kenya).")

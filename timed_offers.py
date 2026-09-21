@@ -23,6 +23,12 @@ from datetime import date, timedelta
 SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# TTL disk-cache windows (minutes) for the slow Odoo lookups — a manual Refresh sets
+# DENRI_FORCE_FRESH=1 to bypass and repopulate. Sales move intraday (short TTL); list/
+# pricelist prices are near-static metadata (long TTL) and were the per-bag round-trip cost.
+ODOO_CACHE_MIN = 30      # POS sales scans (window, daily, per-bag value, price averages)
+META_CACHE_MIN = 720     # list_price / pricelist per-bag lookups (rarely change)
+
 from google_auth import get_gspread_client
 
 
@@ -44,14 +50,35 @@ CONFIG_FILE = os.path.join(BASE_DIR, "timed_offers_config.json")
 
 _DEFAULT_BAGS = ["Kai", "Pioneer", "Double Press", "Antitheft", "Code 3", "School bag"]
 
+def _bags_from_file(fname):
+    """Bag list from a repo CSV's 'BAG TYPE' column — unique, order-preserving. Lets an offer
+    set "bagsFrom" (e.g. the Kitengela Rejects tracker → reject_stock.csv) so it stays in sync
+    with that list instead of hand-listing bags."""
+    path = os.path.join(BASE_DIR, str(fname).strip())
+    try:
+        import csv as _csv
+        seen, out = set(), []
+        with open(path, encoding="utf-8-sig") as f:
+            for row in _csv.DictReader(f):
+                b = (row.get("BAG TYPE") or row.get("Bag Type") or row.get("bag") or "").strip()
+                if b and b.upper() not in seen:
+                    seen.add(b.upper()); out.append(b)
+        return out
+    except (OSError, ValueError):
+        return []
+
+
 def _norm_offer(raw):
     """Normalise one offer dict into the canonical shape."""
     o = {"name": "", "market": "Kenya", "startDate": "", "endDate": "",
-         "bags": list(_DEFAULT_BAGS), "prices": {}, "shops": []}
+         "bags": list(_DEFAULT_BAGS), "prices": {}, "shops": [], "bagsFrom": ""}
     o["name"]      = str(raw.get("name", "") or "").strip()
     o["market"]    = str(raw.get("market", "Kenya") or "Kenya").strip()
     o["startDate"] = str(raw.get("startDate", "") or "").strip()
     o["endDate"]   = str(raw.get("endDate", "") or "").strip()
+    # Optional: the day a clearance actually began, when it's partway through the window (the
+    # window may span the whole month for counting). Splits the lift "before vs during" here.
+    o["clearanceStart"] = str(raw.get("clearanceStart", "") or "").strip()
     # Optional: limit the offer to a time-of-day window (Nairobi wall time, HH:MM),
     # e.g. an evening 16:00–19:00 flash. Empty = the whole day.
     o["startTime"] = str(raw.get("startTime", "") or "").strip()
@@ -61,6 +88,23 @@ def _norm_offer(raw):
         o["shops"] = [str(s).strip() for s in raw["shops"] if str(s).strip()]
     if isinstance(raw.get("bags"), list) and raw["bags"]:
         o["bags"] = [str(b).strip() for b in raw["bags"] if str(b).strip()]
+    # Optional: pull the bag list from a repo CSV (e.g. reject_stock.csv) so a tracker stays
+    # in sync with that list. A non-empty bagsFrom overrides the inline bags[].
+    o["bagsFrom"] = str(raw.get("bagsFrom", "") or "").strip()
+    if o["bagsFrom"]:
+        _fb = _bags_from_file(o["bagsFrom"])
+        if _fb:
+            o["bags"] = _fb
+    # Optional unit-price band (isolates a clearance sold at set tiers from full-price sales
+    # of the same bags at the same till). e.g. Kitengela rejects: maxPrice 1600.
+    o["minPrice"] = safe_int(raw.get("minPrice")) if raw.get("minPrice") else 0
+    o["maxPrice"] = safe_int(raw.get("maxPrice")) if raw.get("maxPrice") else 0
+    # Optional product-name filter — the exact way to isolate a tagged range, e.g. the
+    # Kitengela rejects are Odoo products with "[REJECT]" in the name.
+    o["nameLike"] = str(raw.get("nameLike", "") or "").strip()
+    # Optional: source the In-stock figure from a repo CSV's UNITS column (physical stock)
+    # instead of live Odoo on-hand — e.g. Kitengela rejects → reject_stock.csv.
+    o["stockFrom"] = str(raw.get("stockFrom", "") or "").strip()
     # Actual offer pricing per bag {was, now} — the authoritative discount.
     if isinstance(raw.get("prices"), dict):
         for k, v in raw["prices"].items():
@@ -114,14 +158,48 @@ def _time_sql(start_time, end_time):
     local = "(p.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::time"
     return f"  AND {local} >= TIME '{start_time}' AND {local} < TIME '{end_time}' "
 
-# Per-offer globals — the SQL helpers below read _BAGS_UP / _SHOP_SQL / _TIME_SQL, and the
-# build block reads CFG / BAGS; build_offer() rebinds all of them before each offer is computed.
+# Optional unit-price band. Used to isolate the Kitengela reject clearance (sold at the
+# 1,000/1,500 tiers) from the same shop's full-price sales of the same bag types: a
+# maxPrice ≈ 1,600 keeps the clearance lines and drops normal-price ones (which start ~1,724).
+def _price_sql(min_price, max_price):
+    parts = []
+    if isinstance(min_price, (int, float)) and min_price > 0:
+        parts.append("pl.price_unit >= %g" % float(min_price))
+    if isinstance(max_price, (int, float)) and max_price > 0:
+        parts.append("pl.price_unit <= %g" % float(max_price))
+    return ("  AND " + " AND ".join(parts) + " ") if parts else ""
+
+
+# Optional product-name filter — the precise way to isolate a tagged range. The Kitengela
+# rejects are distinct Odoo products with "[REJECT]" in the name, so nameLike "[REJECT]" counts
+# exactly those (Postgres LIKE only treats % and _ as special, so [ ] are literal).
+def _name_sql(pattern):
+    pattern = (pattern or "").strip()
+    if not pattern:
+        return ""
+    return "  AND COALESCE(pt.\"name\",'') ILIKE '%" + pattern.replace("'", "''") + "%' "
+
+# Per-offer globals — the SQL helpers below read _BAGS_UP / _SHOP_SQL / _TIME_SQL / _PRICE_SQL,
+# and the build block reads CFG / BAGS; build_offer() rebinds all of them before each offer.
 CFG = {"name": "", "market": "Kenya", "startDate": "", "endDate": "",
        "bags": list(_DEFAULT_BAGS), "prices": {}, "shops": []}
 BAGS = CFG["bags"]
 _BAGS_UP = [b.upper() for b in BAGS]
 _SHOP_SQL = ""
 _TIME_SQL = ""
+_PRICE_SQL = ""
+_NAME_SQL = ""
+# Quantity clause. Default counts sales only (qty > 0 = gross). A name-filtered clearance
+# tracker (e.g. the Kitengela rejects) uses qty <> 0 so refunds/returns net out — matching
+# the Monthly Sales / Current Performance reject figure (net), which its Sales total is too.
+_QTY_SQL = " AND pl.qty > 0 "
+
+# Catch-all bucket for name-filtered (e.g. [REJECT]) offers: units that match the name
+# filter but whose product name doesn't map to a configured bag — colour/condition or
+# plural/variant spellings (e.g. "Moon Bag …" vs the sheet's "Moon Bags", "Mega …" vs
+# "Mega Bagpack", "Standard Travel …" vs "Travel"). Without this they were silently
+# dropped, so the per-bag table under-counted the true reject total.
+_OTHER_REJECTS = "Other rejects"
 
 
 def _bucket(name):
@@ -152,12 +230,9 @@ def odoo_window_sales(bags, start, end, market):
 
     # Kenya = every till except the non-Kenya markets.
     non_kenya = "('sinza','dar-es-alam','uganda')"
-    like_clauses = " OR ".join(
-        [f'pt."name" ILIKE :bag{i}' for i in range(len(bags))])
+    # Fetch every bag product's sales in scope and bucket in Python (via _bucket) — far cheaper
+    # than OR-ing 60-70+ ILIKE patterns in SQL (measured ~3× faster on a month of Kenya sales).
     params = {"s": start, "e": end}
-    for i, b in enumerate(bags):
-        params[f"bag{i}"] = b + "%"
-
     q = f"""
     SELECT pt."name" AS product, SUM(pl.qty)::int AS bags
     FROM pos_order p
@@ -168,31 +243,37 @@ def odoo_window_sales(bags, start, end, market):
     LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
     LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
     WHERE p.date_order::date BETWEEN CAST(:s AS date) AND CAST(:e AS date)
-      AND p.state IN ('done','paid') AND pl.qty > 0
+      AND p.state IN ('done','paid'){_QTY_SQL}
       AND lower(COALESCE(pc."name",'')) NOT IN {non_kenya}
-    {_SHOP_SQL}{_TIME_SQL}
+    {_SHOP_SQL}{_TIME_SQL}{_PRICE_SQL}{_NAME_SQL}
       AND COALESCE(pt."name",'') NOT LIKE '%+%'
       AND COALESCE(pt."name",'') NOT ILIKE '%delivery%'
       AND COALESCE(pt."name",'') NOT ILIKE '%customization%'
       AND COALESCE(pt."name",'') NOT ILIKE '%strap%'
       AND COALESCE(pt."name",'') NOT ILIKE '%sample%'
       AND COALESCE(pcat."name",'') NOT ILIKE '%Pos%'
-      AND ({like_clauses})
     GROUP BY pt."name"
     """
-    df = db.run_query(q, params)
+    df = db.run_query_cached(q, params, ttl_min=ODOO_CACHE_MIN)
     if df is None or df.empty:
         return out, True
     for _, r in df.iterrows():
         b = _bucket(r["product"])
         if b:
             out[b] += int(r["bags"] or 0)
+        elif _NAME_SQL:
+            # Name-filtered offer (e.g. [REJECT]): keep unbucketed matches so the total is
+            # honest — collect them under the catch-all bag instead of dropping them.
+            k = _OTHER_REJECTS.upper()
+            out[k] = out.get(k, 0) + int(r["bags"] or 0)
     return out, True
 
 
-def odoo_daily_kenya(bags, start, end):
+def odoo_daily_kenya(bags, start, end, name_sql=None):
     """{date_iso: bags} — daily Kenya bags for the offer bags across [start,end],
-    used to measure the before-vs-during-offer lift. {} if DB unreachable."""
+    used to measure the before-vs-during-offer lift. `name_sql` overrides the offer's name
+    filter (e.g. pass a "NOT ILIKE '%[REJECT]%'" clause to get the NORMAL, full-price series of
+    the same bags to compare against the reject clearance). {} if DB unreachable."""
     out = {}
     try:
         from lib import db
@@ -205,6 +286,7 @@ def odoo_daily_kenya(bags, start, end):
     params = {"s": start, "e": end}
     for i, b in enumerate(bags):
         params[f"bag{i}"] = b + "%"
+    _nm = _NAME_SQL if name_sql is None else name_sql
     q = f"""
     SELECT p.date_order::date AS d, SUM(pl.qty)::int AS bags
     FROM pos_order p
@@ -215,9 +297,9 @@ def odoo_daily_kenya(bags, start, end):
     LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
     LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
     WHERE p.date_order::date BETWEEN CAST(:s AS date) AND CAST(:e AS date)
-      AND p.state IN ('done','paid') AND pl.qty > 0
+      AND p.state IN ('done','paid'){_QTY_SQL}
       AND lower(COALESCE(pc."name",'')) NOT IN ('sinza','dar-es-alam','uganda')
-    {_SHOP_SQL}{_TIME_SQL}
+    {_SHOP_SQL}{_TIME_SQL}{_PRICE_SQL}{_nm}
       AND COALESCE(pt."name",'') NOT LIKE '%+%'
       AND COALESCE(pt."name",'') NOT ILIKE '%delivery%'
       AND COALESCE(pt."name",'') NOT ILIKE '%customization%'
@@ -227,7 +309,7 @@ def odoo_daily_kenya(bags, start, end):
       AND ({like_clauses})
     GROUP BY 1 ORDER BY 1
     """
-    df = db.run_query(q, params)
+    df = db.run_query_cached(q, params, ttl_min=ODOO_CACHE_MIN)
     if df is not None and not df.empty:
         for _, r in df.iterrows():
             out[str(r["d"])] = int(r["bags"] or 0)
@@ -245,10 +327,7 @@ def odoo_bag_prices(bags, start, end):
             return prices, catalog
     except Exception:
         return prices, catalog
-    like_clauses = " OR ".join([f'pt."name" ILIKE :bag{i}' for i in range(len(bags))])
     params = {"s": start, "e": end}
-    for i, b in enumerate(bags):
-        params[f"bag{i}"] = b + "%"
     base = """
     FROM pos_order p
     JOIN pos_order_line pl ON pl.order_id = p.id
@@ -258,7 +337,7 @@ def odoo_bag_prices(bags, start, end):
     LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
     LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
     WHERE p.date_order::date BETWEEN CAST(:s AS date) AND CAST(:e AS date)
-      AND p.state IN ('done','paid') AND pl.qty > 0
+      AND p.state IN ('done','paid')
       AND lower(COALESCE(pc."name",'')) NOT IN ('sinza','dar-es-alam','uganda')
       AND COALESCE(pt."name",'') NOT LIKE '%+%'
       AND COALESCE(pt."name",'') NOT ILIKE '%delivery%'
@@ -267,11 +346,11 @@ def odoo_bag_prices(bags, start, end):
       AND COALESCE(pt."name",'') NOT ILIKE '%sample%'
       AND COALESCE(pt."name",'') NOT ILIKE '%KES discount%'
       AND COALESCE(pcat."name",'') NOT ILIKE '%Pos%'
-    """
-    # per offer-bag
-    df = db.run_query(f'SELECT pt."name" AS product, SUM(pl.qty)::int AS qty, '
-                      f'SUM(pl.price_subtotal_incl)::numeric AS val {base} AND ({like_clauses}) '
-                      f'GROUP BY pt."name"', params)
+    """ + _QTY_SQL + _SHOP_SQL + _TIME_SQL + _PRICE_SQL + _NAME_SQL
+    # per offer-bag — fetch all products, bucket in Python (only configured bags kept)
+    df = db.run_query_cached(f'SELECT pt."name" AS product, SUM(pl.qty)::int AS qty, '
+                             f'SUM(pl.price_subtotal_incl)::numeric AS val {base} '
+                             f'GROUP BY pt."name"', params, ttl_min=ODOO_CACHE_MIN)
     if df is not None and not df.empty:
         for _, r in df.iterrows():
             b = _bucket(r["product"])
@@ -279,8 +358,8 @@ def odoo_bag_prices(bags, start, end):
                 prices[b]["qty"] += int(r["qty"] or 0)
                 prices[b]["val"] += float(r["val"] or 0)
     # catalogue-wide avg
-    dfc = db.run_query(f'SELECT ROUND(SUM(pl.price_subtotal_incl)/NULLIF(SUM(pl.qty),0)) AS avg {base}',
-                       {"s": start, "e": end})
+    dfc = db.run_query_cached(f'SELECT ROUND(SUM(pl.price_subtotal_incl)/NULLIF(SUM(pl.qty),0)) AS avg {base}',
+                              {"s": start, "e": end}, ttl_min=ODOO_CACHE_MIN)
     if dfc is not None and not dfc.empty and dfc.iloc[0]["avg"] is not None:
         catalog = int(dfc.iloc[0]["avg"])
     return prices, catalog
@@ -304,14 +383,170 @@ def _sheet_category_by_bag(bags):
     return out
 
 
+def _stock_from_file(fname):
+    """{BAG_UPPER: units} — physical stock summed per BAG TYPE from a repo CSV's UNITS column.
+    Lets an offer set "stockFrom" (e.g. Kitengela Rejects → reject_stock.csv) so the In-stock
+    figure is the actual reject stock on the ground, not Odoo's live Kenya on-hand."""
+    path = os.path.join(BASE_DIR, str(fname).strip())
+    out = {}
+    try:
+        import csv as _csv
+        with open(path, encoding="utf-8-sig") as f:
+            for row in _csv.DictReader(f):
+                b = (row.get("BAG TYPE") or row.get("Bag Type") or row.get("bag") or "").strip().upper()
+                try:
+                    u = int(float(row.get("UNITS") or row.get("Units") or 0))
+                except (ValueError, TypeError):
+                    u = 0
+                if b:
+                    out[b] = out.get(b, 0) + u
+    except (OSError, ValueError):
+        return {}
+    return out
+
+
+# ── Per-variant reject rows (Colour / Category / Product / Bag Type filterable) ──────
+# Primary colour tokens used to reduce both Odoo product names ("Moon Bag Black [REJECT]")
+# and reject_stock.csv COLOR values ("BLACK TT", "WOOVEN BLACK") to one comparable colour,
+# so a sold variant and its stock line up. Multi-word first (longest-match wins).
+_PRIMARY_COLOURS = ["DARK BROWN", "CHOCOLATE", "MUSTARD", "MAROON", "PURPLE", "CRACKED",
+                    "BROWN", "BLACK", "GREEN", "BEIGE", "SPICE", "WOVEN", "WOOVEN",
+                    "GREY", "GRAY", "NUDE", "CHOCO", "NAVY", "BLUE", "PINK", "RED"]
+
+def _parse_colour(name):
+    """First primary colour token found in a name (longest-first), Title-cased; '' if none."""
+    up = " " + re.sub(r"[^A-Z0-9 ]+", " ", str(name).upper()) + " "
+    for c in _PRIMARY_COLOURS:
+        if (" " + c + " ") in up:
+            return c.title()
+    return ""
+
+def _singular_tokens(s):
+    """Word tokens, plural 's' trimmed, so 'MOON BAGS' and 'Moon Bag Black' share tokens."""
+    toks = [w for w in re.split(r"[^A-Z0-9]+", str(s).upper()) if w]
+    return [w[:-1] if (len(w) > 3 and w.endswith("S")) else w for w in toks]
+
+def reject_variants(start, end):
+    """Per-[REJECT]-product variant rows for a name-filtered offer, for the filterable table:
+    {product, colour, bagType, category, sold, stock, priceWas, priceNow, discountKes,
+    discountPct}. Sold/price come live from Odoo; stock is merged from the reject_stock.csv
+    file per (bag, colour). Colour/bag matching is best-effort, but totals still sum to the
+    true reject sold and stock. Returns [] when no nameLike filter or the DB is unreachable."""
+    if not _NAME_SQL:
+        return []
+    try:
+        from lib import db
+        ok, _ = db.check_connection()
+        if not ok:
+            return []
+    except Exception:
+        return []
+    cats = _sheet_category_by_bag(BAGS)
+
+    # Stock variants from the CSV: (BAG_UP, COLOUR_UP) -> units, plus a bag-token index.
+    stock_var, csv_bags, seen = {}, [], set()
+    try:
+        import csv as _csv
+        src = os.path.join(BASE_DIR, str(CFG.get("stockFrom") or "reject_stock.csv").strip())
+        with open(src, encoding="utf-8-sig") as f:
+            for row in _csv.DictReader(f):
+                bt = (row.get("BAG TYPE") or "").strip().upper()
+                if not bt:
+                    continue
+                col = _parse_colour(row.get("COLOR") or row.get("COLOUR") or "") \
+                      or (row.get("COLOR") or "").strip().title()
+                stock_var[(bt, col.upper())] = stock_var.get((bt, col.upper()), 0) + safe_int(row.get("UNITS"))
+                if bt not in seen:
+                    seen.add(bt); csv_bags.append((bt, _singular_tokens(bt)))
+    except OSError:
+        pass
+    csv_bags.sort(key=lambda x: -len(x[1]))     # match the most-specific bag first
+
+    def _match_bag(clean_up):
+        toks = set(_singular_tokens(clean_up))
+        for bt, bt_toks in csv_bags:            # longest first
+            if bt_toks and all(t in toks for t in bt_toks):
+                return bt
+        return None
+
+    non_kenya = "('sinza','dar-es-alam','uganda')"
+    q = f"""
+    SELECT pt."name" AS product, SUM(pl.qty)::int AS qty,
+           SUM(pl.price_subtotal_incl)::numeric AS val, MAX(pt.list_price)::numeric AS lp
+    FROM pos_order p
+    JOIN pos_order_line pl ON pl.order_id = p.id
+    LEFT JOIN pos_session ps ON p.session_id = ps.id
+    LEFT JOIN pos_config pc ON ps.config_id = pc.id
+    LEFT JOIN product_product pp ON pl.product_id = pp.id
+    LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
+    LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
+    WHERE p.date_order::date BETWEEN CAST(:s AS date) AND CAST(:e AS date)
+      AND p.state IN ('done','paid'){_QTY_SQL}
+      AND lower(COALESCE(pc."name",'')) NOT IN {non_kenya}
+    {_SHOP_SQL}{_TIME_SQL}{_PRICE_SQL}{_NAME_SQL}
+      AND COALESCE(pt."name",'') NOT LIKE '%+%'
+      AND COALESCE(pt."name",'') NOT ILIKE '%delivery%'
+      AND COALESCE(pt."name",'') NOT ILIKE '%customization%'
+      AND COALESCE(pt."name",'') NOT ILIKE '%strap%'
+      AND COALESCE(pt."name",'') NOT ILIKE '%sample%'
+      AND COALESCE(pcat."name",'') NOT ILIKE '%Pos%'
+    GROUP BY pt."name"
+    """
+    df = db.run_query_cached(q, {"s": start, "e": end}, ttl_min=ODOO_CACHE_MIN)
+    rows = []
+    if df is not None and not df.empty:
+        for _, r in df.iterrows():
+            raw = str(r["product"])
+            clean = re.sub(r"\s+", " ", re.sub(r"\[?REJECT\]?", "", raw, flags=re.I)).strip()
+            bag = _match_bag(clean.upper()) or _bucket(clean) or _OTHER_REJECTS.upper()
+            colour = _parse_colour(clean)
+            qty = int(r["qty"] or 0)
+            now = round(float(r["val"] or 0) / qty) if qty else None
+            was = round(float(r["lp"]) * TAX_INCL) if r["lp"] else None
+            if was and now and now > was:
+                now = was
+            # consume the matching stock line so it isn't double-listed below
+            stk = stock_var.pop((bag, colour.upper()), 0)
+            disc = (was - now) if (was and now) else None
+            rows.append({
+                "product": clean or raw, "colour": colour,
+                "bagType": (_OTHER_REJECTS if bag == _OTHER_REJECTS.upper() else bag.title()),
+                "category": ("Other / variant names" if bag == _OTHER_REJECTS.upper() else cats.get(bag, "")),
+                "sold": qty, "stock": int(stk), "priceWas": was, "priceNow": now,
+                "rev": round(float(r["val"] or 0)),   # actual realised revenue (incl-tax) for this variant
+                "discountKes": (disc if (disc and disc > 0) else None),
+                "discountPct": (round((now - was) / was * 100) if (was and now and was > 0) else None),
+            })
+    # Stock-only variants (in the reject pile but nothing sold in the window).
+    for (bt, col), units in stock_var.items():
+        if units <= 0:
+            continue
+        rows.append({
+            "product": (bt.title() + ((" " + col.title()) if col else "")).strip(),
+            "colour": col.title(), "bagType": bt.title(), "category": cats.get(bt, ""),
+            "sold": 0, "stock": int(units), "priceWas": None, "priceNow": None,
+            "rev": 0, "discountKes": None, "discountPct": None,
+        })
+    rows.sort(key=lambda x: (-x["sold"], -x["stock"]))
+    return rows
+
+
 def kenya_stock_by_bag(bags):
     """{BAG_UPPER: {stock, category}} for the configured bags.
 
     STOCK is LIVE Kenya Odoo on-hand ONLY (internal shop locations), bucketed to
     each configured bag via _bucket(); the sheet is never used for stock, so a bag
     Odoo has no on-hand for — or an unreachable DB — shows 0. CATEGORY is a
-    non-stock label and still comes from STOCK_LEVELS col B."""
+    non-stock label and still comes from STOCK_LEVELS col B.
+
+    Exception: if the current offer sets "stockFrom" (a repo CSV), In-stock is that file's
+    physical UNITS per bag — used by the Kitengela reject tracker so stock = the reject pile."""
     cats = _sheet_category_by_bag(bags)
+    _src = CFG.get("stockFrom") if isinstance(CFG, dict) else ""
+    if _src:
+        fs = _stock_from_file(_src)
+        print("  Stock source     : %s (physical reject stock units)" % _src)
+        return {b: {"stock": fs.get(b, 0), "category": cats.get(b, "")} for b in _BAGS_UP}
     try:
         from lib import stock as _stock
         odoo = _stock.odoo_stock_by_product("kenya")
@@ -347,13 +582,13 @@ def odoo_list_price(bags):
     except Exception:
         return out
     for b in bags:
-        df = db.run_query(
+        df = db.run_query_cached(
             'SELECT ROUND(pt.list_price * :tax) AS incl, COUNT(*) AS n '
             'FROM product_template pt '
             'WHERE pt."name" ILIKE :pat AND pt."name" NOT LIKE \'%+%\' '
             '  AND COALESCE(pt.active, true) = true AND pt.list_price > 0 '
             'GROUP BY 1 ORDER BY n DESC, incl ASC LIMIT 1',
-            {"tax": TAX_INCL, "pat": b + "%"})
+            {"tax": TAX_INCL, "pat": b + "%"}, ttl_min=META_CACHE_MIN)
         if df is not None and not df.empty:
             out[b.upper()] = int(df.iloc[0]["incl"])
     return out
@@ -371,7 +606,7 @@ def odoo_offer_price(bags, start, end):
     except Exception:
         return out
     for b in bags:
-        df = db.run_query(
+        df = db.run_query_cached(
             'SELECT ROUND(i.fixed_price * :tax) AS incl, COUNT(*) AS n '
             'FROM product_pricelist_item i JOIN product_template pt ON pt.id = i.product_tmpl_id '
             'WHERE pt."name" ILIKE :pat AND pt."name" NOT LIKE \'%+%\' '
@@ -379,7 +614,7 @@ def odoo_offer_price(bags, start, end):
             '  AND (i.date_start IS NULL OR i.date_start::date <= CAST(:e AS date)) '
             '  AND (i.date_end   IS NULL OR i.date_end::date   >= CAST(:s AS date)) '
             'GROUP BY 1 ORDER BY n DESC, incl ASC LIMIT 1',
-            {"tax": TAX_INCL, "pat": b + "%", "s": start, "e": end})
+            {"tax": TAX_INCL, "pat": b + "%", "s": start, "e": end}, ttl_min=META_CACHE_MIN)
         if df is not None and not df.empty:
             out[b.upper()] = int(df.iloc[0]["incl"])
     return out
@@ -408,15 +643,15 @@ def odoo_bag_daily_value(bags, start, end):
          'LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id '
          'LEFT JOIN product_category pcat ON pcat.id = pt.categ_id '
          'WHERE p.date_order::date BETWEEN CAST(:s AS date) AND CAST(:e AS date) '
-         "  AND p.state IN ('done','paid') AND pl.qty > 0 "
+         "  AND p.state IN ('done','paid') "
          '  AND lower(COALESCE(pc."name",\'\')) NOT IN (\'sinza\',\'dar-es-alam\',\'uganda\') '
-         + _SHOP_SQL + _TIME_SQL +
+         + _QTY_SQL + _SHOP_SQL + _TIME_SQL + _PRICE_SQL + _NAME_SQL +
          '  AND COALESCE(pt."name",\'\') NOT LIKE \'%+%\' '
          '  AND COALESCE(pt."name",\'\') NOT ILIKE \'%delivery%\' '
          '  AND COALESCE(pt."name",\'\') NOT ILIKE \'%sample%\' '
          '  AND COALESCE(pcat."name",\'\') NOT ILIKE \'%Pos%\' '
          f'  AND ({like}) GROUP BY 1, 2')
-    df = db.run_query(q, params)
+    df = db.run_query_cached(q, params, ttl_min=ODOO_CACHE_MIN)
     if df is not None and not df.empty:
         for _, r in df.iterrows():
             b = _bucket(r["product"])
@@ -451,12 +686,17 @@ def weekly_kenya_posts(bags):
 def build_offer(offer):
     """Compute the full TO payload for a single offer dict. Rebinds the
     per-offer module globals the SQL helpers and build logic read."""
-    global BAGS, _BAGS_UP, _SHOP_SQL, _TIME_SQL, CFG
+    global BAGS, _BAGS_UP, _SHOP_SQL, _TIME_SQL, _PRICE_SQL, _NAME_SQL, _QTY_SQL, CFG
     CFG = offer
     BAGS = offer["bags"]
     _BAGS_UP = [b.upper() for b in BAGS]
     _SHOP_SQL = _shop_sql(offer.get("shops"))
     _TIME_SQL = _time_sql(offer.get("startTime"), offer.get("endTime"))
+    _PRICE_SQL = _price_sql(offer.get("minPrice"), offer.get("maxPrice"))
+    _NAME_SQL = _name_sql(offer.get("nameLike"))
+    # Net refunds for a clearance tracker so its total matches the Monthly/Current-Performance
+    # reject figure; keep gross (qty > 0) for a normal campaign.
+    _QTY_SQL = " AND pl.qty <> 0 " if offer.get("nameLike") else " AND pl.qty > 0 "
 
     print("Fetching timed-offer data (Odoo sales + weekly posting)...")
     sales_map, sales_live = odoo_window_sales(BAGS, CFG["startDate"], CFG["endDate"], CFG["market"])
@@ -470,25 +710,47 @@ def build_offer(offer):
         _os = date.fromisoformat(CFG["startDate"])
         _oe = date.fromisoformat(CFG["endDate"])
         _mstart = _os.replace(day=1)
-        _dend = max(_oe, date.today())               # fetch through today for the weekly view
+        # A clearance can begin partway through the offer window — e.g. the Kitengela rejects: the
+        # window is the whole month (for counting every reject), but the clearance itself only
+        # started on the 18th. `clearanceStart` splits "before" vs "during" at that day (comparing
+        # the pre-clearance days from the 1st to the clearance days), so the weekly makes sense and
+        # you can judge whether the Kitengela clearance was a good idea. Empty = split at the offer
+        # start as usual.
+        _split = _os
+        if CFG.get("clearanceStart"):
+            try:
+                _split = date.fromisoformat(CFG["clearanceStart"])
+            except (ValueError, TypeError):
+                _split = _os
+        # Only count clearance days that have actually ELAPSED — dividing a still-running window's
+        # sales by its full length (e.g. 13 days to the 30th when only a few have passed) would
+        # understate the daily pace. For a finished offer this is just its end date.
+        _oe_eff = min(_oe, date.today())
+        _dend = _oe_eff
         _daily = odoo_daily_kenya(BAGS, _mstart.isoformat(), _dend.isoformat())
+        # For a name-filtered clearance (rejects), also pull the NORMAL (non-[REJECT]) daily for the
+        # SAME bags/shops — so the panel can compare normal full-price sales vs the clearance sales.
+        _normal_daily = odoo_daily_kenya(BAGS, _mstart.isoformat(), _dend.isoformat(),
+                                         name_sql=" AND COALESCE(pt.\"name\",'') NOT ILIKE '%[REJECT]%' ") \
+            if _NAME_SQL else {}
         if _daily:
-            offer_days = (_oe - _os).days + 1
-            base_days  = (_os - _mstart).days            # days before the offer
+            offer_days = (_oe_eff - _split).days + 1
+            base_days  = (_split - _mstart).days          # days before the clearance/offer
             def _sum(a, b):
                 return sum(v for k, v in _daily.items() if a <= k <= b)
-            base_total  = _sum(_mstart.isoformat(), (_os - timedelta(days=1)).isoformat())
-            offer_total = _sum(_os.isoformat(), _oe.isoformat())
+            base_total  = _sum(_mstart.isoformat(), (_split - timedelta(days=1)).isoformat())
+            offer_total = _sum(_split.isoformat(), _oe_eff.isoformat())
             base_per_day  = round(base_total / base_days, 1) if base_days else 0.0
             offer_per_day = round(offer_total / offer_days, 1) if offer_days else 0.0
             lift_pct = round((offer_per_day - base_per_day) / base_per_day * 100) if base_per_day else None
-            # daily series for the chart (month start → offer end; offer days flagged)
+            # daily series for the chart (month start → elapsed end; clearance/offer days flagged)
             _series = []
             _d = _mstart
-            while _d <= _oe:
+            while _d <= _oe_eff:
                 k = _d.isoformat()
                 _series.append({"date": k, "bags": _daily.get(k, 0),
-                                "off": _os.isoformat() <= k <= _oe.isoformat()})
+                                "normal": _normal_daily.get(k, 0),
+                                "off": _split.isoformat() <= k <= _oe_eff.isoformat()})
                 _d += timedelta(days=1)
             # weekly buckets (Sun–Sat) across the whole month-to-date — the "week 1,
             # week 2, week 3, offer week" view; the week holding the offer is flagged.
@@ -502,7 +764,7 @@ def build_offer(offer):
                 e = _wk.setdefault(ws, {"total": 0, "days": 0, "off": False})
                 e["total"] += _daily.get(k, 0)
                 e["days"] += 1
-                if _os <= _d <= _oe:
+                if _split <= _d <= _oe_eff:
                     e["off"] = True
                 _d += timedelta(days=1)
             weekly = []
@@ -520,11 +782,26 @@ def build_offer(offer):
                     "off": e["off"],
                 })
             lift = {
-                "baseStart": _mstart.isoformat(), "baseEnd": (_os - timedelta(days=1)).isoformat(),
+                "baseStart": _mstart.isoformat(), "baseEnd": (_split - timedelta(days=1)).isoformat(),
                 "baseDays": base_days, "baseTotal": base_total, "basePerDay": base_per_day,
                 "offerDays": offer_days, "offerTotal": offer_total, "offerPerDay": offer_per_day,
                 "liftPct": lift_pct, "daily": _series, "weekly": weekly,
+                "clearanceStart": (_split.isoformat() if CFG.get("clearanceStart") else ""),
             }
+            # Normal (full-price) vs clearance (reject) over the whole month-to-date window
+            # (e.g. 1st→21st), per day — the comparison the reject panel shows.
+            if _NAME_SQL:
+                _win_days = (_oe_eff - _mstart).days + 1
+                _clr_total = _sum(_mstart.isoformat(), _oe_eff.isoformat())      # reject total
+                _nrm_total = sum(v for k, v in _normal_daily.items()
+                                 if _mstart.isoformat() <= k <= _oe_eff.isoformat())
+                lift["cmpNormal"] = True
+                lift["winStart"] = _mstart.isoformat(); lift["winEnd"] = _oe_eff.isoformat()
+                lift["winDays"] = _win_days
+                lift["normalTotal"] = _nrm_total
+                lift["normalPerDay"] = round(_nrm_total / _win_days, 1) if _win_days else 0.0
+                lift["clearanceTotal"] = _clr_total
+                lift["clearancePerDay"] = round(_clr_total / _win_days, 1) if _win_days else 0.0
     except (ValueError, TypeError):
         lift = None
 
@@ -541,6 +818,12 @@ def build_offer(offer):
         })
 
     bag_rows.sort(key=lambda r: -r["sold"])
+    # Catch-all row for name-filtered offers (units that matched [REJECT] but no configured
+    # bag) so the table's total equals the real reject total, not the bucketed subset.
+    _other_sold = int(sales_map.get(_OTHER_REJECTS.upper(), 0))
+    if _other_sold:
+        bag_rows.append({"name": _OTHER_REJECTS, "sold": _other_sold, "posts": 0,
+                         "perPost": None, "isOther": True})
     total_sold  = sum(r["sold"]  for r in bag_rows)
     total_posts = sum(r["posts"] for r in bag_rows)
 
@@ -614,9 +897,14 @@ def build_offer(offer):
         # Manual config is only a fallback if Odoo has no price; averages are a last resort.
         pr = _cfg_prices.get(bu) or {}
         # Config prices win when present (a manual offer like "300 off" isn't in Odoo's
-        # pricelist); otherwise fall back to Odoo's list / offer price.
+        # pricelist). Otherwise "now" = the REALISED avg sale price in the window (what the bag
+        # actually left at — e.g. the reject clearance price), then the Odoo offer pricelist as a
+        # last resort. A clearance "now" can't exceed the "was", so a stray pricelist value
+        # (some products carry a wrong fixed_price) is clamped down instead of showing garbage.
         was = (pr.get("was") or None) or _list_prices.get(bu)
-        now = (pr.get("now") or None) or _offer_prices.get(bu)
+        now = (pr.get("now") or None) or off_p or _offer_prices.get(bu)
+        if was and now and now > was:
+            now = round(off_p) if (off_p and off_p <= was) else was
         if was and now and was > 0:
             disc_kes = was - now
             disc_pct = round((now - was) / was * 100)          # negative = a cut
@@ -632,12 +920,14 @@ def build_offer(offer):
         off_pd = round(off_q / _od, 1) if _od else None
         bag_lift = round((off_pd - pre_pd) / pre_pd * 100) if (pre_pd and off_pd is not None) else None
         sm = _stock_map.get(bu, {"stock": 0, "category": ""})
+        _is_other = bool(r.get("isOther"))
         why_bags.append({
             "name": r["name"], "sold": r["sold"], "posts": r["posts"], "stock": sm["stock"],
             "priceWas": was, "priceNow": now, "discountKes": disc_kes,
             "discountPct": disc_pct, "discounted": discounted, "soldAt": sold_at,
             "prePerDay": pre_pd, "offerPerDay": off_pd, "bagLift": bag_lift,
-            "category": sm["category"],
+            "category": ("Other / variant names" if _is_other else sm["category"]),
+            "isOther": _is_other,
         })
 
     _total_stock = sum(w["stock"] for w in why_bags)
@@ -682,11 +972,11 @@ def build_offer(offer):
     # 3) Stock
     if _topstock and _total_stock:
         _insights.append({"tag": "Stock", "text":
-            f"Mostly backpacks with real inventory behind them — <b>{_total_stock:,} still in Kenya stock</b> even after the push "
+            f"Real inventory behind them — <b>{_total_stock:,} still in stock</b> "
             f"(led by {_topstock['name']} at {_topstock['stock']:,}). The offer draws down a genuine stock position, not a token one."})
 
-    # 4) Season
-    if _cats:
+    # 4) Season — only for the all-cut back-to-school campaign, not a plain clearance tracker.
+    if _all_cut and _cats:
         _season_bag = (" and ".join(_zero_post[:2]) + " even sold on zero marketing posts (pure demand). ") if _zero_post else ""
         _insights.append({"tag": "Season", "text":
             f"All six sit in <b>{', '.join(c.title() for c in _cats)}</b> — school categories — and the step-up landed in the offer week as schools opened. "
@@ -697,10 +987,14 @@ def build_offer(offer):
                     f"The catch: <b>discount depth didn't pick the winners</b> — the deepest cut ({_deepest['name']}, {_deepest['discountPct']}%) sold least, while the popular school lines led. "
                     f"Repeat the timing; you can likely <b>trim the deepest cuts</b> on the slow movers without losing volume.")
     else:
-        _verdict = (f"<b>Good move.</b> Sales rose <b>{_lift_txt}</b> per day during back-to-school. Match the cut depth to demand — the popular school lines carried the volume.")
+        _verdict = ("<b>Tracking live.</b> Per-bag sales over the window for the scoped tills — "
+                    "use it to see which lines are clearing and which are stalling, and where to push or restock.")
 
     why = {"totalStock": _total_stock, "categories": _cats, "allCut": _all_cut,
-           "bags": why_bags, "insights": _insights, "verdict": _verdict}
+           "bags": why_bags, "insights": _insights, "verdict": _verdict,
+           # Per-variant rows (Colour/Category/Product/Bag Type filterable). Only populated
+           # for a name-filtered offer (e.g. the Kitengela [REJECT] tracker); [] otherwise.
+           "variants": reject_variants(CFG["startDate"], CFG["endDate"])}
 
     # ── Price week-by-week: realised avg price per bag per week vs list/offer ──
     # Shows whether each bag was ALREADY selling at/below the offer price before the
@@ -731,7 +1025,11 @@ def build_offer(offer):
         "name":       CFG["name"],
         "market":     CFG["market"],
         "shops":      CFG.get("shops") or [],
-        "scopeLabel": ("Nairobi CBD &middot; " + ", ".join(CFG["shops"])) if CFG.get("shops") else CFG["market"],
+        "scopeLabel": (
+            ("Nairobi CBD &middot; " + ", ".join(CFG["shops"]))
+            if set(s.lower() for s in (CFG.get("shops") or [])) == {"hazina", "hilton", "starmall", "ktda shop"}
+            else (CFG["market"] + " &middot; " + ", ".join(CFG["shops"])) if CFG.get("shops")
+            else CFG["market"]),
         "startDate":  CFG["startDate"],
         "endDate":    CFG["endDate"],
         "timeLabel":  _time_label,
@@ -794,8 +1092,10 @@ if __name__ == "__main__":
         print(f'  "{TO["name"] or "Timed Offer"}"  ({TO["windowLabel"]}, {TO["scopeLabel"]})')
         print(f"    Sales source     : {'Odoo (live)' if TO['salesLive'] else 'DB UNREACHABLE — zeros'}")
         if lift:
-            print(f"    LIFT: offer {lift['offerPerDay']}/day vs pre-offer {lift['basePerDay']}/day "
-                  f"-> {('+' if (lift['liftPct'] or 0) >= 0 else '')}{lift['liftPct']}%")
+            _lp = lift.get('liftPct')
+            _lpx = (('n/a (no pre-offer days)' if not lift.get('baseDays') else 'n/a (0 sold before)')
+                    if _lp is None else (('+' if _lp >= 0 else '') + str(_lp) + '%'))
+            print(f"    LIFT: offer {lift['offerPerDay']}/day vs pre-offer {lift['basePerDay']}/day -> {_lpx}")
         print(f"    TOTAL sold       : {fmt_int(TO['totalSold'])}   posts: {fmt_int(TO['totalPosts'])}")
     if not TO_LIST:
         print("  (no active offers — the list is free for the new month.)")

@@ -201,17 +201,26 @@ label, html_file, scripts, icon = next(it for it in ALL_ITEMS if it[0] == st.ses
 html_path = os.path.join(BASE, html_file)
 
 
-def run_scripts(script_list):
+# Per-generator subprocess budget. Odoo-heavy pages (e.g. timed_offers with many bags across
+# all Kenya) can take a few minutes on a slow DB, so give them room rather than failing at 240s.
+SCRIPT_TIMEOUT = 600
+
+
+def run_scripts(script_list, force_fresh=False):
+    # force_fresh (a manual Refresh) bypasses the Odoo TTL disk-cache and repopulates it;
+    # auto-refresh / page-load leaves it unset so cached lookups are reused within their TTL.
     env = {**os.environ, "DENRI_LAUNCHER": "1", "PYTHONIOENCODING": "utf-8"}
+    if force_fresh:
+        env["DENRI_FORCE_FRESH"] = "1"
     logs = []
     for s in script_list:
         try:
             r = subprocess.run([sys.executable, os.path.join(BASE, s)], cwd=BASE, env=env,
                                capture_output=True, text=True, encoding="utf-8",
-                               errors="replace", timeout=240)
+                               errors="replace", timeout=SCRIPT_TIMEOUT)
             logs.append((s, r.returncode, (r.stderr or r.stdout or "").strip()[-600:]))
         except subprocess.TimeoutExpired:
-            logs.append((s, -1, "timed out after 240s"))
+            logs.append((s, -1, f"timed out after {SCRIPT_TIMEOUT}s"))
         except Exception as e:                                    # noqa: BLE001
             logs.append((s, -1, str(e)))
     return logs
@@ -317,7 +326,7 @@ with _rc:
                             type="primary", key="refresh_btn")
 if _do_refresh:
     with st.spinner(f"Refreshing {label} from Odoo…"):
-        logs = run_scripts(scripts)          # current page's generators only
+        logs = run_scripts(scripts, force_fresh=True)   # manual: bypass cache, pull fresh + repopulate
     fails = [(s, out) for s, rc, out in logs if rc != 0]
     unreachable = any(("not reachable" in (out or "").lower())
                       or ("unreachable" in (out or "").lower())

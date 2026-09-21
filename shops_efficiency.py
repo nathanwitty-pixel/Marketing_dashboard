@@ -250,6 +250,51 @@ def compute_period(dispatch, sales, stock, meta, bags_target, buffer_stock):
 
     remaining_detail.sort(key=lambda r: -r["remaining"])
 
+    # Per-bag PUSH list per shop — the bags physically on hand at each shop, so the per-shop
+    # panel can show "which bags to push". `stock` is live Odoo on-hand keyed by (PRODUCT, "")
+    # (the product name already carries the colour), which doesn't share keys with the sheet
+    # sales/meta — so we take the product name straight from the key and just report on-hand qty.
+    def _pushable(name):
+        name = (name or "").upper()
+        if not name or "+" in name:
+            return False                                     # drop combo/promo lines
+        return not any(w in name for w in ("WIPE", " FREE", "FREE ", "BUY ", " GET "))
+
+    # The sheet meta (dispatch/sales) carries bagType + category; use it to split each Odoo-stock
+    # product name ("JUMBO BROWN") into bagType ("JUMBO") + colour ("BROWN") and tag its category,
+    # so the push list is filterable by Colour / Category / Product / Bag Type.
+    bt_cat, bt_list, _seen = {}, [], set()
+    for info in meta.values():
+        bt = str(info.get("bagType", "")).upper().strip()
+        if not bt:
+            continue
+        if bt not in _seen:
+            _seen.add(bt); bt_list.append(bt)
+        if info.get("category") and bt not in bt_cat:
+            bt_cat[bt] = info["category"]
+    bt_list.sort(key=len, reverse=True)                      # longest bagType first (prefix match)
+
+    def _split(name):
+        up = str(name).upper().strip()
+        for bt in bt_list:
+            if up == bt or up.startswith(bt + " "):
+                return bt.title(), up[len(bt):].strip().title(), bt_cat.get(bt, "")
+        return "", "", ""
+
+    push_detail = []
+    for key, strec in stock.items():
+        info = meta.get(key, {})
+        name = info.get("product") or (key[0] if isinstance(key, tuple) else str(key))
+        if not _pushable(name):
+            continue
+        bt, colour, cat = _split(name)
+        for shop in shops:
+            onhand = strec.get(shop, 0)
+            if onhand > 0:
+                push_detail.append({"shop": shop, "product": name, "stock": onhand,
+                                    "bagType": bt or name, "colour": colour, "category": cat})
+    push_detail.sort(key=lambda r: -r["stock"])
+
     def total(d):
         return sum(d.values())
 
@@ -359,6 +404,7 @@ def compute_period(dispatch, sales, stock, meta, bags_target, buffer_stock):
     return {
         "shops": shops, "metrics": metrics, "summary": summary,
         "remainingDetail": remaining_detail,
+        "pushDetail": push_detail,
         "performance": performance,
         "totals": {
             "remaining": t_remaining,
@@ -709,6 +755,65 @@ if dispatch:
 # matches what the page now shows.
 history = update_history()
 
+def _load_combos_by_shop():
+    """Per-shop combo / power-deal view for the panel — built **live from Odoo** via
+    self_made_combos (the same POS data the combos page uses), so Shops Efficiency reads Odoo
+    like the rest of the page: each shop's running combos (rung vs could-have, red under-ringing,
+    Deal-of-the-Week overlap) and how its Power Deals are selling. To avoid rebuilding it twice
+    when main.py runs the combos generator seconds earlier, a combos_by_shop.json written in the
+    last 15 min is reused; anything older (or a standalone refresh) recomputes live. On a live
+    rebuild the shared file is refreshed too. Keys re-cased UPPER to match KENYA_SHOPS."""
+    import time
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "combos_by_shop.json")
+
+    def _nonempty(by):
+        # A usable view has at least one shop with combos or power deals — guards against an
+        # empty rebuild clobbering good data (or a clobbered file being trusted downstream).
+        return any((v or {}).get("combos") or (v or {}).get("powerDeals") for v in (by or {}).values())
+
+    def _from_file():
+        try:
+            with open(p, encoding="utf-8") as f:
+                d = json.load(f)
+            by = {str(k).upper(): v for k, v in (d.get("byShop") or {}).items()}
+            if not _nonempty(by):
+                return None
+            return {"month": d.get("month", ""), "byShop": by}
+        except (OSError, ValueError):
+            return None
+
+    # Reuse a just-written file (self_made_combos.py ran seconds ago in the same cycle).
+    try:
+        if os.path.exists(p) and (time.time() - os.path.getmtime(p)) < 900:
+            fresh = _from_file()
+            if fresh:
+                print("  Combos source    : combos_by_shop.json (fresh, <15 min)")
+                return fresh
+    except OSError:
+        pass
+
+    # Otherwise build it LIVE from Odoo.
+    try:
+        import self_made_combos as _smc
+        ok, _ = _smc.db.check_connection()
+        if ok:
+            payload = _smc.fetch()
+            cbs = (payload or {}).get("combosByShop") or {}
+            if _nonempty(cbs):                          # only trust/write a real result
+                try:                                    # keep the shared file in sync
+                    with open(p, "w", encoding="utf-8") as f:
+                        json.dump({"month": payload.get("month", ""), "byShop": cbs}, f, ensure_ascii=False)
+                except OSError:
+                    pass
+                print("  Combos source    : Odoo (live via self_made_combos)")
+                return {"month": payload.get("month", ""),
+                        "byShop": {str(k).upper(): v for k, v in cbs.items()}}
+            print("  Combos source    : live build returned no combos — keeping existing file")
+    except Exception as e:                              # noqa: BLE001
+        print("  Combos source    : live build failed (%s) — using file if present" % e)
+
+    return _from_file() or {"month": "", "byShop": {}}
+
 SE = {
     "generatedOn":  date.today().strftime("%d %b %Y"),
     "shops":        KENYA_SHOPS,
@@ -716,6 +821,7 @@ SE = {
     "monthly":      monthly,
     "history":      history,
     "dispatch":     dispatch,   # {computedOn, shops, weekly:{distributedIn,receiving}, monthly:{...}}
+    "combos":       _load_combos_by_shop(),   # per-shop combos + power deals (from self_made_combos.py)
 }
 
 

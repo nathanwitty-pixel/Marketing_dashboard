@@ -1,88 +1,11 @@
 {
   "sig": [
-    243,
-    30,
-    63
+    219,
+    7,
+    9
   ],
   "baseline": {
     "kenya": {
-      "black|amaya black tt": {
-        "colour": "Black",
-        "productName": "AMAYA BLACK TT",
-        "category": "HANDBAG",
-        "bagType": "AMAYA",
-        "stock": 17
-      },
-      "brown|amaya spice": {
-        "colour": "Brown",
-        "productName": "AMAYA SPICE",
-        "category": "HANDBAG",
-        "bagType": "AMAYA",
-        "stock": 44
-      },
-      "black|antitheft black": {
-        "colour": "Black",
-        "productName": "ANTITHEFT BLACK",
-        "category": "BACKPACK",
-        "bagType": "ANTITHEFT",
-        "stock": -8
-      },
-      "brown|antitheft brown": {
-        "colour": "Brown",
-        "productName": "ANTITHEFT BROWN",
-        "category": "BACKPACK",
-        "bagType": "ANTITHEFT",
-        "stock": 40
-      },
-      "brown|aria pro spice": {
-        "colour": "Brown",
-        "productName": "ARIA PRO SPICE",
-        "category": "SLING",
-        "bagType": "ARIA PRO",
-        "stock": 0
-      },
-      "black|big man bag black": {
-        "colour": "Black",
-        "productName": "BIG MAN BAG BLACK",
-        "category": "MAN BAG",
-        "bagType": "BIG MAN BAG",
-        "stock": 44
-      },
-      "grey|big man bag grey": {
-        "colour": "Grey",
-        "productName": "BIG MAN BAG GREY",
-        "category": "MAN BAG",
-        "bagType": "BIG MAN BAG",
-        "stock": 81
-      },
-      "black|bonita black": {
-        "colour": "Black",
-        "productName": "BONITA BLACK",
-        "category": "TRAVEL",
-        "bagType": "BONITA",
-        "stock": 52
-      },
-      "brown|bonita cracked": {
-        "colour": "Brown",
-        "productName": "BONITA CRACKED",
-        "category": "TRAVEL",
-        "bagType": "BONITA",
-        "stock": 23
-      },
-      "beige|bonita beige": {
-        "colour": "Beige",
-        "productName": "BONITA BEIGE",
-        "category": "TRAVEL",
-        "bagType": "BONITA",
-        "stock": 16
-      },
-      "grey|cathy handbag grey": {
-        "colour": "Grey",
-        "productName": "CATHY HANDBAG GREY",
-        "category": "HANDBAG",
-        "bagType": "CATHY HANDBAG",
-        "stock": 32
-      },
       "black|cess black": {
         "colour": "Black",
         "productName": "CESS BLACK",
@@ -90,226 +13,170 @@
         "bagType": "CESS",
         "stock": 21
       },
-      "grey|claire handbag grey": {
-        "colour": "Grey",
-        "productName": "CLAIRE HANDBAG GREY",
-        "category": "HANDBAG",
-        "bagType": "CLAIRE HANDBAG",
-        "stock": 11
-      },
-      "brown|code 3 brown": {
+      "brown|feroz spice": {
         "colour": "Brown",
-        "productName": "CODE 3 BROWN",
-        "category": "BACKPACK",
-        "bagType": "CODE 3",
-        "stock": 67
+        "productName": "FEROZ SPICE",
+        "category": "BRIEFCASE",
+        "bagType": "FEROZ",
+        "stock": 0
       },
-      "black|code 3 black": {
+      "black|feroz black": {
         "colour": "Black",
-        "productName": "CODE 3 BLACK",
-        "category": "BACKPACK",
-        "bagType": "CODE 3",
-        "stock": 38
+        "productName": "FEROZ BLACK",
+        "category": "BRIEFCASE",
+        "bagType": "FEROZ",
+        "stock": 2
       },
-      "green|code 3 green": {
+      "brown|gym bag brown": {
+        "colour": "Brown",
+        "productName": "GYM BAG BROWN",
+        "category": "SPORT",
+        "bagType": "GYM BAG",
+        "stock": 68
+      },
+      "green|gym bag green": {
         "colour": "Green",
-        "productName": "CODE 3 GREEN",
-        "category": "BACKPACK",
-        "bagType": "CODE 3",
-        "stock": 94
+        "productName": "GYM BAG GREEN",
+        "category": "SPORT",
+        "bagType": "GYM BAG",
+        "stock": 62
       },
-      "grey|elyse grey": {
+      "black|gym bag black": {
+        "colour": "Black",
+        "productName": "GYM BAG BLACK",
+        "category": "SPORT",
+        "bagType": "GYM BAG",
+        "stock": 57
+      },
+      "grey|gym bag grey": {
         "colour": "Grey",
-        "productName": "ELYSE GREY",
-        "category": "HANDBAG",
-        "bagType": "ELYSE",
-        "stock": 5
-      },
-      "brown|elyse spice": {
-        "colour": "Brown",
-        "productName": "ELYSE SPICE",
-        "category": "HANDBAG",
-        "bagType": "ELYSE",
-        "stock": 16
-      },
-      "beige|elyse beige": {
-        "colour": "Beige",
-        "productName": "ELYSE BEIGE",
-        "category": "HANDBAG",
-        "bagType": "ELYSE",
-        "stock": 5
-      },
-      "black|elyse red/black": {
-        "colour": "Black",
-        "productName": "ELYSE RED/BLACK",
-        "category": "HANDBAG",
-        "bagType": "ELYSE",
-        "stock": 1
-      },
-      "black|fabela black": {
-        "colour": "Black",
-        "productName": "FABELA BLACK",
-        "category": "TRAVEL",
-        "bagType": "FABELA",
-        "stock": 109
-      },
-      "brown|fabela brown": {
-        "colour": "Brown",
-        "productName": "FABELA BROWN",
-        "category": "TRAVEL",
-        "bagType": "FABELA",
-        "stock": 125
+        "productName": "GYM BAG GREY",
+        "category": "SPORT",
+        "bagType": "GYM BAG",
+        "stock": 57
       },
       "black|jumbo black": {
         "colour": "Black",
         "productName": "JUMBO BLACK",
         "category": "TRAVEL",
         "bagType": "JUMBO",
-        "stock": 159
+        "stock": 120
       },
-      "green|jumbo green": {
-        "colour": "Green",
-        "productName": "JUMBO GREEN",
+      "brown|jumbo brown": {
+        "colour": "Brown",
+        "productName": "JUMBO BROWN",
         "category": "TRAVEL",
         "bagType": "JUMBO",
-        "stock": 52
+        "stock": 104
       },
-      "grey|jumbo grey": {
+      "grey|lola grey": {
         "colour": "Grey",
-        "productName": "JUMBO GREY",
-        "category": "TRAVEL",
-        "bagType": "JUMBO",
-        "stock": 149
-      },
-      "black|kai black": {
-        "colour": "Black",
-        "productName": "KAI BLACK",
-        "category": "BACKPACK",
-        "bagType": "KAI",
-        "stock": 40
-      },
-      "grey|kai grey": {
-        "colour": "Grey",
-        "productName": "KAI GREY",
-        "category": "BACKPACK",
-        "bagType": "KAI",
-        "stock": 55
-      },
-      "black|kaz black": {
-        "colour": "Black",
-        "productName": "KAZ BLACK",
-        "category": "TRAVEL",
-        "bagType": "KAZ",
-        "stock": 32
-      },
-      "brown|kaz brown": {
-        "colour": "Brown",
-        "productName": "KAZ BROWN",
-        "category": "TRAVEL",
-        "bagType": "KAZ",
-        "stock": 13
-      },
-      "black|lamora black": {
-        "colour": "Black",
-        "productName": "LAMORA BLACK",
-        "category": "SLING",
-        "bagType": "LAMORA",
-        "stock": 26
-      },
-      "blue|lamora skye blue": {
-        "colour": "Blue",
-        "productName": "LAMORA SKYE BLUE",
-        "category": "SLING",
-        "bagType": "LAMORA",
-        "stock": 12
-      },
-      "brown|lamora brown": {
-        "colour": "Brown",
-        "productName": "LAMORA BROWN",
-        "category": "SLING",
-        "bagType": "LAMORA",
-        "stock": 17
-      },
-      "red|lamora red": {
-        "colour": "Red",
-        "productName": "LAMORA RED",
-        "category": "SLING",
-        "bagType": "LAMORA",
-        "stock": 27
-      },
-      "brown|lola spice": {
-        "colour": "Brown",
-        "productName": "LOLA SPICE",
+        "productName": "LOLA GREY",
         "category": "HANDBAG",
         "bagType": "LOLA",
-        "stock": 15
+        "stock": 6
       },
-      "black|lunchset black": {
+      "black|lola black": {
         "colour": "Black",
-        "productName": "LUNCHSET BLACK",
-        "category": "LUNCH BAG",
-        "bagType": "LUNCHSET",
-        "stock": 10
-      },
-      "green|mega green": {
-        "colour": "Green",
-        "productName": "MEGA GREEN",
-        "category": "BACKPACK",
-        "bagType": "MEGA",
-        "stock": 18
-      },
-      "red|mini manbag red": {
-        "colour": "Red",
-        "productName": "MINI MANBAG RED",
-        "category": "MAN BAG",
-        "bagType": "MINI MANBAG",
-        "stock": 2
-      },
-      "brown|mini umbra spice": {
-        "colour": "Brown",
-        "productName": "MINI UMBRA SPICE",
-        "category": "CHEST BAG",
-        "bagType": "MINI UMBRA",
-        "stock": 11
-      },
-      "grey|mini zuri grey": {
-        "colour": "Grey",
-        "productName": "MINI ZURI GREY",
+        "productName": "LOLA BLACK",
         "category": "HANDBAG",
-        "bagType": "MINI ZURI",
-        "stock": 42
+        "bagType": "LOLA",
+        "stock": 37
+      },
+      "grey|loop bp cn grey": {
+        "colour": "Grey",
+        "productName": "LOOP BP CN GREY",
+        "category": "BACKPACK",
+        "bagType": "LOOP BP",
+        "stock": 38
+      },
+      "black|man bag black": {
+        "colour": "Black",
+        "productName": "MAN BAG BLACK",
+        "category": "MAN BAG",
+        "bagType": "MAN BAG",
+        "stock": 94
+      },
+      "grey|man bag grey": {
+        "colour": "Grey",
+        "productName": "MAN BAG GREY",
+        "category": "MAN BAG",
+        "bagType": "MAN BAG",
+        "stock": 38
+      },
+      "black|mini maya wooven black": {
+        "colour": "Black",
+        "productName": "MINI MAYA WOOVEN BLACK",
+        "category": "HANDBAG",
+        "bagType": "MINI MAYA",
+        "stock": 9
+      },
+      "purple|mini maya wooven purple": {
+        "colour": "Purple",
+        "productName": "MINI MAYA WOOVEN PURPLE",
+        "category": "HANDBAG",
+        "bagType": "MINI MAYA",
+        "stock": 0
+      },
+      "red|mini maya wooven maroon": {
+        "colour": "Red",
+        "productName": "MINI MAYA WOOVEN MAROON",
+        "category": "HANDBAG",
+        "bagType": "MINI MAYA",
+        "stock": 24
       },
       "black|mini zuri black": {
         "colour": "Black",
         "productName": "MINI ZURI BLACK",
         "category": "HANDBAG",
         "bagType": "MINI ZURI",
-        "stock": 36
+        "stock": 41
+      },
+      "brown|mini zuri yellow brown": {
+        "colour": "Brown",
+        "productName": "MINI ZURI YELLOW BROWN",
+        "category": "HANDBAG",
+        "bagType": "MINI ZURI",
+        "stock": 0
+      },
+      "grey|moon bag grey": {
+        "colour": "Grey",
+        "productName": "MOON BAG GREY",
+        "category": "SLING",
+        "bagType": "MOON BAG",
+        "stock": 60
+      },
+      "brown|moon bag cracked": {
+        "colour": "Brown",
+        "productName": "MOON BAG CRACKED",
+        "category": "SLING",
+        "bagType": "MOON BAG",
+        "stock": 31
       },
       "blue|nala blue": {
         "colour": "Blue",
         "productName": "NALA BLUE",
         "category": "HANDBAG",
         "bagType": "NALA",
-        "stock": 23
+        "stock": 26
       },
       "green|nala green": {
         "colour": "Green",
         "productName": "NALA GREEN",
         "category": "HANDBAG",
         "bagType": "NALA",
-        "stock": 18
+        "stock": 17
       },
-      "black|nizana black": {
-        "colour": "Black",
-        "productName": "NIZANA BLACK",
+      "brown|nizana spice": {
+        "colour": "Brown",
+        "productName": "NIZANA SPICE",
         "category": "SLING",
         "bagType": "NIZANA",
-        "stock": 12
+        "stock": 4
       },
-      "red|nizana red pattern": {
-        "colour": "Red",
-        "productName": "NIZANA RED PATTERN",
+      "brown|nizana chocolate": {
+        "colour": "Brown",
+        "productName": "NIZANA CHOCOLATE",
         "category": "SLING",
         "bagType": "NIZANA",
         "stock": 0
@@ -319,302 +186,99 @@
         "productName": "PRIME BLACK",
         "category": "BACKPACK",
         "bagType": "PRIME",
-        "stock": 25
-      },
-      "black|reo travel black": {
-        "colour": "Black",
-        "productName": "REO TRAVEL BLACK",
-        "category": "TRAVEL",
-        "bagType": "REO TRAVEL",
-        "stock": 60
-      },
-      "black|sarai black": {
-        "colour": "Black",
-        "productName": "SARAI BLACK",
-        "category": "TRAVEL",
-        "bagType": "SARAI",
-        "stock": 35
-      },
-      "brown|sarai brown": {
-        "colour": "Brown",
-        "productName": "SARAI BROWN",
-        "category": "TRAVEL",
-        "bagType": "SARAI",
-        "stock": 2
+        "stock": 38
       },
       "black|sierra handbag wooven black": {
         "colour": "Black",
         "productName": "SIERRA HANDBAG WOOVEN BLACK",
         "category": "HANDBAG",
         "bagType": "SIERRA HANDBAG",
-        "stock": 39
+        "stock": 50
       },
       "black|skye hb wooven black": {
         "colour": "Black",
         "productName": "SKYE HB WOOVEN BLACK",
         "category": "HANDBAG",
         "bagType": "SKYE HB",
-        "stock": 8
+        "stock": 10
       },
       "black|trecento black": {
         "colour": "Black",
         "productName": "TRECENTO BLACK",
         "category": "SLING",
         "bagType": "TRECENTO",
-        "stock": 75
+        "stock": 56
       },
-      "red|umbra red": {
-        "colour": "Red",
-        "productName": "UMBRA RED",
-        "category": "CHEST BAG",
-        "bagType": "UMBRA",
-        "stock": 2
-      },
-      "grey|zula cn grey": {
-        "colour": "Grey",
-        "productName": "ZULA CN GREY",
+      "black|zane man black": {
+        "colour": "Black",
+        "productName": "ZANE MAN BLACK",
         "category": "MAN BAG",
-        "bagType": "ZULA",
-        "stock": 10
+        "bagType": "ZANE MAN",
+        "stock": 52
       },
-      "brown|zuri spice": {
+      "brown|zuri chocolate": {
         "colour": "Brown",
-        "productName": "ZURI SPICE",
+        "productName": "ZURI CHOCOLATE",
         "category": "HANDBAG",
         "bagType": "ZURI",
-        "stock": 14
+        "stock": 0
       }
     },
     "sinza": {
-      "grey|amaya grey": {
-        "colour": "Grey",
-        "productName": "AMAYA GREY",
-        "category": "HANDBAG",
-        "bagType": "AMAYA",
-        "stock": 2
-      },
-      "black|antitheft black": {
-        "colour": "Black",
-        "productName": "ANTITHEFT BLACK",
-        "category": "BACKPACK",
-        "bagType": "ANTITHEFT",
-        "stock": 0
-      },
-      "brown|antitheft brown": {
-        "colour": "Brown",
-        "productName": "ANTITHEFT BROWN",
-        "category": "BACKPACK",
-        "bagType": "ANTITHEFT",
-        "stock": 9
-      },
-      "grey|antitheft grey": {
-        "colour": "Grey",
-        "productName": "ANTITHEFT GREY",
-        "category": "BACKPACK",
-        "bagType": "ANTITHEFT",
-        "stock": 0
-      },
-      "black|aria sling black": {
-        "colour": "Black",
-        "productName": "ARIA SLING BLACK",
-        "category": "SLING",
-        "bagType": "ARIA SLING",
-        "stock": 2
-      },
-      "grey|aria sling grey": {
-        "colour": "Grey",
-        "productName": "ARIA SLING GREY",
-        "category": "SLING",
-        "bagType": "ARIA SLING",
-        "stock": 18
-      },
       "brown|aurora spice": {
         "colour": "Brown",
         "productName": "AURORA SPICE",
         "category": "HANDBAG",
         "bagType": "AURORA",
-        "stock": 5
-      },
-      "brown|avana hb spice": {
-        "colour": "Brown",
-        "productName": "AVANA HB SPICE",
-        "category": "SLING",
-        "bagType": "AVANA HB",
-        "stock": 5
-      },
-      "brown|avana hb dark brown": {
-        "colour": "Brown",
-        "productName": "AVANA HB DARK BROWN",
-        "category": "SLING",
-        "bagType": "AVANA HB",
-        "stock": 1
-      },
-      "black|avana hb black": {
-        "colour": "Black",
-        "productName": "AVANA HB BLACK",
-        "category": "SLING",
-        "bagType": "AVANA HB",
-        "stock": 2
-      },
-      "grey|belt bag grey": {
-        "colour": "Grey",
-        "productName": "BELT BAG GREY",
-        "category": "WAIST BAG",
-        "bagType": "BELT BAG",
-        "stock": 5
-      },
-      "black|big man bag black": {
-        "colour": "Black",
-        "productName": "BIG MAN BAG BLACK",
-        "category": "MAN BAG",
-        "bagType": "BIG MAN BAG",
-        "stock": 8
-      },
-      "black|cairo bp black": {
-        "colour": "Black",
-        "productName": "CAIRO BP BLACK",
-        "category": "BACKPACK",
-        "bagType": "CAIRO BP",
         "stock": 4
       },
-      "red|cess red": {
-        "colour": "Red",
-        "productName": "CESS RED",
-        "category": "HANDBAG",
-        "bagType": "CESS",
-        "stock": 4
-      },
-      "grey|chase grey": {
-        "colour": "Grey",
-        "productName": "CHASE GREY",
-        "category": "THIGH BAG",
-        "bagType": "CHASE",
-        "stock": 1
-      },
-      "brown|code 9 brown": {
+      "brown|double press brown": {
         "colour": "Brown",
-        "productName": "CODE 9 BROWN",
+        "productName": "DOUBLE PRESS BROWN",
         "category": "BACKPACK",
-        "bagType": "CODE 9",
-        "stock": 1
+        "bagType": "DOUBLE PRESS",
+        "stock": 6
       },
-      "brown|cosmo brown": {
+      "brown|fabela brown": {
         "colour": "Brown",
-        "productName": "COSMO BROWN",
-        "category": "SCHOOL BAG",
-        "bagType": "COSMO",
-        "stock": 7
-      },
-      "black|don black": {
-        "colour": "Black",
-        "productName": "DON BLACK",
-        "category": "MAN BAG",
-        "bagType": "DON",
-        "stock": 0
-      },
-      "black|elyse black": {
-        "colour": "Black",
-        "productName": "ELYSE BLACK",
-        "category": "HANDBAG",
-        "bagType": "ELYSE",
-        "stock": 3
-      },
-      "black|imani black 018": {
-        "colour": "Black",
-        "productName": "IMANI BLACK 018",
-        "category": "HANDBAG",
-        "bagType": "IMANI",
-        "stock": 3
+        "productName": "FABELA BROWN",
+        "category": "TRAVEL",
+        "bagType": "FABELA",
+        "stock": 17
       },
       "brown|jumbo brown": {
         "colour": "Brown",
         "productName": "JUMBO BROWN",
         "category": "TRAVEL",
         "bagType": "JUMBO",
-        "stock": 3
+        "stock": 0
       },
-      "black|legacy black": {
+      "black|kaz black": {
         "colour": "Black",
-        "productName": "LEGACY BLACK",
-        "category": "BRIEFCASE",
-        "bagType": "LEGACY",
-        "stock": 3
+        "productName": "KAZ BLACK",
+        "category": "TRAVEL",
+        "bagType": "KAZ",
+        "stock": 0
       },
-      "brown|legacy brown": {
-        "colour": "Brown",
-        "productName": "LEGACY BROWN",
-        "category": "BRIEFCASE",
-        "bagType": "LEGACY",
-        "stock": -1
-      },
-      "brown|liam brown": {
-        "colour": "Brown",
-        "productName": "LIAM BROWN",
+      "black|liam black": {
+        "colour": "Black",
+        "productName": "LIAM BLACK",
         "category": "TRAVEL",
         "bagType": "LIAM",
-        "stock": 6
+        "stock": 8
       },
-      "black|man bag black": {
-        "colour": "Black",
-        "productName": "MAN BAG BLACK",
-        "category": "MAN BAG",
-        "bagType": "MAN BAG",
-        "stock": 10
-      },
-      "brown|man bag brown": {
-        "colour": "Brown",
-        "productName": "MAN BAG BROWN",
-        "category": "MAN BAG",
-        "bagType": "MAN BAG",
-        "stock": 10
-      },
-      "grey|mega grey": {
+      "grey|man bag grey": {
         "colour": "Grey",
-        "productName": "MEGA GREY",
-        "category": "BACKPACK",
-        "bagType": "MEGA",
-        "stock": 0
+        "productName": "MAN BAG GREY",
+        "category": "MAN BAG",
+        "bagType": "MAN BAG",
+        "stock": 13
       },
-      "green|mega green": {
-        "colour": "Green",
-        "productName": "MEGA GREEN",
-        "category": "BACKPACK",
-        "bagType": "MEGA",
-        "stock": 0
-      },
-      "brown|mini umbra cracked": {
-        "colour": "Brown",
-        "productName": "MINI UMBRA CRACKED",
+      "grey|mini umbra grey": {
+        "colour": "Grey",
+        "productName": "MINI UMBRA GREY",
         "category": "CHEST BAG",
         "bagType": "MINI UMBRA",
-        "stock": 5
-      },
-      "brown|mini umbra spice": {
-        "colour": "Brown",
-        "productName": "MINI UMBRA SPICE",
-        "category": "CHEST BAG",
-        "bagType": "MINI UMBRA",
-        "stock": 3
-      },
-      "red|mini zuri red": {
-        "colour": "Red",
-        "productName": "MINI ZURI RED",
-        "category": "HANDBAG",
-        "bagType": "MINI ZURI",
-        "stock": 6
-      },
-      "red|nala red": {
-        "colour": "Red",
-        "productName": "NALA RED",
-        "category": "HANDBAG",
-        "bagType": "NALA",
-        "stock": 0
-      },
-      "brown|nizana cracked": {
-        "colour": "Brown",
-        "productName": "NIZANA CRACKED",
-        "category": "SLING",
-        "bagType": "NIZANA",
         "stock": 5
       },
       "grey|remi grey": {
@@ -622,105 +286,35 @@
         "productName": "REMI GREY",
         "category": "BACKPACK",
         "bagType": "REMI",
-        "stock": 5
+        "stock": 3
       },
-      "brown|reo travel brown": {
+      "brown|safiri bp brown": {
         "colour": "Brown",
-        "productName": "REO TRAVEL BROWN",
-        "category": "TRAVEL",
-        "bagType": "REO TRAVEL",
-        "stock": 0
-      },
-      "black|safiri bp black": {
-        "colour": "Black",
-        "productName": "SAFIRI BP BLACK",
+        "productName": "SAFIRI BP BROWN",
         "category": "BACKPACK",
         "bagType": "SAFIRI BP",
         "stock": 0
-      },
-      "black|safiri travel black": {
-        "colour": "Black",
-        "productName": "SAFIRI TRAVEL BLACK",
-        "category": "TRAVEL",
-        "bagType": "SAFIRI TRAVEL",
-        "stock": 18
       },
       "black|sarai black": {
         "colour": "Black",
         "productName": "SARAI BLACK",
         "category": "TRAVEL",
         "bagType": "SARAI",
-        "stock": 4
-      },
-      "green|sarai green": {
-        "colour": "Green",
-        "productName": "SARAI GREEN",
-        "category": "TRAVEL",
-        "bagType": "SARAI",
-        "stock": 3
-      },
-      "grey|travel grey": {
-        "colour": "Grey",
-        "productName": "TRAVEL GREY",
-        "category": "TRAVEL",
-        "bagType": "TRAVEL",
-        "stock": 10
+        "stock": 0
       },
       "brown|travel brown": {
         "colour": "Brown",
         "productName": "TRAVEL BROWN",
         "category": "TRAVEL",
         "bagType": "TRAVEL",
-        "stock": 1
-      },
-      "black|travel black": {
-        "colour": "Black",
-        "productName": "TRAVEL BLACK",
-        "category": "TRAVEL",
-        "bagType": "TRAVEL",
-        "stock": 1
-      },
-      "brown|trecento spice": {
-        "colour": "Brown",
-        "productName": "TRECENTO SPICE",
-        "category": "SLING",
-        "bagType": "TRECENTO",
-        "stock": 1
-      },
-      "brown|trecento cracked": {
-        "colour": "Brown",
-        "productName": "TRECENTO CRACKED",
-        "category": "SLING",
-        "bagType": "TRECENTO",
-        "stock": 2
-      },
-      "blue|wander luxe pattern blue": {
-        "colour": "Blue",
-        "productName": "WANDER LUXE PATTERN BLUE",
-        "category": "TRAVEL",
-        "bagType": "WANDER LUXE",
-        "stock": 3
-      },
-      "red|wander luxe pattern red": {
-        "colour": "Red",
-        "productName": "WANDER LUXE PATTERN RED",
-        "category": "TRAVEL",
-        "bagType": "WANDER LUXE",
-        "stock": 4
-      },
-      "black|washbag black": {
-        "colour": "Black",
-        "productName": "WASHBAG BLACK",
-        "category": "WASHBAG",
-        "bagType": "WASHBAG",
-        "stock": 2
+        "stock": 0
       },
       "grey|zane man grey": {
         "colour": "Grey",
         "productName": "ZANE MAN GREY",
         "category": "MAN BAG",
         "bagType": "ZANE MAN",
-        "stock": 5
+        "stock": 4
       },
       "black|zelus black": {
         "colour": "Black",
@@ -731,221 +325,60 @@
       }
     },
     "uganda": {
-      "grey|ace grey": {
-        "colour": "Grey",
-        "productName": "ACE GREY",
-        "category": "SLING",
-        "bagType": "ACE",
-        "stock": 1
-      },
       "brown|antitheft brown": {
         "colour": "Brown",
         "productName": "ANTITHEFT BROWN",
         "category": "BACKPACK",
         "bagType": "ANTITHEFT",
-        "stock": 13
+        "stock": 15
       },
-      "red|aria sling red": {
-        "colour": "Red",
-        "productName": "ARIA SLING RED",
-        "category": "SLING",
-        "bagType": "ARIA SLING",
-        "stock": 2
-      },
-      "black|aria sling black": {
-        "colour": "Black",
-        "productName": "ARIA SLING BLACK",
-        "category": "SLING",
-        "bagType": "ARIA SLING",
-        "stock": 1
-      },
-      "brown|aurora spice": {
+      "brown|aurora cracked": {
         "colour": "Brown",
-        "productName": "AURORA SPICE",
+        "productName": "AURORA CRACKED",
         "category": "HANDBAG",
         "bagType": "AURORA",
         "stock": 0
       },
-      "brown|avana hb dark brown": {
+      "brown|bonita cracked": {
         "colour": "Brown",
-        "productName": "AVANA HB DARK BROWN",
-        "category": "SLING",
-        "bagType": "AVANA HB",
-        "stock": 0
-      },
-      "black|baby bag black": {
-        "colour": "Black",
-        "productName": "BABY BAG BLACK",
-        "category": "BABY BAG",
-        "bagType": "BABY BAG",
-        "stock": 4
-      },
-      "black|belt bag black": {
-        "colour": "Black",
-        "productName": "BELT BAG BLACK",
-        "category": "WAIST BAG",
-        "bagType": "BELT BAG",
-        "stock": 11
-      },
-      "brown|big man bag brown": {
-        "colour": "Brown",
-        "productName": "BIG MAN BAG BROWN",
-        "category": "MAN BAG",
-        "bagType": "BIG MAN BAG",
-        "stock": 6
-      },
-      "grey|big man bag grey": {
-        "colour": "Grey",
-        "productName": "BIG MAN BAG GREY",
-        "category": "MAN BAG",
-        "bagType": "BIG MAN BAG",
-        "stock": 5
-      },
-      "beige|brief case nude": {
-        "colour": "Beige",
-        "productName": "BRIEF CASE NUDE",
-        "category": "BRIEFCASE",
-        "bagType": "BRIEF CASE",
-        "stock": 0
-      },
-      "black|butterfly sling black": {
-        "colour": "Black",
-        "productName": "BUTTERFLY SLING BLACK",
-        "category": "SLING",
-        "bagType": "BUTTERFLY SLING",
-        "stock": 0
-      },
-      "red|butterfly sling red": {
-        "colour": "Red",
-        "productName": "BUTTERFLY SLING RED",
-        "category": "SLING",
-        "bagType": "BUTTERFLY SLING",
+        "productName": "BONITA CRACKED",
+        "category": "TRAVEL",
+        "bagType": "BONITA",
         "stock": 1
       },
-      "black|cathy handbag black": {
-        "colour": "Black",
-        "productName": "CATHY HANDBAG BLACK",
-        "category": "HANDBAG",
-        "bagType": "CATHY HANDBAG",
-        "stock": 10
-      },
-      "grey|cathy handbag grey": {
+      "grey|elyse grey": {
         "colour": "Grey",
-        "productName": "CATHY HANDBAG GREY",
-        "category": "HANDBAG",
-        "bagType": "CATHY HANDBAG",
-        "stock": 5
-      },
-      "grey|code 3 grey": {
-        "colour": "Grey",
-        "productName": "CODE 3 GREY",
-        "category": "BACKPACK",
-        "bagType": "CODE 3",
-        "stock": 13
-      },
-      "black|elyse black": {
-        "colour": "Black",
-        "productName": "ELYSE BLACK",
+        "productName": "ELYSE GREY",
         "category": "HANDBAG",
         "bagType": "ELYSE",
-        "stock": 4
-      },
-      "black|elyse black/grey": {
-        "colour": "Black",
-        "productName": "ELYSE BLACK/GREY",
-        "category": "HANDBAG",
-        "bagType": "ELYSE",
-        "stock": 8
-      },
-      "black|jade black": {
-        "colour": "Black",
-        "productName": "JADE BLACK",
-        "category": "BRIEFCASE",
-        "bagType": "JADE",
-        "stock": 6
-      },
-      "grey|jamela grey": {
-        "colour": "Grey",
-        "productName": "JAMELA GREY",
-        "category": "HANDBAG",
-        "bagType": "JAMELA",
         "stock": 0
       },
-      "black|jumbo black": {
+      "black|gym bag black": {
         "colour": "Black",
-        "productName": "JUMBO BLACK",
-        "category": "TRAVEL",
-        "bagType": "JUMBO",
-        "stock": 18
-      },
-      "green|jumbo green": {
-        "colour": "Green",
-        "productName": "JUMBO GREEN",
-        "category": "TRAVEL",
-        "bagType": "JUMBO",
-        "stock": 13
-      },
-      "grey|jumbo grey": {
-        "colour": "Grey",
-        "productName": "JUMBO GREY",
-        "category": "TRAVEL",
-        "bagType": "JUMBO",
+        "productName": "GYM BAG BLACK",
+        "category": "SPORT",
+        "bagType": "GYM BAG",
         "stock": 3
       },
-      "beige|jumbo nude": {
-        "colour": "Beige",
-        "productName": "JUMBO NUDE",
-        "category": "TRAVEL",
-        "bagType": "JUMBO",
-        "stock": 2
+      "grey|jade grey": {
+        "colour": "Grey",
+        "productName": "JADE GREY",
+        "category": "BRIEFCASE",
+        "bagType": "JADE",
+        "stock": 7
       },
-      "black|kai black": {
+      "black|jamela black": {
         "colour": "Black",
-        "productName": "KAI BLACK",
-        "category": "BACKPACK",
-        "bagType": "KAI",
-        "stock": 10
-      },
-      "beige|kai beige": {
-        "colour": "Beige",
-        "productName": "KAI BEIGE",
-        "category": "BACKPACK",
-        "bagType": "KAI",
-        "stock": 6
-      },
-      "black|lola black": {
-        "colour": "Black",
-        "productName": "LOLA BLACK",
+        "productName": "JAMELA BLACK",
         "category": "HANDBAG",
-        "bagType": "LOLA",
-        "stock": 0
+        "bagType": "JAMELA",
+        "stock": 5
       },
       "brown|lola spice": {
         "colour": "Brown",
         "productName": "LOLA SPICE",
         "category": "HANDBAG",
         "bagType": "LOLA",
-        "stock": 5
-      },
-      "brown|loop bp dark brown": {
-        "colour": "Brown",
-        "productName": "LOOP BP DARK BROWN",
-        "category": "BACKPACK",
-        "bagType": "LOOP BP",
-        "stock": 0
-      },
-      "black|lunchset black": {
-        "colour": "Black",
-        "productName": "LUNCHSET BLACK",
-        "category": "LUNCH BAG",
-        "bagType": "LUNCHSET",
-        "stock": 0
-      },
-      "black|mega black": {
-        "colour": "Black",
-        "productName": "MEGA BLACK",
-        "category": "BACKPACK",
-        "bagType": "MEGA",
         "stock": 3
       },
       "green|mega green": {
@@ -953,189 +386,49 @@
         "productName": "MEGA GREEN",
         "category": "BACKPACK",
         "bagType": "MEGA",
-        "stock": 12
+        "stock": 11
       },
-      "black|mini school black": {
-        "colour": "Black",
-        "productName": "MINI SCHOOL BLACK",
-        "category": "SCHOOL BAG",
-        "bagType": "MINI SCHOOL",
+      "brown|mini zuri spice": {
+        "colour": "Brown",
+        "productName": "MINI ZURI SPICE",
+        "category": "HANDBAG",
+        "bagType": "MINI ZURI",
         "stock": 0
       },
-      "black|mini umbra black": {
-        "colour": "Black",
-        "productName": "MINI UMBRA BLACK",
-        "category": "CHEST BAG",
-        "bagType": "MINI UMBRA",
-        "stock": 2
-      },
-      "red|mini umbra red": {
+      "red|moon bag red": {
         "colour": "Red",
-        "productName": "MINI UMBRA RED",
-        "category": "CHEST BAG",
-        "bagType": "MINI UMBRA",
-        "stock": 2
-      },
-      "black|monah bp black": {
-        "colour": "Black",
-        "productName": "MONAH BP BLACK",
-        "category": "BACKPACK",
-        "bagType": "MONAH BP",
-        "stock": 7
-      },
-      "brown|monah bp spice": {
-        "colour": "Brown",
-        "productName": "MONAH BP SPICE",
-        "category": "BACKPACK",
-        "bagType": "MONAH BP",
-        "stock": 0
-      },
-      "brown|moon bag spice": {
-        "colour": "Brown",
-        "productName": "MOON BAG SPICE",
+        "productName": "MOON BAG RED",
         "category": "SLING",
         "bagType": "MOON BAG",
         "stock": 0
       },
-      "brown|moon bag cracked": {
-        "colour": "Brown",
-        "productName": "MOON BAG CRACKED",
-        "category": "SLING",
-        "bagType": "MOON BAG",
-        "stock": 0
-      },
-      "black|mystique black": {
-        "colour": "Black",
-        "productName": "MYSTIQUE BLACK",
-        "category": "MESSENGER",
-        "bagType": "MYSTIQUE",
-        "stock": 7
-      },
-      "black|nala black": {
-        "colour": "Black",
-        "productName": "NALA BLACK",
+      "green|nala green": {
+        "colour": "Green",
+        "productName": "NALA GREEN",
         "category": "HANDBAG",
         "bagType": "NALA",
-        "stock": 0
+        "stock": 2
       },
-      "black|neo man black": {
-        "colour": "Black",
-        "productName": "NEO MAN BLACK",
-        "category": "MAN BAG",
-        "bagType": "NEO MAN",
-        "stock": -1
-      },
-      "brown|nizana cracked": {
+      "brown|nizana spice": {
         "colour": "Brown",
-        "productName": "NIZANA CRACKED",
+        "productName": "NIZANA SPICE",
         "category": "SLING",
         "bagType": "NIZANA",
-        "stock": 4
-      },
-      "black|nova black": {
-        "colour": "Black",
-        "productName": "NOVA BLACK",
-        "category": "BRIEFCASE",
-        "bagType": "NOVA",
         "stock": 0
       },
-      "black|pioneer black": {
-        "colour": "Black",
-        "productName": "PIONEER BLACK",
-        "category": "BACKPACK",
-        "bagType": "PIONEER",
-        "stock": 2
-      },
-      "black|safiri bp black": {
-        "colour": "Black",
-        "productName": "SAFIRI BP BLACK",
-        "category": "BACKPACK",
-        "bagType": "SAFIRI BP",
-        "stock": 0
-      },
-      "brown|safiri bp brown": {
-        "colour": "Brown",
-        "productName": "SAFIRI BP BROWN",
-        "category": "BACKPACK",
-        "bagType": "SAFIRI BP",
-        "stock": 0
-      },
-      "brown|safiri travel brown": {
-        "colour": "Brown",
-        "productName": "SAFIRI TRAVEL BROWN",
-        "category": "TRAVEL",
-        "bagType": "SAFIRI TRAVEL",
-        "stock": 1
-      },
-      "black|safiri travel black": {
-        "colour": "Black",
-        "productName": "SAFIRI TRAVEL BLACK",
-        "category": "TRAVEL",
-        "bagType": "SAFIRI TRAVEL",
-        "stock": -1
-      },
-      "beige|safiri travel nude": {
+      "beige|nizana beige": {
         "colour": "Beige",
-        "productName": "SAFIRI TRAVEL NUDE",
-        "category": "TRAVEL",
-        "bagType": "SAFIRI TRAVEL",
-        "stock": 0
-      },
-      "red|satchel red": {
-        "colour": "Red",
-        "productName": "SATCHEL RED",
-        "category": "BRIEFCASE",
-        "bagType": "SATCHEL",
-        "stock": 8
-      },
-      "beige|sierra handbag wooven cream": {
-        "colour": "Beige",
-        "productName": "SIERRA HANDBAG WOOVEN CREAM",
-        "category": "HANDBAG",
-        "bagType": "SIERRA HANDBAG",
-        "stock": 0
-      },
-      "black|skye hb wooven black": {
-        "colour": "Black",
-        "productName": "SKYE HB WOOVEN BLACK",
-        "category": "HANDBAG",
-        "bagType": "SKYE HB",
-        "stock": 1
-      },
-      "brown|sleeve 2 caramel": {
-        "colour": "Brown",
-        "productName": "SLEEVE 2 CARAMEL",
-        "category": "BRIEFCASE",
-        "bagType": "SLEEVE 2",
-        "stock": 0
-      },
-      "black|travel black": {
-        "colour": "Black",
-        "productName": "TRAVEL BLACK",
-        "category": "TRAVEL",
-        "bagType": "TRAVEL",
-        "stock": 2
-      },
-      "black|trecento black": {
-        "colour": "Black",
-        "productName": "TRECENTO BLACK",
+        "productName": "NIZANA BEIGE",
         "category": "SLING",
-        "bagType": "TRECENTO",
-        "stock": 0
+        "bagType": "NIZANA",
+        "stock": 6
       },
-      "beige|zane man beige": {
-        "colour": "Beige",
-        "productName": "ZANE MAN BEIGE",
-        "category": "MAN BAG",
-        "bagType": "ZANE MAN",
-        "stock": 7
-      },
-      "red|zane man red": {
-        "colour": "Red",
-        "productName": "ZANE MAN RED",
-        "category": "MAN BAG",
-        "bagType": "ZANE MAN",
-        "stock": 9
+      "black|sarai black": {
+        "colour": "Black",
+        "productName": "SARAI BLACK",
+        "category": "TRAVEL",
+        "bagType": "SARAI",
+        "stock": 13
       }
     }
   },
@@ -1177,6 +470,13 @@
     },
     {
       "label": "Wk 2",
+      "month": "Sep",
+      "kenya": 0,
+      "sinza": 0,
+      "uganda": 0
+    },
+    {
+      "label": "Wk 4",
       "month": "Sep",
       "kenya": 0,
       "sinza": 0,

@@ -16,6 +16,15 @@ week-over-week movement, and a **September-vs-August weekly comparison chart** (
 month solid, previous month dashed — `cpPrevWeekly` from `monthly_report_history.json`),
 plus forward projections.
 
+## Sales card — reject split
+
+The Sales-card breakdown line shows the POS/corporate split **and the reject-clearance subset**:
+"N POS + C corporate · R rejects (X%)". `rejectBags` is the `[REJECT]`-tagged products (the
+Kitengela clearance) computed by `monthly_sales.py` (`sql/reject_bags_sold.sql` — same grand-total
+definition as `bags_sold_total.sql` plus the `[REJECT]` tag, so it's a true subset), surfaced via
+`current_performance.py` (`reject_from_db` → `PERF.rejectBags` / `rejectPct`, % of the POS total).
+So you can see how many of the bags sold were rejects vs normal stock.
+
 ## Data sources
 
 - **MONTHLY_TARGET** sheet: col C target, D sales, E deficit (summed).

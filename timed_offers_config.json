@@ -3,6 +3,21 @@
   "month": "2026-09",
   "offers": [
     {
+      "name": "Kitengela Rejects — Clearance Sale",
+      "market": "Kenya",
+      "shops": [
+        "KITENGELA"
+      ],
+      "startDate": "2026-09-01",
+      "endDate": "2026-09-30",
+      "clearanceStart": "2026-09-18",
+      "bagsFrom": "reject_stock.csv",
+      "stockFrom": "reject_stock.csv",
+      "nameLike": "[REJECT]",
+      "bags": [],
+      "prices": {}
+    },
+    {
       "name": "KES 300 Off — Bags Not On Offer (CBD)",
       "market": "Kenya",
       "shops": [

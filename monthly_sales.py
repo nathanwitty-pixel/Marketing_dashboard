@@ -73,6 +73,15 @@ def main() -> None:
     if mdf is not None and not mdf.empty:
         master_bags = int(round(float(mdf.iloc[0].get("bags") or 0)))
 
+    # Reject-clearance subset of the grand total (products tagged "[REJECT]"), so the Sales
+    # card can show how many of the bags sold were rejects.
+    reject_bags = 0
+    rdf = db.run_query(queries.REJECT_BAGS_SOLD,
+                       {"start_date": start.isoformat(), "end_date": end.isoformat(),
+                        "excluded": queries.excluded_products()})
+    if rdf is not None and not rdf.empty:
+        reject_bags = int(round(float(rdf.iloc[0].get("bags") or 0)))
+
     payload = {
         "monthKey":     start.strftime("%Y-%m"),
         "monthLabel":   start.strftime("%B %Y"),
@@ -81,6 +90,7 @@ def main() -> None:
         "monthlyBags":  round(bags),
         "monthlyValue": round(value),
         "masterBags":   master_bags,
+        "rejectBags":   reject_bags,
         "lines":        lines,
         "computedOn":   datetime.date.today().isoformat(),
     }

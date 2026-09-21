@@ -3,9 +3,10 @@
   "monthLabel": "September 2026",
   "monthStart": "2026-09-01",
   "monthEnd": "2026-09-30",
-  "monthlyBags": 8802,
-  "monthlyValue": 15230734,
-  "masterBags": 8699,
-  "lines": 8939,
-  "computedOn": "2026-09-17"
+  "monthlyBags": 10764,
+  "monthlyValue": 18490686,
+  "masterBags": 10480,
+  "rejectBags": 166,
+  "lines": 10931,
+  "computedOn": "2026-09-21"
 }

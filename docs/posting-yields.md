@@ -25,12 +25,22 @@ Sinza / Uganda), with a weekly/monthly toggle.
 ## "On offer" definition (per region)
 
 A bag is **on offer** if it appears in that region's active promos — read live from the
-`self_made_combos.html` SMC block (`_offer_bagtypes_by_region`):
+`self_made_combos.html` SMC block (`_offer_bagtypes_by_region`), the **single source of truth**:
 
 - **Kenya:** running-combo component bags **+** Power Deals **+** Deal of the Week.
   (Running combos are split into their individual component bags.)
 - **Sinza:** Combos **+** Singles.
 - **Uganda:** Combos.
+
+This SMC offer set (per region: `_ob_ke` / `_ob_sz` / `_ob_ug`) now drives **every** on/not-on-offer
+split — the marketing alignment, **Dead Stock**, and the **on/not-on-offer STOCK** figures
+(Kenya `s3NotPosted`, Sinza/Uganda `stockNotOnOffer`, which the Monthly Report §4 consumes). It
+**replaces the old STOCK_LEVELS / MONTHLY_TARGET ✅/x sheet flags**, which were manually maintained
+and stale — they misfiled bags that were genuinely in a combo/DoW/Power-Deal, over-counting
+"not on offer" (e.g. Kenya not-on-offer stock **5,572 → 2,613**). Matching uses `_bt_on_offer()`
+with the **same prefix logic** as the combos page, so a stock bag "Jumbo" matches a "Jumbo travel"
+deal and vice-versa (exact membership missed those). Only the MMP/WMP posted-alignment split
+(sheet col I/AB) still reads its flag from the sheet.
 
 ## Alignment universe (the ~654, not ~1,200)
 

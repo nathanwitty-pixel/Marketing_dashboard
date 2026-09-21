@@ -470,7 +470,7 @@ def _dead_stock_region(sales_rows, post_rows, sl_rows, offer_bagtypes,
         sales = sales_map.get(k, 0)
         if not (stock > stock_min and sales < weak_max):
             continue
-        on_offer = si["bagType"].upper() in offer_bagtypes
+        on_offer = _bt_on_offer(si["bagType"], offer_bagtypes)
         post_cnt = post_map.get(k, 0)
         posted   = post_cnt > 0
         g = grp["on"] if on_offer else grp["off"]
@@ -557,7 +557,7 @@ def _alignment_region(sales_rows, post_rows, sl_rows, offer_bagtypes,
     def _sold(k):  return (sales_map.get(k, 0) or 0) > 0
     def _units(k): return sales_map.get(k, 0) or 0
     def _stk(k):   return stock_agg.get(k, {}).get("stock", 0) or 0
-    def _onoff(k): return str(stock_agg.get(k, {}).get("bagType", "")).strip().upper() in offer
+    def _onoff(k): return _bt_on_offer(stock_agg.get(k, {}).get("bagType", ""), offer)
 
     def _for(keys):
         a_sold   = [k for k in keys if k in posted_keys and _sold(k)]
@@ -633,6 +633,16 @@ def _offer_bagtypes_by_region(fallback=None):
     if _ug:
         out["uganda"] = _ug
     return out
+
+
+def _bt_on_offer(bagtype, offer_set):
+    """Is this bag type on offer, matched against the Self-Made-Combos offer set with the SAME
+    prefix logic that page uses — so a stock bag 'JUMBO' matches a 'JUMBO TRAVEL' deal and vice
+    versa (exact membership would miss it). This is the source of truth for on/not-on-offer."""
+    bt = str(bagtype).strip().upper()
+    if not bt or not offer_set:
+        return False
+    return any(bt == d or bt.startswith(d + " ") or d.startswith(bt + " ") for d in offer_set)
 
 
 def _posted_stock(wmp_rows, sl_rows, post_col, check_col, stock_col):
@@ -1849,18 +1859,26 @@ def fetch_posting_data():
     _offer_bt = {str(row[0]).strip().upper()
                  for row in mt_rows[1:]
                  if len(row) > 5 and str(row[0]).strip() and _is_checked(row, 5)}
+    # On-offer bag types per region from the Self-Made-Combos page (running-combo components +
+    # power deals + deals of the week; Sinza/Uganda combos) — the SOURCE OF TRUTH for on/not-on-
+    # offer, so a bag really in a combo/DoW/Power-Deal isn't misfiled by a stale sheet ✅/x flag.
+    # Falls back to the MONTHLY_TARGET ✅ flag per region if that page isn't available.
+    _off_by_region = _offer_bagtypes_by_region(fallback=_offer_bt)
+    _ob_ke = _off_by_region.get("kenya") or _offer_bt
+    _ob_sz = _off_by_region.get("sinza") or _offer_bt
+    _ob_ug = _off_by_region.get("uganda") or _offer_bt
 
     kenya = _analyze_region(ms_rows, mmp_rows, sl_rows,
                             sales_col=23, post_col=4, stock_col=24,
-                            spp=KENYA_SPP, region="Kenya", offer_bagtypes=_offer_bt)
+                            spp=KENYA_SPP, region="Kenya", offer_bagtypes=_ob_ke)
 
     sinza = _analyze_region(ms_rows, mmp_rows, sl_rows,
                             sales_col=17, post_col=5, stock_col=24,
-                            spp=SINZA_SPP, region="Sinza", offer_bagtypes=_offer_bt)
+                            spp=SINZA_SPP, region="Sinza", offer_bagtypes=_ob_sz)
 
     uganda = _analyze_region(ms_rows, mmp_rows, sl_rows,
                              sales_col=17, post_col=6, stock_col=18,
-                             spp=UGANDA_SPP, region="Uganda", offer_bagtypes=_offer_bt)
+                             spp=UGANDA_SPP, region="Uganda", offer_bagtypes=_ob_ug)
 
     (wk_posts, wk_sales, wk_expected, wk_unposted, s3_wk_posts, nc_wk,
      not_offer_posted_wk, offer_not_posted_wk, offer_posted_wk, not_offer_not_posted_wk,
@@ -1892,34 +1910,29 @@ def fetch_posting_data():
     #   Monthly (MONTHLY_SALES, name col B/idx1): Kenya X(23) Sinza Y(24) Uganda Z(25)
     #   Weekly  (WEEKLY_SALES,  name col C/idx2): Kenya KENYA(27) Sinza R(17) Uganda S(18)
     #   posts E/F/G (4/5/6); stock STOCK_LEVELS Kenya Y(24) Sinza R(17) Uganda S(18).
-    dead_offer_bagtypes = {
-        str(row[0]).strip().upper()
-        for row in mt_rows[1:]
-        if len(row) > 5 and str(row[0]).strip() and _is_checked(row, 5)
-    }
     _th = load_dead_thresholds()
     print("\n  ── Dead Stock Accountability ─────────────────────────────")
 
-    def _dead(region, mo_sales_col, wk_sales_col, post_col, stock_col, floor):
+    # Dead-stock on/not-on-offer uses the SAME Self-Made-Combos offer sets as everything else.
+    def _dead(region, offer_set, mo_sales_col, wk_sales_col, post_col, stock_col, floor):
         return {
             "region": region, "stockMin": floor, "weakMax": _th["weak_max"],
-            "monthly": _dead_stock_region(ms_rows, mmp_rows, sl_rows, dead_offer_bagtypes,
+            "monthly": _dead_stock_region(ms_rows, mmp_rows, sl_rows, offer_set,
                                           mo_sales_col, 1, post_col, stock_col,
                                           floor, _th["weak_max"], region, "monthly"),
-            "weekly":  _dead_stock_region(ws_rows_wk, wmp_rows_wk, sl_rows, dead_offer_bagtypes,
+            "weekly":  _dead_stock_region(ws_rows_wk, wmp_rows_wk, sl_rows, offer_set,
                                           wk_sales_col, 2, post_col, stock_col,
                                           floor, _th["weak_max"], region, "weekly"),
         }
 
-    kenya['deadStock']  = _dead("Kenya",  23, 27, 4, 24, _th["kenya"])
-    sinza['deadStock']  = _dead("Sinza",  24, 17, 5, 17, _th["sinza"])
-    uganda['deadStock'] = _dead("Uganda", 25, 18, 6, 18, _th["uganda"])
+    kenya['deadStock']  = _dead("Kenya",  _ob_ke, 23, 27, 4, 24, _th["kenya"])
+    sinza['deadStock']  = _dead("Sinza",  _ob_sz, 24, 17, 5, 17, _th["sinza"])
+    uganda['deadStock'] = _dead("Uganda", _ob_ug, 25, 18, 6, 18, _th["uganda"])
 
     # ── Marketing–Sales alignment (posted × sold), monthly + weekly ──
-    # On-offer = the actual offers on the Self-Made-Combos page: Kenya = running-combo
-    # component bags + power deals + deals of the week; Sinza = combos + singles;
-    # Uganda = combos. Falls back to the MONTHLY_TARGET ✅ flag if that page is missing.
-    _off_by_region = _offer_bagtypes_by_region(fallback=_offer_bt)
+    # On-offer = the actual offers on the Self-Made-Combos page (see _off_by_region above):
+    # Kenya = running-combo component bags + power deals + deals of the week; Sinza = combos +
+    # singles; Uganda = combos. Falls back to the MONTHLY_TARGET ✅ flag if that page is missing.
     def _align(region_key, mo_sales_col, wk_sales_col, post_col, stock_col):
         ob = _off_by_region.get(region_key) or _offer_bt
         return {
@@ -2000,8 +2013,8 @@ def fetch_posting_data():
     sinza['weekly']['moInstockNotPostedSum'] = sum(safe_int(row[17]) for row in sl_rows[1:] if len(row) > 28 and safe_int(row[17]) > 0 and (_is_checked(row, 28) or _is_x(row, 28)) and str(row[2]).lower().strip() not in sz_mmp_keys)
     # Stock split by the OFFER flag (col AC = idx 28): ✅ = on offer, x = not on offer.
     # Matches the two rows of the Sales-vs-Expected charts.
-    sinza['weekly']['stockOnOffer']    = sum(safe_int(row[17]) for row in sl_rows[1:] if len(row) > 28 and _is_checked(row, 28))
-    sinza['weekly']['stockNotOnOffer'] = sum(safe_int(row[17]) for row in sl_rows[1:] if len(row) > 28 and _is_x(row, 28))
+    sinza['weekly']['stockOnOffer']    = sum(safe_int(row[17]) for row in sl_rows[1:] if len(row) > 28 and str(row[3]).strip() and _bt_on_offer(row[3], _ob_sz))
+    sinza['weekly']['stockNotOnOffer'] = sum(safe_int(row[17]) for row in sl_rows[1:] if len(row) > 28 and str(row[3]).strip() and not _bt_on_offer(row[3], _ob_sz))
 
     # In-stock but never posted (dead stock): Sinza stock col R (idx 17) > 20, offer-flagged,
     # (colour, name) not in the posted set → the bags sitting in stock with no marketing.
@@ -2065,8 +2078,8 @@ def fetch_posting_data():
     uganda['weekly']['moInstockPostedSum']    = sum(safe_int(row[18]) for row in sl_rows[1:] if len(row) > 29 and safe_int(row[18]) > 0 and (_is_checked(row, 29) or _is_x(row, 29)) and str(row[2]).lower().strip() in ug_mmp_keys)
     uganda['weekly']['moInstockNotPostedSum'] = sum(safe_int(row[18]) for row in sl_rows[1:] if len(row) > 29 and safe_int(row[18]) > 0 and (_is_checked(row, 29) or _is_x(row, 29)) and str(row[2]).lower().strip() not in ug_mmp_keys)
     # Stock split by the OFFER flag (col AD = idx 29): ✅ = on offer, x = not on offer.
-    uganda['weekly']['stockOnOffer']    = sum(safe_int(row[18]) for row in sl_rows[1:] if len(row) > 29 and _is_checked(row, 29))
-    uganda['weekly']['stockNotOnOffer'] = sum(safe_int(row[18]) for row in sl_rows[1:] if len(row) > 29 and _is_x(row, 29))
+    uganda['weekly']['stockOnOffer']    = sum(safe_int(row[18]) for row in sl_rows[1:] if len(row) > 29 and str(row[3]).strip() and _bt_on_offer(row[3], _ob_ug))
+    uganda['weekly']['stockNotOnOffer'] = sum(safe_int(row[18]) for row in sl_rows[1:] if len(row) > 29 and str(row[3]).strip() and not _bt_on_offer(row[3], _ob_ug))
 
     # In-stock but never posted (dead stock): Uganda stock col S (idx 18) > 20, offer-flagged,
     # (colour, name) not in the posted set.
@@ -2152,15 +2165,18 @@ def fetch_posting_data():
     print(f"  Not-offer sales % (wk)         : {not_offer_sales_pct_wk}%")
 
     # S3: STOCK_LEVELS col Y (idx 24) filtered by col AB (idx 27)
+    # On-offer / not-on-offer STOCK — classified by the Self-Made-Combos offer set (source of
+    # truth), not the STOCK_LEVELS ✅/x flag, so a bag genuinely in a combo/DoW/Power-Deal is
+    # counted as on offer even if the sheet flag is stale.
     s3_posted = sum(
         safe_int(row[24])
         for row in sl_rows[1:]
-        if len(row) > 24 and _is_checked(row, 27)
+        if len(row) > 27 and str(row[3]).strip() and _bt_on_offer(row[3], _ob_ke)
     )
     s3_not_posted = sum(
         safe_int(row[24])
         for row in sl_rows[1:]
-        if len(row) > 24 and _is_x(row, 27)
+        if len(row) > 27 and str(row[3]).strip() and not _bt_on_offer(row[3], _ob_ke)
     )
     # S3: total posts done monthly (col E) where col I has x OR ✅
     s3_mo_posts = sum(
@@ -2199,7 +2215,7 @@ def fetch_posting_data():
 
     print(f"\n  ── Kenya S3 Stock ────────────────────────────────────────")
     print(f"  In-stock & posted     (STOCK_LEVELS col Y, ✅ in AB): {fmt_int(s3_posted)}")
-    print(f"  In-stock & not posted (STOCK_LEVELS col Y, x  in AB): {fmt_int(s3_not_posted)}")
+    print(f"  In-stock & NOT on offer (SMC offer set, STOCK_LEVELS col Y): {fmt_int(s3_not_posted)}")
     print(f"  S3 weekly posts  (WEEKLY_MARKETING_POST col E, x or ✅ in I): {s3_wk_posts}")
     print(f"  S3 monthly posts (MONTHLY_MARKETING_POST col E, x or ✅ in I): {fmt_int(s3_mo_posts)}")
     print(f"  No-convert monthly bags                                     : {len(nc_mo)}")

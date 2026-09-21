@@ -2,7 +2,7 @@
   "_lock": false,
   "_note": "Local copy of the offers-sheet prices (price = full price col D, offer = offer price col F, category = col C). Auto-refreshed on every successful run and consulted automatically when the Google Sheet is unreachable. Set \"_lock\": true to use THIS file as the source of truth — your hand edits then win and are never overwritten by the sheet.",
   "_source": "offers sheet 1I68VLBA1UaEcVklTT09chGXXXotVj0Ha4t7vr5NOTtg (worksheet 0)",
-  "_updated": "2026-09-17 11:14:48",
+  "_updated": "2026-09-18 15:44:53",
   "offers": {
     "ACE": {
       "category": "SLING",

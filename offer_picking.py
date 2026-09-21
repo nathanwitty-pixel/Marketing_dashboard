@@ -58,6 +58,17 @@ def _apply_alias(up):
         up = re.sub(r"\b" + re.escape(a) + r"\b", b, up)
     return up
 
+
+# Bags that are NEVER discounted — priced at the original/full price (col D) even for the
+# "NOW" price, so they carry no offer reduction. Matched by name (equal or word-prefix, so
+# "LOOP" catches "LOOP BP", "MEGA" catches "MEGA BAGPACK").
+FULL_PRICE_BAGS = ("MEGA", "TAJI", "LOOP", "ZULA")
+
+
+def _is_full_price(name):
+    up = str(name).upper().strip()
+    return any(up == b or up.startswith(b + " ") for b in FULL_PRICE_BAGS)
+
 # Reference-month combos to consider for next month, matched against current Odoo stock.
 # (October 2025, user-supplied.) Each line: bags joined by '+', alternatives by '/'.
 OCT_2025_COMBOS = [
@@ -329,6 +340,8 @@ def _build_catalog(cost, prod, bomkeys, offers):
         fallback = (2 * cost[n]) if n in cost else None
         was = o.get("price") or fallback                      # col D full price
         now = o.get("offer") or o.get("price") or fallback    # col F offer price
+        if _is_full_price(n):                                  # never discounted → NOW = full price
+            now = was
         cat.append({"name": n, "cost": c, "stock": int(bag_stock.get(n, 0)),
                     "valueWas": (round(was) if was else None),
                     "valueNow": (round(now) if now else None),
