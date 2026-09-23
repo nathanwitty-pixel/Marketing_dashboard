@@ -102,6 +102,96 @@ def odoo_lifetime_product_bags():
     return [(str(r["product"]), int(round(float(r["bags"] or 0)))) for _, r in df.iterrows()]
 
 
+# Sheet product-name spellings that differ from Odoo's — corrected before matching sales/stock so
+# the variant isn't silently missed (the sheet's "Lamora Skye Blue" is Odoo's "Lamora Sky Blue").
+# The reporting service account is read-only, so the sheet itself can't be fixed from here.
+_NAME_FIX = {
+    "LAMORA SKYE BLUE": "LAMORA SKY BLUE",
+}
+def _fix_name(name):
+    u = str(name).upper().strip()
+    return _NAME_FIX.get(u, u)
+
+
+# ── Colour canonicalisation for the per-colour table's variant merge ──────────
+# Several sheet/Odoo rows are shade/edition variants of the same base colour
+# ("Zula Black", "Zula CN Black", "Zula Black 018"). _base_colour() reduces any
+# of them to one stable grouping key ("Black"), used ONLY when building the
+# merged copies injected as NP.pc*Combined below — never applied to ms_base/
+# weekly_combined/monthly_combined/weekly_combined/all_monthly_combined/
+# all_weekly_combined themselves.
+_COLOUR_QUALIFIER_TOKENS = {"CN", "TT", "CROC"}   # edition/texture prefixes, never colours
+
+_PRIMARY_COLOURS = [
+    # multi-word / must be checked before their single-word component
+    "DARK BROWN", "D BROWN", "SKY BLUE", "RED PATTERN", "AMBER BROWN",
+    # single-word
+    "CHOCOLATE", "MUSTARD", "MAROON", "PURPLE", "CRACKED", "DOTTED",
+    "CRIMSON", "CARAMEL", "LILAC", "AMBER", "CREAM", "BROWN", "BLACK",
+    "GREEN", "BEIGE", "SPICE", "WOVEN", "WOOVEN", "GREY", "GRAY", "NUDE",
+    "CHOCO", "NAVY", "BLUE", "PINK", "RED", "YELLOW", "ORANGE", "WHITE",
+    "GOLD", "SILVER",
+]
+_PRIMARY_COLOURS_SORTED = sorted(_PRIMARY_COLOURS, key=len, reverse=True)
+
+
+def _strip_colour_qualifiers(raw):
+    """Upper-case, punctuation-normalised string with known qualifier tokens
+    (CN/TT/CROC) and bare numeric variant codes (e.g. '018') removed."""
+    up = re.sub(r"[^A-Z0-9 ]+", " ", str(raw).upper())
+    toks = [t for t in up.split() if t and t not in _COLOUR_QUALIFIER_TOKENS and not t.isdigit()]
+    return " ".join(toks)
+
+
+def _base_colour(raw):
+    """Canonical base-colour grouping key: 'Black 018'/'CN Black' -> 'Black';
+    'Sky Blue' -> 'Sky Blue' (own entry, not folded into 'Blue'); 'Antelope
+    Brown' -> 'Brown' (substring match). Falls back to the qualifier-stripped
+    string itself (Title Case) when no known colour word matches, so nothing
+    is silently dropped — becomes its own single-row group."""
+    stripped = _strip_colour_qualifiers(raw)
+    padded = " " + stripped + " "
+    for c in _PRIMARY_COLOURS_SORTED:
+        if (" " + c + " ") in padded:
+            return c.title()
+    return stripped.title() if stripped else str(raw).strip().title()
+
+
+def _merge_rows_by_base_colour(rows, numeric_fields):
+    """Group rows by (bagType upper, base-colour upper) and SUM numeric_fields
+    across each group — lossless: no row dropped, no double count, so any
+    total computed from the merged output equals the total computed from the
+    unmerged input."""
+    order, groups = [], {}
+    for r in rows:
+        bag_type = str(r.get("bagType", "")).strip()
+        if not bag_type:
+            continue
+        base = _base_colour(r.get("colour", ""))
+        key = (bag_type.upper(), base.upper())
+        if key not in groups:
+            groups[key] = []
+            order.append(key)
+        groups[key].append(r)
+
+    merged = []
+    for key in order:
+        grp = groups[key]
+        bag_type_disp = grp[0]["bagType"]
+        base_colour_disp = _base_colour(grp[0]["colour"])
+        category_disp = next((g.get("category", "") for g in grp if g.get("category")), "")
+        out = {
+            "colour":      base_colour_disp,
+            "category":    category_disp,
+            "productName": (bag_type_disp + " " + base_colour_disp).strip(),
+            "bagType":     bag_type_disp,
+        }
+        for f in numeric_fields:
+            out[f] = sum(int(g.get(f, 0) or 0) for g in grp)
+        merged.append(out)
+    return merged
+
+
 def match_odoo_bags(bag_type, odoo_list):
     """Sum Odoo bags whose product name is the new product's — matched by name
     prefix so 'AMORA' picks up 'AMORA …' variants without catching 'LAMORA'.
@@ -391,7 +481,7 @@ def fetch_new_products_data():
 
     def _apply_stock(rows):
         for r in rows:
-            k = str(r["productName"]).upper().strip()
+            k = _fix_name(r["productName"])
             r["sKenya"]   = int(_sk_odoo.get(k, _skn.get(_norm(k), 0)))
             r["sOutside"] = int(_so_odoo.get(k, _son.get(_norm(k), 0)))
             r["sRestock"] = 0
@@ -410,7 +500,7 @@ def fetch_new_products_data():
     if _odoo_m is not None:
         _mn = {_norm(k): v for k, v in _odoo_m.items()}
         for r in ms_base:
-            k = str(r["productName"]).upper().strip()
+            k = _fix_name(r["productName"])
             s = _odoo_m.get(k) or _mn.get(_norm(k))
             r["kenyaSales"]   = s["kenya"]   if s else 0
             r["outsideKenya"] = s["outside"] if s else 0
@@ -423,7 +513,7 @@ def fetch_new_products_data():
     if _odoo_w is not None:
         _wn = {_norm(k): v for k, v in _odoo_w.items()}
         for r in weekly_combined:
-            k = str(r["productName"]).upper().strip()
+            k = _fix_name(r["productName"])
             s = _odoo_w.get(k) or _wn.get(_norm(k))
             r["weeklySales"] = (s["kenya"] if s else 0)   # WEEKLY_SALES col X is Kenya
         print("  Weekly sales source   : Odoo (Kenya, this week to date)")
@@ -436,11 +526,61 @@ def fetch_new_products_data():
     if _odoo_lw is not None:
         _lwn = {_norm(k): v for k, v in _odoo_lw.items()}
         for r in weekly_combined:
-            k = str(r["productName"]).upper().strip()
+            k = _fix_name(r["productName"])
             s = _odoo_lw.get(k) or _lwn.get(_norm(k))
             r["lastWeekKenya"]   = (s["kenya"] if s else 0)
             r["lastWeekOutside"] = (s["outside"] if s else 0)
         print("  Last-week sales source: Odoo (previous Sun-Sat week)")
+
+    # ── Capture EVERY Odoo colour variant of the new products ────────────────────────────
+    # The sheet only lists the colours someone typed; Odoo is the source of truth for what
+    # actually sold. Any Odoo variant of a tracked new product that has NO matching sheet row
+    # (e.g. "Zula Black 018") is added here as its own colour row with its live Odoo sales /
+    # last-week / stock, so no colour is missed. Combos ("+") and rejects ("[REJECT]") are not
+    # colour variants and are skipped. (The bag-type totals already include these via prefix
+    # match; this only completes the per-colour breakdown.)
+    if _odoo_m is not None or _odoo_w is not None:
+        _bts = sorted(names_upper, key=len, reverse=True)          # new-product bag types
+        _sib = {}                                                  # bagType_upper -> (display, category)
+        for r in ms_base + weekly_combined:
+            _btk = str(r["bagType"]).upper().strip()
+            _sib.setdefault(_btk, (str(r["bagType"]).strip(), r.get("category", "")))
+        _have = {_norm(_fix_name(r["productName"])) for r in ms_base}
+        _have |= {_norm(_fix_name(r["productName"])) for r in weekly_combined}
+        _names = set()
+        for _src in ((_odoo_m or {}), (_odoo_w or {}), (_odoo_lw or {}), _sk_odoo, _so_odoo):
+            _names |= set(_src.keys())
+        def _bt_of(u):
+            for _bt in _bts:
+                if u == _bt or u.startswith(_bt + " "):
+                    return _bt
+            return None
+        _added = 0
+        for _nm in sorted(_names):
+            _u = str(_nm).upper().strip()
+            if "+" in _u or "[REJECT]" in _u:
+                continue
+            _bt = _bt_of(_u)
+            if not _bt or _norm(_u) in _have:
+                continue
+            _btd, _cat = _sib.get(_bt, (_bt.title(), ""))
+            _colour = (_u[len(_bt):].strip().title() or "—")
+            _m  = (_odoo_m  or {}).get(_u) or {}
+            _w  = (_odoo_w  or {}).get(_u) or {}
+            _lw = (_odoo_lw or {}).get(_u) or {}
+            _sk = int(_sk_odoo.get(_u, _skn.get(_norm(_u), 0)))
+            _so = int(_so_odoo.get(_u, _son.get(_norm(_u), 0)))
+            ms_base.append({"colour": _colour, "category": _cat, "productName": str(_nm).title(),
+                            "bagType": _btd, "kenyaSales": _m.get("kenya", 0), "outsideKenya": _m.get("outside", 0),
+                            "mpostKenya": 0, "mpostOutside": 0, "sKenya": _sk, "sOutside": _so, "sRestock": 0})
+            weekly_combined.append({"colour": _colour, "category": _cat, "productName": str(_nm).title(),
+                            "bagType": _btd, "weeklySales": _w.get("kenya", 0), "wpostKenya": 0, "wpostOutside": 0,
+                            "sKenya": _sk, "sOutside": _so, "sRestock": 0,
+                            "lastWeekKenya": _lw.get("kenya", 0), "lastWeekOutside": _lw.get("outside", 0)})
+            _have.add(_norm(_u))
+            _added += 1
+        if _added:
+            print("  Colour variants added : %d Odoo colour(s) missing from the sheet" % _added)
 
     # Full catalogue (every product) vs. the new-products subset used by cards/charts
     all_monthly_combined = ms_base
@@ -533,11 +673,32 @@ def update_np_weekly_history():
     ref = date.today() - timedelta(days=1)
     ws  = _np_week_start(ref)
     wk_idx = _np_perfect_week_index(ref)
+    # `weekly_total` (module-level, lines ~510-519) is computed from TODAY's Sun-Sat window, which
+    # only matches ref's own week when ref falls in that same week (the normal case: ref =
+    # yesterday, no week boundary crossed). On the FIRST day of a new week (today = Sunday), ref is
+    # the LAST day of the week that just ended — a different, already-completed week — so reusing
+    # `weekly_total` would silently store that new week's near-zero start under the completed
+    # week's label. Requery Odoo for ref's own window in that case instead.
+    _today_wk_start = _np_week_start(date.today())
+    if ws == _today_wk_start:
+        ref_total = weekly_total
+    else:
+        _ref_odoo = odoo_sales_window(ws, ref)
+        if _ref_odoo is not None:
+            _rnorm = lambda s: re.sub(r"[^A-Z0-9]", "", str(s).upper())   # local: fetch_new_products_data()'s _norm isn't in scope here
+            _refn = {_rnorm(k): v for k, v in _ref_odoo.items()}
+            ref_total = 0
+            for r in weekly_combined:
+                k = _fix_name(r["productName"])
+                s = _ref_odoo.get(k) or _refn.get(_rnorm(k))
+                ref_total += (s["kenya"] if s else 0)
+        else:
+            ref_total = weekly_total   # Odoo unreachable — fall back rather than write nothing
     entry = {
         "weekStart":    ws.isoformat(),
         "label":        ("Wk " + str(wk_idx)) if wk_idx else "Partial",
         "month":        ref.strftime("%b"),
-        "weeklyTotal":  weekly_total,
+        "weeklyTotal":  ref_total,
         "kenyaPosts":   wpost_kenya,
         "outsidePosts": wpost_outside,
     }
@@ -548,16 +709,34 @@ def update_np_weekly_history():
                 weeks = json.load(f).get("weeks", [])
         except (ValueError, OSError):
             weeks = []
+    # Monotonic-safety guard: never let a fresh write regress a previously-recorded total for the
+    # same week. Belt-and-suspenders alongside the ref_total fix above — even if the reference-week
+    # figure is ever wrong again, a lower value can never clobber a higher one already on disk.
+    _existing = next((w for w in weeks if w.get("weekStart") == entry["weekStart"]), None)
+    if _existing is not None:
+        _prev_total = safe_int(_existing.get("weeklyTotal"))
+        if _prev_total > entry["weeklyTotal"]:
+            entry["weeklyTotal"] = _prev_total
     weeks = [w for w in weeks if w.get("weekStart") != entry["weekStart"]]
     weeks.append(entry)
     weeks.sort(key=lambda w: w.get("weekStart", ""))
     weeks = weeks[-16:]
     # Re-label every stored week from its own weekStart, so the numbering stays
-    # consistent (opening partial week = Wk 1) even for previously-frozen rows.
+    # consistent (opening partial week = Wk 1) even for previously-frozen rows. Also backfill a
+    # "pct" (% of that week's OWN weekly target) on any entry that doesn't have one yet — every
+    # week's target is derived from ITS OWN month's complete-week count, not the live one, so a
+    # frozen prior-month value stays correct even after the month rolls over. This is what lets
+    # the prior-month comparison line (built below) show a real % series without re-deriving a
+    # stale weekly_target later.
     for w in weeks:
         try:
-            wi = _np_perfect_week_index(date.fromisoformat(w["weekStart"]))
+            _wd = date.fromisoformat(w["weekStart"])
+            wi = _np_perfect_week_index(_wd)
             w["label"] = ("Wk " + str(wi)) if wi else "Partial"
+            if w.get("pct") is None:
+                _wcw = _np_complete_weeks_in_month(ref=_wd)
+                _wtgt = round(total_target / _wcw) if _wcw else 0
+                w["pct"] = round(safe_int(w.get("weeklyTotal")) / _wtgt * 100, 2) if _wtgt else 0
         except Exception:
             pass
     with open(WEEKLY_POSTS_HISTORY, "w") as f:
@@ -570,6 +749,38 @@ np_weekly_history = update_np_weekly_history()
 np_complete_weeks   = _np_complete_weeks_in_month()
 weekly_target       = round(total_target / np_complete_weeks) if np_complete_weeks else 0
 weekly_sales_pct    = (weekly_total / weekly_target * 100) if weekly_target else 0
+
+# ── Prior-month comparison line (dotted, like Current Performance's weekly chart) ──
+# Sourced from this file's OWN weekly-history snapshot (new_products_weekly_history.json) rather
+# than monthly_report_history.json, which doesn't carry a per-new-product weekly breakdown.
+np_prev_weekly, np_prev_label, np_cur_label = [], "", ""
+if np_weekly_history:
+    _cur_mo = np_weekly_history[-1].get("month", "")
+    np_cur_label = _cur_mo
+    _prev_mo = next((w.get("month", "") for w in reversed(np_weekly_history) if w.get("month") != _cur_mo), "")
+    if _prev_mo:
+        np_prev_label = _prev_mo
+        np_prev_weekly = [{"label": w.get("label", ""), "pct": w.get("pct") or 0}
+                          for w in np_weekly_history if w.get("month") == _prev_mo]
+
+# ── Merged copies for the per-colour table ONLY (new_products.html's "Sales
+# vs Posts (per Colour)" table). Built from monthly_combined/weekly_combined/
+# all_monthly_combined/all_weekly_combined AFTER every total above (monthly_kenya,
+# mpost_kenya, m_skenya, weekly_total, ...) has already been computed from the
+# UNMERGED lists, so those totals are unaffected. Injected under separate NP.pc*
+# keys — NP.monthlyCombined/NP.weeklyCombined/NP.allMonthlyCombined/
+# NP.allWeeklyCombined stay exactly as they were, for the Top 10 chart,
+# dead-stock/runway guidance, colour-guidance trend and product-targets chart,
+# which all read those keys directly and must keep showing every variant.
+_MONTHLY_NUMERIC_FIELDS = ["kenyaSales", "outsideKenya", "mpostKenya", "mpostOutside",
+                           "sKenya", "sOutside", "sRestock"]
+_WEEKLY_NUMERIC_FIELDS  = ["weeklySales", "wpostKenya", "wpostOutside",
+                           "sKenya", "sOutside", "sRestock",
+                           "lastWeekKenya", "lastWeekOutside"]
+pc_monthly_combined     = _merge_rows_by_base_colour(monthly_combined,     _MONTHLY_NUMERIC_FIELDS)
+pc_weekly_combined      = _merge_rows_by_base_colour(weekly_combined,      _WEEKLY_NUMERIC_FIELDS)
+pc_all_monthly_combined = _merge_rows_by_base_colour(all_monthly_combined, _MONTHLY_NUMERIC_FIELDS)
+pc_all_weekly_combined  = _merge_rows_by_base_colour(all_weekly_combined,  _WEEKLY_NUMERIC_FIELDS)
 
 
 # ── INJECT INTO HTML ──────────────────────────────────────────
@@ -610,7 +821,14 @@ inline_script = (
     f'  weeklyCombined:  {json.dumps(weekly_combined, ensure_ascii=False, separators=(",", ":"))},\n'
     f'  allMonthlyCombined: {json.dumps(all_monthly_combined, ensure_ascii=False, separators=(",", ":"))},\n'
     f'  allWeeklyCombined:  {json.dumps(all_weekly_combined, ensure_ascii=False, separators=(",", ":"))},\n'
-    f'  weeklyPostsHistory: {json.dumps(np_weekly_history, separators=(",", ":"))}\n'
+    f'  pcMonthlyCombined: {json.dumps(pc_monthly_combined, ensure_ascii=False, separators=(",", ":"))},\n'
+    f'  pcWeeklyCombined:  {json.dumps(pc_weekly_combined, ensure_ascii=False, separators=(",", ":"))},\n'
+    f'  pcAllMonthlyCombined: {json.dumps(pc_all_monthly_combined, ensure_ascii=False, separators=(",", ":"))},\n'
+    f'  pcAllWeeklyCombined:  {json.dumps(pc_all_weekly_combined, ensure_ascii=False, separators=(",", ":"))},\n'
+    f'  weeklyPostsHistory: {json.dumps(np_weekly_history, separators=(",", ":"))},\n'
+    f'  npPrevWeekly: {json.dumps(np_prev_weekly, ensure_ascii=False, separators=(",", ":"))},\n'
+    f'  npPrevLabel:  {json.dumps(np_prev_label, ensure_ascii=False)},\n'
+    f'  npCurLabel:   {json.dumps(np_cur_label, ensure_ascii=False)}\n'
     "};\n"
     "</script>\n"
     "<!-- NEW_PROD_DATA_END -->"

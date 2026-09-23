@@ -812,7 +812,32 @@ BAG_SALES_SINZA_SQL  = _bag_sales_sql("AND lower(COALESCE(pc.\"name\",'')) IN ('
 BAG_SALES_UGANDA_SQL = _bag_sales_sql("AND lower(COALESCE(pc.\"name\",'')) = 'uganda'")
 
 
-def _bags_not_on_offer(m_start, m_end, on_offer_raw, sql=BAG_SALES_SQL, currency="KES", stock_map=None):
+def _bag_sales_daily_sql(market_sql):
+    """Per-day bag sales (units only) for a market — same product filters as _bag_sales_sql,
+    plus a date column, so the "not on offer" cover-days metric can use the number of days a
+    bag ACTUALLY sold instead of calendar days elapsed."""
+    return f"""
+SELECT p.date_order::date AS d, UPPER(pt."name") AS name, SUM(pl.qty)::int AS units
+FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+LEFT JOIN pos_session ps ON p.session_id=ps.id
+LEFT JOIN pos_config pc ON ps.config_id=pc.id
+LEFT JOIN product_product pp ON pl.product_id=pp.id
+LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
+WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid') AND pl.qty <> 0
+  {market_sql}
+  AND pt."name" NOT LIKE '%+%'
+  AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" NOT ILIKE '%strap%' AND pt."name" NOT ILIKE 'gift bag%'
+GROUP BY 1, 2
+"""
+
+BAG_SALES_DAILY_SQL        = _bag_sales_daily_sql("AND lower(COALESCE(pc.\"name\",'')) NOT IN ('sinza','dar-es-alam','uganda')")
+BAG_SALES_DAILY_SINZA_SQL  = _bag_sales_daily_sql("AND lower(COALESCE(pc.\"name\",'')) IN ('sinza','dar-es-alam')")
+BAG_SALES_DAILY_UGANDA_SQL = _bag_sales_daily_sql("AND lower(COALESCE(pc.\"name\",'')) = 'uganda'")
+
+
+def _bags_not_on_offer(m_start, m_end, on_offer_raw, sql=BAG_SALES_SQL, currency="KES",
+                       stock_map=None, daily_sql=None):
     """Bags with sales this month (in the market `sql` scopes to) that are on NO offer.
 
     `on_offer_raw` = the raw product/bag names that ARE on offer for that market:
@@ -860,19 +885,34 @@ def _bags_not_on_offer(m_start, m_end, on_offer_raw, sql=BAG_SALES_SQL, currency
             e["units"] += int(r["units"] or 0)
             e["revenue"] += int(r["revenue"] or 0)
 
-    # Stock on hand per bag type + a stock-runway ("days of cover"): at this month's average
-    # daily pace (units sold ÷ days elapsed so far), how long the current stock will last —
-    # so we see which not-on-offer bag is pushing and whether stock is healthy (short cover =
-    # about to run out; very long = overstocked/slow). Keys matched case-insensitively.
+    # Stock on hand per bag type + a stock-runway ("days of cover"): at the pace this bag actually
+    # sells (units sold ÷ the number of DISTINCT DAYS it recorded a sale this month — not calendar
+    # days elapsed), how long the current stock will last. A bag that sold 30 units over just 3
+    # active days gets a faster, more honest pace of 10/day, not diluted across ~21 elapsed days —
+    # so we see which not-on-offer bag is pushing and whether stock is healthy (short cover = about
+    # to run out; very long = overstocked/slow). Keys matched case-insensitively.
     import datetime as _dt
     _elapsed = max(1, (min(m_end, _dt.date.today()) - m_start).days + 1)
+    _days_sold = {}
+    if daily_sql:
+        _ddf = db.run_query(daily_sql, {"s": m_start.isoformat(), "e": m_end.isoformat()})
+        if _ddf is not None and not _ddf.empty:
+            for _, r in _ddf.iterrows():
+                bt = _infer(r["name"])
+                if not bt or int(r["units"] or 0) <= 0:
+                    continue                                 # only days that bag actually sold
+                _days_sold.setdefault(bt, set()).add(r["d"])
     _stk = {str(k).strip().upper(): int(v or 0) for k, v in (stock_map or {}).items()}
     not_on = []
     for bt, v in sold.items():
         if _is_on_offer(bt) or v["units"] <= 0:
             continue
         _stock = _stk.get(bt, 0)
-        _avg = v["units"] / _elapsed                        # avg units/day this month so far
+        # Active-day count for this bag; falls back to calendar days elapsed only if no daily_sql
+        # was supplied at all (caller omitted it) — never silently assumes "sold in 1 day".
+        _active_days = len(_days_sold.get(bt, ())) if daily_sql else _elapsed
+        _active_days = _active_days or _elapsed
+        _avg = v["units"] / _active_days                     # avg units/day, days it actually sold
         _cover = int(round(_stock / _avg)) if _avg > 0 else None   # days the stock will last
         not_on.append({"bag": bt, "units": v["units"], "revenue": v["revenue"], "stock": _stock,
                        "avgPerDay": round(_avg, 1), "daysCover": _cover})
@@ -1785,12 +1825,15 @@ def fetch():
         for x in (deals or {}).get(grp, []):
             kenya_on.add(x.get("product", ""))
     payload["bagsNotOnOffer"] = _bags_not_on_offer(
-        m_start, m_end, kenya_on, BAG_SALES_SQL, "KES", stock_map=_AUGMENTED_STOCK)
+        m_start, m_end, kenya_on, BAG_SALES_SQL, "KES", stock_map=_AUGMENTED_STOCK,
+        daily_sql=BAG_SALES_DAILY_SQL)
     # Sinza & Uganda: the region's sheet combos/singles/specials component bags are "on offer".
     payload["bagsNotOnOfferSinza"] = _bags_not_on_offer(
-        m_start, m_end, _region_on_offer_bags(payload, "sinza"), BAG_SALES_SINZA_SQL, "TSh", stock_map=_SZ_STOCK)
+        m_start, m_end, _region_on_offer_bags(payload, "sinza"), BAG_SALES_SINZA_SQL, "TSh",
+        stock_map=_SZ_STOCK, daily_sql=BAG_SALES_DAILY_SINZA_SQL)
     payload["bagsNotOnOfferUganda"] = _bags_not_on_offer(
-        m_start, m_end, _region_on_offer_bags(payload, "uganda"), BAG_SALES_UGANDA_SQL, "USh", stock_map=_UG_STOCK)
+        m_start, m_end, _region_on_offer_bags(payload, "uganda"), BAG_SALES_UGANDA_SQL, "USh",
+        stock_map=_UG_STOCK, daily_sql=BAG_SALES_DAILY_UGANDA_SQL)
     return payload
 
 
