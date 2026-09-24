@@ -424,6 +424,37 @@ GROUP BY UPPER(pc."name"), UPPER(pt."name")
 """
 
 
+# Deal sales by till × Sun-Sat week (units + revenue) — a Deal of the Week only runs at its
+# locations during its tier's weeks, so its sold/revenue are summed over exactly those cells.
+DEAL_SALES_SHOP_WEEK_SQL = f"""
+SELECT UPPER(pc."name") AS shop, UPPER(pt."name") AS name, {_WK_EXPR} AS wk,
+       SUM(pl.qty)::int AS units, ROUND(SUM(pl.price_subtotal_incl))::int AS val
+FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+LEFT JOIN pos_session ps ON p.session_id = ps.id
+LEFT JOIN pos_config pc ON ps.config_id = pc.id
+LEFT JOIN product_product pp ON pl.product_id = pp.id
+LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
+WHERE p.date_order::date BETWEEN :start_date AND :end_date
+  AND p.state IN ('done', 'paid') AND pl.qty <> 0
+  AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
+  AND pt."name" NOT LIKE '%+%'   -- combo products belong to the combos view, not deals
+GROUP BY 1, 2, 3
+"""
+
+
+def dow_tier_weeks(tier, max_wk):
+    """Sun-Sat week numbers a Deal-of-the-Week tier runs in: Tier 1 = Wk 1–2, Tier 2 = Wk 3
+    onward (to the month's last week). Unknown tier → every week."""
+    m = re.search(r"\d", str(tier or ""))
+    t = m.group() if m else ""
+    last = max(max_wk, 5)
+    if t == "1":
+        return [1, 2]
+    if t == "2":
+        return list(range(3, last + 1))
+    return list(range(1, last + 1))
+
+
 def _enrich_deals(deals, m_start, m_end, stock_map, combo_bags=None):
     """Attach real Odoo sales (units + revenue), per-week sales, and Kenya stock to
     each deal product, matched by product-name prefix."""
@@ -448,14 +479,21 @@ def _enrich_deals(deals, m_start, m_end, stock_map, combo_bags=None):
 
     # Per-shop sold (this month) and per-shop live stock, so a Deal of the Week card
     # shows the SELLING shop's own numbers rather than the bag's Kenya-wide total.
-    sales_by_loc = {}   # sheet-loc label -> {UPPER(name): units}
-    sf = db.run_query(DEAL_SALES_BY_SHOP_SQL, {"start_date": m_start.isoformat(),
-                                               "end_date": m_end.isoformat()})
+    sales_by_loc = {}   # sheet-loc label -> {UPPER(name): units}           (whole month)
+    loc_wk = {}         # sheet-loc label -> {UPPER(name): {wk: [units, val]}}
+    sf = db.run_query(DEAL_SALES_SHOP_WEEK_SQL, {"start_date": m_start.isoformat(),
+                                                 "end_date": m_end.isoformat(), "anchor": _anchor})
     if sf is not None and not sf.empty:
         for _, r in sf.iterrows():
             loc = _SHOP_TO_LOC.get(str(r["shop"]).strip().upper())
-            if loc:
-                sales_by_loc.setdefault(loc, {})[str(r["name"]).upper()] = int(r["units"] or 0)
+            if not loc:
+                continue
+            nm, w = str(r["name"]).upper(), int(r["wk"])
+            u, v = int(r["units"] or 0), int(r["val"] or 0)
+            sales_by_loc.setdefault(loc, {})[nm] = sales_by_loc.get(loc, {}).get(nm, 0) + u
+            cell = loc_wk.setdefault(loc, {}).setdefault(nm, {}).setdefault(w, [0, 0])
+            cell[0] += u
+            cell[1] += v
     stock_by_loc = _odoo_stock_by_shop(_STOCK_CODE_TO_LOC)   # sheet-loc label -> {UPPER(name): qty}
 
     # Deal label → bag-type key, where the promo wording differs from the catalogue
@@ -524,12 +562,35 @@ def _enrich_deals(deals, m_start, m_end, stock_map, combo_bags=None):
             tot = sum(s for nm, s in smap.items() if _sel(nm) or _stock_match(nm))
             if tot:
                 stock_by_loc_out[loc] = tot
-        return u, v, st, weeks, sold_by_loc, stock_by_loc_out
+        return u, v, st, weeks, sold_by_loc, stock_by_loc_out, _sel
 
     for grp in ("powerDeals", "dealOfWeek"):
         for it in deals.get(grp, []):
             (it["sold"], it["revenue"], it["stock"], it["weeks"],
-             it["soldByLoc"], it["stockByLoc"]) = _match(it["product"])
+             it["soldByLoc"], it["stockByLoc"], _sel) = _match(it["product"])
+            if grp != "dealOfWeek":
+                continue
+            # A Deal of the Week runs only at its locations, in its tier's weeks — count
+            # exactly those sales (the Kenya-wide month is kept for reference).
+            it["kenyaSold"], it["kenyaRevenue"] = it["sold"], it["revenue"]
+            win = set(dow_tier_weeks(it.get("tier"), max_wk))
+            it["windowWeeks"] = sorted(w for w in win if w <= max(max_wk, 1))
+            locs = it.get("locations") or []
+            u = v = 0
+            wk_series, by_loc = {}, {}
+            for loc in locs:
+                for nm, wm in loc_wk.get(loc, {}).items():
+                    if not _sel(nm):
+                        continue
+                    for w, (wu, wv) in wm.items():
+                        wk_series[w] = wk_series.get(w, 0) + wu
+                        if w in win:
+                            u += wu
+                            v += wv
+                            by_loc[loc] = by_loc.get(loc, 0) + wu
+            it["sold"], it["revenue"] = u, v
+            it["soldByLoc"] = {k: n for k, n in by_loc.items() if n}
+            it["weeks"] = [{"label": "Wk %d" % i, "sold": wk_series.get(i, 0)} for i in range(1, max_wk + 1)]
     deals["powerSold"] = sum(x["sold"] for x in deals.get("powerDeals", []))
     deals["powerRevenue"] = sum(x["revenue"] for x in deals.get("powerDeals", []))
     deals["dowSold"] = sum(x["sold"] for x in deals.get("dealOfWeek", []))
@@ -540,9 +601,20 @@ def _enrich_deals(deals, m_start, m_end, stock_map, combo_bags=None):
     # "Deal units sold" / revenue headline instead of on both sides.
     def _dn(s):
         return re.sub(r"\s+", " ", str(s).strip().upper())
+    # A bag that is a Power Deal: its Power figure already covers every shop and day, so it
+    # wins. Otherwise a bag's DoW rows (one per tier — disjoint windows) are summed.
     _seen = {}
-    for _x in deals.get("powerDeals", []) + deals.get("dealOfWeek", []):
-        _seen.setdefault(_dn(_x["product"]), _x)   # first wins; sold/revenue identical per product
+    for _x in deals.get("powerDeals", []):
+        _seen.setdefault(_dn(_x["product"]), dict(_x))
+    _power_keys, _dow_done = set(_seen), set()
+    for _x in deals.get("dealOfWeek", []):
+        k = _dn(_x["product"])
+        if k in _power_keys or (k, str(_x.get("tier"))) in _dow_done:
+            continue
+        _dow_done.add((k, str(_x.get("tier"))))
+        e = _seen.setdefault(k, dict(_x, sold=0, revenue=0))
+        e["sold"] = e.get("sold", 0) + _x.get("sold", 0)
+        e["revenue"] = e.get("revenue", 0) + _x.get("revenue", 0)
     deals["dedupSold"] = sum(v.get("sold", 0) for v in _seen.values())
     deals["dedupRevenue"] = sum(v.get("revenue", 0) for v in _seen.values())
     deals["dedupProducts"] = len(_seen)
@@ -836,16 +908,15 @@ BAG_SALES_DAILY_SINZA_SQL  = _bag_sales_daily_sql("AND lower(COALESCE(pc.\"name\
 BAG_SALES_DAILY_UGANDA_SQL = _bag_sales_daily_sql("AND lower(COALESCE(pc.\"name\",'')) = 'uganda'")
 
 
-def _bags_not_on_offer(m_start, m_end, on_offer_raw, sql=BAG_SALES_SQL, currency="KES",
-                       stock_map=None, daily_sql=None):
-    """Bags with sales this month (in the market `sql` scopes to) that are on NO offer.
+def bag_classifier(on_offer_raw):
+    """(infer, is_on_offer) for a market's on-offer bag names — shared by the "Bags not on
+    offer" panels here and the Bags on vs not on offer menu (bags_on_offer.py), so both
+    resolve and classify a sold product identically.
 
-    `on_offer_raw` = the raw product/bag names that ARE on offer for that market:
-      • Kenya  — running-combo components + Deal-of-Week + Power-Deal products.
-      • Sinza / Uganda — the component bags of that region's sheet combos/singles/specials.
-    Each Odoo product is resolved to its bag type via the price-list catalogue
-    (longest-prefix match); the catalogue bag NAMES are shared across markets, so the
-    same keys resolve Sinza/Uganda products too (revenue stays in the local `currency`)."""
+    `infer(name)` resolves an Odoo product to its catalogue bag type (bag_original_prices.json
+    keys, longest-prefix, promo aliases applied) or None. `is_on_offer(bag)` is True when the
+    bag equals, or is a word-prefix either way of, any on-offer name (so an "AVANA" deal
+    covers "AVANA HB")."""
     keys = sorted(_load_bag_prices().keys(), key=len, reverse=True)
     # Promo wording ↔ catalogue bag (e.g. a "Cairo backpack" deal is the CAIRO BP bag).
     _ALIAS = {"CAIRO BACKPACK": "CAIRO BP", "LAPTOP BACKPACK": "CODE 3",
@@ -859,20 +930,33 @@ def _bags_not_on_offer(m_start, m_end, on_offer_raw, sql=BAG_SALES_SQL, currency
                 return (b + p[len(a):]).strip()
         return p
 
-    def _infer(name):
+    def infer(name):
         p = _norm(name)
         for k in keys:
             if p == k or p.startswith(k + " "):
                 return k
         return None
 
-    # On-offer names, normalised (aliases applied). Matched to a sold bag by either being
-    # equal or one being a word-prefix of the other (so a "AVANA" deal covers "AVANA HB").
     on_offer_names = {_norm(b) for b in (on_offer_raw or set()) if str(b).strip()}
 
-    def _is_on_offer(bt):
+    def is_on_offer(bt):
         return any(d == bt or bt.startswith(d + " ") or d.startswith(bt + " ")
                    for d in on_offer_names)
+
+    return infer, is_on_offer
+
+
+def _bags_not_on_offer(m_start, m_end, on_offer_raw, sql=BAG_SALES_SQL, currency="KES",
+                       stock_map=None, daily_sql=None):
+    """Bags with sales this month (in the market `sql` scopes to) that are on NO offer.
+
+    `on_offer_raw` = the raw product/bag names that ARE on offer for that market:
+      • Kenya  — running-combo components + Deal-of-Week + Power-Deal products.
+      • Sinza / Uganda — the component bags of that region's sheet combos/singles/specials.
+    Each Odoo product is resolved to its bag type via the price-list catalogue
+    (longest-prefix match); the catalogue bag NAMES are shared across markets, so the
+    same keys resolve Sinza/Uganda products too (revenue stays in the local `currency`)."""
+    _infer, _is_on_offer = bag_classifier(on_offer_raw)
 
     sold = {}
     df = db.run_query(sql, {"s": m_start.isoformat(), "e": m_end.isoformat()})
@@ -1824,6 +1908,17 @@ def fetch():
     for grp in ("dealOfWeek", "powerDeals"):
         for x in (deals or {}).get(grp, []):
             kenya_on.add(x.get("product", ""))
+    # Same set, tagged by which offer(s) each bag is on — exported to bags_offer_source.json
+    # for the Bags on vs not on offer menu (bags_on_offer.py).
+    _src = {}
+    for b in payload.get("comboBags", []):
+        _src.setdefault(b, []).append("Combo component")
+    for grp, lbl in (("dealOfWeek", "Deal of the Week"), ("powerDeals", "Power Deal")):
+        for x in (deals or {}).get(grp, []):
+            p = x.get("product", "")
+            if p and lbl not in _src.setdefault(p, []):
+                _src[p].append(lbl)
+    payload["onOfferSources"] = {k: v for k, v in _src.items() if str(k).strip()}
     payload["bagsNotOnOffer"] = _bags_not_on_offer(
         m_start, m_end, kenya_on, BAG_SALES_SQL, "KES", stock_map=_AUGMENTED_STOCK,
         daily_sql=BAG_SALES_DAILY_SQL)
@@ -1857,6 +1952,29 @@ def inject(payload):
         f.write(html)
 
 
+def write_bags_offer_source(payload):
+    """Kenya on-offer bag set (tagged by offer) + the not-on-offer list, for bags_on_offer.py."""
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "bags_offer_source.json"),
+                  "w", encoding="utf-8") as f:
+            deals = payload.get("deals") or {}
+            json.dump({"month": payload.get("month", ""),
+                       "onOffer": payload.get("onOfferSources", {}),
+                       # Where / when each Deal of the Week runs — a single sale is a DoW sale
+                       # only at these shops in these Sun-Sat weeks.
+                       "dowRuns": [{"product": d.get("product", ""), "tier": d.get("tier"),
+                                    "weeks": dow_tier_weeks(d.get("tier"), deals.get("curWeek", 1) or 1),
+                                    "locations": d.get("locations") or []}
+                                   for d in deals.get("dealOfWeek", [])],
+                       "bagsNotOnOffer": payload.get("bagsNotOnOffer", {}),
+                       # Kenya stock per bag type (sheet + Odoo live fallback) — so every bag on
+                       # the Bags on/off offer page gets stock + days of cover.
+                       "stockMap": {str(k).strip().upper(): int(v or 0)
+                                    for k, v in (_AUGMENTED_STOCK or {}).items()}}, f, ensure_ascii=False)
+    except OSError:
+        pass
+
+
 def main():
     payload = fetch()
     if payload is None:
@@ -1870,6 +1988,7 @@ def main():
                        "byShop": payload.get("combosByShop", {})}, f, ensure_ascii=False)
     except OSError:
         pass
+    write_bags_offer_source(payload)
     sm, run = payload["smTotals"], payload["runTotals"]
     rc = payload["reqCounts"]
     print(f"self_made_combos.html updated — {payload['month']} (Kenya).")

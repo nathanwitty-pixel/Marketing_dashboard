@@ -135,6 +135,19 @@ category word ("Jamela handbag", "Kai backpack"). Matching:
   (`powerSoldExCombo`, `dowSoldExCombo`). The **cards still render** every deal, and the
   Discount KPI still uses every deal.
 
+### Deal of the Week sold = its shops × its tier's weeks (`DEAL_SALES_SHOP_WEEK_SQL`)
+
+A Deal of the Week runs **only at its locations** (sheet col D, plus `DOW_MIRROR` shops) and
+**only in its tier's window** — Tier 1 = Wk 1–2, Tier 2 = Wk 3 onward (Sun–Sat weeks, `_WK_EXPR`).
+So each DoW row's `sold` / `revenue` sum **only** the sales at those shops in those weeks, and
+`soldByLoc` is each shop's sales inside the window; `weeks` is the per-week series at its shops.
+(Before 24 Sep 2026 it summed the bag at **every** Kenya shop **all month** — e.g. "Jumbo travel",
+a Tier-2 deal at Rongai + Busia only, showed **724 sold**, which was every single Jumbo in Kenya.)
+The old Kenya-wide monthly figure is kept as `kenyaSold` / `kenyaRevenue` for reference.
+**Power Deals are unchanged** — they run at every shop all month, so their `sold` is Kenya-wide.
+The deduped headline counts a bag on both offers once via its Power Deal (which already covers
+every shop/day), and otherwise sums its DoW rows (tiers are disjoint windows).
+
 ### DoW mirror shops (`DOW_MIRROR` in `_read_deals`)
 
 Some shops run the **same** Deal of the Week as another shop but aren't listed
@@ -347,6 +360,12 @@ not-on-offer bags by units (candidates to put on an offer). The Sinza/Uganda pan
 hidden until they have data (`total > 0`). All three share one JS `renderNoffer(N, panel,
 kpi, list)` that reads `N.currency`.
 
+The resolver/matcher is the module-level `bag_classifier(on_offer_raw)` → `(infer,
+is_on_offer)`, shared with the **Bags on vs not on offer** menu
+([bags-on-offer.md](bags-on-offer.md)). `main()` also writes `bags_offer_source.json` —
+the Kenya on-offer set tagged by offer (`payload["onOfferSources"]`: Combo component /
+Deal of the Week / Power Deal) + `bagsNotOnOffer` — which `bags_on_offer.py` reads.
+
 ## Standalone SQL
 
 `sql/self_made_vs_running_combos.sql` — a runnable query classifying every `%+%` combo as
@@ -365,6 +384,11 @@ with monthly units/revenue, Kenya only, `qty <> 0` (nets returns). Detail + summ
 - **Per-shop card showed the global total** (fixed): the location card used `d.sold`
   (Kenya-wide) for every shop — Starmall showed Kai 94. Now uses `soldByLoc`/`stockByLoc`
   (Starmall Kai 5 sold · 14 stk).
+- **"SEPT COMBOS 0" / empty Offer Sales vs Stock Guidance** (fixed 24 Sep 2026): the COMBOS
+  sheet was edited so the `KENYA` marker sits on its own row (`KENYA | PRICE`) with the
+  `SEPT COMBOS` header one row below. `offer_data.py` expected the marker ON the header row, found
+  no section title and read 0 combos. `header_at_or_below()` now steps down (up to 3 rows) to the
+  first row carrying a section keyword — for KENYA, SINZA and UGANDA alike.
 - **`offer_type_analysis` is fully retired** — the Monthly Report reads combo/offer data
   from the `OFFER_DATA` block this page writes.
 

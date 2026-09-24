@@ -42,11 +42,12 @@ to re-bake every page and commit the result.
 | 2 | New Products Analytics | [new-products.md](new-products.md) | `new_products.py` | `new_products.html` |
 | 3 | Timed Offers Analytics | [timed-offers.md](timed-offers.md) | `timed_offers.py` | `timed_offers.html` |
 | 4 | Self made combos vs running combos | [self-made-combos.md](self-made-combos.md) | `self_made_combos.py` (+ `offer_data.py`) | `self_made_combos.html` |
-| 5 | Posting – Sales Yields from Accurate Posting | [posting-yields.md](posting-yields.md) | `POSTING (SALES YIELDS FROM ACCURATE POSTING).py` | `POSTING (SALES YIELDS FROM ACCURATE POSTING).html` |
-| 6 | Shops Efficiency Tracking | [shops-efficiency.md](shops-efficiency.md) | `shops_dispatch.py` → `shops_efficiency.py` | `shops_efficiency.html` |
-| 7 | Dashboard Insights | [dashboard-insights.md](dashboard-insights.md) | `generate_insights.py` | `insights.html` |
-| 8 | Monthly Report | [monthly-report.md](monthly-report.md) | `monthly_report.py` | `monthly_report.html` |
-| 9 | Reporting History (Supabase) | [reporting-history.md](reporting-history.md) | `push_to_supabase.py` → `history.py` | `history.html` |
+| 5 | Bags on offer vs not on offer | [bags-on-offer.md](bags-on-offer.md) | `bags_on_offer.py` (reads `bags_offer_source.json` from `self_made_combos.py`) | `bags_on_offer.html` |
+| 6 | Posting – Sales Yields from Accurate Posting | [posting-yields.md](posting-yields.md) | `POSTING (SALES YIELDS FROM ACCURATE POSTING).py` | `POSTING (SALES YIELDS FROM ACCURATE POSTING).html` |
+| 7 | Shops Efficiency Tracking | [shops-efficiency.md](shops-efficiency.md) | `shops_dispatch.py` → `shops_efficiency.py` | `shops_efficiency.html` |
+| 8 | Dashboard Insights | [dashboard-insights.md](dashboard-insights.md) | `generate_insights.py` | `insights.html` |
+| 9 | Monthly Report | [monthly-report.md](monthly-report.md) | `monthly_report.py` | `monthly_report.html` |
+| 10 | Reporting History (Supabase) | [reporting-history.md](reporting-history.md) | `push_to_supabase.py` → `history.py` | `history.html` |
 
 **Cross-cutting reference:** [product-matching.md](product-matching.md) — how a sheet name
 is matched to its Odoo product(s). Read this first for any "shows 0 but I know it sold" bug.
@@ -64,7 +65,7 @@ Report, History) **must run last**. The ordered list:
 2. `current_performance.py`, `forward_projections.py`
 3. `new_products.py`
 4. `timed_offers.py`
-5. `self_made_combos.py`
+5. `self_made_combos.py` → `bags_on_offer.py`
 6. `POSTING (SALES YIELDS FROM ACCURATE POSTING).py`
 7. `shops_dispatch.py` → `shops_efficiency.py`
 8. `generate_insights.py` (reads the pages above)

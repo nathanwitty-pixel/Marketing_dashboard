@@ -33,6 +33,8 @@ SCRIPTS = [
     ("New Products Analytics", "new_products.py"),
     ("Timed Offers Analytics", "timed_offers.py"),
     ("Self Made Combos",       "self_made_combos.py"),
+    # Reads bags_offer_source.json that self_made_combos.py just wrote — keep it right after.
+    ("Bags On vs Off Offer",   "bags_on_offer.py"),
     ("Posting Yields",         "POSTING (SALES YIELDS FROM ACCURATE POSTING).py"),
     # Live dispatch/receiving from Odoo — shops_efficiency.py reads its JSON.
     ("Shops Dispatch (Postgres)", "shops_dispatch.py"),
@@ -190,6 +192,8 @@ SCRIPT_MAP = {
     "new_products.html":                                    ["new_products.py"],
     "timed_offers.html":                                    ["timed_offers.py"],
     "self_made_combos.html":                                ["self_made_combos.py"],
+    "bags_on_offer.html":                                   ["self_made_combos.py",
+                                                             "bags_on_offer.py"],
     "POSTING (SALES YIELDS FROM ACCURATE POSTING).html":   ["POSTING (SALES YIELDS FROM ACCURATE POSTING).py"],
     "shops_efficiency.html":                                ["shops_dispatch.py",
                                                              "shops_efficiency.py"],

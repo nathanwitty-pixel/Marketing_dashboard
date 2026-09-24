@@ -216,10 +216,22 @@ def fetch_offer_data():
         return headers, rows
 
     # ── Locate section markers (row positions shift every month) ──
-    kenya_r  = find_row(0, "KENYA")                            # col A
+    def header_at_or_below(r, look=3):
+        """The market marker (KENYA / SINZA / UGANDA in col A) used to sit ON the section's
+        header row. The sheet now sometimes puts it on its own row ("KENYA | PRICE") with the
+        "SEPT COMBOS" header just below — so if row r carries no section title, use the first
+        of the next few rows that does. No-op when the marker row already has the title."""
+        if r is None:
+            return None
+        for rr in range(r, min(r + look + 1, len(grid))):
+            if any(k in cell(rr, c).upper() for c in range(1, 13) for k in SECTION_KEYWORDS):
+                return rr
+        return r
+
+    kenya_r  = header_at_or_below(find_row(0, "KENYA"))        # col A
     pd_r     = find_row_any("POWER DEALS", contains=True)      # any col
-    sinza_r  = find_row(0, "SINZA")                            # col A
-    ug_r     = find_row(0, "UGANDA")                           # col A
+    sinza_r  = header_at_or_below(find_row(0, "SINZA"))        # col A
+    ug_r     = header_at_or_below(find_row(0, "UGANDA"))       # col A
 
     # Month label comes from the sheet itself, e.g. "JULY COMBOS" → "July"
     kenya_title = section_title(kenya_r)
