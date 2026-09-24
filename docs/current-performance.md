@@ -12,9 +12,44 @@
 ## What the page shows
 
 The month's headline performance — total target vs sales vs deficit, sales % achieved,
-week-over-week movement, and a **September-vs-August weekly comparison chart** (current
-month solid, previous month dashed — `cpPrevWeekly` from `monthly_report_history.json`),
-plus forward projections.
+week-over-week movement, and a **current-vs-previous-month weekly comparison chart** (current
+month solid, previous month dashed — `cpPrevWeekly` from `monthly_report_history.json`; the
+month names are dynamic, from `PERF.cpCurLabel` / `PERF.cpPrevLabel`), plus forward projections.
+
+## Weekly Performance chart — type filter
+
+The **Weekly Performance — Week 1 to Latest** card carries a segmented control (`#cp-wp-type`,
+classes `.cp-seg-wrap` / `.cp-seg`, ported from `.se-seg-wrap` / `.se-seg` in
+`shops_efficiency.html`) that redraws the *same* data in four shapes. The numbers never change —
+only the shape does.
+
+| Button | Chart.js type | What it's for |
+| --- | --- | --- |
+| **Area** (default) | `line`, `fill:true` with the amber gradient | Today's look — the trend and its weight |
+| **Line** | `line`, `fill:false` | Same trend, unfilled, when the two months overlap closely |
+| **Bar** | `bar`, grouped | Head-to-head per week — easiest read of "Wk 2 this month vs Wk 2 last month" |
+| **Radar** | `radar`, `r` scale | Shape of the month — which weeks carry it and which sag |
+
+Rules the implementation must hold to:
+
+- **Default is Area**, so a fresh load looks exactly as it always has.
+- **Re-render is destroy + recreate**, per the `dataviz-charts` skill: the instance lives on
+  `window._chartWeeklyPerf` and is destroyed before each `new Chart(...)`. Never mutate
+  `chart.config.type` — the `wpPts` plugin and the radar `r` scale make that fragile.
+- **The tooltip is shared across all four types** — `ttDefaults` plus the `afterBody` lines
+  (weekly bags, cumulative % to date, points vs the previous week). A type switch must not
+  lose them.
+- **`wpPts` (the `%` label above each point) is suppressed on radar** — it positions labels at
+  `pt.y - 8`, which collides with polar coordinates. It runs on area, line and bar only.
+- **On Bar, the previous-month dataset drops its `borderDash`** (dashes are meaningless on bars)
+  and becomes flat `rgba(148,163,184,0.55)`.
+- **The canvas wrapper stays 210px tall.** The fill gradient is built once via
+  `createLinearGradient(0, 0, 0, 210)` and is only correct at that height.
+- **The choice persists** in `localStorage` under `cp_wp_chart_type`; reads and writes are
+  `try`-wrapped, and an unknown or missing value falls back to `area`.
+
+The control's markup, CSS and JS all live **outside** the `PERF_DATA_*` and `PROJ_DATA_*` markers,
+so `current_performance.py`'s regex rewrite never touches them.
 
 ## Sales card — reject split
 

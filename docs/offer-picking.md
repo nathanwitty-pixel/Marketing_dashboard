@@ -85,6 +85,45 @@ word-prefix via `_is_full_price`, so "LOOP" catches "LOOP BP", "MEGA" catches "M
 are priced at the **original full price for NOW too** — `valueNow` is forced equal to
 `valueWas`, so they carry no offer reduction anywhere they're used (combos, power deals).
 
+### Alternate offer prices — `offerAlts` and the per-bag price picker
+
+Some bags may be sold at **any one of several offer prices** — the price list writes them with a
+slash, e.g. `JUMBO 3200/2400/2000`, `ZURI 3200/3000/2000`, `AMAYA 2700/3200`. The engine stores
+this as two fields per bag in `offers_prices.json`:
+
+- **`offer`** — a plain number, the **default** price (the first one listed). Everything that runs
+  server-side uses it: the catalog's `valueNow`, `_next_month`'s Σ max-per-pair pricing, the
+  3,399–6,199 band test, and the frozen baseline forecast.
+- **`offerAlts`** — the list of *all* allowed prices for that bag, including the default.
+
+> **`offer` must stay a single number.** `_read_offers_cache` coerces it with `float()` inside a
+> `try/except (ValueError, TypeError)` that `pass`es — so a **list** in `offer` silently drops the
+> whole bag from the catalog, with no error anywhere. That is why the alternates live in a
+> separate key.
+
+The catalog exposes the list as **`valueAlts`** (rounded, sorted high→low, always containing
+`valueNow`), and each power deal carries the same list as **`priceAlts`**.
+
+**The picker.** Wherever a bag with more than one allowed price appears — each combo slot in the
+next-month grid, and each of the 10 power-deal slots — it gets a small `.price-sel` dropdown of
+its allowed prices, built to match the `.basis-tog` toggle beside it. Changing it recomputes that
+combo's NOW / margin / band status, or that power deal's margin and the running total, live.
+
+Rules:
+
+- **Live-only.** The choice lives in the DOM, exactly like `.basis-tog` — it is not written to the
+  payload and does not survive a rebuild. The frozen **baseline forecast** therefore always shows
+  the default-price picture, which is what makes it a useful comparison.
+- **A BOM pair ignores its picker.** Flip a pair to **BOM** and it contributes production cost to
+  NOW, so the price choice is irrelevant there and its selects are disabled.
+- **Never-discounted bags get no alternates.** `FULL_PRICE_BAGS` (MEGA, TAJI, LOOP, ZULA) have
+  `valueAlts = [valueWas]`, so there is nothing to pick.
+- **Changing the bag in a slot rebuilds that slot's picker**, since the alternates belong to the
+  bag, not the slot.
+- **The sheet has no alternates column.** `offerAlts` is local-only: a live sheet read merges the
+  cached alternates back in by bag name, and `_write_offers_cache` preserves them. Set
+  `"_lock": true` to make the local file the source of truth outright.
+
 ### Downloaded copy & offline fallback — `offers_prices.json`
 
 The prices are also kept as a **local downloaded copy** in the dashboard root

@@ -162,6 +162,23 @@ def _read_bag_prices():
 def _write_offers_cache(offers):
     """Save a local, human-editable copy of the offers prices to OFFERS_CACHE."""
     import datetime as _dt
+    # Keep what only this file knows: the hand-entered "offerAlts" (the sheet has no such
+    # column) and the current "_lock". Without this a single unlocked run rewrites the file
+    # wholesale and every alternate price is lost silently.
+    prev, prev_lock = {}, False
+    try:
+        _raw = json.load(open(OFFERS_CACHE, encoding="utf-8"))
+        if isinstance(_raw, dict):
+            prev = _raw.get("offers", {}) if isinstance(_raw.get("offers"), dict) else {}
+            prev_lock = bool(_raw.get("_lock"))
+    except Exception:                                        # noqa: BLE001
+        pass
+    for _bag, _val in (offers.items() if isinstance(offers, dict) else []):
+        if not isinstance(_val, dict) or "offerAlts" in _val:
+            continue
+        _alts = (prev.get(_bag) or {}).get("offerAlts")
+        if isinstance(_alts, list) and _alts:
+            _val["offerAlts"] = _alts
     payload = {
         "_note": ("Local copy of the offers-sheet prices (price = full price col D, "
                   "offer = offer price col F, category = col C). Auto-refreshed on every "
@@ -170,7 +187,7 @@ def _write_offers_cache(offers):
                   "your hand edits then win and are never overwritten by the sheet."),
         "_updated": _dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "_source": "offers sheet %s (worksheet 0)" % OFFERS_SHEET_ID,
-        "_lock": False,
+        "_lock": prev_lock,                                  # preserve, never force back to False
         "offers": offers,
     }
     try:
@@ -192,13 +209,29 @@ def _read_offers_cache():
         if not isinstance(v, dict):
             continue
         try:
-            out[str(k).strip().upper()] = {
+            entry = {
                 "category": str(v.get("category", "")).strip().upper(),
                 "price": float(v.get("price") or 0),
                 "offer": float(v.get("offer") or 0),
             }
         except (ValueError, TypeError):
-            pass
+            continue
+        # "offerAlts" = every allowed offer price for the bag (the slash-separated list).
+        # A bad entry drops only itself, never the bag: "offer" is the default and must
+        # always be a member, so the picker can never offer fewer prices than the engine used.
+        alts = []
+        for a in (v.get("offerAlts") or []) if isinstance(v.get("offerAlts"), list) else []:
+            try:
+                a = float(a)
+            except (ValueError, TypeError):
+                continue
+            if a > 0 and a not in alts:
+                alts.append(a)
+        if entry["offer"] and entry["offer"] not in alts:
+            alts.insert(0, entry["offer"])
+        if len(alts) > 1:
+            entry["offerAlts"] = alts
+        out[str(k).strip().upper()] = entry
     return out, bool(raw.get("_lock")) if isinstance(raw, dict) else False
 
 
@@ -235,6 +268,11 @@ def _read_offers():
         out[bag] = {"category": (r[2] if len(r) > 2 else "").strip().upper(),
                     "price": _num(r[3] if len(r) > 3 else 0),
                     "offer": _num(r[5] if len(r) > 5 else 0)}
+        # The sheet has no alternates column, so carry the hand-entered ones across from the
+        # downloaded copy — a live read must not silently drop them.
+        _alts = (cached.get(bag) or {}).get("offerAlts")
+        if isinstance(_alts, list) and len(_alts) > 1:
+            out[bag]["offerAlts"] = _alts
     if out:
         _write_offers_cache(out)                             # keep the downloaded copy fresh
         return out, "offers sheet (live — downloaded copy refreshed)"
@@ -342,10 +380,19 @@ def _build_catalog(cost, prod, bomkeys, offers):
         now = o.get("offer") or o.get("price") or fallback    # col F offer price
         if _is_full_price(n):                                  # never discounted → NOW = full price
             now = was
+        # Every allowed NOW price for this bag (high→low), always including valueNow itself.
+        # A never-discounted bag has nothing to choose from — it sits at the full price.
+        alts = [round(a) for a in (o.get("offerAlts") or []) if a]
+        if _is_full_price(n):
+            alts = []
+        if now and round(now) not in alts:
+            alts.append(round(now))
+        alts = sorted({a for a in alts if a}, reverse=True)
         cat.append({"name": n, "cost": c, "stock": int(bag_stock.get(n, 0)),
                     "valueWas": (round(was) if was else None),
                     "valueNow": (round(now) if now else None),
                     "value": (round(now) if now else None),
+                    "valueAlts": (alts if len(alts) > 1 else []),
                     "isHandbag": o.get("category", "") == "HANDBAG",
                     "category": o.get("category", "")})
     return cat, bag_stock
@@ -363,7 +410,8 @@ def _next_month(cost, offers, ref_month="October 2025"):
     cat = {c["name"]: c for c in catalog}
 
     def bag(canon):
-        return cat.get(canon, {"name": canon, "cost": 0, "stock": 0, "valueNow": 0, "valueWas": 0})
+        return cat.get(canon, {"name": canon, "cost": 0, "stock": 0, "valueNow": 0, "valueWas": 0,
+                               "valueAlts": []})
 
     cands = []
     for combo in OCT_2025_COMBOS:
@@ -575,7 +623,10 @@ def build():
             profit = now - c
             power.append({"bag": b["name"], "priceWas": was or now, "priceNow": now, "cost": c,
                           "profit": round(profit), "margin": round(profit / now * 100, 1),
-                          "stock": b["stock"]})
+                          "stock": b["stock"],
+                          # Allowed alternate offer prices — the page's per-bag price picker
+                          # re-derives profit/margin client-side from whichever is chosen.
+                          "priceAlts": b.get("valueAlts") or []})
     power.sort(key=lambda x: -x["margin"])
 
     try:

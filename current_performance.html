@@ -291,6 +291,18 @@
       .card, .panel, .kpi, .sec, .exec, .mini{
         background-color:#141824 !important; backdrop-filter:none; -webkit-backdrop-filter:none; }
     }
+
+    /* Card header that carries a control on the right (ported from shops_efficiency) */
+    .cp-card-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; border-bottom: 1px solid #2d3148; padding-right: 1.5rem; }
+    .cp-card-head .table-title { border-bottom: none; flex: 1 1 auto; }
+
+    /* Chart-type segmented toggle */
+    .cp-seg-wrap { display: inline-flex; border: 1px solid #2d3148; border-radius: 9px; overflow: hidden; flex: 0 0 auto; }
+    .cp-seg { background: #161824; color: #94a3b8; border: none; padding: 0.38rem 0.95rem; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; cursor: pointer; text-transform: uppercase; transition: background-color 160ms cubic-bezier(0.16,1,0.3,1), color 160ms cubic-bezier(0.16,1,0.3,1); }
+    .cp-seg + .cp-seg { border-left: 1px solid #2d3148; }
+    .cp-seg:hover:not(.active) { color: #e2e8f0; background: #1c1f2e; }
+    .cp-seg.active { background: #10b981; color: #06281d; }
+    @media (max-width: 560px) { .cp-card-head { padding-right: 1rem; } .cp-seg { padding: 0.38rem 0.7rem; } }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
@@ -349,7 +361,15 @@
   <!-- Weekly performance snapshot — Week 1 → latest -->
   <div class="card-grid">
     <div class="card" style="grid-column:1/-1;padding:0;overflow:hidden;">
-      <div class="table-title">Weekly Performance — Week 1 to Latest</div>
+      <div class="cp-card-head">
+        <div class="table-title">Weekly Performance — Week 1 to Latest</div>
+        <div class="cp-seg-wrap" id="cp-wp-type" role="group" aria-label="Chart type">
+          <button type="button" class="cp-seg active" data-type="area"  aria-pressed="true">Area</button>
+          <button type="button" class="cp-seg"        data-type="line"  aria-pressed="false">Line</button>
+          <button type="button" class="cp-seg"        data-type="bar"   aria-pressed="false">Bar</button>
+          <button type="button" class="cp-seg"        data-type="radar" aria-pressed="false">Radar</button>
+        </div>
+      </div>
       <div id="weekly-perf-chart-wrap" style="padding:1rem 1.4rem 0;display:none">
         <div style="position:relative;height:210px"><canvas id="chart-weekly-perf"></canvas></div>
         <div id="cp-weekly-stats" style="display:flex;flex-wrap:wrap;gap:0.35rem 2rem;justify-content:center;font-size:0.78rem;color:#94a3b8;padding:0.55rem 0 0.3rem"></div>
@@ -448,22 +468,22 @@ const PERF = {
   cpPrevWeekly:       [{"label": "Wk 1", "pct": 3.57}, {"label": "Wk 2", "pct": 17.16}, {"label": "Wk 3", "pct": 16.49}, {"label": "Wk 4", "pct": 16.9}, {"label": "Wk 5", "pct": 18.22}, {"label": "Wk 6", "pct": 3.72}],
   cpPrevLabel:        "August 2026",
   cpCurLabel:         "September 2026",
-  remainingTarget:    "15,438",
-  salesPctAchieved:   "43.21%",
-  sales:              "11,747",
-  salesPos:           "11,676",
+  remainingTarget:    "15,259",
+  salesPctAchieved:   "43.87%",
+  sales:              "11,926",
+  salesPos:           "11,855",
   corporateBags:      "71",
   rejectBags:         "166",
-  rejectPct:          "1.42%",
-  masterBags:         "11,392",
+  rejectPct:          "1.40%",
+  masterBags:         "11,569",
   previousSalesPct:   "39.23%",
   previousSalesBags:  "140",
-  wowSalesPct:        "+672.86%",
-  wowSalesBags:       "+942",
-  weeklySalesTotal:   "1,082",
-  weeklySalesPct:     "3.98%",
-  growthHistory:      [{"date": "2026-07-27", "growth": 14.52}, {"date": "2026-07-28", "growth": 14.52}, {"date": "2026-07-30", "growth": 14.52}, {"date": "2026-07-31", "growth": 14.52}, {"date": "2026-08-01", "growth": 14.52}, {"date": "2026-08-02", "growth": 19.73}, {"date": "2026-08-03", "growth": 71.8}, {"date": "2026-08-04", "growth": 2.9}, {"date": "2026-08-05", "growth": 2.9}, {"date": "2026-08-06", "growth": 7.2}, {"date": "2026-08-07", "growth": 7.2}, {"date": "2026-08-08", "growth": 13.65}, {"date": "2026-08-10", "growth": 1.01}, {"date": "2026-08-11", "growth": 3.59}, {"date": "2026-08-13", "growth": 9.34}, {"date": "2026-08-14", "growth": 11.67}, {"date": "2026-08-16", "growth": 0.84}, {"date": "2026-08-17", "growth": 1.28}, {"date": "2026-08-20", "growth": 8.17}, {"date": "2026-08-21", "growth": 11.23}, {"date": "2026-08-22", "growth": 14.12}, {"date": "2026-08-23", "growth": 1.02}, {"date": "2026-08-24", "growth": 1.18}, {"date": "2026-08-26", "growth": 9.32}, {"date": "2026-08-27", "growth": 9.43}, {"date": "2026-08-28", "growth": 12.4}, {"date": "2026-08-31", "growth": 3.11}, {"date": "2026-09-01", "growth": 4.24}, {"date": "2026-09-02", "growth": 8.84}, {"date": "2026-09-03", "growth": 9.13}, {"date": "2026-09-04", "growth": 11.66}, {"date": "2026-09-06", "growth": 0.49}, {"date": "2026-09-07", "growth": 0.69}, {"date": "2026-09-08", "growth": 8.49}, {"date": "2026-09-09", "growth": 8.55}, {"date": "2026-09-10", "growth": 13.61}, {"date": "2026-09-12", "growth": 15.64}, {"date": "2026-09-13", "growth": 0.71}, {"date": "2026-09-14", "growth": 0.87}, {"date": "2026-09-17", "growth": 7.9}, {"date": "2026-09-18", "growth": 11.43}, {"date": "2026-09-19", "growth": 12.29}, {"date": "2026-09-20", "growth": 0.57}, {"date": "2026-09-21", "growth": 1.46}, {"date": "2026-09-22", "growth": 3.25}, {"date": "2026-09-23", "growth": 3.98}],
-  weeklyThisMonth:    "1,082",
+  wowSalesPct:        "+800.71%",
+  wowSalesBags:       "+1,121",
+  weeklySalesTotal:   "1,261",
+  weeklySalesPct:     "4.64%",
+  growthHistory:      [{"date": "2026-07-27", "growth": 14.52}, {"date": "2026-07-28", "growth": 14.52}, {"date": "2026-07-30", "growth": 14.52}, {"date": "2026-07-31", "growth": 14.52}, {"date": "2026-08-01", "growth": 14.52}, {"date": "2026-08-02", "growth": 19.73}, {"date": "2026-08-03", "growth": 71.8}, {"date": "2026-08-04", "growth": 2.9}, {"date": "2026-08-05", "growth": 2.9}, {"date": "2026-08-06", "growth": 7.2}, {"date": "2026-08-07", "growth": 7.2}, {"date": "2026-08-08", "growth": 13.65}, {"date": "2026-08-10", "growth": 1.01}, {"date": "2026-08-11", "growth": 3.59}, {"date": "2026-08-13", "growth": 9.34}, {"date": "2026-08-14", "growth": 11.67}, {"date": "2026-08-16", "growth": 0.84}, {"date": "2026-08-17", "growth": 1.28}, {"date": "2026-08-20", "growth": 8.17}, {"date": "2026-08-21", "growth": 11.23}, {"date": "2026-08-22", "growth": 14.12}, {"date": "2026-08-23", "growth": 1.02}, {"date": "2026-08-24", "growth": 1.18}, {"date": "2026-08-26", "growth": 9.32}, {"date": "2026-08-27", "growth": 9.43}, {"date": "2026-08-28", "growth": 12.4}, {"date": "2026-08-31", "growth": 3.11}, {"date": "2026-09-01", "growth": 4.24}, {"date": "2026-09-02", "growth": 8.84}, {"date": "2026-09-03", "growth": 9.13}, {"date": "2026-09-04", "growth": 11.66}, {"date": "2026-09-06", "growth": 0.49}, {"date": "2026-09-07", "growth": 0.69}, {"date": "2026-09-08", "growth": 8.49}, {"date": "2026-09-09", "growth": 8.55}, {"date": "2026-09-10", "growth": 13.61}, {"date": "2026-09-12", "growth": 15.64}, {"date": "2026-09-13", "growth": 0.71}, {"date": "2026-09-14", "growth": 0.87}, {"date": "2026-09-17", "growth": 7.9}, {"date": "2026-09-18", "growth": 11.43}, {"date": "2026-09-19", "growth": 12.29}, {"date": "2026-09-20", "growth": 0.57}, {"date": "2026-09-21", "growth": 1.46}, {"date": "2026-09-22", "growth": 3.25}, {"date": "2026-09-23", "growth": 4.64}],
+  weeklyThisMonth:    "1,261",
   weeklyThisMonthDays: 0,
   prevMonthDays:      0,
   weeklyCarryover:    "",
@@ -471,8 +491,8 @@ const PERF = {
   carryoverDate:      "",
   prevMonthWeekly:    "722",
   prevMonthLabel:     "August",
-  momWeeklyBags:      "+360",
-  momWeeklyPct:       "+49.86%",
+  momWeeklyBags:      "+539",
+  momWeeklyPct:       "+74.65%",
   bareMinimum:        "",
   declinedBy:         ""
 };
@@ -482,20 +502,20 @@ const PERF = {
 <!-- PROJ_DATA_START -->
 <script>
 const PROJ = {
-  currentDay:               21,
+  currentDay:               22,
   daysInMonth:              30,
   projMonth:                "September",
-  velocityFactor:           "1.43x",
+  velocityFactor:           "1.36x",
   totalTarget:              "27,185",
-  totalSales:               "11,477",
-  standardProjection:       "60.31%",
-  forecastedProjection:     "60.68%",
+  totalSales:               "11,855",
+  standardProjection:       "59.47%",
+  forecastedProjection:     "59.82%",
   corporateBags:            "71",
   bareMinimum:              "6,796",
   bareMinimumGrowthPct:     "25.00%",
-  declinedBy:               "-5,913",
-  weeklySalesTotal:         "883",
-  weeklyHistory:            [{"weekStart": "2026-09-01", "label": "Wk 1", "month": "Sep", "salesPct": 11.8, "salesBags": 3208, "prevSalesPct": 0.0, "prevSalesBags": 0, "weeklySales": 3208, "declinedBy": -3588}, {"weekStart": "2026-09-06", "label": "Wk 2", "month": "Sep", "salesPct": 26.01, "salesBags": 7071, "prevSalesPct": 11.8, "prevSalesBags": 3208, "weeklySales": 3863, "declinedBy": -2933}, {"weekStart": "2026-09-13", "label": "Wk 3", "month": "Sep", "salesPct": 38.97, "salesBags": 10594, "prevSalesPct": 26.01, "prevSalesBags": 7071, "weeklySales": 3523, "declinedBy": -3273}, {"weekStart": "2026-09-20", "label": "Wk 4", "month": "Sep", "salesPct": 42.22, "salesBags": 11477, "prevSalesPct": 38.97, "prevSalesBags": 10594, "weeklySales": 883, "declinedBy": -5913}]
+  declinedBy:               "-5,535",
+  weeklySalesTotal:         "1,261",
+  weeklyHistory:            [{"weekStart": "2026-09-01", "label": "Wk 1", "month": "Sep", "salesPct": 11.8, "salesBags": 3208, "prevSalesPct": 0.0, "prevSalesBags": 0, "weeklySales": 3208, "declinedBy": -3588}, {"weekStart": "2026-09-06", "label": "Wk 2", "month": "Sep", "salesPct": 26.01, "salesBags": 7071, "prevSalesPct": 11.8, "prevSalesBags": 3208, "weeklySales": 3863, "declinedBy": -2933}, {"weekStart": "2026-09-13", "label": "Wk 3", "month": "Sep", "salesPct": 38.97, "salesBags": 10594, "prevSalesPct": 26.01, "prevSalesBags": 7071, "weeklySales": 3523, "declinedBy": -3273}, {"weekStart": "2026-09-20", "label": "Wk 4", "month": "Sep", "salesPct": 43.61, "salesBags": 11855, "prevSalesPct": 38.97, "prevSalesBags": 10594, "weeklySales": 1261, "declinedBy": -5535}]
 };
 </script>
 <!-- PROJ_DATA_END -->
@@ -948,46 +968,117 @@ window.addEventListener('DOMContentLoaded', function() {
       c.restore();
     } };
 
-    var dsets = [
-      { label: curLabel, data: series,
-        borderColor: C.amber, backgroundColor: grad, borderWidth: 3, fill: true, tension: 0.35,
-        pointRadius: 5, pointHoverRadius: 8, pointBackgroundColor: C.amber, pointBorderColor: '#0b0d16', pointBorderWidth: 2, order: 1 } ];
-    if (hasPrev) dsets.push(
-      { label: prevLabel, data: prevW.map(function(x){ return x.pct; }),
-        borderColor: 'rgba(148,163,184,0.9)', backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 4],
-        fill: false, tension: 0.35, pointRadius: 3, pointHoverRadius: 6, pointBackgroundColor: '#94a3b8', pointBorderColor: '#0b0d16', pointBorderWidth: 1, order: 2 });
+    // Datasets per shape. Same numbers every time — only the styling changes.
+    function buildDatasets(type) {
+      var isBar = (type === 'bar'), isRadar = (type === 'radar');
+      var cur = { label: curLabel, data: series, borderColor: C.amber, order: 1 };
+      if (isBar) {
+        cur.backgroundColor = C.amber; cur.borderWidth = 0; cur.borderRadius = 4; cur.borderSkipped = false;
+      } else if (isRadar) {
+        cur.backgroundColor = 'rgba(245,158,11,0.18)'; cur.fill = true; cur.borderWidth = 2;
+        cur.pointRadius = 3; cur.pointHoverRadius = 6; cur.pointBackgroundColor = C.amber;
+        cur.pointBorderColor = '#0b0d16'; cur.pointBorderWidth = 2;
+      } else {
+        cur.backgroundColor = grad; cur.fill = (type === 'area'); cur.borderWidth = 3; cur.tension = 0.35;
+        cur.pointRadius = 5; cur.pointHoverRadius = 8; cur.pointBackgroundColor = C.amber;
+        cur.pointBorderColor = '#0b0d16'; cur.pointBorderWidth = 2;
+      }
+      var dsets = [cur];
+      if (!hasPrev) return dsets;
+      var prev = { label: prevLabel, data: prevW.map(function(x){ return x.pct; }),
+                   borderColor: 'rgba(148,163,184,0.9)', order: 2 };
+      if (isBar) {
+        // Dashes mean nothing on a bar — flat grey reads as "last month" just as well.
+        prev.backgroundColor = 'rgba(148,163,184,0.55)'; prev.borderWidth = 0; prev.borderRadius = 4; prev.borderSkipped = false;
+      } else {
+        prev.backgroundColor = 'transparent'; prev.fill = false; prev.borderWidth = 2; prev.borderDash = [5, 4];
+        prev.pointHoverRadius = 6; prev.pointBackgroundColor = '#94a3b8';
+        prev.pointBorderColor = '#0b0d16'; prev.pointBorderWidth = 1;
+        if (isRadar) { prev.pointRadius = 2; } else { prev.tension = 0.35; prev.pointRadius = 3; }
+      }
+      dsets.push(prev);
+      return dsets;
+    }
 
-    new Chart(ctx, {
-      type: 'line',
-      data: { labels: labels, datasets: dsets },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        layout: { padding: { top: 22 } },
-        plugins: {
-          legend: { display: hasPrev, labels: { usePointStyle: true, boxWidth: 8, color: C.text } },
-          tooltip: Object.assign({}, ttDefaults, {
-            callbacks: {
-              title: function(items) { return items[0].label; },
-              label: function(c) { return c.dataset.label + ': ' + Number(c.parsed.y).toFixed(2) + '% of target'; },
-              afterBody: function(items) {
-                if (!items.length || items[0].datasetIndex !== 0) return '';
-                var i = items[0].dataIndex;
-                var lines = ['Weekly sales: ' + Math.round(bagsSeries[i] || 0).toLocaleString() + ' bags',
-                             'Cumulative to date: ' + (cumSeries[i] || 0).toFixed(1) + '% of target'];
-                if (i > 0) { var d = series[i] - series[i - 1]; lines.push((d >= 0 ? '▲ +' : '▼ ') + d.toFixed(1) + ' pts vs ' + weeks[i - 1].label); }
-                return lines;
-              }
-            }
-          })
-        },
-        scales: {
-          x: { grid: { display: false }, ticks: { color: C.text } },
-          y: { beginAtZero: true, grid: { color: 'rgba(45,49,72,0.5)' },
-               ticks: { color: C.text, callback: function(v){ return Number(v).toFixed(0) + '%'; } } }
+    // Defined once, shared by all four types — a type switch must never lose these.
+    var wpTooltip = Object.assign({}, ttDefaults, {
+      callbacks: {
+        title: function(items) { return items[0].label; },
+        label: function(c) { return c.dataset.label + ': ' + Number(c.raw).toFixed(2) + '% of target'; },
+        afterBody: function(items) {
+          if (!items.length || items[0].datasetIndex !== 0) return '';
+          var i = items[0].dataIndex;
+          var lines = ['Weekly sales: ' + Math.round(bagsSeries[i] || 0).toLocaleString() + ' bags',
+                       'Cumulative to date: ' + (cumSeries[i] || 0).toFixed(1) + '% of target'];
+          if (i > 0) { var d = series[i] - series[i - 1]; lines.push((d >= 0 ? '▲ +' : '▼ ') + d.toFixed(1) + ' pts vs ' + weeks[i - 1].label); }
+          return lines;
         }
-      },
-      plugins: [ptLabels]
+      }
     });
+    var pctTick = function(v) { return Number(v).toFixed(0) + '%'; };
+    var wpScales = {
+      x: { grid: { display: false }, ticks: { color: C.text } },
+      y: { beginAtZero: true, grid: { color: 'rgba(45,49,72,0.5)' },
+           ticks: { color: C.text, callback: pctTick } }
+    };
+    var wpRadarScales = {
+      r: { beginAtZero: true,
+           grid: { color: 'rgba(45,49,72,0.5)' }, angleLines: { color: 'rgba(45,49,72,0.5)' },
+           pointLabels: { color: C.text },
+           ticks: { color: C.text, backdropColor: 'transparent', callback: pctTick } }
+    };
+
+    function buildConfig(type) {
+      var isRadar = (type === 'radar');
+      return {
+        type: (type === 'bar') ? 'bar' : (isRadar ? 'radar' : 'line'),
+        data: { labels: labels, datasets: buildDatasets(type) },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          layout: { padding: { top: 22 } },
+          plugins: {
+            legend: { display: hasPrev, labels: { usePointStyle: true, boxWidth: 8, color: C.text } },
+            tooltip: wpTooltip
+          },
+          scales: isRadar ? wpRadarScales : wpScales
+        },
+        // wpPts writes each label at pt.y - 8, which lands wrong on radar's polar points.
+        plugins: isRadar ? [] : [ptLabels]
+      };
+    }
+
+    function render(type) {
+      if (window._chartWeeklyPerf) window._chartWeeklyPerf.destroy();
+      window._chartWeeklyPerf = new Chart(ctx, buildConfig(type));
+    }
+
+    // ── Chart-type filter — same data, four shapes. Choice survives a reload. ──
+    var WP_TYPES = ['area', 'line', 'bar', 'radar'];
+    var seg = document.getElementById('cp-wp-type');
+    var saved = null;
+    try { saved = localStorage.getItem('cp_wp_chart_type'); } catch (e) {}
+    var initial = WP_TYPES.indexOf(saved) > -1 ? saved : 'area';
+
+    function syncSeg(type) {
+      if (!seg) return;
+      Array.prototype.forEach.call(seg.querySelectorAll('.cp-seg'), function(b) {
+        var on = b.getAttribute('data-type') === type;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+    if (seg) seg.addEventListener('click', function(ev) {
+      var btn = ev.target && ev.target.closest ? ev.target.closest('.cp-seg') : null;
+      if (!btn) return;
+      var type = btn.getAttribute('data-type');
+      if (WP_TYPES.indexOf(type) < 0) return;
+      try { localStorage.setItem('cp_wp_chart_type', type); } catch (e) {}
+      syncSeg(type);
+      render(type);
+    });
+
+    syncSeg(initial);
+    render(initial);
 
     // Footer stats — growth toward monthly sales + last month's achieved % (image-2 style).
     var statsEl = document.getElementById('cp-weekly-stats');
