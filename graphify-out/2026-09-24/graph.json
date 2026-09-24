@@ -1052,6 +1052,18 @@
       "source_location": "L154"
     },
     {
+      "id": "self_made_combos_combo_odoo_slots",
+      "label": "_combo_odoo_slots()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "offer_picking.py",
+      "file_type": "code",
+      "norm_label": "_combo_odoo_slots()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L735"
+    },
+    {
       "id": "export_self_made_combos_bundle_lib_db_check_connection",
       "label": "check_connection()",
       "_callable": true,
@@ -2526,6 +2538,18 @@
       "norm_label": "run_scripts()",
       "source_file": "main.py",
       "source_location": "L97"
+    },
+    {
+      "id": "main_timeout_for",
+      "label": "_timeout_for()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 19,
+      "community_name": "main.py",
+      "file_type": "code",
+      "norm_label": "_timeout_for()",
+      "source_file": "main.py",
+      "source_location": "L66"
     },
     {
       "id": "lib_db_check_connection",
@@ -4232,18 +4256,6 @@
       "source_location": "L208"
     },
     {
-      "id": "main_timeout_for",
-      "label": "_timeout_for()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 34,
-      "community_name": "start_server",
-      "file_type": "code",
-      "norm_label": "_timeout_for()",
-      "source_file": "main.py",
-      "source_location": "L66"
-    },
-    {
       "id": "export_self_made_combos_bundle_self_made_combos_combo_button_usage",
       "label": "_combo_button_usage()",
       "_callable": true,
@@ -4362,66 +4374,6 @@
       "norm_label": "target_month()",
       "source_file": "month_end.py",
       "source_location": "L57"
-    },
-    {
-      "id": "self_made_combos_enrich_deals_match",
-      "label": "_match()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 37,
-      "community_name": "_match",
-      "file_type": "code",
-      "norm_label": "_match()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L477"
-    },
-    {
-      "id": "self_made_combos_enrich_deals_match_full",
-      "label": "_full()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 37,
-      "community_name": "_match",
-      "file_type": "code",
-      "norm_label": "_full()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L486"
-    },
-    {
-      "id": "self_made_combos_enrich_deals_match_full_of",
-      "label": "_full_of()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 37,
-      "community_name": "_match",
-      "file_type": "code",
-      "norm_label": "_full_of()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L485"
-    },
-    {
-      "id": "self_made_combos_enrich_deals_match_rooted",
-      "label": "_rooted()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 37,
-      "community_name": "_match",
-      "file_type": "code",
-      "norm_label": "_rooted()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L487"
-    },
-    {
-      "id": "self_made_combos_enrich_deals_match_stock_match",
-      "label": "_stock_match()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 37,
-      "community_name": "_match",
-      "file_type": "code",
-      "norm_label": "_stock_match()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L488"
     },
     {
       "id": "theme_css_variables",
@@ -4566,6 +4518,66 @@
       "norm_label": "_is_combo_bag()",
       "source_file": "self_made_combos.py",
       "source_location": "L556"
+    },
+    {
+      "id": "self_made_combos_enrich_deals_match",
+      "label": "_match()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 41,
+      "community_name": "_enrich_deals",
+      "file_type": "code",
+      "norm_label": "_match()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L477"
+    },
+    {
+      "id": "self_made_combos_enrich_deals_match_full",
+      "label": "_full()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 41,
+      "community_name": "_enrich_deals",
+      "file_type": "code",
+      "norm_label": "_full()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L486"
+    },
+    {
+      "id": "self_made_combos_enrich_deals_match_full_of",
+      "label": "_full_of()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 41,
+      "community_name": "_enrich_deals",
+      "file_type": "code",
+      "norm_label": "_full_of()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L485"
+    },
+    {
+      "id": "self_made_combos_enrich_deals_match_rooted",
+      "label": "_rooted()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 41,
+      "community_name": "_enrich_deals",
+      "file_type": "code",
+      "norm_label": "_rooted()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L487"
+    },
+    {
+      "id": "self_made_combos_enrich_deals_match_stock_match",
+      "label": "_stock_match()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 41,
+      "community_name": "_enrich_deals",
+      "file_type": "code",
+      "norm_label": "_stock_match()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L488"
     },
     {
       "id": "self_made_combos_enrich_deals_norm",
@@ -4998,18 +5010,6 @@
       "norm_label": "_shop()",
       "source_file": "self_made_combos.py",
       "source_location": "L1027"
-    },
-    {
-      "id": "self_made_combos_combo_odoo_slots",
-      "label": "_combo_odoo_slots()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 58,
-      "community_name": "_combo_button_usage",
-      "file_type": "code",
-      "norm_label": "_combo_odoo_slots()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L735"
     },
     {
       "id": "self_made_combos_matches_sheet",
@@ -6335,6 +6335,17 @@
       "norm_label": "category for a bag: the offers-sheet category (col c), else a keyword fallback.",
       "source_file": "reject_sales.py",
       "source_location": "L90"
+    },
+    {
+      "id": "self_made_combos_rationale_736",
+      "label": "Odoo name \"Amaya Handbag or Elyse Handbag + Moon Bag or Nizana\" \u2192 the same\u2026",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "offer_picking.py",
+      "file_type": "rationale",
+      "norm_label": "odoo name \"amaya handbag or elyse handbag + moon bag or nizana\" \u2192 the same...",
+      "source_file": "self_made_combos.py",
+      "source_location": "L736"
     },
     {
       "id": "export_self_made_combos_bundle_lib_db",
@@ -8594,17 +8605,6 @@
       "source_location": "L1001"
     },
     {
-      "id": "self_made_combos_rationale_736",
-      "label": "Odoo name \"Amaya Handbag or Elyse Handbag + Moon Bag or Nizana\" \u2192 the same\u2026",
-      "_origin": "ast",
-      "community": 58,
-      "community_name": "_combo_button_usage",
-      "file_type": "rationale",
-      "norm_label": "odoo name \"amaya handbag or elyse handbag + moon bag or nizana\" \u2192 the same...",
-      "source_file": "self_made_combos.py",
-      "source_location": "L736"
-    },
-    {
       "id": "self_made_combos_rationale_753",
       "label": "The sheet label this Odoo combo maps to (same slot count, every slot overlaps),\u2026",
       "_origin": "ast",
@@ -10345,6 +10345,128 @@
       "source_url": null
     },
     {
+      "id": "setup_googleauthpy",
+      "label": "google_auth.py (shared auth module)",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 37,
+      "community_name": "google_auth.py (shared auth module)",
+      "contributor": null,
+      "file_type": "code",
+      "norm_label": "google_auth.py (shared auth module)",
+      "source_file": "SETUP.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "setup_googlecredentialsjson",
+      "label": "google_credentials.json (OAuth desktop client)",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 37,
+      "community_name": "google_auth.py (shared auth module)",
+      "contributor": null,
+      "file_type": "code",
+      "norm_label": "google_credentials.json (oauth desktop client)",
+      "source_file": "SETUP.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "setup_googletokenjson",
+      "label": "google_token.json (OAuth token)",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 37,
+      "community_name": "google_auth.py (shared auth module)",
+      "contributor": null,
+      "file_type": "code",
+      "norm_label": "google_token.json (oauth token)",
+      "source_file": "SETUP.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "setup_mainpy",
+      "label": "main.py (refresh + serve dashboard)",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 37,
+      "community_name": "google_auth.py (shared auth module)",
+      "contributor": null,
+      "file_type": "code",
+      "norm_label": "main.py (refresh + serve dashboard)",
+      "source_file": "SETUP.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "setup_reauthpy",
+      "label": "reauth.py (re-login script)",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 37,
+      "community_name": "google_auth.py (shared auth module)",
+      "contributor": null,
+      "file_type": "code",
+      "norm_label": "reauth.py (re-login script)",
+      "source_file": "SETUP.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "setup_serviceaccountjson",
+      "label": "service_account.json (recommended, permanent auth)",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 37,
+      "community_name": "google_auth.py (shared auth module)",
+      "contributor": null,
+      "file_type": "code",
+      "norm_label": "service_account.json (recommended, permanent auth)",
+      "source_file": "SETUP.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "setup_oauthtokenexpiryissue",
+      "label": "OAuth token expiry issue (Testing mode, ~7 day expiry)",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 37,
+      "community_name": "google_auth.py (shared auth module)",
+      "contributor": null,
+      "file_type": "rationale",
+      "norm_label": "oauth token expiry issue (testing mode, ~7 day expiry)",
+      "rationale": "'invalid_grant: Token has been expired or revoked' happens on a schedule because the OAuth app is in Testing mode; publishing the app to production removes the 7-day expiry.",
+      "source_file": "SETUP.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "setup_serviceaccountrationale",
+      "label": "Service account chosen for zero-maintenance auth + enabling in-dashboard Refresh",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 37,
+      "community_name": "google_auth.py (shared auth module)",
+      "contributor": null,
+      "file_type": "rationale",
+      "norm_label": "service account chosen for zero-maintenance auth + enabling in-dashboard refresh",
+      "rationale": "A service account never expires and needs no browser, so it makes the in-dashboard Refresh button work \u2014 that runs scripts server-side where a login flow can't open a browser.",
+      "source_file": "SETUP.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
       "id": "docs_shops_efficiency_load_combos_by_shop_fn",
       "label": "_load_combos_by_shop() function",
       "_origin": "semantic",
@@ -11395,96 +11517,6 @@
       "source_url": null
     },
     {
-      "id": "setup_googleauthpy",
-      "label": "google_auth.py (shared auth module)",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 40,
-      "community_name": "push_to_supabase.py",
-      "contributor": null,
-      "file_type": "code",
-      "norm_label": "google_auth.py (shared auth module)",
-      "source_file": "SETUP.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "setup_googlecredentialsjson",
-      "label": "google_credentials.json (OAuth desktop client)",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 40,
-      "community_name": "push_to_supabase.py",
-      "contributor": null,
-      "file_type": "code",
-      "norm_label": "google_credentials.json (oauth desktop client)",
-      "source_file": "SETUP.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "setup_googletokenjson",
-      "label": "google_token.json (OAuth token)",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 40,
-      "community_name": "push_to_supabase.py",
-      "contributor": null,
-      "file_type": "code",
-      "norm_label": "google_token.json (oauth token)",
-      "source_file": "SETUP.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "setup_mainpy",
-      "label": "main.py (refresh + serve dashboard)",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 40,
-      "community_name": "push_to_supabase.py",
-      "contributor": null,
-      "file_type": "code",
-      "norm_label": "main.py (refresh + serve dashboard)",
-      "source_file": "SETUP.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "setup_reauthpy",
-      "label": "reauth.py (re-login script)",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 40,
-      "community_name": "push_to_supabase.py",
-      "contributor": null,
-      "file_type": "code",
-      "norm_label": "reauth.py (re-login script)",
-      "source_file": "SETUP.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "setup_serviceaccountjson",
-      "label": "service_account.json (recommended, permanent auth)",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 40,
-      "community_name": "push_to_supabase.py",
-      "contributor": null,
-      "file_type": "code",
-      "norm_label": "service_account.json (recommended, permanent auth)",
-      "source_file": "SETUP.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
       "id": "shell_apirefreshendpoint",
       "label": "/api/refresh endpoint",
       "_origin": "semantic",
@@ -11605,21 +11637,6 @@
       "source_url": null
     },
     {
-      "id": "setup_googlesheetsaccesssetupdoc",
-      "label": "Marketing Dashboard \u2014 Google Sheets access & setup (doc)",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 40,
-      "community_name": "push_to_supabase.py",
-      "contributor": null,
-      "file_type": "document",
-      "norm_label": "marketing dashboard \u2014 google sheets access & setup (doc)",
-      "source_file": "SETUP.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
       "id": "report_2026_august_legacyarchivepattern",
       "label": "Legacy dated report_YYYY_month.html archive pattern",
       "_origin": "semantic",
@@ -11632,54 +11649,6 @@
       "norm_label": "legacy dated report_yyyy_month.html archive pattern",
       "rationale": "Superseded by the History/Supabase archive system described in MONTH_END.md; month_end.py no longer writes dated report_YYYY_month.html files, and old ones like this can be deleted safely.",
       "source_file": "report_2026_august.html",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "setup_gitignoresecretsrule",
-      "label": "Secrets excluded via .gitignore / .vercelignore",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 40,
-      "community_name": "push_to_supabase.py",
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "secrets excluded via .gitignore / .vercelignore",
-      "rationale": "google_credentials.json, google_token.json, service_account.json must never be committed or deployed; keep real keys only on the machine that runs the refresh.",
-      "source_file": "SETUP.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "setup_oauthtokenexpiryissue",
-      "label": "OAuth token expiry issue (Testing mode, ~7 day expiry)",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 40,
-      "community_name": "push_to_supabase.py",
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "oauth token expiry issue (testing mode, ~7 day expiry)",
-      "rationale": "'invalid_grant: Token has been expired or revoked' happens on a schedule because the OAuth app is in Testing mode; publishing the app to production removes the 7-day expiry.",
-      "source_file": "SETUP.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "setup_serviceaccountrationale",
-      "label": "Service account chosen for zero-maintenance auth + enabling in-dashboard Refresh",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 40,
-      "community_name": "push_to_supabase.py",
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "service account chosen for zero-maintenance auth + enabling in-dashboard refresh",
-      "rationale": "A service account never expires and needs no browser, so it makes the in-dashboard Refresh button work \u2014 that runs scripts server-side where a login flow can't open a browser.",
-      "source_file": "SETUP.md",
       "source_location": null,
       "source_url": null
     },
@@ -13644,6 +13613,37 @@
       "source_url": null
     },
     {
+      "id": "setup_googlesheetsaccesssetupdoc",
+      "label": "Marketing Dashboard \u2014 Google Sheets access & setup (doc)",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 60,
+      "community_name": "build_all.py",
+      "contributor": null,
+      "file_type": "document",
+      "norm_label": "marketing dashboard \u2014 google sheets access & setup (doc)",
+      "source_file": "SETUP.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "setup_gitignoresecretsrule",
+      "label": "Secrets excluded via .gitignore / .vercelignore",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 60,
+      "community_name": "build_all.py",
+      "contributor": null,
+      "file_type": "rationale",
+      "norm_label": "secrets excluded via .gitignore / .vercelignore",
+      "rationale": "google_credentials.json, google_token.json, service_account.json must never be committed or deployed; keep real keys only on the machine that runs the refresh.",
+      "source_file": "SETUP.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
       "id": "setup_vercelstaticdeployment",
       "label": "Vercel static deployment (serves committed HTML, no build step)",
       "_origin": "semantic",
@@ -14688,18 +14688,6 @@
       "type": "external"
     },
     {
-      "id": "subprocess",
-      "label": "subprocess",
-      "_origin": "semantic",
-      "community": 33,
-      "community_name": "streamlit_app.py",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "subprocess",
-      "source_file": "",
-      "type": "external"
-    },
-    {
       "id": "time",
       "label": "time",
       "_origin": "semantic",
@@ -14708,6 +14696,18 @@
       "external": true,
       "file_type": "concept",
       "norm_label": "time",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "subprocess",
+      "label": "subprocess",
+      "_origin": "semantic",
+      "community": 36,
+      "community_name": "month_end.py",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "subprocess",
       "source_file": "",
       "type": "external"
     },
@@ -17522,6 +17522,18 @@
       "weight": 1.0
     },
     {
+      "source": "offer_picking_read_bom_costs",
+      "target": "google_auth_get_gspread_client",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "offer_picking.py",
+      "source_location": "L139",
+      "weight": 1.0
+    },
+    {
       "source": "offer_picking_read_offers",
       "target": "offer_picking_read_offers_cache",
       "relation": "calls",
@@ -17531,6 +17543,18 @@
       "context": "call",
       "source_file": "offer_picking.py",
       "source_location": "L253",
+      "weight": 1.0
+    },
+    {
+      "source": "offer_picking_read_offers",
+      "target": "google_auth_get_gspread_client",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "offer_picking.py",
+      "source_location": "L257",
       "weight": 1.0
     },
     {
@@ -17559,6 +17583,30 @@
     },
     {
       "source": "offer_picking_seasonality",
+      "target": "self_made_combos_combo_sheet_slots",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "offer_picking.py",
+      "source_location": "L486",
+      "weight": 1.0
+    },
+    {
+      "source": "offer_picking_seasonality",
+      "target": "self_made_combos_combo_odoo_slots",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "offer_picking.py",
+      "source_location": "L495",
+      "weight": 1.0
+    },
+    {
+      "source": "offer_picking_seasonality",
       "target": "lib_db_run_query",
       "relation": "calls",
       "_origin": "ast",
@@ -17579,6 +17627,18 @@
       "context": "call",
       "source_file": "offer_picking.py",
       "source_location": "L546",
+      "weight": 1.0
+    },
+    {
+      "source": "offer_picking_seasonality_best_match",
+      "target": "self_made_combos_combo_odoo_slots",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "offer_picking.py",
+      "source_location": "L495",
       "weight": 1.0
     },
     {
@@ -22659,6 +22719,18 @@
     },
     {
       "source": "offer_picking",
+      "target": "google_auth_get_gspread_client",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "offer_picking.py",
+      "source_location": "L138",
+      "weight": 1.0
+    },
+    {
+      "source": "offer_picking",
       "target": "os",
       "relation": "imports",
       "_origin": "ast",
@@ -22691,6 +22763,30 @@
       "context": "import",
       "source_file": "offer_picking.py",
       "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "offer_picking",
+      "target": "self_made_combos_combo_odoo_slots",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "offer_picking.py",
+      "source_location": "L474",
+      "weight": 1.0
+    },
+    {
+      "source": "offer_picking",
+      "target": "self_made_combos_combo_sheet_slots",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "offer_picking.py",
+      "source_location": "L474",
       "weight": 1.0
     },
     {
@@ -36092,5 +36188,5 @@
       "source_file": "docs/timed-offers.md"
     }
   ],
-  "built_at_commit": "24344722342eb16b95f0f4c369ce654933543a52"
+  "built_at_commit": "edc0a2a0f8f3d6727fb279141a971d137bd860e2"
 }

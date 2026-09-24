@@ -1,4 +1,4 @@
-# Graph Report - Marketing_dashboard  (2026-09-24)
+# Graph Report - Marketing_dashboard  (2026-09-23)
 
 ## Corpus Check
 - 107 files · ~486,197 words
@@ -6,12 +6,12 @@
 - Unclassified: 6 file(s) not represented in the graph (top: (none) 2, .toml 1, .zip 1)
 
 ## Summary
-- 1150 nodes · 1854 edges · 80 communities (67 shown, 13 thin omitted)
+- 1150 nodes · 1862 edges · 80 communities (67 shown, 13 thin omitted)
 - Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 67 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `24344722`
+- Built from commit: `edc0a2a0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -53,7 +53,7 @@
 - start_server
 - _combo_button_usage
 - month_end.py
-- _match
+- google_auth.py (shared auth module)
 - theme.py
 - Shops Efficiency Tracking spec doc
 - push_to_supabase.py
@@ -92,9 +92,9 @@
 ## God Nodes (most connected - your core abstractions)
 1. `run_query()` - 30 edges
 2. `build_payload()` - 28 edges
-3. `fetch_posting_data()` - 24 edges
-4. `build_payload()` - 24 edges
-5. `get_gspread_client()` - 23 edges
+3. `get_gspread_client()` - 26 edges
+4. `fetch_posting_data()` - 24 edges
+5. `build_payload()` - 24 edges
 6. `check_connection()` - 22 edges
 7. `Self-made combos vs running combos (doc)` - 22 edges
 8. `Dashboard Menu Docs (spec index)` - 21 edges
@@ -135,7 +135,7 @@ Nodes (71): get_gspread_client(), Shared Google Sheets authentication for every 
 
 ### Community 1 - "offer_picking.py"
 Cohesion: 0.06
-Nodes (49): csv, datetime, _alt_cost(), _apply_alias(), build(), _build_catalog(), _combo_cost(), _combo_slots() (+41 more)
+Nodes (52): csv, datetime, _alt_cost(), _apply_alias(), build(), _build_catalog(), _combo_cost(), _combo_slots() (+44 more)
 
 ### Community 2 - "timed_offers.py"
 Cohesion: 0.07
@@ -206,8 +206,8 @@ Cohesion: 0.15
 Nodes (15): build_payload(), _anchor_sunday(), _combo_bags(), _fill_from_odoo(), _groups(), _match_bag(), _month_weekly(), _num2() (+7 more)
 
 ### Community 19 - "main.py"
-Cohesion: 0.12
-Nodes (18): http_server, ensure_firewall_rule(), free_port(), get_lan_ip(), _is_quota_error(), _is_transient(), Denri Africa — Marketing Dashboard Launcher…, This machine's address on the local network (for the share URL). (+10 more)
+Cohesion: 0.13
+Nodes (19): http_server, ensure_firewall_rule(), free_port(), get_lan_ip(), _is_quota_error(), _is_transient(), Denri Africa — Marketing Dashboard Launcher…, This machine's address on the local network (for the share URL). (+11 more)
 
 ### Community 20 - "build_payload"
 Cohesion: 0.15
@@ -262,24 +262,24 @@ Cohesion: 0.20
 Nodes (12): Live view vs archive split (lib/report_month.py live_*), Denri Africa · Marketing Dashboard (README, project overview), dash-frame iframe (dashboard content loader), exportExcel() function, history.html (nav target — Reporting History, Supabase), Marketing Dashboard Shell (shell.html), navigate() function, new_products.html (nav target) (+4 more)
 
 ### Community 33 - "streamlit_app.py"
-Cohesion: 0.17
-Nodes (7): SCRIPT_TIMEOUT = 600s config, streamlit, _load_secrets_into_env(), streamlit_app.py — Denri Marketing Dashboard on Streamlit. Serves the existing…, streamlit_components_v1, subprocess, time
+Cohesion: 0.18
+Nodes (6): SCRIPT_TIMEOUT = 600s config, streamlit, _load_secrets_into_env(), streamlit_app.py — Denri Marketing Dashboard on Streamlit. Serves the existing…, streamlit_components_v1, time
 
 ### Community 34 - "start_server"
-Cohesion: 0.26
-Nodes (11): start_server(), copyfile(), do_GET(), end_headers(), finish(), handle_one_request(), _handle_refresh(), _run_ref() (+3 more)
+Cohesion: 0.27
+Nodes (10): start_server(), copyfile(), do_GET(), end_headers(), finish(), handle_one_request(), _handle_refresh(), _run_ref() (+2 more)
 
 ### Community 35 - "_combo_button_usage"
 Cohesion: 0.22
 Nodes (8): _combo_button_usage(), _combo_norm_option(), _combo_odoo_slots(), _matches_sheet(), One combo slot-option → its distinctive bag token(s), colours/category words…, Odoo name "Amaya Handbag or Elyse Handbag + Moon Bag or Nizana" → the same…, The sheet label this Odoo combo maps to (same slot count, every slot overlaps),…, Per running combo: units rung through the combo button (Odoo) vs the sheet's…
 
 ### Community 36 - "month_end.py"
-Cohesion: 0.31
-Nodes (8): clear_timed_offers(), main(), month_end.py — the end-of-month archival routine.…, YYYY-MM to archive. Explicit DENRI_REPORT_MONTH wins; otherwise the month that…, After the closing month's timed offers are safely in Supabase, empty the config…, run(), target_month(), sys
+Cohesion: 0.27
+Nodes (9): clear_timed_offers(), main(), month_end.py — the end-of-month archival routine.…, YYYY-MM to archive. Explicit DENRI_REPORT_MONTH wins; otherwise the month that…, After the closing month's timed offers are safely in Supabase, empty the config…, run(), target_month(), subprocess (+1 more)
 
-### Community 37 - "_match"
-Cohesion: 0.50
-Nodes (3): _match(), _full(), _full_of()
+### Community 37 - "google_auth.py (shared auth module)"
+Cohesion: 0.25
+Nodes (8): google_auth.py (shared auth module), google_credentials.json (OAuth desktop client), google_token.json (OAuth token), main.py (refresh + serve dashboard), OAuth token expiry issue (Testing mode, ~7 day expiry), reauth.py (re-login script), service_account.json (recommended, permanent auth), Service account chosen for zero-maintenance auth + enabling in-dashboard Refresh
 
 ### Community 38 - "theme.py"
 Cohesion: 0.20
@@ -290,12 +290,12 @@ Cohesion: 0.22
 Nodes (9): Market Split convention (Kenya vs Sinza vs Uganda), Menu 6: Shops Efficiency Tracking, combos_by_shop.json 15-minute reuse cache, Shops Efficiency Tracking spec doc, KENYA_SHOPS list (16 Kenya shops), _load_combos_by_shop() function, shops_dispatch.py generator (Odoo dispatch/receiving/sold JSON), shops_efficiency.py generator (+1 more)
 
 ### Community 40 - "push_to_supabase.py"
-Cohesion: 0.05
-Nodes (44): denri_mkt_timed_offer* Supabase tables, month_end.py (rollover archiver), monthly_report_history.json, monthly_report.py._read_timed_offers(), renderOffer(TO, root) function, Timed Offers Analytics (doc), timed_offers_config.json (config), timed_offers.html (output) (+36 more)
+Cohesion: 0.06
+Nodes (34): denri_mkt_timed_offer* Supabase tables, month_end.py (rollover archiver), monthly_report_history.json, monthly_report.py._read_timed_offers(), renderOffer(TO, root) function, Timed Offers Analytics (doc), timed_offers_config.json (config), timed_offers.html (output) (+26 more)
 
 ### Community 41 - "_enrich_deals"
-Cohesion: 0.25
-Nodes (6): _enrich_deals(), _tdigit(), _tier_agg(), _odoo_stock_by_shop(), {sheet-loc label: {UPPER(product name): on-hand units}} — live per-shop stock,…, Attach real Odoo sales (units + revenue), per-week sales, and Kenya stock to…
+Cohesion: 0.16
+Nodes (9): _enrich_deals(), _match(), _full(), _full_of(), _tdigit(), _tier_agg(), _odoo_stock_by_shop(), {sheet-loc label: {UPPER(product name): on-hand units}} — live per-shop stock,… (+1 more)
 
 ### Community 42 - "weekly_sales.py"
 Cohesion: 0.28
@@ -358,16 +358,16 @@ Cohesion: 0.33
 Nodes (6): DENRI_REPORT_MONTH env var (pin target month), FINALIZED_MONTHS set (frozen-report guard), month_end.py (script), Phase 1 — archive the target month, Phase 2 — restore the live view (unpinned), SUPABASE_DB_URL env var (Session Pooler connection string)
 
 ### Community 58 - "_combo_button_usage"
-Cohesion: 0.25
-Nodes (6): _combo_button_usage(), _combo_odoo_slots(), _matches_sheet(), Per running combo: units rung through the combo button (Odoo) vs the sheet's…, Odoo name "Amaya Handbag or Elyse Handbag + Moon Bag or Nizana" → the same…, The sheet label this Odoo combo maps to (same slot count, every slot overlaps),…
+Cohesion: 0.33
+Nodes (4): _combo_button_usage(), _matches_sheet(), Per running combo: units rung through the combo button (Odoo) vs the sheet's…, The sheet label this Odoo combo maps to (same slot count, every slot overlaps),…
 
 ### Community 59 - "High-End Visual Design skill"
 Cohesion: 0.40
 Nodes (5): Creative Variance Engine (vibe/layout archetypes), Double-Bezel Card Architecture, Glassmorphism recipe, Motion Requirements (custom cubic-bezier, GPU-safe transforms), High-End Visual Design skill
 
 ### Community 60 - "build_all.py"
-Cohesion: 0.40
-Nodes (4): build_all.py ────────────────────────────────────────────────────────────────…, Vercel hosted version (static snapshot), vercel.json, Vercel static deployment (serves committed HTML, no build step)
+Cohesion: 0.29
+Nodes (6): build_all.py ────────────────────────────────────────────────────────────────…, Vercel hosted version (static snapshot), Secrets excluded via .gitignore / .vercelignore, Marketing Dashboard — Google Sheets access & setup (doc), vercel.json, Vercel static deployment (serves committed HTML, no build step)
 
 ### Community 61 - "self_made_combos.py"
 Cohesion: 0.50
@@ -404,8 +404,8 @@ Nodes (3): DENRI_FORCE_FRESH=1 env var, lib/db.run_query_cached() TTL disk cache
   .claude/skills/dashboard-design.md · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **139 isolated node(s):** `graphify`, `PERF`, `bare_minimum setting (weekly target floor)`, `previous_snapshot.json`, `reject_from_db() function` (+134 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 507 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **139 isolated node(s):** `PERF`, `graphify`, `bare_minimum setting (weekly target floor)`, `previous_snapshot.json`, `reject_from_db() function` (+134 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 506 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **13 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
@@ -416,12 +416,12 @@ _Questions this graph is uniquely positioned to answer:_
 - **What is the exact relationship between `Reject Sale page (reject_sales.html)` and `Card entrance animation via CSS @keyframes + animation-fill-mode: both`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **Why does `Current Performance (doc)` connect `queries.py` to `weekly_sales.py`, `current_performance.py`, `forward_projections.py`, `Product / name matching (doc)`, `build_all.py`?**
-  _High betweenness centrality (0.126) - this node is a cross-community bridge._
+  _High betweenness centrality (0.127) - this node is a cross-community bridge._
 - **Why does `New Products Analytics (doc)` connect `Product / name matching (doc)` to `queries.py`, `Dashboard Insights skill`?**
-  _High betweenness centrality (0.120) - this node is a cross-community bridge._
-- **Why does `get_gspread_client()` connect `POSTING (SALES YIELDS FROM ACCURATE POSTING).py` to `timed_offers.py`, `new_products.py`, `shops_efficiency.py`, `current_performance.py`, `self_made_combos_bundle/offer_data.py`, `forward_projections.py`, `fetch_offer_data`, `self_made_combos_bundle/self_made_combos.py`, `self_made_combos.py`?**
-  _High betweenness centrality (0.072) - this node is a cross-community bridge._
-- **What connects `graphify`, `PERF`, `bare_minimum setting (weekly target floor)` to the rest of the system?**
+  _High betweenness centrality (0.121) - this node is a cross-community bridge._
+- **Why does `get_gspread_client()` connect `POSTING (SALES YIELDS FROM ACCURATE POSTING).py` to `offer_picking.py`, `timed_offers.py`, `new_products.py`, `shops_efficiency.py`, `current_performance.py`, `self_made_combos_bundle/offer_data.py`, `forward_projections.py`, `fetch_offer_data`, `self_made_combos_bundle/self_made_combos.py`, `self_made_combos.py`?**
+  _High betweenness centrality (0.104) - this node is a cross-community bridge._
+- **What connects `PERF`, `graphify`, `bare_minimum setting (weekly target floor)` to the rest of the system?**
   _139 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `POSTING (SALES YIELDS FROM ACCURATE POSTING).py` be split into smaller, more focused modules?**
   _Cohesion score 0.054203180785459264 - nodes in this community are weakly interconnected._
