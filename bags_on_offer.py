@@ -149,8 +149,15 @@ def _previous_payload():
 
 
 def _new_products():
-    """This month's new products: MONTHLY_TARGET col A where col I is ticked (the New Products
-    list). Falls back to the previous build's list if the sheet can't be read."""
+    """This month's new products: new_products.txt when it lists any (lib/new_products_list),
+    else MONTHLY_TARGET col A where col I is ticked. Falls back to the previous build's list
+    if the sheet can't be read."""
+    from lib import new_products_list
+    listed = new_products_list.names()
+    if listed:
+        print(f"  New products     : {len(listed)} from new_products.txt")
+        return listed
+
     def _ticked(v):
         v = str(v).strip()
         return any(c in v for c in "✅✔✓") or v.upper() in ("TRUE", "1", "YES")

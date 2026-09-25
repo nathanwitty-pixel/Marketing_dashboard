@@ -14,6 +14,7 @@ import sys
 import time
 import subprocess
 import datetime
+from urllib.parse import quote
 
 import streamlit as st
 import streamlit.components.v1 as components
@@ -135,7 +136,9 @@ ALL_ITEMS = [it for _, items in NAV for it in items]
 
 st.set_page_config(page_title="Denri · Marketing Dashboard",
                    page_icon="📊", layout="wide",
-                   initial_sidebar_state="expanded")
+                   # "auto": open on desktop, closed on phones — where an open sidebar
+                   # covers the page (and the phone icon bar is the nav instead).
+                   initial_sidebar_state="auto")
 
 # ── Styling: hide Streamlit chrome + make the sidebar buttons read as nav items ──
 st.markdown("""
@@ -179,6 +182,10 @@ st.markdown("""
 # ── Sidebar: grouped icon nav ──
 # (Use Streamlit's built-in « chevron at the top of the sidebar to minimize/hide it —
 #  a custom icon-rail fights Streamlit's sidebar width and can hide the whole menu.)
+# ?page=<label> in the URL selects the page — that's how the phone icon bar (below) navigates.
+_qp_page = st.query_params.get("page")
+if _qp_page and any(it[0] == _qp_page for it in ALL_ITEMS):
+    st.session_state.page = _qp_page
 if "page" not in st.session_state:
     st.session_state.page = ALL_ITEMS[0][0]
 
@@ -195,10 +202,46 @@ for section, items in NAV:
                              use_container_width=True,
                              type=("primary" if active else "secondary")):
             st.session_state.page = label
+            st.query_params["page"] = label
             st.rerun()
 
 # resolve the selected page
 label, html_file, scripts, icon = next(it for it in ALL_ITEMS if it[0] == st.session_state.page)
+
+# ── Phone icon bar ──
+# On phones Streamlit's sidebar collapses away entirely, leaving no way to see where you
+# are or jump pages without reopening it. This bar shows every page as an icon (active one
+# lit, sections split by a thin rule) at the top of the content — phone widths only; the
+# sidebar stays the nav on larger screens. Each icon is a ?page= link.
+_mnav = []
+for _i, (_sec, _items) in enumerate(NAV):
+    if _i:
+        _mnav.append("<span class='mnav-sep'></span>")
+    for _lbl, _f, _s, _ic in _items:
+        _on = " on" if _lbl == label else ""
+        _mnav.append(f"<a class='mnav-i{_on}' href='?page={quote(_lbl)}' target='_self' "
+                     f"title='{_lbl}' aria-label='{_lbl}'><span class='mnav-g'>{_ic}</span></a>")
+st.markdown("""
+<style>@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,0,0&display=block');</style>
+<style>
+  .mnav {display:none;}
+  @media (max-width: 768px) {
+    .mnav {display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:0.3rem;
+      padding:0.35rem; margin:0 0 0.4rem; border:1px solid #1e2233; border-radius:14px; background:#0b0d16;}
+    .mnav-i {width:42px; height:42px; display:flex; align-items:center; justify-content:center;
+      border-radius:11px; color:#94a3b8 !important; text-decoration:none !important;}
+    .mnav-i:active {background:rgba(255,255,255,0.08);}
+    .mnav-i.on {background:rgba(16,185,129,0.16); color:#34d399 !important;}
+    .mnav-g {font-family:'Material Symbols Rounded'; font-size:22px; line-height:1; font-weight:normal;
+      font-style:normal; letter-spacing:normal; text-transform:none; white-space:nowrap;
+      -webkit-font-feature-settings:'liga'; font-feature-settings:'liga';}
+    .mnav-sep {width:1px; height:24px; background:#1e2233; margin:0 0.1rem;}
+    .mnav-cur {width:100%; text-align:center; font-size:0.7rem; font-weight:700; letter-spacing:0.06em;
+      text-transform:uppercase; color:#34d399; padding-top:0.1rem;}
+  }
+</style>
+<nav class="mnav">""" + "".join(_mnav) + f"<div class='mnav-cur'>{label}</div></nav>",
+            unsafe_allow_html=True)
 html_path = os.path.join(BASE, html_file)
 
 

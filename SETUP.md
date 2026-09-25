@@ -76,21 +76,17 @@ Use Windows **Task Scheduler** to run the generator once a day:
    - Start in: this folder's full path.
 4. Finish. It now records a snapshot each day the PC is on, window permitting.
 
-## Deploying to Vercel — static (serves what's in git)
+## Hosted version — Streamlit Cloud
 
-Vercel is a **static** deploy: it serves the HTML committed in the repo, exactly
-as pushed. `vercel.json` only sets the home-page rewrite — there is **no build
-step**. So the deployed site = whatever HTML you last committed.
-
-To update the deployed data: run `python main.py` (or `python build_all.py`) to
-regenerate the pages from the sheet, then commit & push. Vercel serves it. No
-build settings, env vars, or deploy hooks are required — just make sure the
-Vercel project is linked to this GitHub repo so a push auto-deploys (Vercel →
-Project → Settings → Git).
+`streamlit_app.py` is the deployed app. It reads its credentials from Streamlit
+Cloud → **Settings → Secrets** (TOML) — the database `DB_*` values,
+`SUPABASE_DB_URL` and the service account (`SERVICE_ACCOUNT_B64` or a
+`[gcp_service_account]` table). See `.streamlit/secrets.toml.example`.
 
 ---
 
 ## Secrets — never commit / deploy these
-`google_credentials.json`, `google_token.json`, and `service_account.json` are
-listed in `.gitignore` and `.vercelignore`. Keep real keys only on the machine
-that runs the refresh; never paste them into code.
+`.env` (database settings), `google_credentials.json`, `google_token.json`,
+`service_account.json` and `.streamlit/secrets.toml` are all in `.gitignore`.
+Keep real keys only on the machine that runs the refresh (and in Streamlit's
+Secrets); never paste them into code.

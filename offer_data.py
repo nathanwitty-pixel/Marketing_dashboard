@@ -18,6 +18,8 @@ Reads live from Google Sheets (three sheets) — KENYA focus:
                    MONTHLY_TARGET col A offer products
                    return col A=COLOUR, col B=CATEGORY,
                           col C=PRODUCT NAME, col Y(idx 24)=KENYA stock
+                   (rows now built from live Odoo on-hand by lib/odoo_tabs.py in the
+                   same layout; the sheet tab is only a fallback when Postgres is down)
 ─────────────────────────────────────────────────────────────────
 """
 
@@ -79,13 +81,16 @@ def fetch_offer_data():
     _batched = sh.values_batch_get([
         "COMBOS!A1:M150",           # cols A..M — June archive lives in N..P
         "MONTHLY_TARGET!A:J",       # bag list + target/sales/deficit/offer flag
-        "STOCK_LEVELS!A:AB",        # colour/category/name/bagType + region stock cols
     ])
     _vr = _batched.get("valueRanges", [])
     _rng = lambda i: ((_vr[i].get("values") if i < len(_vr) else None) or [])
     grid    = _rng(0)   # COMBOS A1:M150
     mt_rows = _rng(1)   # MONTHLY_TARGET
-    sl_rows = _rng(2)   # STOCK_LEVELS
+    # STOCK_LEVELS: live Odoo on-hand in the sheet's layout (lib/odoo_tabs) — the sheet
+    # tab only if Postgres is down. Its ✅/x flags come from the MONTHLY_TARGET just read.
+    from lib import odoo_tabs
+    odoo_tabs.prime_offer_flags(mt_rows)
+    sl_rows = odoo_tabs.get_rows(sh, "STOCK_LEVELS")
 
     def cell(r, c):
         row = grid[r] if 0 <= r < len(grid) else []

@@ -8,10 +8,6 @@ __pycache__/
 *.pyc
 *.pyo
 
-# ── Vercel build output (generated at deploy from the sheet) ──
-dist/
-.vercel/
-
 # ── Odoo TTL disk-cache (regenerated at runtime) ──
 .odoo_cache/
 

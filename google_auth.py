@@ -27,10 +27,10 @@ TOKEN_FILE = os.path.join(_BASE, "google_token.json")
 def get_gspread_client():
     import gspread
 
-    # ── 0) Service account from an env var (CI / Vercel build) ────────────
+    # ── 0) Service account from an env var (Streamlit Cloud) ──────────────
     # Read the key straight from SERVICE_ACCOUNT_JSON — never written to disk,
-    # so it can't end up in the deployed/served output. This is what the Vercel
-    # build and GitHub Actions use.
+    # so it can't end up in the deployed/served output. streamlit_app.py sets it
+    # from the app's Secrets (SERVICE_ACCOUNT_B64 / [gcp_service_account]).
     sa_json = os.environ.get("SERVICE_ACCOUNT_JSON")
     if sa_json:
         import json as _json

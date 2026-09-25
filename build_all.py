@@ -2,14 +2,8 @@
 """
 build_all.py
 ────────────────────────────────────────────────────────────────
-Regenerate EVERY dashboard from Google Sheets once, without starting
-the web server or opening a browser.
-
-Used by CI (.github/workflows/refresh.yml): the workflow authenticates
-with the service account, runs this, and commits the freshly-baked HTML —
-which Vercel then auto-deploys.
-
-You can also run it locally to refresh all pages headlessly:
+Regenerate EVERY dashboard once (Odoo + the Google Sheet), without
+starting the web server or opening a browser:
 
     python build_all.py
 """

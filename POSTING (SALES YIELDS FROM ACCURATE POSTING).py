@@ -4,9 +4,12 @@ POSTING (SALES YIELDS FROM ACCURATE POSTING).py
 Kenya & Sinza – Posting Yield Analysis
 
 Column mapping per region:
-  MONTHLY_SALES          Kenya → col X (idx 23)   Sinza → col R (idx 17)
-  MONTHLY_MARKETING_POST Kenya → col E (idx  4)   Sinza → col F (idx  5)
-  STOCK_LEVELS           Kenya → col Y (idx 24)   Sinza → col Y (idx 24)
+  MONTHLY_SALES          Kenya → col X (idx 23)   Sinza → col Y (idx 24)   Uganda → col Z (idx 25)
+  MONTHLY_MARKETING_POST Kenya → col E (idx  4)   Sinza → col F (idx  5)   Uganda → col G (idx 6)
+  STOCK_LEVELS           Kenya → col Y (idx 24)   Sinza → col R (idx 17)   Uganda → col S (idx 18)
+
+MONTHLY_SALES, WEEKLY_SALES and STOCK_LEVELS are rebuilt from live Odoo in these exact
+layouts by lib/odoo_tabs.py (sheet tabs only as a fallback when Postgres is down).
 
 Social funnel:
   Kenya :  225,000 × 5% × 1% × 2% = 2.25  expected sales per post
@@ -25,6 +28,7 @@ Three analytical sections per region:
 import re, webbrowser, os, pathlib, json, datetime
 
 from lib import report_month   # which month these figures belong to
+from lib import odoo_tabs      # WEEKLY_SALES / MONTHLY_SALES / STOCK_LEVELS rebuilt from Odoo
 
 SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 
@@ -719,7 +723,7 @@ def _fetch_weekly_kenya(sh, sl_rows):
     WEEKLY_SALES: sum cols E–Q (4–16) + T–W (19–22) where col Y (idx 24) is checked
     """
     wmp_rows = sh.worksheet("WEEKLY_MARKETING_POST").get_all_values()
-    ws_rows  = sh.worksheet("WEEKLY_SALES").get_all_values()
+    ws_rows  = odoo_tabs.get_rows(sh, "WEEKLY_SALES")   # Odoo, last complete Sun–Sat week
 
     weekly_posts = sum(
         safe_int(row[4])
@@ -1845,10 +1849,14 @@ def fetch_posting_data():
     sh = gc.open_by_key(SPREADSHEET_ID)
 
     print("  Reading sheets (one connection)...")
-    ms_rows  = sh.worksheet("MONTHLY_SALES").get_all_values()
     mmp_rows = sh.worksheet("MONTHLY_MARKETING_POST").get_all_values()
-    sl_rows  = sh.worksheet("STOCK_LEVELS").get_all_values()
     mt_rows  = sh.worksheet("MONTHLY_TARGET").get_all_values()
+    # MONTHLY_SALES (reporting month) and STOCK_LEVELS (live on-hand) are rebuilt from Odoo
+    # in the sheet's exact layout (lib/odoo_tabs); ✅/x flags = MONTHLY_TARGET cols F/G/H.
+    # The sheet tabs are only read if Postgres is down.
+    odoo_tabs.prime_offer_flags(mt_rows)
+    ms_rows  = odoo_tabs.get_rows(sh, "MONTHLY_SALES")
+    sl_rows  = odoo_tabs.get_rows(sh, "STOCK_LEVELS")
     print(f"  MONTHLY_SALES rows         : {len(ms_rows) - 1}")
     print(f"  MONTHLY_MARKETING_POST rows: {len(mmp_rows) - 1}")
     print(f"  STOCK_LEVELS rows          : {len(sl_rows) - 1}")
@@ -1872,12 +1880,15 @@ def fetch_posting_data():
                             sales_col=23, post_col=4, stock_col=24,
                             spp=KENYA_SPP, region="Kenya", offer_bagtypes=_ob_ke)
 
+    # Header-correct region columns: MONTHLY_SALES Sinza Y(24) / Uganda Z(25); STOCK_LEVELS
+    # Sinza R(17) / Uganda S(18). (Sinza used to read col 17 = the UGANDA shop column and
+    # Kenya stock Y(24).)
     sinza = _analyze_region(ms_rows, mmp_rows, sl_rows,
-                            sales_col=17, post_col=5, stock_col=24,
+                            sales_col=24, post_col=5, stock_col=17,
                             spp=SINZA_SPP, region="Sinza", offer_bagtypes=_ob_sz)
 
     uganda = _analyze_region(ms_rows, mmp_rows, sl_rows,
-                             sales_col=17, post_col=6, stock_col=18,
+                             sales_col=25, post_col=6, stock_col=18,
                              spp=UGANDA_SPP, region="Uganda", offer_bagtypes=_ob_ug)
 
     (wk_posts, wk_sales, wk_expected, wk_unposted, s3_wk_posts, nc_wk,
@@ -1898,7 +1909,7 @@ def fetch_posting_data():
     mo_instock_not_posted = len(kenya_sl_keys - kenya_mmp_keys)
 
     wmp_rows_wk = sh.worksheet("WEEKLY_MARKETING_POST").get_all_values()
-    ws_rows_wk  = sh.worksheet("WEEKLY_SALES").get_all_values()
+    ws_rows_wk  = odoo_tabs.get_rows(sh, "WEEKLY_SALES")   # Odoo, last complete Sun–Sat week
     sz_wk = _fetch_weekly_region(wmp_rows_wk, ws_rows_wk, 5, 9, 17, 25, SINZA_SPP)
     ug_wk = _fetch_weekly_region(wmp_rows_wk, ws_rows_wk, 6, 10, 18, 26, UGANDA_SPP)
     sinza['weekly']  = sz_wk
@@ -2358,6 +2369,16 @@ def update_clearance(current, sig):
     history  = state.get("history") or []
     month    = date.today().strftime("%b")
 
+    # Stock source (Odoo / sheet fallback). A baseline taken from the other source isn't
+    # comparable — the old STOCK_LEVELS sheet held thousands of phantom units, so
+    # sheet-baseline − Odoo-now would book them as "cleared". Re-baseline on a switch
+    # and restart this week's count from 0.
+    source = odoo_tabs.SOURCE.get("STOCK_LEVELS", "sheet")
+    if state.get("stockSource", "sheet") != source:
+        baseline = current
+        if history and history[-1].get("label") == _mkt_week_label():
+            history[-1].update({"kenya": 0, "sinza": 0, "uganda": 0})
+
     if (state.get("sig") is None) or (state.get("sig") != sig):
         baseline = current   # posting changed → re-baseline stock
         wk_label = _mkt_week_label()
@@ -2384,7 +2405,7 @@ def update_clearance(current, sig):
         history[-1].update({"kenya": totals["kenya"], "sinza": totals["sinza"], "uganda": totals["uganda"]})
 
     with open(STOCK_HISTORY, "w") as f:
-        json.dump({"sig": sig, "baseline": baseline, "history": history}, f, indent=2)
+        json.dump({"sig": sig, "stockSource": source, "baseline": baseline, "history": history}, f, indent=2)
     return lists, totals, history
 
 cleared_lists, cleared_totals, cleared_history = update_clearance(

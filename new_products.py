@@ -12,6 +12,8 @@ Reads live from Google Sheets (five sheets):
                           col E=KENYA posts, col H=OUTSIDE KENYA posts
   WEEKLY_SALES          → col A=COLOUR, col B=CATEGORY, col C=PRODUCT NAME
                           col D=BAG TYPE, col X=weekly bags sold
+  (MONTHLY_SALES / WEEKLY_SALES rows are now built from Odoo by lib/odoo_tabs.py,
+   same layout; the sheet tabs are only a fallback when Postgres is down.)
 
   monthly_combined: bag-type level rows (target/sales/deficit + posts + stock)
   weekly_combined:  colour-level rows merging WEEKLY_SALES + posts + stock
@@ -30,6 +32,7 @@ SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 
 # Shared auth: service account (permanent) or self-healing OAuth — see google_auth.py
 from google_auth import get_gspread_client
+from lib import odoo_tabs   # MONTHLY_SALES / WEEKLY_SALES rebuilt from Odoo
 
 
 # ── HELPERS ───────────────────────────────────────────────────
@@ -102,15 +105,33 @@ def odoo_lifetime_product_bags():
     return [(str(r["product"]), int(round(float(r["bags"] or 0)))) for _, r in df.iterrows()]
 
 
-# Sheet product-name spellings that differ from Odoo's — corrected before matching sales/stock so
-# the variant isn't silently missed (the sheet's "Lamora Skye Blue" is Odoo's "Lamora Sky Blue").
-# The reporting service account is read-only, so the sheet itself can't be fixed from here.
-_NAME_FIX = {
-    "LAMORA SKYE BLUE": "LAMORA SKY BLUE",
-}
-def _fix_name(name):
-    u = str(name).upper().strip()
-    return _NAME_FIX.get(u, u)
+# One matching key for sheet/catalogue names and Odoo names alike: odoo_tabs.base_name folds
+# Odoo renames back to the catalogue spelling (product_aliases.csv — Odoo's "Lamora Sky Blue" →
+# "LAMORA SKYE BLUE", "Lafemme Pink (Éclat)" → "LAFEMME PINK (E'CLAT)") and drops "[REJECT]";
+# then everything but letters/digits is ignored.
+def _key(name):
+    return re.sub(r"[^A-Z0-9]", "", odoo_tabs.base_name(name))
+
+
+def _keyed(d, merge):
+    """Re-key an Odoo {name: value} dict by _key(), merging values of names that collapse together."""
+    out = {}
+    for k, v in (d or {}).items():
+        kk = _key(k)
+        out[kk] = merge(out[kk], v) if kk in out else v
+    return out
+
+
+def _odoo_colour(product_name, bag_type, fallback=""):
+    """The colour as the product itself is named — the product name minus its bag type,
+    e.g. LAFEMME RED (GARNET) → "Red (Garnet)", LOOP BP CN BLACK → "CN Black". The sheet's
+    COLOUR column is only a family (Garnet and Mulberry are both "Red"), which merged
+    distinct colours on the page. Uses Odoo's spelling (LAMORA SKYE BLUE → "Sky Blue")."""
+    n, b = odoo_tabs.odoo_name(product_name), odoo_tabs.norm(bag_type)
+    rest = n[len(b):].strip() if b and n.startswith(b + " ") else ""
+    if not rest:
+        return fallback
+    return " ".join(t if t in _COLOUR_QUALIFIER_TOKENS or t.isdigit() else t.title() for t in rest.split())
 
 
 # ── Colour canonicalisation for the per-colour table's variant merge ──────────
@@ -124,7 +145,8 @@ _COLOUR_QUALIFIER_TOKENS = {"CN", "TT", "CROC"}   # edition/texture prefixes, ne
 
 _PRIMARY_COLOURS = [
     # multi-word / must be checked before their single-word component
-    "DARK BROWN", "D BROWN", "SKY BLUE", "RED PATTERN", "AMBER BROWN",
+    "DARK BROWN", "D BROWN", "SKY BLUE", "SKYE BLUE", "RED PATTERN", "AMBER BROWN",
+    "YELLOW DOTTED", "DENIM BLUE", "WINE RED",
     # single-word
     "CHOCOLATE", "MUSTARD", "MAROON", "PURPLE", "CRACKED", "DOTTED",
     "CRIMSON", "CARAMEL", "LILAC", "AMBER", "CREAM", "BROWN", "BLACK",
@@ -148,7 +170,10 @@ def _base_colour(raw):
     'Sky Blue' -> 'Sky Blue' (own entry, not folded into 'Blue'); 'Antelope
     Brown' -> 'Brown' (substring match). Falls back to the qualifier-stripped
     string itself (Title Case) when no known colour word matches, so nothing
-    is silently dropped — becomes its own single-row group."""
+    is silently dropped — becomes its own single-row group. A named shade in brackets
+    ('Red (Garnet)', 'Wine Red (Mulberry)') is its own colour and is kept whole."""
+    if "(" in str(raw):
+        return str(raw).strip()
     stripped = _strip_colour_qualifiers(raw)
     padded = " " + stripped + " "
     for c in _PRIMARY_COLOURS_SORTED:
@@ -277,14 +302,28 @@ def fetch_new_products_data():
     category_lookup   = {}   # bag_upper -> CATEGORY (col B of MONTHLY_TARGET)
     product_targets   = []   # per-product {name, target, sold, remaining}
 
+    # Which bags are new: new_products.txt when it lists any (lib/new_products_list),
+    # otherwise the col I ✅ ticks.
+    from lib import new_products_list
+    listed = new_products_list.names()
+    if listed:
+        print(f"  New products from new_products.txt: {', '.join(listed)}")
+        missing = set(listed) - {str(r[0]).strip().upper() for r in mt_rows[1:] if r}
+        if missing:
+            print(f"  WARNING: not in MONTHLY_TARGET col A (no target row): {', '.join(sorted(missing))}")
+        order = {n: i for i, n in enumerate(listed)}
+        mt_rows = [mt_rows[0]] + sorted(mt_rows[1:], key=lambda r: order.get(str(r[0]).strip().upper() if r else "", len(order)))
+
     for row in mt_rows[1:]:
         if len(row) < 1:
             continue
         bag = str(row[0]).strip()
         if bag and len(row) > 1:
             category_lookup[bag.upper()] = str(row[1]).strip()
-        if len(row) < 9 or not is_checked(row[8]):
+        is_new = (bag.upper() in listed) if listed else (len(row) >= 9 and is_checked(row[8]))
+        if not is_new:
             continue
+        row = list(row) + [""] * (5 - len(row))
         t = safe_int(row[2]); s = safe_int(row[3]); dfc = safe_int(row[4])
         total_target  += t
         total_sales   += s
@@ -339,8 +378,8 @@ def fetch_new_products_data():
     # col X (idx 23) = KENYA monthly sales
     # col AA (idx 26) = OUTSIDE KENYA monthly sales
 
-    ms      = sh.worksheet("MONTHLY_SALES")
-    ms_rows = ms.get_all_values()
+    # Built from Odoo for the reporting month (lib/odoo_tabs); the sheet tab only if Postgres is down.
+    ms_rows = odoo_tabs.get_rows(sh, "MONTHLY_SALES")
 
     ms_base = []   # colour-level rows; posts + stock merged in later
 
@@ -356,7 +395,7 @@ def fetch_new_products_data():
         if "total" in product_name.lower():   # skip subtotal/grand-total rows
             continue
         ms_base.append({
-            "colour":       colour,
+            "colour":       _odoo_colour(product_name, bag_type, colour),
             "category":     category_lookup.get(bag_type.upper(), ''),
             "productName":  product_name,
             "bagType":      bag_type,
@@ -370,26 +409,29 @@ def fetch_new_products_data():
         })
 
     # ── MONTHLY_MARKETING_POST ────────────────────────────────
-    # colour-level lookup to merge into monthly rows
-    # col A (idx 0) = COLOUR, col D (idx 3) = BAG TYPE
+    # product-level lookup to merge into monthly rows
+    # col C (idx 2) = PRODUCT NAME, col D (idx 3) = BAG TYPE
     # col E (idx 4) = KENYA posts, col H (idx 7) = OUTSIDE KENYA posts
+    # Keyed by PRODUCT NAME: the old (bag type, colour family) key handed every product in a
+    # family the family's combined posts (Lafemme Garnet + Mulberry each showed both).
 
     mmp      = sh.worksheet("MONTHLY_MARKETING_POST")
     mmp_rows = mmp.get_all_values()
 
-    mpost_lookup = {}   # (bag_upper, colour_upper) -> {kenya, outsideKenya}
-    for row in mmp_rows[1:]:
-        if len(row) < 4:
-            continue
-        bag_type = str(row[3]).strip()
-        if not bag_type or bag_type.upper() in ("SUM TOTAL", "TOTAL", "GRAND TOTAL"):
-            continue
-        colour = str(row[0]).strip()
-        key    = (bag_type.upper(), colour.upper())
-        if key not in mpost_lookup:
-            mpost_lookup[key] = {"kenya": 0, "outsideKenya": 0}
-        mpost_lookup[key]["kenya"]        += safe_int(row[4]) if len(row) > 4 else 0
-        mpost_lookup[key]["outsideKenya"] += safe_int(row[7]) if len(row) > 7 else 0
+    def _post_lookup(rows):
+        out = {}   # _key(product name) -> {kenya, outsideKenya}
+        for row in rows[1:]:
+            if len(row) < 4:
+                continue
+            bag_type, name = str(row[3]).strip(), str(row[2]).strip()
+            if not bag_type or not name or bag_type.upper() in ("SUM TOTAL", "TOTAL", "GRAND TOTAL"):
+                continue
+            p = out.setdefault(_key(name), {"kenya": 0, "outsideKenya": 0})
+            p["kenya"]        += safe_int(row[4]) if len(row) > 4 else 0
+            p["outsideKenya"] += safe_int(row[7]) if len(row) > 7 else 0
+        return out
+
+    mpost_lookup = _post_lookup(mmp_rows)
 
     # ── STOCK: LIVE Odoo on-hand ONLY (the STOCK_LEVELS sheet is not read) ──
     # sKenya / sOutside are set from live Odoo stock further below (odoo_stock_kenya_outside).
@@ -397,33 +439,20 @@ def fetch_new_products_data():
 
     # Merge posts into each monthly colour-level row (stock is applied later, from Odoo)
     for r in ms_base:
-        lk   = (r["bagType"].upper(), r["colour"].upper())
-        post = mpost_lookup.get(lk, {"kenya": 0, "outsideKenya": 0})
+        post = mpost_lookup.get(_key(r["productName"]), {"kenya": 0, "outsideKenya": 0})
         r["mpostKenya"]   = post["kenya"]
         r["mpostOutside"] = post["outsideKenya"]
 
     monthly_combined = ms_base
 
     # ── WEEKLY_MARKETING_POST ─────────────────────────────────
-    # col A (idx 0) = COLOUR, col D (idx 3) = BAG TYPE
-    # col E (idx 4) = KENYA posts, col H (idx 7) = OUTSIDE KENYA posts
+    # col C (idx 2) = PRODUCT NAME, col D (idx 3) = BAG TYPE
+    # col E (idx 4) = KENYA posts, col H (idx 7) = OUTSIDE KENYA posts — keyed by product name
 
     wmp      = sh.worksheet("WEEKLY_MARKETING_POST")
     wmp_rows = wmp.get_all_values()
 
-    wpost_lookup = {}   # (bag_upper, colour_upper) -> {kenya, outsideKenya}
-    for row in wmp_rows[1:]:
-        if len(row) < 4:
-            continue
-        bag_type = str(row[3]).strip()
-        if not bag_type or bag_type.upper() in ("SUM TOTAL", "TOTAL", "GRAND TOTAL"):
-            continue
-        colour = str(row[0]).strip()
-        key    = (bag_type.upper(), colour.upper())
-        if key not in wpost_lookup:
-            wpost_lookup[key] = {"kenya": 0, "outsideKenya": 0}
-        wpost_lookup[key]["kenya"]        += safe_int(row[4]) if len(row) > 4 else 0
-        wpost_lookup[key]["outsideKenya"] += safe_int(row[7]) if len(row) > 7 else 0
+    wpost_lookup = _post_lookup(wmp_rows)
 
     # ── WEEKLY_SALES ──────────────────────────────────────────
     # col A (idx  0) = COLOUR
@@ -432,8 +461,8 @@ def fetch_new_products_data():
     # col D (idx  3) = BAG TYPE
     # col X (idx 23) = TOTAL
 
-    ws      = sh.worksheet("WEEKLY_SALES")
-    ws_rows = ws.get_all_values()
+    # Built from Odoo for the last complete Sun–Sat week (lib/odoo_tabs); sheet tab only if Postgres is down.
+    ws_rows = odoo_tabs.get_rows(sh, "WEEKLY_SALES")
 
     weekly_combined = []
 
@@ -447,10 +476,9 @@ def fetch_new_products_data():
         if "total" in product_name.lower():
             continue
         colour  = str(row[0]).strip()
-        lk      = (bag_type.upper(), colour.upper())
-        post    = wpost_lookup.get(lk, {"kenya": 0, "outsideKenya": 0})
+        post    = wpost_lookup.get(_key(product_name), {"kenya": 0, "outsideKenya": 0})
         weekly_combined.append({
-            "colour":       colour,
+            "colour":       _odoo_colour(product_name, bag_type, colour),
             "category":     str(row[1]).strip(),
             "productName":  product_name,
             "bagType":      bag_type,
@@ -465,9 +493,10 @@ def fetch_new_products_data():
     # ── Sales from Odoo — the single source of truth for EVERY sales figure ──
     # Replace the sheet's colour-level sales with live Odoo POS sales, split
     # Kenya tills (Kenya) vs Sinza / Dar-es-Salaam / Uganda (outside). Matched to
-    # each row by product name (exact upper, then alphanumeric-normalised). Falls
-    # back to the sheet only if Postgres is unreachable.
-    _norm = lambda s: re.sub(r"[^A-Z0-9]", "", str(s).upper())
+    # each row by _key(product name) — aliases applied, Odoo names that fold together
+    # summed. Falls back to the sheet only if Postgres is unreachable.
+    _add_units = lambda a, b: {"kenya": a["kenya"] + b["kenya"], "outside": a["outside"] + b["outside"]}
+    _add_qty   = lambda a, b: a + b
 
     # ── STOCK from Odoo — LIVE on-hand ONLY (the STOCK_LEVELS sheet is not read) ──
     # sKenya = Kenya shop on-hand, sOutside = Sinza(Dar)+Uganda on-hand, matched to each
@@ -476,14 +505,14 @@ def fetch_new_products_data():
     # unreachable DB — shows 0; the sheet is never a fallback. sRestock has no Odoo
     # equivalent, so it is 0.
     _sk_odoo, _so_odoo = odoo_stock_kenya_outside()
-    _skn = {_norm(k): v for k, v in _sk_odoo.items()}
-    _son = {_norm(k): v for k, v in _so_odoo.items()}
+    _skn = _keyed(_sk_odoo, _add_qty)
+    _son = _keyed(_so_odoo, _add_qty)
 
     def _apply_stock(rows):
         for r in rows:
-            k = _fix_name(r["productName"])
-            r["sKenya"]   = int(_sk_odoo.get(k, _skn.get(_norm(k), 0)))
-            r["sOutside"] = int(_so_odoo.get(k, _son.get(_norm(k), 0)))
+            k = _key(r["productName"])
+            r["sKenya"]   = int(_skn.get(k, 0))
+            r["sOutside"] = int(_son.get(k, 0))
             r["sRestock"] = 0
     _apply_stock(ms_base)
     _apply_stock(weekly_combined)
@@ -498,10 +527,9 @@ def fetch_new_products_data():
         _m_start = _m_end = None
     _odoo_m = odoo_sales_window(_m_start, _m_end)
     if _odoo_m is not None:
-        _mn = {_norm(k): v for k, v in _odoo_m.items()}
+        _mn = _keyed(_odoo_m, _add_units)
         for r in ms_base:
-            k = _fix_name(r["productName"])
-            s = _odoo_m.get(k) or _mn.get(_norm(k))
+            s = _mn.get(_key(r["productName"]))
             r["kenyaSales"]   = s["kenya"]   if s else 0
             r["outsideKenya"] = s["outside"] if s else 0
         print("  Monthly sales source  : Odoo (Kenya tills vs outside)")
@@ -511,10 +539,9 @@ def fetch_new_products_data():
     _wk_start = _today - timedelta(days=(_today.weekday() + 1) % 7)
     _odoo_w  = odoo_sales_window(_wk_start, _today)
     if _odoo_w is not None:
-        _wn = {_norm(k): v for k, v in _odoo_w.items()}
+        _wn = _keyed(_odoo_w, _add_units)
         for r in weekly_combined:
-            k = _fix_name(r["productName"])
-            s = _odoo_w.get(k) or _wn.get(_norm(k))
+            s = _wn.get(_key(r["productName"]))
             r["weeklySales"] = (s["kenya"] if s else 0)   # WEEKLY_SALES col X is Kenya
         print("  Weekly sales source   : Odoo (Kenya, this week to date)")
 
@@ -524,10 +551,9 @@ def fetch_new_products_data():
     _lw_start = _lw_end - timedelta(days=6)            # that week's Sunday
     _odoo_lw  = odoo_sales_window(_lw_start, _lw_end)
     if _odoo_lw is not None:
-        _lwn = {_norm(k): v for k, v in _odoo_lw.items()}
+        _lwn = _keyed(_odoo_lw, _add_units)
         for r in weekly_combined:
-            k = _fix_name(r["productName"])
-            s = _odoo_lw.get(k) or _lwn.get(_norm(k))
+            s = _lwn.get(_key(r["productName"]))
             r["lastWeekKenya"]   = (s["kenya"] if s else 0)
             r["lastWeekOutside"] = (s["outside"] if s else 0)
         print("  Last-week sales source: Odoo (previous Sun-Sat week)")
@@ -545,11 +571,26 @@ def fetch_new_products_data():
         for r in ms_base + weekly_combined:
             _btk = str(r["bagType"]).upper().strip()
             _sib.setdefault(_btk, (str(r["bagType"]).strip(), r.get("category", "")))
-        _have = {_norm(_fix_name(r["productName"])) for r in ms_base}
-        _have |= {_norm(_fix_name(r["productName"])) for r in weekly_combined}
+        _have = {_key(r["productName"]) for r in ms_base}
+        _have |= {_key(r["productName"]) for r in weekly_combined}
         _names = set()
         for _src in ((_odoo_m or {}), (_odoo_w or {}), (_odoo_lw or {}), _sk_odoo, _so_odoo):
             _names |= set(_src.keys())
+        # …plus every ACTIVE sellable Odoo colour, even with no sale or shop stock yet (a colour
+        # sitting only in the warehouse — e.g. Amora Orange — is still one of its colours).
+        try:
+            from lib import db as _db
+            _cat_df = _db.run_query_cached(
+                """SELECT DISTINCT UPPER(pt."name") AS n FROM product_template pt
+                   WHERE pt.active AND pt.sale_ok AND pt.available_in_pos AND pt."name" NOT LIKE '%+%'""",
+                {}, ttl_min=60)
+            if _cat_df is not None:
+                _names |= set(_cat_df["n"])
+        except Exception:                                    # noqa: BLE001 — sold/stocked colours still show
+            pass
+        _mn_  = _keyed(_odoo_m,  _add_units)
+        _wn_  = _keyed(_odoo_w,  _add_units)
+        _lwn_ = _keyed(_odoo_lw, _add_units)
         def _bt_of(u):
             for _bt in _bts:
                 if u == _bt or u.startswith(_bt + " "):
@@ -561,15 +602,16 @@ def fetch_new_products_data():
             if "+" in _u or "[REJECT]" in _u:
                 continue
             _bt = _bt_of(_u)
-            if not _bt or _norm(_u) in _have:
+            _k = _key(_u)
+            if not _bt or _k in _have:
                 continue
             _btd, _cat = _sib.get(_bt, (_bt.title(), ""))
-            _colour = (_u[len(_bt):].strip().title() or "—")
-            _m  = (_odoo_m  or {}).get(_u) or {}
-            _w  = (_odoo_w  or {}).get(_u) or {}
-            _lw = (_odoo_lw or {}).get(_u) or {}
-            _sk = int(_sk_odoo.get(_u, _skn.get(_norm(_u), 0)))
-            _so = int(_so_odoo.get(_u, _son.get(_norm(_u), 0)))
+            _colour = _odoo_colour(_u, _bt, "—")
+            _m  = _mn_.get(_k) or {}
+            _w  = _wn_.get(_k) or {}
+            _lw = _lwn_.get(_k) or {}
+            _sk = int(_skn.get(_k, 0))
+            _so = int(_son.get(_k, 0))
             ms_base.append({"colour": _colour, "category": _cat, "productName": str(_nm).title(),
                             "bagType": _btd, "kenyaSales": _m.get("kenya", 0), "outsideKenya": _m.get("outside", 0),
                             "mpostKenya": 0, "mpostOutside": 0, "sKenya": _sk, "sOutside": _so, "sRestock": 0})
@@ -577,7 +619,7 @@ def fetch_new_products_data():
                             "bagType": _btd, "weeklySales": _w.get("kenya", 0), "wpostKenya": 0, "wpostOutside": 0,
                             "sKenya": _sk, "sOutside": _so, "sRestock": 0,
                             "lastWeekKenya": _lw.get("kenya", 0), "lastWeekOutside": _lw.get("outside", 0)})
-            _have.add(_norm(_u))
+            _have.add(_k)
             _added += 1
         if _added:
             print("  Colour variants added : %d Odoo colour(s) missing from the sheet" % _added)
@@ -685,12 +727,11 @@ def update_np_weekly_history():
     else:
         _ref_odoo = odoo_sales_window(ws, ref)
         if _ref_odoo is not None:
-            _rnorm = lambda s: re.sub(r"[^A-Z0-9]", "", str(s).upper())   # local: fetch_new_products_data()'s _norm isn't in scope here
-            _refn = {_rnorm(k): v for k, v in _ref_odoo.items()}
+            _refn = _keyed(_ref_odoo, lambda a, b: {"kenya": a["kenya"] + b["kenya"],
+                                                    "outside": a["outside"] + b["outside"]})
             ref_total = 0
             for r in weekly_combined:
-                k = _fix_name(r["productName"])
-                s = _ref_odoo.get(k) or _refn.get(_rnorm(k))
+                s = _refn.get(_key(r["productName"]))
                 ref_total += (s["kenya"] if s else 0)
         else:
             ref_total = weekly_total   # Odoo unreachable — fall back rather than write nothing

@@ -63,6 +63,14 @@ def _codes_for(market):
     return KENYA_SHOP_CODES
 
 
+def _qty(v):
+    """On-hand as int; a NULL SUM (NaN in pandas — only reachable with positive_only=False) is 0."""
+    try:
+        return int(v) if v == v else 0          # NaN != NaN
+    except (TypeError, ValueError):
+        return 0
+
+
 def _inlist(codes):
     return ", ".join("'" + str(c).strip().upper().replace("'", "''") + "'" for c in codes)
 
@@ -93,7 +101,7 @@ def odoo_stock_by_product(market="kenya", include_combos=False, positive_only=Tr
         return {}
     if dfr is None or dfr.empty:
         return {}
-    return {str(r["name"]).upper(): int(r["qty"] or 0) for _, r in dfr.iterrows()}
+    return {str(r["name"]).upper(): _qty(r["qty"]) for _, r in dfr.iterrows()}
 
 
 def odoo_stock_by_shop_code(codes=None, include_combos=False, positive_only=True):
@@ -122,5 +130,5 @@ def odoo_stock_by_shop_code(codes=None, include_combos=False, positive_only=True
         return {}
     out = {}
     for _, r in dfr.iterrows():
-        out.setdefault(str(r["code"]).strip().upper(), {})[str(r["name"]).upper()] = int(r["qty"] or 0)
+        out.setdefault(str(r["code"]).strip().upper(), {})[str(r["name"]).upper()] = _qty(r["qty"])
     return out

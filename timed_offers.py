@@ -366,13 +366,14 @@ def odoo_bag_prices(bags, start, end):
 
 
 def _sheet_category_by_bag(bags):
-    """{BAG_UPPER: category} from STOCK_LEVELS col B — the bag's category label only.
-    Category is a non-stock label; STOCK is never read from the sheet (see
-    kenya_stock_by_bag)."""
+    """{BAG_UPPER: category} — the bag's category label only, from the product catalogue
+    (product_catalog.csv, the old STOCK_LEVELS col B/D labels; lib/odoo_tabs). STOCK is
+    never read from the sheet (see kenya_stock_by_bag)."""
+    from lib import odoo_tabs
     out = {}
-    gc = get_gspread_client()
-    sh = gc.open_by_key(SPREADSHEET_ID)
-    rows = sh.worksheet("STOCK_LEVELS").get_all_values()
+    rows = odoo_tabs.catalog_rows()
+    if len(rows) <= 1:   # catalogue missing → the old sheet read
+        rows = get_gspread_client().open_by_key(SPREADSHEET_ID).worksheet("STOCK_LEVELS").get_all_values()
     for row in rows[1:]:
         if len(row) < 4:
             continue

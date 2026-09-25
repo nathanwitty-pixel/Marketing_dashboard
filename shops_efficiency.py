@@ -12,6 +12,8 @@ column per location):
   WEEKLY_DISPATCH, MONTHLY_DISPATCH   bags dispatched to shops
   WEEKLY_SALES,    MONTHLY_SALES      bags sold / converted
   STOCK_LEVELS                        bags currently at each shop
+(Dispatch and sales rows are now rebuilt from Odoo in these layouts by
+lib/odoo_tabs.py; stock is live Odoo per-shop on-hand.)
 
 Per-shop metrics (D = dispatched, C = sold):
   NO. OF BAGS AT THE SHOP            stock on hand
@@ -512,8 +514,16 @@ print("Fetching Shops Efficiency data...")
 gc = get_gspread_client()
 sh = gc.open_by_key(SPREADSHEET_ID)
 
+# Dispatch + sales per bag per shop, rebuilt from Odoo in the sheet tabs' layout
+# (lib/odoo_tabs; the sheet tab only if Postgres is down). Windows are shops_dispatch.py's
+# — Wed→Tue week, calendar month — so the per-bag table reconciles with the shop totals
+# apply_odoo() folds in from shops_dispatch_db.json.
+from lib import odoo_tabs
+import shops_dispatch
+_wk_win, _mo_win = shops_dispatch.week_window(), shops_dispatch.month_window()
+
 def load(tab):
-    return sh.worksheet(tab).get_all_values()
+    return odoo_tabs.get_rows(sh, tab, window=_wk_win if tab.startswith("WEEKLY") else _mo_win)
 
 wk_dispatch, wk_d_meta = parse_sheet(load("WEEKLY_DISPATCH"))
 mo_dispatch, mo_d_meta = parse_sheet(load("MONTHLY_DISPATCH"))

@@ -122,15 +122,16 @@ def fetch_sheet_data():
     sales_total  = safe_sum(col_d_raw)   # sum of column D (SALES)
 
     # ── WEEKLY_SALES ──────────────────────────────────────────
-    # Find the row where column C = "SUM TOTAL", read column X (24) = TOTAL
-
-    ws = sh.worksheet("WEEKLY_SALES")
-    col_c_ws = ws.col_values(3)          # column C
+    # The row where column C = "SUM TOTAL", column X = TOTAL. Built from Odoo for
+    # the CURRENT Sun–Sat week (lib/odoo_tabs; the sheet tab only if Postgres is down).
+    from lib import odoo_tabs
+    from weekly_sales import week_window
+    ws_rows = odoo_tabs.get_rows(sh, "WEEKLY_SALES", window=week_window())
 
     weekly_total = 0
-    for i, cell in enumerate(col_c_ws):
-        if str(cell).strip().upper() == "SUM TOTAL":
-            val = ws.cell(i + 1, 24).value   # column X = 24
+    for row in ws_rows:
+        if len(row) > 23 and str(row[2]).strip().upper() == "SUM TOTAL":
+            val = str(row[23]).replace(",", "").strip()   # column X
             weekly_total = int(float(val)) if val else 0
             break
     else:

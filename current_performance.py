@@ -233,14 +233,16 @@ def fetch_monthly_target():
     deficit_total = safe_sum(col_e_raw)
 
     # ── WEEKLY_SALES ──────────────────────────────────────────
-    # Find the row where col C = "SUM TOTAL", read col X (24) = TOTAL
-    ws       = sh.worksheet("WEEKLY_SALES")
-    col_c_ws = ws.col_values(3)
+    # The row where col C = "SUM TOTAL", col X = TOTAL. Built from Odoo for the
+    # CURRENT Sun–Sat week (lib/odoo_tabs; the sheet tab only if Postgres is down).
+    from lib import odoo_tabs
+    from weekly_sales import week_window
+    ws_rows = odoo_tabs.get_rows(sh, "WEEKLY_SALES", window=week_window())
 
     weekly_total = 0
-    for i, cell in enumerate(col_c_ws):
-        if str(cell).strip().upper() == "SUM TOTAL":
-            val = ws.cell(i + 1, 24).value   # col X = 24
+    for row in ws_rows:
+        if len(row) > 23 and str(row[2]).strip().upper() == "SUM TOTAL":
+            val = str(row[23]).replace(",", "").strip()   # col X
             weekly_total = int(float(val)) if val else 0
             break
     else:

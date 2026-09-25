@@ -30,9 +30,8 @@ comment markers** — it replaces only the data block, never the render code. So
 - Editing **what data is pulled / how it's computed** → edit the `.py` generator.
 - The markers (e.g. `<!-- SMC_DATA_START -->…<!-- SMC_DATA_END -->`) must stay intact.
 
-`shell.html` is the frame (sidebar nav) that loads each page into an iframe. Vercel
-serves the committed HTML; CI (`.github/workflows/refresh.yml`) runs `build_all.py`
-to re-bake every page and commit the result.
+`shell.html` is the frame (sidebar nav) that loads each page into an iframe.
+`build_all.py` re-bakes every page headlessly (no server, no browser tab).
 
 ## The menus (sidebar order)
 
