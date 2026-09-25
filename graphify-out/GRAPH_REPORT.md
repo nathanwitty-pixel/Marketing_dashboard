@@ -1,7 +1,7 @@
 # Graph Report - Marketing_dashboard  (2026-09-25)
 
 ## Corpus Check
-- 112 files · ~510,119 words
+- 112 files · ~511,931 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 8 file(s) not represented in the graph (top: .csv 3, (none) 2, .toml 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `937490e5`
+- Built from commit: `01bfdcbc`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -58,7 +58,7 @@
 - Shops Efficiency Tracking spec doc
 - forward_projections.py
 - _enrich_deals
-- _match
+- Self-made combos vs Running combos portable bundle README
 - On-offer definition per region (from SMC block)
 - Offer Picking (doc)
 - Combos & Power Deals by Shop panel (#combo-shop)
@@ -71,14 +71,14 @@
 - weekly_sales.py
 - _combo_norm_option
 - algorithmic-art skill
-- lib
+- Bags on offer vs not on offer
 - streamlit_app.py
 - start_server
 - month_end.py
 - High-End Visual Design skill
-- Self-made combos vs Running combos portable bundle README
-- current_performance.html
 - lib/db.py (Supabase session pooler DB access)
+- current_performance.html
+- _match
 - daydream skill (Vault Daydream)
 - _build_sheet_slots
 - render(idx) function
@@ -87,10 +87,10 @@
 - TTL disk-cache rationale (.odoo_cache/)
 - perf_data.js
 - attachPopover(cardId, popId) function
-- Bags on offer vs not on offer
+- _match
 - _mkt_week_label
 - August 2026 Monthly Report
-- _match
+- lib
 - build_all.py
 - _offer_active_today
 - self_made_combos.py
@@ -303,9 +303,9 @@ Nodes (8): calendar, odoo_weekly_breakdown(), _perfect_week_index(), forward_pro
 Cohesion: 0.25
 Nodes (6): _enrich_deals(), _tdigit(), _tier_agg(), _odoo_stock_by_shop(), {sheet-loc label: {UPPER(product name): on-hand units}} — live per-shop stock,…, Attach real Odoo sales (units + revenue), per-week sales, and Kenya stock to…
 
-### Community 42 - "_match"
-Cohesion: 0.50
-Nodes (3): _match(), _full(), _full_of()
+### Community 42 - "Self-made combos vs Running combos portable bundle README"
+Cohesion: 0.22
+Nodes (9): shop-regions.md (editable Shop to Region table), pandas>=2.0 dependency, Self-made combos vs Running combos portable bundle README, Self-made combos bundle Python dependencies (requirements.txt), Returns netting rationale (qty <> 0, returns subtract), docs/self-made-combos.md full spec for the menu, docs/shop-regions.md editable shop to region map, sql/self_made_vs_running_combos.sql (standalone pure-SQL classification) (+1 more)
 
 ### Community 43 - "On-offer definition per region (from SMC block)"
 Cohesion: 0.25
@@ -351,6 +351,10 @@ Nodes (10): _build_sheet_slots(), _combo_norm_option(), _combo_sheet_slots(), co
 Cohesion: 0.47
 Nodes (6): Algorithmic Philosophy (Step 1 - named computational aesthetic movement), Flow Field Particle pattern (Organic Turbulence), p5.js library, Seeded Randomness pattern (randomSeed/noiseSeed for reproducibility), algorithmic-art skill, Voronoi/Crystallization relaxation pattern
 
+### Community 55 - "Bags on offer vs not on offer"
+Cohesion: 0.29
+Nodes (7): Bags on offer vs not on offer, Counted by how it was sold, Layout (laptop / tablet / phone), Period selector (Monthly / Weekly / Last week), Regenerate, Shop metrics (vs the Odoo revenue target), What the page shows (per period)
+
 ### Community 56 - "streamlit_app.py"
 Cohesion: 0.17
 Nodes (7): SCRIPT_TIMEOUT = 600s config, streamlit, _load_secrets_into_env(), streamlit_app.py — Denri Marketing Dashboard on Streamlit. Serves the existing…, streamlit_components_v1, time, urllib_parse
@@ -367,17 +371,17 @@ Nodes (9): clear_timed_offers(), main(), month_end.py — the end-of-month archi
 Cohesion: 0.40
 Nodes (5): Creative Variance Engine (vibe/layout archetypes), Double-Bezel Card Architecture, Glassmorphism recipe, Motion Requirements (custom cubic-bezier, GPU-safe transforms), High-End Visual Design skill
 
-### Community 60 - "Self-made combos vs Running combos portable bundle README"
-Cohesion: 0.22
-Nodes (9): shop-regions.md (editable Shop to Region table), pandas>=2.0 dependency, Self-made combos vs Running combos portable bundle README, Self-made combos bundle Python dependencies (requirements.txt), Returns netting rationale (qty <> 0, returns subtract), docs/self-made-combos.md full spec for the menu, docs/shop-regions.md editable shop to region map, sql/self_made_vs_running_combos.sql (standalone pure-SQL classification) (+1 more)
+### Community 60 - "lib/db.py (Supabase session pooler DB access)"
+Cohesion: 0.33
+Nodes (6): lib/db.py (Supabase session pooler DB access), lib/db.run_query (shared connection reuse per subprocess), Refresh Performance (shared connection reuse, batched Sheets reads), Supabase session pooler host rule (direct host is IPv6-only), lib/db.py Postgres access (run_query), psycopg2-binary>=2.9 (Postgres driver, Odoo POS source)
 
 ### Community 61 - "current_performance.html"
 Cohesion: 0.25
 Nodes (6): current_performance.html, monthly_report_history.json, Sales-card reject split line ("N POS + C corporate · R rejects"), PERF/PROJ data block (Current Performance), Net-of-refunds rule (pl.qty <> 0 via _QTY_SQL), current_performance.html (nav target)
 
-### Community 62 - "lib/db.py (Supabase session pooler DB access)"
-Cohesion: 0.33
-Nodes (6): lib/db.py (Supabase session pooler DB access), lib/db.run_query (shared connection reuse per subprocess), Refresh Performance (shared connection reuse, batched Sheets reads), Supabase session pooler host rule (direct host is IPv6-only), lib/db.py Postgres access (run_query), psycopg2-binary>=2.9 (Postgres driver, Odoo POS source)
+### Community 62 - "_match"
+Cohesion: 0.50
+Nodes (3): _match(), _full(), _full_of()
 
 ### Community 63 - "daydream skill (Vault Daydream)"
 Cohesion: 0.50
@@ -403,9 +407,9 @@ Nodes (4): buildExportDoc(mode) function, colorizeForPaper() function, exportPDF
 Cohesion: 0.67
 Nodes (3): DENRI_FORCE_FRESH=1 env var, lib/db.run_query_cached() TTL disk cache, TTL disk-cache rationale (.odoo_cache/)
 
-### Community 79 - "Bags on offer vs not on offer"
-Cohesion: 0.29
-Nodes (7): Bags on offer vs not on offer, Counted by how it was sold, Layout (laptop / tablet / phone), Period selector (Monthly / Weekly / Last week), Regenerate, Shop metrics (vs the Odoo revenue target), What the page shows (per period)
+### Community 79 - "_match"
+Cohesion: 0.50
+Nodes (3): _match(), _full(), _full_of()
 
 ### Community 80 - "_mkt_week_label"
 Cohesion: 0.29
@@ -414,10 +418,6 @@ Nodes (7): _mkt_perfect_week_index(), _mkt_week_label(), Ordinal of d's Sun–Sa
 ### Community 81 - "August 2026 Monthly Report"
 Cohesion: 0.33
 Nodes (6): August 2026 Monthly Report, New Products Section (Report), Offer Type Analysis Section (Report), Posting Yields Section (Report), monthly_report.html (nav target), POSTING (SALES YIELDS FROM ACCURATE POSTING).html (nav target)
-
-### Community 82 - "_match"
-Cohesion: 0.50
-Nodes (3): _match(), _full(), _full_of()
 
 ### Community 83 - "build_all.py"
 Cohesion: 0.40
@@ -450,11 +450,11 @@ _Questions this graph is uniquely positioned to answer:_
 - **What is the exact relationship between `Reject Sale page (reject_sales.html)` and `Card entrance animation via CSS @keyframes + animation-fill-mode: both`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **Why does `Current Performance (doc)` connect `datetime` to `forward_projections.py`, `current_performance.py`, `build_all.py`, `weekly_sales.py`, `Product / name matching (doc)`?**
-  _High betweenness centrality (0.108) - this node is a cross-community bridge._
-- **Why does `New Products Analytics (doc)` connect `Product / name matching (doc)` to `Dashboard Insights skill`, `datetime`?**
-  _High betweenness centrality (0.088) - this node is a cross-community bridge._
+  _High betweenness centrality (0.100) - this node is a cross-community bridge._
 - **Why does `get_gspread_client()` connect `POSTING (SALES YIELDS FROM ACCURATE POSTING).py` to `bags_on_offer.py`, `offer_picking.py`, `timed_offers.py`, `new_products.py`, `forward_projections.py`, `shops_efficiency.py`, `current_performance.py`, `self_made_combos_bundle/offer_data.py`, `odoo_tabs.py`, `fetch_offer_data`, `weekly_sales.py`, `self_made_combos.py`, `self_made_combos_bundle/self_made_combos.py`, `fetch`?**
-  _High betweenness centrality (0.086) - this node is a cross-community bridge._
+  _High betweenness centrality (0.085) - this node is a cross-community bridge._
+- **Why does `New Products Analytics (doc)` connect `Product / name matching (doc)` to `Dashboard Insights skill`, `datetime`?**
+  _High betweenness centrality (0.080) - this node is a cross-community bridge._
 - **What connects `PERF`, `graphify`, `Period selector (Monthly / Weekly / Last week)` to the rest of the system?**
   _145 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `POSTING (SALES YIELDS FROM ACCURATE POSTING).py` be split into smaller, more focused modules?**

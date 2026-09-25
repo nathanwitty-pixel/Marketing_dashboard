@@ -86,9 +86,17 @@ discount reward and a couple of one-off items (Enzo, KCB briefcase) stay unclass
 3. **On-offer breakdown by source** — Combo sales / Deal of the Week / Power Deal / combo bags
    sold singly — counted by how it was sold (above). Bar length is relative to the largest row.
 4. **Shops by region** vs their Odoo target (below). Gift bags show in each shop's **Others** column.
+   A **By region / All shops** toggle (remembered per browser): *By region* groups shops under
+   their region (with the region filter buttons); *All shops* is one table of every shop with a
+   **Region** column, ranked by pace (no-target shops last, then by revenue). Badges are unchanged.
+   All shops has filters — region, status (red / amber / green / no target), shop search — and
+   click-to-sort headers; **#** stays the Kenya-wide pace rank whatever the filter or sort.
 5. **Bag tables** — on-offer bags: offer tags, `NEW`, **in combos** (units printed inside combos),
    **sold singly** (units), which row the singles count in, and singles revenue. Not-on-offer bags:
    `NEW`, sold singly, in combos (self-made combos), revenue, stock, days of cover.
+   Both tables sort by clicking a header (default revenue high→low; blanks always last) and filter
+   by bag search + `NEW` only. On-offer adds an **Offer** filter (Power / DoW / Combo); not-on-offer
+   adds **Stock** (30+ / 1–29 / out), **Cover** (<14 / 14–90 / >90 days) and **DoW elsewhere**.
 
 ## Shop metrics (vs the Odoo revenue target)
 
