@@ -49,6 +49,30 @@ This once cost Lamora 4 units this month (10 vs 14) and 38 lifetime.
 > Black 118. A raw template-name count is 229 / Black 120 — the 2-unit gap is Black units
 > sold on excluded line types. Both are correct; they answer different questions.
 
+## Per-product chart (Sold vs Still needed) — targets per period
+
+The target the bars are measured against matches the **Period** selector:
+
+| Period | Sold so far | Target / Still needed |
+|---|---|---|
+| Monthly | month-to-date sold | the product's **monthly** target (MONTHLY_TARGET col C) |
+| Weekly | this Sun–Sat week's sold | **weekly** target = monthly target ÷ `perfectWeeks` (same rule as the *Weekly Target* card) |
+| Last week | previous complete week's sold | **weekly** target, as above |
+| Lifetime | all-time sold | monthly target (reference only) |
+
+(Before 25 Sep 2026 the Weekly / Last-week views compared one week's sales with the whole
+**monthly** target — e.g. Loop BP "32 sold · 190 still needed of 222" for last week, which
+read as far behind when 32 vs a weekly share of ~55 was the real picture.)
+
+## Odoo sales window (`odoo_sales_window`) — same rules as the monthly total
+
+The per-colour monthly / this-week / last-week figures come from `odoo_sales_window`. It now
+uses the same rules as the product totals (`queries._BAGS_WHERE`): **Nairobi-local order date**
+(`date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi'`) and **no combo sub-lines**
+(`sub_product_line` — the bags printed inside a combo, KES 0; they're combo sales, not single
+sales). Previously it used the UTC date and counted sub-lines, so weekly figures were ±1 off the
+monthly totals (e.g. Voyage's only sale was a bag inside a combo).
+
 ## Month / week windows
 
 - Monthly = `report_month.month_window()` (the report month).

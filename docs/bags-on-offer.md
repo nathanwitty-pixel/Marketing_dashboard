@@ -34,7 +34,7 @@ straps excluded) and every qualifying corporate invoice line falls into exactly 
 | **On offer** | a single bag that resolves to a bag that is a **running-combo component**, a **Deal of the Week** or a **Power Deal** | `Combo component` / `Deal of the Week` / `Power Deal` (several allowed; money counted **once** — see *Counted by how it was sold*) |
 | **Not on offer** | a single bag that resolves to a catalogue bag on no offer | — |
 | **Not on offer** | a **new product** (MONTHLY_TARGET sheet, col I ✅ — the New Products list) that is on no offer, **even if it isn't in the price catalogue yet** (e.g. LaFemme) | `NEW` |
-| **Others** | **gift bags** (POS `name ILIKE 'gift bag%'`) and **corporate** sales (customer invoices, same qualifying rule as `sql/corporate_bags.sql`: posted `out_invoice`, paid / in payment or ≤25 % outstanding; product lines; `price_total`) | `Gift bags` / `Corporate` |
+| **Others** | **gift bags** (POS `name ILIKE 'gift bag%'`), **laptop sleeves** (`LAPTOP SLEEVE…`), **samples** (`SAMPLE…`) and **corporate** sales (customer invoices, same qualifying rule as `sql/corporate_bags.sql`: posted `out_invoice`, paid / in payment or ≤25 % outstanding; product lines; `price_total`) | `Gift bags` / `Laptop sleeves` / `Samples` / `Corporate` |
 | **Unclassified** | a single POS product that matches no catalogue bag and no new product | footnote count/revenue |
 
 - A new product that **is** on an offer (Sep 2026: **Lola** — combo component, **Zoezi** — deal)
@@ -64,12 +64,19 @@ Every sale is counted **once**, in the channel it actually went through (agreed 
   722 single Jumbos (a Deal of the Week + combo bag) → Deal of the Week.
 - The rows of *Where the on-offer money comes from* therefore sum exactly to the on-offer total.
 
-**Bags printed inside combos** come from `pos_order_line.combo_product_attribute_values` (the
-exact bag + colour chosen; same source as Menu 4's component attribution), per day so every
-period works. A combo of two **identical** bags (Jumbo Brown + Jumbo Brown) is stored as one
-entry — the count is padded to the combo's bag count (slots = `+` parts), so it counts 2, not 1.
-A combo with no attribute data (some self-made CBRs) falls back to its name split on `+`.
-Units only — combo **money** stays on the combo product in the Combo sales row.
+**Bags printed inside combos** come from Odoo's combo **sub-lines** (`sub_product_line = true`):
+one line per bag inside every combo, with the exact colour variant and a KES 0 price — they cover
+every combo exactly (Sep: 2,053 bags across 946 combo orders). Sub-lines are therefore **excluded
+from single sales** (else each combo bag counted twice). Combo **returns** have no sub-lines, so for a
+returned combo the bags come from `combo_product_attribute_values` (padded to the combo's bag count,
+name split on `+` if empty). Units only — combo **money** stays on the combo line in Combo sales.
+
+**Colour coverage (audited 25 Sep 2026):** every product variant resolves to its bag — colours,
+finishes (CRACKED, SPICE, WOOVEN, CHOCO, CN, ANTELOPE, PATTERN), `[REJECT]` clearance variants and
+`[S_0]`-style codes. New products are matched on every variant too (e.g. Lamora Black / Brown /
+Red / Sky Blue; LaFemme's four colours exist in Odoo, created 21 Sep, none sold yet). Laptop sleeves and
+samples are counted as sales under **Others** (added 25 Sep 2026); only foam cleaner, the 300-KES
+discount reward and a couple of one-off items (Enzo, KCB briefcase) stay unclassified.
 
 ## What the page shows (per period)
 

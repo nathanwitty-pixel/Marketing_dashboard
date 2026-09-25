@@ -37,7 +37,8 @@ _KENYA_TILLS = "AND lower(COALESCE(pc.\"name\",'')) NOT IN ('sinza','dar-es-alam
 
 # Every Kenya POS line by shop × product × day — same product filters as
 # self_made_combos._bag_sales_sql, except combo products ("A + B") and gift bags are KEPT
-# (combos are on offer; gift bags go to Others).
+# (combos are on offer; gift bags go to Others). Combo SUB-lines (the bags inside a combo,
+# KES 0) are excluded — they're counted as combo prints, not single sales.
 LINES_SQL = f"""
 SELECT UPPER(COALESCE(pc."name",'?')) AS shop, UPPER(pt."name") AS name, p.date_order::date AS d,
        SUM(pl.qty)::int AS units, ROUND(SUM(pl.price_subtotal_incl))::int AS revenue
@@ -46,7 +47,7 @@ LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
-WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid') AND pl.qty <> 0
+WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid') AND pl.qty <> 0 AND NOT COALESCE(pl.sub_product_line, false)
   {_KENYA_TILLS}
   AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
   AND pt."name" NOT ILIKE '%strap%'
@@ -92,8 +93,23 @@ WHERE t.period IN ('month', 'week') AND t.target_scope IN ('pos', 'corporate')
   AND t.start_date <= :e AND t.end_date >= :s
 """
 
-# Bags printed inside combos, per day: the exact bag + colour chosen on each combo line
-# (combo_product_attribute_values — same source as Menu 4's component attribution).
+# Bags printed inside combos, per day: Odoo's combo SUB-lines — one line per bag inside every
+# combo, with the exact colour variant (Sep: 2,053 bags = every slot of all 946 combo orders).
+COMBO_SUBLINES_SQL = f"""
+SELECT p.date_order::date AS d, UPPER(pt."name") AS name, SUM(pl.qty)::int AS units
+FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+LEFT JOIN pos_session ps ON p.session_id=ps.id
+LEFT JOIN pos_config pc ON ps.config_id=pc.id
+LEFT JOIN product_product pp ON pl.product_id=pp.id
+LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
+WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid') AND pl.qty <> 0
+  AND COALESCE(pl.sub_product_line, false)
+  {_KENYA_TILLS}
+GROUP BY 1, 2
+"""
+
+# Combo RETURNS carry no sub-lines, so their bags come from the combo line's
+# combo_product_attribute_values (the bag + colour chosen).
 COMBO_PRINTS_SQL = f"""
 SELECT p.date_order::date AS d, UPPER(pt."name") AS name, SUM(pl.qty)::int AS units,
        COALESCE(pl.combo_product_attribute_values, '') AS attrs
@@ -102,9 +118,10 @@ LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
-WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid') AND pl.qty <> 0
+WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid') AND pl.qty < 0
   {_KENYA_TILLS}
   AND pt."name" LIKE '%+%' AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
+  AND NOT EXISTS (SELECT 1 FROM pos_order_line sl WHERE sl.order_id = p.id AND COALESCE(sl.sub_product_line, false))
 GROUP BY 1, 2, 4
 """
 
@@ -113,6 +130,14 @@ GROUP BY 1, 2, 4
 # wins over a Deal of the Week; a combo bag sold singly is the fallback.
 _SOURCE_ORDER = ["Power Deal", "Deal of the Week", "Combo component"]
 _NON_KENYA = ("SINZA", "DAR-ES-ALAM", "UGANDA", "?")
+
+# Non-offer POS sales counted under "Others" (with corporate invoices): name prefix → group.
+_OTHER_GROUPS = (("GIFT BAG", "Gift bags"), ("LAPTOP SLEEVE", "Laptop sleeves"), ("SAMPLE", "Samples"))
+
+
+def _other_group(name):
+    n = re.sub(r"^\[[^\]]*\]\s*", "", str(name)).strip().upper()
+    return next((g for pre, g in _OTHER_GROUPS if n.startswith(pre)), None)
 
 
 def _load_source(month_label):
@@ -217,7 +242,7 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
         return {"units": 0, "revenue": 0}
 
     tot = {"on": blank(), "off": blank(), "oth": blank(), "unc": blank()}
-    others = {"Gift bags": blank(), "Corporate": blank()}
+    others = {"Gift bags": blank(), "Laptop sleeves": blank(), "Samples": blank(), "Corporate": blank()}
     trend, by_source, on_bags, off_bags, unc_names, shops = {}, {}, {}, {}, set(), {}
 
     def tkey(d):
@@ -250,8 +275,8 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
             b["units"] += u
             b["revenue"] += rev
         elif side == "oth":
-            others["Gift bags"]["units"] += u
-            others["Gift bags"]["revenue"] += rev
+            others[srcs[0]]["units"] += u
+            others[srcs[0]]["revenue"] += rev
         else:
             unc_names.add(r["name"])
         sh = shops.setdefault(r["shop"], {k: blank() for k in ("on", "off", "oth", "unc")})
@@ -455,8 +480,9 @@ def fetch():
         with its all-month offers (Power Deal, combo component) and its Deal-of-the-Week runs."""
         if name in cache:
             return cache[name]
-        if name.startswith("GIFT BAG"):
-            res = ("oth", "GIFT BAGS", [], False, [])
+        other = _other_group(name)
+        if other:
+            res = ("oth", other, [], False, [])
         elif "+" in name:
             res = ("combo", name, [], False, [])
         else:
@@ -478,7 +504,7 @@ def fetch():
         order: Power Deal → Deal of the Week → Combo component."""
         kind, bt, static, is_new, runs = base(name)
         if kind == "oth":
-            return ("oth", bt, ["Gift bags"], False, [])
+            return ("oth", bt, [bt], False, [])
         if kind == "combo":
             return ("on", bt, ["Combo sale"], False, [])
         if kind == "unc":
@@ -523,7 +549,11 @@ def fetch():
         return infer(n) or new_of(n) or (n.split(" or ")[0].split(" OR ")[0].strip() or None)
 
     prints = []
-    for r in rows(COMBO_PRINTS_SQL):
+    for r in rows(COMBO_SUBLINES_SQL):
+        bag = resolve(r["name"])
+        if bag:
+            prints.append({"d": r["d"], "bag": bag, "units": r["units"]})
+    for r in rows(COMBO_PRINTS_SQL):                              # returned combos (no sub-lines)
         slots = r["name"].count("+") + 1
         picked = []
         raw = str(r.get("attrs") or "").strip()

@@ -83,6 +83,28 @@ Three areas, all scoped to the **current live month** (`report_month.live_month_
   sheet reports as 0 (`_odoo_stock_for(codes)`), plus **per-shop** live stock
   (`_odoo_stock_by_shop`).
 
+## Combo sub-lines are not single sales — `NOT sub_product_line`
+
+Odoo writes every combo sale **twice**: the combo line (`is_combo_line`, the `A + B` product, which
+carries **all** the money) and one **sub-line per bag inside it** (`sub_product_line = true`, the
+actual colour variant, **KES 0**). Sep 1–24, Kenya: 968 combo lines → 2,053 bag sub-lines, exactly
+one per bag slot across all 946 combo orders (only 7 combo *returns* have no sub-lines).
+
+Until 25 Sep 2026 the single-bag queries didn't exclude sub-lines, so a bag printed inside a combo
+was **also** counted as a single sale (units only — revenue was unaffected since sub-lines are 0).
+Every single-bag query now has `AND NOT COALESCE(pl.sub_product_line, false)`: the deal queries
+(`DEAL_SALES_SQL`, `DEAL_WEEKLY_SQL`, `DEAL_SALES_BY_SHOP_SQL`, `DEAL_SALES_SHOP_WEEK_SQL`), the
+not-on-offer bag sales (`_bag_sales_sql`, `_bag_sales_daily_sql`), `SINGLES_BY_SHOP_SQL` and
+`JJ_WK1_PAIRS_SQL`. Combo queries (`LIKE '%+%'`) never matched sub-lines, so they're unchanged.
+
+- **Week-1 Jumbo + Jumbo backfill:** the 10 JUMBO+JUMBO combos rung in week 1 each carried two Jumbo
+  sub-lines on one receipt, which the "2+ single Jumbos" rule counted as 10 extra pairs — 51 became
+  **41** once sub-lines are excluded, so the week-1 figure is 10 rung + 41 sold-as-singles = **51**
+  (previously reported as 61 and said to match the shops' tallies — that total included the rung
+  combos twice). Put `JJ_WK1_PAIRS_SQL` back to include sub-lines if the shops' 61 is confirmed.
+- The New Products page (`queries._BAGS_WHERE`) already excluded sub-lines; the Current Performance
+  "bags sold" total deliberately **includes** them (every bag that left the shop).
+
 ## Returns netting — `qty <> 0` (correct "bags sold")
 
 Every **units-sold** figure on this page is a **net** number: genuine sales **minus

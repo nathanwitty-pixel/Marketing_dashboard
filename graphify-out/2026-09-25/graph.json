@@ -3750,7 +3750,7 @@
       "file_type": "code",
       "norm_label": "fetch_new_products_data()",
       "source_file": "new_products.py",
-      "source_location": "L286"
+      "source_location": "L284"
     },
     {
       "id": "new_products_fetch_new_products_data_apply_stock",
@@ -3762,7 +3762,7 @@
       "file_type": "code",
       "norm_label": "_apply_stock()",
       "source_file": "new_products.py",
-      "source_location": "L513"
+      "source_location": "L511"
     },
     {
       "id": "new_products_fetch_new_products_data_bt_of",
@@ -3774,7 +3774,7 @@
       "file_type": "code",
       "norm_label": "_bt_of()",
       "source_file": "new_products.py",
-      "source_location": "L596"
+      "source_location": "L594"
     },
     {
       "id": "new_products_fetch_new_products_data_post_lookup",
@@ -3786,7 +3786,7 @@
       "file_type": "code",
       "norm_label": "_post_lookup()",
       "source_file": "new_products.py",
-      "source_location": "L423"
+      "source_location": "L421"
     },
     {
       "id": "new_products_fmt_int",
@@ -3882,7 +3882,7 @@
       "file_type": "code",
       "norm_label": "_np_complete_weeks_in_month()",
       "source_file": "new_products.py",
-      "source_location": "L677"
+      "source_location": "L675"
     },
     {
       "id": "new_products_np_perfect_week_index",
@@ -3894,7 +3894,7 @@
       "file_type": "code",
       "norm_label": "_np_perfect_week_index()",
       "source_file": "new_products.py",
-      "source_location": "L694"
+      "source_location": "L692"
     },
     {
       "id": "new_products_np_week_start",
@@ -3906,7 +3906,7 @@
       "file_type": "code",
       "norm_label": "_np_week_start()",
       "source_file": "new_products.py",
-      "source_location": "L674"
+      "source_location": "L672"
     },
     {
       "id": "new_products_odoo_lifetime_product_bags",
@@ -3954,7 +3954,7 @@
       "file_type": "code",
       "norm_label": "odoo_stock_kenya_outside()",
       "source_file": "new_products.py",
-      "source_location": "L272"
+      "source_location": "L270"
     },
     {
       "id": "new_products_safe_int",
@@ -3990,7 +3990,7 @@
       "file_type": "code",
       "norm_label": "update_np_weekly_history()",
       "source_file": "new_products.py",
-      "source_location": "L716"
+      "source_location": "L714"
     },
     {
       "id": "push_to_supabase_main",
@@ -8674,7 +8674,7 @@
       "source_location": "L239"
     },
     {
-      "id": "new_products_rationale_273",
+      "id": "new_products_rationale_271",
       "label": "({UPPER name: kenya on-hand}, {UPPER name: outside on-hand}) \u2014 live Odoo stock.\u2026",
       "_origin": "ast",
       "community": 3,
@@ -8682,7 +8682,7 @@
       "file_type": "rationale",
       "norm_label": "({upper name: kenya on-hand}, {upper name: outside on-hand}) \u2014 live odoo stock....",
       "source_file": "new_products.py",
-      "source_location": "L273"
+      "source_location": "L271"
     },
     {
       "id": "new_products_rationale_64",
@@ -8696,7 +8696,7 @@
       "source_location": "L64"
     },
     {
-      "id": "new_products_rationale_678",
+      "id": "new_products_rationale_676",
       "label": "Total perfect weeks in the month (Sun\u2013Sat weeks with >=5 days in it).",
       "_origin": "ast",
       "community": 3,
@@ -8704,10 +8704,10 @@
       "file_type": "rationale",
       "norm_label": "total perfect weeks in the month (sun\u2013sat weeks with >=5 days in it).",
       "source_file": "new_products.py",
-      "source_location": "L678"
+      "source_location": "L676"
     },
     {
-      "id": "new_products_rationale_695",
+      "id": "new_products_rationale_693",
       "label": "Ordinal among the month's perfect weeks (>=5 days in month), so the first FULL\u2026",
       "_origin": "ast",
       "community": 3,
@@ -8715,7 +8715,7 @@
       "file_type": "rationale",
       "norm_label": "ordinal among the month's perfect weeks (>=5 days in month), so the first full...",
       "source_file": "new_products.py",
-      "source_location": "L695"
+      "source_location": "L693"
     },
     {
       "id": "new_products_rationale_89",
@@ -18936,7 +18936,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L287",
+      "source_location": "L285",
       "weight": 1.0
     },
     {
@@ -18948,7 +18948,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L310",
+      "source_location": "L308",
       "weight": 1.0
     },
     {
@@ -18960,7 +18960,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L325",
+      "source_location": "L323",
       "weight": 1.0
     },
     {
@@ -18972,7 +18972,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L329",
+      "source_location": "L327",
       "weight": 1.0
     },
     {
@@ -18984,7 +18984,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L346",
+      "source_location": "L344",
       "weight": 1.0
     },
     {
@@ -18996,7 +18996,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L351",
+      "source_location": "L349",
       "weight": 1.0
     },
     {
@@ -19008,7 +19008,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L362",
+      "source_location": "L360",
       "weight": 1.0
     },
     {
@@ -19020,7 +19020,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L384",
+      "source_location": "L382",
       "weight": 1.0
     },
     {
@@ -19032,7 +19032,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L400",
+      "source_location": "L398",
       "weight": 1.0
     },
     {
@@ -19044,7 +19044,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L444",
+      "source_location": "L442",
       "weight": 1.0
     },
     {
@@ -19056,7 +19056,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L509",
+      "source_location": "L507",
       "weight": 1.0
     },
     {
@@ -19068,7 +19068,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L510",
+      "source_location": "L508",
       "weight": 1.0
     },
     {
@@ -19080,7 +19080,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L530",
+      "source_location": "L528",
       "weight": 1.0
     },
     {
@@ -19092,7 +19092,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L585",
+      "source_location": "L583",
       "weight": 1.0
     },
     {
@@ -19104,7 +19104,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L515",
+      "source_location": "L513",
       "weight": 1.0
     },
     {
@@ -19116,7 +19116,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L431",
+      "source_location": "L429",
       "weight": 1.0
     },
     {
@@ -19128,7 +19128,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L432",
+      "source_location": "L430",
       "weight": 1.0
     },
     {
@@ -19176,7 +19176,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L703",
+      "source_location": "L701",
       "weight": 1.0
     },
     {
@@ -19284,7 +19284,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L265",
+      "source_location": "L263",
       "weight": 1.0
     },
     {
@@ -19296,7 +19296,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L280",
+      "source_location": "L278",
       "weight": 1.0
     },
     {
@@ -19308,7 +19308,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L718",
+      "source_location": "L716",
       "weight": 1.0
     },
     {
@@ -19320,7 +19320,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L719",
+      "source_location": "L717",
       "weight": 1.0
     },
     {
@@ -19332,7 +19332,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L730",
+      "source_location": "L728",
       "weight": 1.0
     },
     {
@@ -19344,7 +19344,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L732",
+      "source_location": "L730",
       "weight": 1.0
     },
     {
@@ -19356,7 +19356,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L736",
+      "source_location": "L734",
       "weight": 1.0
     },
     {
@@ -19368,7 +19368,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L760",
+      "source_location": "L758",
       "weight": 1.0
     },
     {
@@ -19380,7 +19380,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L780",
+      "source_location": "L778",
       "weight": 1.0
     },
     {
@@ -23292,7 +23292,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L423",
+      "source_location": "L421",
       "weight": 1.0
     },
     {
@@ -23304,7 +23304,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L513",
+      "source_location": "L511",
       "weight": 1.0
     },
     {
@@ -23316,7 +23316,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "new_products.py",
-      "source_location": "L596",
+      "source_location": "L594",
       "weight": 1.0
     },
     {
@@ -27180,7 +27180,7 @@
       "confidence_score": 1.0,
       "context": "submodule_import",
       "source_file": "new_products.py",
-      "source_location": "L277",
+      "source_location": "L275",
       "weight": 1.0
     },
     {
@@ -27192,7 +27192,7 @@
       "confidence_score": 1.0,
       "context": "submodule_import",
       "source_file": "new_products.py",
-      "source_location": "L309",
+      "source_location": "L307",
       "weight": 1.0
     },
     {
@@ -30148,7 +30148,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "new_products.py",
-      "source_location": "L272",
+      "source_location": "L270",
       "weight": 1.0
     },
     {
@@ -30159,7 +30159,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "new_products.py",
-      "source_location": "L286",
+      "source_location": "L284",
       "weight": 1.0
     },
     {
@@ -30225,7 +30225,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "new_products.py",
-      "source_location": "L674",
+      "source_location": "L672",
       "weight": 1.0
     },
     {
@@ -30236,7 +30236,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "new_products.py",
-      "source_location": "L677",
+      "source_location": "L675",
       "weight": 1.0
     },
     {
@@ -30247,7 +30247,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "new_products.py",
-      "source_location": "L694",
+      "source_location": "L692",
       "weight": 1.0
     },
     {
@@ -30258,7 +30258,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "new_products.py",
-      "source_location": "L716",
+      "source_location": "L714",
       "weight": 1.0
     },
     {
@@ -33617,14 +33617,14 @@
       "weight": 1.0
     },
     {
-      "source": "new_products_rationale_273",
+      "source": "new_products_rationale_271",
       "target": "new_products_odoo_stock_kenya_outside",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "new_products.py",
-      "source_location": "L273",
+      "source_location": "L271",
       "weight": 1.0
     },
     {
@@ -33639,25 +33639,25 @@
       "weight": 1.0
     },
     {
-      "source": "new_products_rationale_678",
+      "source": "new_products_rationale_676",
       "target": "new_products_np_complete_weeks_in_month",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "new_products.py",
-      "source_location": "L678",
+      "source_location": "L676",
       "weight": 1.0
     },
     {
-      "source": "new_products_rationale_695",
+      "source": "new_products_rationale_693",
       "target": "new_products_np_perfect_week_index",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "new_products.py",
-      "source_location": "L695",
+      "source_location": "L693",
       "weight": 1.0
     },
     {

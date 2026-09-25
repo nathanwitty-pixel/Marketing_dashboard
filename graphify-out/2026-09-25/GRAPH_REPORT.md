@@ -1,7 +1,7 @@
 # Graph Report - Marketing_dashboard  (2026-09-25)
 
 ## Corpus Check
-- 112 files · ~510,119 words
+- 112 files · ~509,802 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 8 file(s) not represented in the graph (top: .csv 3, (none) 2, .toml 1)
 
@@ -112,10 +112,10 @@
   docs/bags-on-offer.md → self_made_combos.py
 - `Self-made combos vs running combos (export bundle copy)` --semantically_similar_to--> `Self-made combos vs running combos (doc)`  [INFERRED] [semantically similar]
   export/self_made_combos_bundle/docs/self-made-combos.md → docs/self-made-combos.md
-- `Sidebar Navigation (icon rail / expanded drawer)` --semantically_similar_to--> `Reject Sale page (reject_sales.html)`  [INFERRED] [semantically similar]
-  shell.html → reject_sales.html
 - `August 2026 Monthly Report` --semantically_similar_to--> `monthly_report.html (nav target)`  [INFERRED] [semantically similar]
   report_2026_august.html → shell.html
+- `Sidebar Navigation (icon rail / expanded drawer)` --semantically_similar_to--> `Reject Sale page (reject_sales.html)`  [INFERRED] [semantically similar]
+  shell.html → reject_sales.html
 - `PERF data block (weekly/monthly sales KPIs)` --semantically_similar_to--> `HISTORY_DATA JSON block (Supabase monthly snapshots)`  [INFERRED] [semantically similar]
   current_performance.html → history.html
 
@@ -450,11 +450,11 @@ _Questions this graph is uniquely positioned to answer:_
 - **What is the exact relationship between `Reject Sale page (reject_sales.html)` and `Card entrance animation via CSS @keyframes + animation-fill-mode: both`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **Why does `Current Performance (doc)` connect `datetime` to `forward_projections.py`, `current_performance.py`, `build_all.py`, `weekly_sales.py`, `Product / name matching (doc)`?**
-  _High betweenness centrality (0.108) - this node is a cross-community bridge._
+  _High betweenness centrality (0.101) - this node is a cross-community bridge._
 - **Why does `New Products Analytics (doc)` connect `Product / name matching (doc)` to `Dashboard Insights skill`, `datetime`?**
   _High betweenness centrality (0.088) - this node is a cross-community bridge._
 - **Why does `get_gspread_client()` connect `POSTING (SALES YIELDS FROM ACCURATE POSTING).py` to `bags_on_offer.py`, `offer_picking.py`, `timed_offers.py`, `new_products.py`, `forward_projections.py`, `shops_efficiency.py`, `current_performance.py`, `self_made_combos_bundle/offer_data.py`, `odoo_tabs.py`, `fetch_offer_data`, `weekly_sales.py`, `self_made_combos.py`, `self_made_combos_bundle/self_made_combos.py`, `fetch`?**
-  _High betweenness centrality (0.086) - this node is a cross-community bridge._
+  _High betweenness centrality (0.084) - this node is a cross-community bridge._
 - **What connects `PERF`, `graphify`, `Period selector (Monthly / Weekly / Last week)` to the rest of the system?**
   _145 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `POSTING (SALES YIELDS FROM ACCURATE POSTING).py` be split into smaller, more focused modules?**
