@@ -4038,7 +4038,7 @@
       "file_type": "code",
       "norm_label": "fmt()",
       "source_file": "bags_on_offer.py",
-      "source_location": "L851"
+      "source_location": "L856"
     },
     {
       "id": "bags_on_offer_has_deals",
@@ -4062,7 +4062,7 @@
       "file_type": "code",
       "norm_label": "inject()",
       "source_file": "bags_on_offer.py",
-      "source_location": "L839"
+      "source_location": "L844"
     },
     {
       "id": "bags_on_offer_load_source",
@@ -4086,7 +4086,7 @@
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "bags_on_offer.py",
-      "source_location": "L855"
+      "source_location": "L860"
     },
     {
       "id": "bags_on_offer_new_products",
@@ -7052,7 +7052,7 @@
       "node_kind": "heading",
       "norm_label": "offer type summary (matrix)",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L124"
+      "source_location": "L127"
     },
     {
       "id": "offer_picking_rationale_1",
@@ -9168,7 +9168,7 @@
       "node_kind": "heading",
       "norm_label": "laptop sleeves are bags (27 sep 2026)",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L118"
+      "source_location": "L121"
     },
     {
       "id": "docs_bags_on_offer_layout_laptop_tablet_phone",
@@ -9180,7 +9180,7 @@
       "node_kind": "heading",
       "norm_label": "layout (laptop / tablet / phone)",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L215"
+      "source_location": "L219"
     },
     {
       "id": "docs_bags_on_offer_period_selector_monthly_weekly_last_week",
@@ -9204,7 +9204,7 @@
       "node_kind": "heading",
       "norm_label": "regenerate",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L206"
+      "source_location": "L210"
     },
     {
       "id": "docs_bags_on_offer_shop_metrics_vs_the_odoo_revenue_target",
@@ -9216,7 +9216,7 @@
       "node_kind": "heading",
       "norm_label": "shop metrics (vs the odoo revenue target)",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L188"
+      "source_location": "L192"
     },
     {
       "id": "docs_bags_on_offer_what_the_page_shows_per_period",
@@ -16926,7 +16926,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "bags_on_offer.py",
-      "source_location": "L856",
+      "source_location": "L861",
       "weight": 1.0
     },
     {
@@ -16938,7 +16938,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "bags_on_offer.py",
-      "source_location": "L859",
+      "source_location": "L864",
       "weight": 1.0
     },
     {
@@ -16950,7 +16950,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "bags_on_offer.py",
-      "source_location": "L864",
+      "source_location": "L869",
       "weight": 1.0
     },
     {
@@ -23914,6 +23914,18 @@
       "weight": 1.0
     },
     {
+      "source": "bags_on_offer_fetch",
+      "target": "bags_on_offer_fetch_cat_tier",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "bags_on_offer.py",
+      "source_location": "L771",
+      "weight": 1.0
+    },
+    {
       "source": "bags_on_offer_new_products",
       "target": "bags_on_offer_new_products_ticked",
       "relation": "contains",
@@ -28790,7 +28802,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "bags_on_offer.py",
-      "source_location": "L839",
+      "source_location": "L844",
       "weight": 1.0
     },
     {
@@ -28801,7 +28813,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "bags_on_offer.py",
-      "source_location": "L851",
+      "source_location": "L856",
       "weight": 1.0
     },
     {
@@ -28812,7 +28824,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "bags_on_offer.py",
-      "source_location": "L855",
+      "source_location": "L860",
       "weight": 1.0
     },
     {
@@ -28824,17 +28836,6 @@
       "confidence_score": 1.0,
       "source_file": "bags_on_offer.py",
       "source_location": "L591",
-      "weight": 1.0
-    },
-    {
-      "source": "bags_on_offer_fetch",
-      "target": "bags_on_offer_fetch_cat_tier",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "bags_on_offer.py",
-      "source_location": "L771",
       "weight": 1.0
     },
     {
@@ -29191,17 +29192,6 @@
     },
     {
       "source": "docs_bags_on_offer_bags_on_offer_vs_not_on_offer",
-      "target": "docs_bags_on_offer_laptop_sleeves_are_bags_27_sep_2026",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L118",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_bags_on_offer_bags_on_offer_vs_not_on_offer",
       "target": "docs_bags_on_offer_period_selector_monthly_weekly_last_week",
       "relation": "contains",
       "_origin": "ast",
@@ -29213,13 +29203,24 @@
     },
     {
       "source": "docs_bags_on_offer_bags_on_offer_vs_not_on_offer",
+      "target": "docs_bags_on_offer_laptop_sleeves_are_bags_27_sep_2026",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L121",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_bags_on_offer_bags_on_offer_vs_not_on_offer",
       "target": "docs_bags_on_offer_offer_type_summary_matrix",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L124",
+      "source_location": "L127",
       "weight": 1.0
     },
     {
@@ -29230,7 +29231,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L188",
+      "source_location": "L192",
       "weight": 1.0
     },
     {
@@ -29241,7 +29242,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L206",
+      "source_location": "L210",
       "weight": 1.0
     },
     {
@@ -29252,7 +29253,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L215",
+      "source_location": "L219",
       "weight": 1.0
     },
     {
@@ -36512,7 +36513,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L198",
+      "source_location": "L202",
       "weight": 1.0
     },
     {
@@ -36777,7 +36778,7 @@
       "confidence_score": 0.95,
       "context": "offer_picking._read_offers",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L142",
+      "source_location": "L145",
       "weight": 1.0
     },
     {
@@ -36789,7 +36790,7 @@
       "confidence_score": 0.95,
       "context": "reject_sales._category_of",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L142",
+      "source_location": "L145",
       "weight": 1.0
     },
     {
