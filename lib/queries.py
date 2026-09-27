@@ -98,6 +98,14 @@ BAGS_SOLD_TOTAL = _load_sql("bags_sold_total.sql")
 # Sales card can split "of N sold, R were rejects". Same params + :excluded.
 REJECT_BAGS_SOLD = _load_sql("reject_bags_sold.sql")
 
+# The gift-bag subset of BAGS_SOLD_TOTAL ("Gift Bag …" products), so the Sales card can
+# show how many of the bags sold were gift bags. Same params + :excluded.
+GIFT_BAGS_SOLD = _load_sql("gift_bags_sold.sql")
+
+# Samples + customisation sold (samples and customisation charges are NOT in Sales; customised
+# bags are), shown alongside the Sales card. Params :start_date / :end_date.
+SALES_EXTRAS = _load_sql("sales_extras.sql")
+
 
 # Shared WHERE body so TOTAL and the per-product detail can't drift apart.
 _BAGS_WHERE = """

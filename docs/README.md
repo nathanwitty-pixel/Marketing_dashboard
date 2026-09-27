@@ -31,6 +31,8 @@ comment markers** — it replaces only the data block, never the render code. So
 - The markers (e.g. `<!-- SMC_DATA_START -->…<!-- SMC_DATA_END -->`) must stay intact.
 
 `shell.html` is the frame (sidebar nav) that loads each page into an iframe.
+Every Chart.js chart on every page gets a chart-type menu from the shared
+`chart_switcher.js` — see [chart-switcher.md](chart-switcher.md).
 `build_all.py` re-bakes every page headlessly (no server, no browser tab).
 
 ## The menus (sidebar order)

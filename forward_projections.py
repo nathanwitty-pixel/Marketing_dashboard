@@ -32,7 +32,7 @@ SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 # No longer a manual entry. Pulled live from Odoo customer invoices
 # (account_move) for the projected month — see _corporate_bags() below and
 # sql/corporate_bags.sql. Used ONLY by the Forecasted Projection and added on
-# top of POS in the Sales card; Total/Weekly/Net Bags Sold stay POS-only, so
+# top of POS in the Sales card; Total/Weekly Sales stay POS-only, so
 # corporate is never double-counted.
 # bare_minimum is computed below = monthly target ÷ perfect weeks in month.
 

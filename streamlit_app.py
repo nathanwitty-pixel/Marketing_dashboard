@@ -10,6 +10,7 @@ Deploy: Streamlit Community Cloud → repo, main file = streamlit_app.py.
 Secrets (Cloud → Settings → Secrets), TOML — see .streamlit/secrets.toml.example.
 """
 import os
+import re
 import sys
 import time
 import subprocess
@@ -470,6 +471,25 @@ if os.path.exists(html_path):
         html = html.replace("</body>", EMBED_FIX + "</body>", 1)
     else:
         html += EMBED_FIX
+    # components.html() renders the page in a frame with no URL, so a LOCAL
+    # <script src="chart_switcher.js"> has nothing to resolve against (Streamlit answers
+    # it with its own index page). Inline every local script file instead.
+    _inlined_mtimes = []
+
+    def _inline_local_script(m):
+        src = m.group(1)
+        path = os.path.join(os.path.dirname(os.path.abspath(html_path)), src)
+        if "://" in src or src.startswith("//") or not os.path.isfile(path):
+            return m.group(0)
+        try:
+            with open(path, encoding="utf-8") as _js:
+                code = _js.read().replace("</script", "<\\/script")
+            _inlined_mtimes.append(int(os.path.getmtime(path)))
+        except OSError:
+            return m.group(0)
+        return "<script>/* " + src + " */\n" + code + "\n</script>"
+
+    html = re.sub(r'<script\s+src="([^"]+\.js)"\s*>\s*</script>', _inline_local_script, html)
     # Cache token keyed to the file's last-modified time — NOT a fresh timestamp each run.
     # The embedded content string then only changes when the page is actually regenerated
     # (a Refresh rewrites the file → new mtime → the frame rebuilds and shows new data),
@@ -479,6 +499,7 @@ if os.path.exists(html_path):
         _ver = int(os.path.getmtime(html_path))
     except OSError:
         _ver = 0
+    _ver = max([_ver] + _inlined_mtimes)          # an edited shared script also refreshes the frame
     html += "\n<!-- v:" + str(_ver) + " -->"
     # Initial height is a fallback only; the script sizes the frame to the EXACT content
     # height so the scroll ends at the last info, with no endless empty space.

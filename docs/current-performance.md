@@ -51,14 +51,31 @@ Rules the implementation must hold to:
 The control's markup, CSS and JS all live **outside** the `PERF_DATA_*` and `PROJ_DATA_*` markers,
 so `current_performance.py`'s regex rewrite never touches them.
 
-## Sales card — reject split
+## Sales card — the one bags figure (reject + gift-bag split)
 
-The Sales-card breakdown line shows the POS/corporate split **and the reject-clearance subset**:
-"N POS + C corporate · R rejects (X%)". `rejectBags` is the `[REJECT]`-tagged products (the
-Kitengela clearance) computed by `monthly_sales.py` (`sql/reject_bags_sold.sql` — same grand-total
-definition as `bags_sold_total.sql` plus the `[REJECT]` tag, so it's a true subset), surfaced via
-`current_performance.py` (`reject_from_db` → `PERF.rejectBags` / `rejectPct`, % of the POS total).
-So you can see how many of the bags sold were rejects vs normal stock.
+**Sales is the only bags-sold KPI** (27 Sep 2026: the separate *Net Bags Sold · Catalogue* card —
+master-list products only, ~313 bags lower in Sep — was merged away, and the *Weekly vs Last
+Month* pace card was removed). Sales = `sql/bags_sold_total.sql` (every bag the tills sold incl.
+bags inside combos, gift bags and rejects; refunds netted; **straps**, delivery, customisation,
+the combo wrapper, the KES discount line, samples and POS-category lines are **not** counted)
+**plus** corporate invoice bags.
+
+The Sales-card breakdown line shows the POS/corporate split **and two subsets of the POS total**:
+"N POS + C corporate · R rejects (X%) · G gift bags (Y%)".
+- `rejectBags` = the `[REJECT]`-tagged products (the Kitengela clearance), `sql/reject_bags_sold.sql`.
+- `giftBags` = gift bags (`name ILIKE 'gift bag%'` — A3 / A4 / A5 and colours), `sql/gift_bags_sold.sql`.
+Both use the same grand-total definition as `bags_sold_total.sql` plus their tag (true subsets),
+are computed by `monthly_sales.py` into `monthly_sales_db.json`, and surfaced by
+`current_performance.py` (`_db_count` → `PERF.rejectBags` / `rejectPct`, `PERF.giftBags` /
+`giftPct`, % of the POS total). Each part is hidden when it is 0.
+
+The same line also shows **samples** and **customisation** (`sql/sales_extras.sql`, all tills,
+refunds netted, → `PERF.samples` / `customBags` / `customFees`):
+- **Samples** (`name ILIKE '%sample%'`) — sold but **not** in Sales (display units).
+- **Customisation** = customised bags (`'%customi%'` but not `'%customization%'`, e.g. *KCB
+  Briefcase Customised Brown* — a bag, **in** Sales) **+** customisation charges
+  (`'%customization%'` — a service line, **not** in Sales). The tooltip gives the split.
+Sep 2026: 4 samples, 1 customised bag, 0 customisation charges.
 
 ## Data sources
 

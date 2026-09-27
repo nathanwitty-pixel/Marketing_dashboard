@@ -37,12 +37,23 @@
       "weekStart": "2026-09-20",
       "label": "Wk 4",
       "month": "Sep",
-      "salesPct": 47.72,
-      "salesBags": 12951,
+      "salesPct": 52.91,
+      "salesBags": 14360,
       "prevSalesPct": 39.03,
       "prevSalesBags": 10594,
-      "weeklySales": 2357,
-      "declinedBy": -4428
+      "weeklySales": 3766,
+      "declinedBy": -3019
+    },
+    {
+      "weekStart": "2026-09-27",
+      "label": "Wk 5",
+      "month": "Sep",
+      "salesPct": 53.28,
+      "salesBags": 14461,
+      "prevSalesPct": 52.91,
+      "prevSalesBags": 14360,
+      "weeklySales": 101,
+      "declinedBy": -6684
     }
   ]
 }

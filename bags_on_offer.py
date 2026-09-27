@@ -27,10 +27,14 @@ import os, re, json, time, datetime, webbrowser, pathlib
 
 from lib import db, report_month
 import self_made_combos as smc
+import timed_offers as tof
+import offer_picking as opk
+import reject_sales as rsl
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 HTML = os.path.join(BASE, "bags_on_offer.html")
 SOURCE_JSON = os.path.join(BASE, "bags_offer_source.json")
+TIERS_CSV = os.path.join(BASE, "bag_tiers.csv")
 NEW_PRODUCTS_SHEET = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"   # same sheet as new_products.py
 
 _KENYA_TILLS = "AND lower(COALESCE(pc.\"name\",'')) NOT IN ('sinza','dar-es-alam','uganda')"
@@ -125,14 +129,65 @@ WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid') AND pl
 GROUP BY 1, 2, 4
 """
 
+# Single-bag lines inside a timed-offer campaign (timed_offers_config.json), one row per till
+# line so overlapping campaigns can't count a sale twice. The campaign's own shop / hour /
+# price / name filters (from timed_offers.py) are appended per offer.
+TIMED_SQL = f"""
+SELECT pl.id AS line_id, UPPER(COALESCE(pc."name",'?')) AS shop, UPPER(pt."name") AS name,
+       p.date_order::date AS d, pl.qty::int AS units, ROUND(pl.price_subtotal_incl)::int AS revenue
+FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+LEFT JOIN pos_session ps ON p.session_id=ps.id
+LEFT JOIN pos_config pc ON ps.config_id=pc.id
+LEFT JOIN product_product pp ON pl.product_id=pp.id
+LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
+WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid') AND pl.qty <> 0 AND NOT COALESCE(pl.sub_product_line, false)
+  {_KENYA_TILLS}
+  AND pt."name" NOT LIKE '%+%'
+"""
+
 # Counted by how it was sold: a combo-button sale is a Combo sale; a SINGLE sale of a bag on
-# several offers goes to the first of these — a Power Deal runs at every shop all month, so it
-# wins over a Deal of the Week; a combo bag sold singly is the fallback.
-_SOURCE_ORDER = ["Power Deal", "Deal of the Week", "Combo component"]
+# several offers goes to the first of these — a timed-offer campaign is how the sale was
+# actually priced; a Power Deal runs at every shop all month, so it wins over a Deal of the
+# Week; a combo bag sold singly is the fallback.
+_SOURCE_ORDER = ["Timed offer", "Power Deal", "Deal of the Week", "Combo component"]
 _NON_KENYA = ("SINZA", "DAR-ES-ALAM", "UGANDA", "?")
 
 # Non-offer POS sales counted under "Others" (with corporate invoices): name prefix → group.
-_OTHER_GROUPS = (("GIFT BAG", "Gift bags"), ("LAPTOP SLEEVE", "Laptop sleeves"), ("SAMPLE", "Samples"))
+# (Laptop sleeves are bags since 27 Sep 2026 — see base(): any "…LAPTOP SLEEVE…" → the LAPTOP SLEEVE bag.)
+_OTHER_GROUPS = (("GIFT BAG", "Gift bags"), ("SAMPLE", "Samples"))
+
+
+# ── Offer type summary (matrix) ──
+# Rows, in display order. Every sale lands in exactly one (see docs/bags-on-offer.md).
+OFFER_ROWS = [("OFF", "Not on offer"), ("POWER", "Power deals"), ("COMBOS", "Combos"),
+              ("DOW", "Deal of wk"), ("MID", "Mid-month / others"), ("GIFT", "Gift bag"),
+              ("CORP", "Corporate")]
+_ROW_OF_SOURCE = {"Combo sale": "COMBOS", "Combo component": "COMBOS", "Power Deal": "POWER",
+                  "Deal of the Week": "DOW", "Timed offer": "MID"}
+_ROW_OF_OTHER = {"Gift bags": "GIFT", "Samples": "MID"}
+# The 18 bag categories (offer sheet, bag_names tab) — "Top 5" + "Other 13".
+CATEGORIES = ["BABY BAG", "BACKPACK", "BRIEFCASE", "CHEST BAG", "GIFT BAG", "HANDBAG", "HOOD",
+              "LUNCH BAG", "MAKE UP", "MAN BAG", "MESSENGER", "SCHOOL BAG", "SLING", "SPORT",
+              "THIGH BAG", "TRAVEL", "WAIST BAG", "WASHBAG"]
+TIERS = ["Premium", "Core", "Entry"]
+
+
+def _bag_tiers():
+    """{BAG: (category, tier)} from bag_tiers.csv (editable; '#' lines are comments)."""
+    out = {}
+    try:
+        with open(TIERS_CSV, encoding="utf-8") as f:
+            rows = [ln for ln in f if ln.strip() and not ln.lstrip().startswith("#")]
+        import csv
+        for r in csv.DictReader(rows):
+            bag = str(r.get("BAG") or "").strip().upper()
+            if not bag:
+                continue
+            tier = str(r.get("TIER") or "").strip().capitalize()
+            out[bag] = (str(r.get("CATEGORY") or "").strip().upper(), tier if tier in TIERS else "")
+    except OSError:
+        print("  Tiers            : bag_tiers.csv not found — every bag Unassigned")
+    return out
 
 
 def _other_group(name):
@@ -140,14 +195,31 @@ def _other_group(name):
     return next((g for pre, g in _OTHER_GROUPS if n.startswith(pre)), None)
 
 
+def _timed_offers():
+    """Kenya timed-offer campaigns from timed_offers_config.json (normalised by timed_offers.py)."""
+    try:
+        return [o for o in tof.load_config().get("offers", [])
+                if (o.get("market") or "Kenya").lower() == "kenya" and o.get("startDate") and o.get("endDate")]
+    except Exception as ex:                                  # noqa: BLE001
+        print(f"  Timed offers     : config unreadable ({ex}) — none counted")
+        return []
+
+
+def _has_deals(d):
+    """True when the on-offer source carries any Power Deal / Deal of the Week — a source
+    without them means the deals sheet failed to load, not that there were no deals."""
+    tags = {t for v in (d.get("onOffer") or {}).values() for t in (v or [])}
+    return bool(d.get("dowRuns")) or bool(tags & {"Power Deal", "Deal of the Week"})
+
+
 def _load_source(month_label):
-    """bags_offer_source.json if written in the last 15 min for this month; else rebuild it
-    live via self_made_combos.fetch() (which also refreshes the file)."""
+    """bags_offer_source.json if written in the last 15 min for this month (and it has its
+    deals); else rebuild it live via self_made_combos.fetch() (which also refreshes the file)."""
     try:
         if os.path.exists(SOURCE_JSON) and (time.time() - os.path.getmtime(SOURCE_JSON)) < 900:
             with open(SOURCE_JSON, encoding="utf-8") as f:
                 d = json.load(f)
-            if d.get("onOffer") and d.get("month") == month_label:
+            if d.get("onOffer") and d.get("month") == month_label and _has_deals(d):
                 print("  On-offer source  : bags_offer_source.json (fresh, <15 min)")
                 return d
     except (OSError, ValueError):
@@ -233,7 +305,7 @@ def _pick_target(rows, shop, period, start, end):
     return best[1] if best and best[1] else None
 
 
-def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_anchor, prints, cover):
+def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_anchor, prints, cover, seg_of):
     s, e = w["start"], w["end"]
     elapsed = max(1, min((min(w["upto"], e) - s).days + 1, w["days"]))
     frac = elapsed / w["days"]
@@ -242,8 +314,19 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
         return {"units": 0, "revenue": 0}
 
     tot = {"on": blank(), "off": blank(), "oth": blank(), "unc": blank()}
-    others = {"Gift bags": blank(), "Laptop sleeves": blank(), "Samples": blank(), "Corporate": blank()}
+    others = {"Gift bags": blank(), "Samples": blank(), "Corporate": blank()}
     trend, by_source, on_bags, off_bags, unc_names, shops = {}, {}, {}, {}, set(), {}
+    # Offer type × category and × tier: {row: {"cat": {CAT: [units, rev]}, "tier": {TIER: [units, rev]}}}
+    mtx = {k: {"cat": {}, "tier": {}, "tree": {}} for k, _l in OFFER_ROWS}
+    by_week = {}                                             # {week no: {row: [units, rev]}} (Monthly only)
+
+    def add_mtx(row, parts, u, rev):
+        for cat, tier, bg, wt in parts:
+            node = (tier or "Unassigned") + "|" + (cat or "UNASSIGNED") + "|" + (bg or "")
+            for dim, key in (("cat", cat or "UNASSIGNED"), ("tier", tier or "Unassigned"), ("tree", node)):
+                c = mtx[row][dim].setdefault(key, [0.0, 0.0])
+                c[0] += u * wt
+                c[1] += rev * wt
 
     def tkey(d):
         if w["trend"] == "week":
@@ -253,7 +336,7 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
     for r in lines:
         if not (s <= r["d"] <= e):
             continue
-        side, bag, srcs, is_new, offers = classify(r["name"], r["shop"], r["d"])
+        side, bag, srcs, is_new, offers = classify(r["name"], r["shop"], r["d"], r.get("timed"))
         u, rev = r["units"], r["revenue"]
         tot[side]["units"] += u
         tot[side]["revenue"] += rev
@@ -279,6 +362,14 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
             others[srcs[0]]["revenue"] += rev
         else:
             unc_names.add(r["name"])
+        row = ("OFF" if side == "off" else _ROW_OF_SOURCE.get(srcs[0]) if side == "on"
+               else _ROW_OF_OTHER.get(srcs[0]) if side == "oth" else None)
+        if row:
+            add_mtx(row, seg_of(r["name"], side, bag, srcs), u, rev)
+            if w["trend"] == "week":                         # offer type per week of the month
+                c = by_week.setdefault(tkey(r["d"]), {}).setdefault(row, [0, 0])
+                c[0] += u
+                c[1] += rev
         sh = shops.setdefault(r["shop"], {k: blank() for k in ("on", "off", "oth", "unc")})
         sh[side]["units"] += u
         sh[side]["revenue"] += rev
@@ -294,7 +385,12 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
             corp_rev += r["revenue"]
             corp_units += r["units"]
             trend.setdefault(tkey(r["d"]), {"on": 0, "off": 0, "oth": 0})["oth"] += r["revenue"]
+            if w["trend"] == "week":
+                c = by_week.setdefault(tkey(r["d"]), {}).setdefault("CORP", [0, 0])
+                c[0] += r["units"]
+                c[1] += r["revenue"]
     others["Corporate"] = {"units": corp_units, "revenue": corp_rev}
+    add_mtx("CORP", [("", "", "", 1.0)], corp_units, corp_rev)       # invoices carry no bag → Unassigned
     tot["oth"]["units"] += corp_units
     tot["oth"]["revenue"] += corp_rev
 
@@ -396,6 +492,17 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
     src_rows = sorted(({"label": k, **v} for k, v in by_source.items()),
                       key=lambda x: order.index(x["label"]) if x["label"] in order else 99)
 
+    # Offer type per week (Wk 1 … current), with the days each week has had so far.
+    week_rows = []
+    if w["trend"] == "week":
+        upto = min(w["upto"], e)
+        for k in sorted(by_week):
+            ws = month_anchor + datetime.timedelta(days=7 * (k - 1))
+            lo, hi = max(ws, s), min(ws + datetime.timedelta(days=6), e)
+            week_rows.append({"label": f"Wk {k}", "sub": f"{lo.strftime('%d %b')}–{hi.strftime('%d %b')}",
+                              "days": max(0, (min(hi, upto) - lo).days + 1), "current": lo <= upto <= hi,
+                              "rows": {r: {"units": v[0], "revenue": v[1]} for r, v in by_week[k].items()}})
+
     trend_rows = []
     for k in sorted(trend):
         if w["trend"] == "week":
@@ -420,10 +527,32 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
         "unclassifiedCount": len(unc_names),
         "trend": trend_rows,
         "sources": src_rows,
+        "offerTypes": _offer_types(mtx),
+        "offerTypesByWeek": week_rows,
         "onBags": on_list,
         "offBags": off_list,
         "shops": shop_rows,
         "regions": region_rows,
+    }
+
+
+def _offer_types(mtx):
+    """Matrix payload: rows, per-row category / tier cells, and the period's Top-5 categories
+    (by revenue across every row) vs the other 13."""
+    rnd = lambda c: {"units": round(c[0], 2), "revenue": round(c[1])}
+    cat_rev = {c: 0.0 for c in CATEGORIES}
+    for v in mtx.values():
+        for cat, c in v["cat"].items():
+            if cat in cat_rev:
+                cat_rev[cat] += c[1]
+    top = sorted(CATEGORIES, key=lambda c: -cat_rev[c])[:5]
+    return {
+        "rows": [{"key": k, "label": lbl} for k, lbl in OFFER_ROWS],
+        "cat": {k: {c: rnd(x) for c, x in v["cat"].items()} for k, v in mtx.items()},
+        "tier": {k: {t: rnd(x) for t, x in v["tier"].items()} for k, v in mtx.items()},
+        "tree": {k: {n: rnd(x) for n, x in v["tree"].items()} for k, v in mtx.items()},
+        "top": top, "rest": [c for c in CATEGORIES if c not in top],
+        "catRevenue": {c: round(v) for c, v in cat_rev.items()},
     }
 
 
@@ -448,6 +577,10 @@ def fetch():
     if not src:
         print("  No on-offer source — bags_on_offer.html left unchanged.")
         return None
+    if not _has_deals(src) and os.environ.get("BOO_ALLOW_NO_DEALS") != "1":
+        print("  On-offer source has no Power Deal / Deal of the Week bags (deals sheet not loaded?)"
+              " — bags_on_offer.html left unchanged. Set BOO_ALLOW_NO_DEALS=1 if the month has none.")
+        return None
     new_names = sorted(set(_new_products()), key=len, reverse=True)
 
     on_offer = src.get("onOffer", {})
@@ -470,6 +603,7 @@ def fetch():
         return None
 
     cache = {}
+    timed_bags = set()                  # bags listed on a timed offer that sold inside it
 
     # Where / when each Deal of the Week runs: (matcher, weeks, shop labels).
     dow_runs = [(smc.bag_classifier({r["product"]})[1], set(r.get("weeks") or []), set(r.get("locations") or []))
@@ -487,7 +621,7 @@ def fetch():
             res = ("combo", name, [], False, [])
         else:
             npn = new_of(name)
-            bt = infer(name) or npn
+            bt = ("LAPTOP SLEEVE" if "LAPTOP SLEEVE" in name.upper() else None) or infer(name) or npn
             if not bt:
                 res = ("unc", name, [], False, [])
             else:
@@ -497,11 +631,12 @@ def fetch():
         cache[name] = res
         return res
 
-    def classify(name, shop=None, d=None):
+    def classify(name, shop=None, d=None, timed=None):
         """(side, bag, sources, isNew, allOffers) — side is on / off / oth / unc. A single sale is
         a Deal-of-the-Week sale only at a shop running that deal, in its tier's weeks (shop/d
-        None = "anywhere", used for bags seen only inside combos). Sources are in counting
-        order: Power Deal → Deal of the Week → Combo component."""
+        None = "anywhere", used for bags seen only inside combos). `timed` = the line was sold
+        inside a timed-offer campaign. Sources are in counting order: Timed offer → Power Deal
+        → Deal of the Week → Combo component."""
         kind, bt, static, is_new, runs = base(name)
         if kind == "oth":
             return ("oth", bt, [bt], False, [])
@@ -514,11 +649,13 @@ def fetch():
         else:
             wk, loc = (d - month_anchor).days // 7 + 1, _shop_label(shop)
             dow_ok = any(wk in weeks and loc in locs for weeks, locs in runs)
-        srcs = [x for x in ("Power Deal",) if x in static]
+        srcs = ["Timed offer"] if timed else []
+        srcs += [x for x in ("Power Deal",) if x in static]
         if dow_ok:
             srcs.append("Deal of the Week")
         srcs += [x for x in ("Combo component",) if x in static]
-        all_offers = sorted(set(static) | ({"Deal of the Week"} if runs else set()),
+        all_offers = sorted(set(static) | ({"Deal of the Week"} if runs else set())
+                            | ({"Timed offer"} if timed or bt in timed_bags else set()),
                             key=lambda x: _SOURCE_ORDER.index(x) if x in _SOURCE_ORDER else 99)
         return ("on" if srcs else "off", bt, srcs, is_new, all_offers)
 
@@ -539,6 +676,52 @@ def fetch():
         return out
 
     lines, till, corp, targets = rows(LINES_SQL), rows(TILL_SQL), rows(CORPORATE_SQL), rows(TARGET_SQL)
+
+    # ── Timed offers: carve each campaign's single-bag lines out of `lines` ──
+    timed_lines, timed_names = {}, []
+    for o in _timed_offers():
+        start = o.get("clearanceStart") or o["startDate"]
+        try:
+            os_, oe = max(lo, datetime.date.fromisoformat(start)), min(hi, datetime.date.fromisoformat(o["endDate"]))
+        except ValueError:
+            continue
+        if os_ > oe:
+            continue
+        sql = (TIMED_SQL + tof._shop_sql(o.get("shops")) + tof._time_sql(o.get("startTime"), o.get("endTime"))
+               + tof._price_sql(o.get("minPrice"), o.get("maxPrice")) + tof._name_sql(o.get("nameLike")))
+        df = db.run_query(sql, {"s": os_.isoformat(), "e": oe.isoformat()})
+        # nameLike offers (e.g. [REJECT]) take every matching bag; others only their listed bags.
+        wanted = None if o.get("nameLike") else {infer(b) or new_of(b.upper()) or b.upper() for b in o.get("bags", [])}
+        n = 0
+        for r in ([] if df is None else df.to_dict("records")):
+            kind, bt = base(str(r["name"]))[:2]
+            if kind != "bag" or (wanted is not None and bt not in wanted) or r["line_id"] in timed_lines:
+                continue
+            timed_lines[r["line_id"]] = (str(r["shop"]), str(r["name"]), _as_date(r["d"]),
+                                         int(r["units"] or 0), int(r["revenue"] or 0), o["name"])
+            n += 1
+        if n:
+            timed_names.append(o["name"])
+            if wanted:
+                timed_bags.update(wanted)
+    if timed_lines:
+        # Split each (shop, product, day) line into its timed part and the rest.
+        tsum = {}
+        for shop, name, d, u, rev, _nm in timed_lines.values():
+            t = tsum.setdefault((shop, name, d), [0, 0])
+            t[0] += u
+            t[1] += rev
+        split = []
+        for r in lines:
+            t = tsum.pop((r["shop"], r["name"], r["d"]), None)
+            if not t:
+                split.append(r)
+                continue
+            split.append({**r, "units": t[0], "revenue": t[1], "timed": True})
+            if r["units"] - t[0] or r["revenue"] - t[1]:
+                split.append({**r, "units": r["units"] - t[0], "revenue": r["revenue"] - t[1]})
+        lines = split
+        print(f"  Timed offers     : {len(timed_lines)} till lines in {', '.join(timed_names)}")
 
     # ── Bags printed inside combos (per day) ──
     import ast
@@ -576,6 +759,41 @@ def fetch():
             bag = resolve(nm)
             if bag:
                 prints.append({"d": r["d"], "bag": bag, "units": r["units"]})
+    # ── Category + tier of every sale, for the offer-type matrix ──
+    tiers = _bag_tiers()
+    try:
+        offer_cats = opk._read_offers()[0]
+    except Exception as ex:                                  # noqa: BLE001
+        print(f"  Categories       : offer sheet unreadable ({ex}) — keyword fallback only")
+        offer_cats = {}
+    seg_cache = {}
+
+    def cat_tier(bag):
+        """(category, tier) of a resolved bag — bag_tiers.csv first, else the offer sheet's
+        category (aliases + name keywords). Anything outside the 18 categories → ''."""
+        if not bag:
+            return ("", "")
+        if bag not in seg_cache:
+            c, t = tiers.get(bag, ("", ""))
+            if not c:
+                c = rsl._category_of(bag, offer_cats)
+            seg_cache[bag] = (c if c in CATEGORIES else "", t)
+        return seg_cache[bag]
+
+    def seg_of(name, side, bag, srcs):
+        """[(category, tier, bag, weight)] for one till line — a combo is split evenly over its slots
+        (Jumbo + Jumbo = one combo sale: ½ + ½ to JUMBO)."""
+        if side == "oth":
+            return [cat_tier("GIFT BAG") + ("GIFT BAG", 1.0)] if srcs[0] == "Gift bags" else [("", "", "SAMPLES", 1.0)]
+        if srcs and srcs[0] == "Combo sale":
+            slots = [x for x in str(name).split("+") if x.strip()] or [name]
+            out = []
+            for x in slots:
+                b = resolve(x)
+                out.append(cat_tier(b) + (b or "", 1.0 / len(slots)))
+            return out
+        return [cat_tier(bag) + (bag or "", 1.0)]
+
     for t in targets:
         t["start_date"], t["end_date"] = _as_date(t["start_date"]), _as_date(t["end_date"])
         t["target"] = float(t["target"] or 0)
@@ -606,8 +824,13 @@ def fetch():
         cover[bt] = {"stock": stk, "avgPerDay": round(avg, 1),
                      "daysCover": int(round(stk / avg)) if avg > 0 else None}
 
-    periods = {k: _build_period(w, lines, till, corp, targets, classify, extra_off, month_anchor, prints, cover)
+    periods = {k: _build_period(w, lines, till, corp, targets, classify, extra_off, month_anchor, prints, cover, seg_of)
                for k, w in wins.items()}
+    # Tier + category on every bag row, for the bag tables' Tier tags / filter.
+    for P in periods.values():
+        for lst in (P["onBags"], P["offBags"]):
+            for b in lst:
+                b["category"], b["tier"] = cat_tier(b["bag"])
     return {
         "month": month_label,
         "asOf": today.isoformat(),

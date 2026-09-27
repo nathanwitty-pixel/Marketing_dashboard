@@ -305,6 +305,7 @@
     @media (max-width: 560px) { .cp-card-head { padding-right: 1rem; } .cp-seg { padding: 0.38rem 0.7rem; } }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="chart_switcher.js"></script>
 </head>
 <body>
 <div class="aura-layer-1" aria-hidden="true"></div>
@@ -327,13 +328,7 @@
       <div class="card-label">Sales <span style="font-size:0.58rem;font-weight:800;letter-spacing:0.05em;color:#22d3ee;border:1px solid rgba(34,211,238,0.4);border-radius:5px;padding:0.06rem 0.36rem;margin-left:0.35rem;vertical-align:middle">ODOO · THIS MONTH</span></div>
       <div class="card-value" id="kpi-sales"></div>
       <div id="sales-breakdown" style="font-size:0.72rem;color:#94a3b8;margin-top:-0.15rem;margin-bottom:0.2rem"></div>
-      <div class="card-interpretation">Total bags this month: Odoo POS (tills) <strong>plus</strong> corporate bags sold from paid/settled invoices. Target comes from the sheet, so Remaining = target − these sales. Weekly Sales and Net Bags Sold stay POS-only.</div>
-    </div>
-
-    <div class="card cyan" id="master-card">
-      <div class="card-label">Net Bags Sold <span style="font-size:0.58rem;font-weight:800;letter-spacing:0.05em;color:#22d3ee;border:1px solid rgba(34,211,238,0.4);border-radius:5px;padding:0.06rem 0.36rem;margin-left:0.35rem;vertical-align:middle">CATALOGUE</span></div>
-      <div class="card-value cyan" id="kpi-master"></div>
-      <div class="card-interpretation">Net bags sold this month (refunds netted) for products on the master catalogue list — recognised bags only.</div>
+      <div class="card-interpretation">Total bags this month: Odoo POS (tills) <strong>plus</strong> corporate bags sold from paid/settled invoices. Refunds are netted; straps, delivery and customisation aren't counted. Target comes from the sheet, so Remaining = target − these sales. Weekly Sales stays POS-only.</div>
     </div>
 
     <div class="card blue" id="weekly-card">
@@ -341,13 +336,6 @@
       <div class="card-value" id="kpi-weekly-sales"></div>
       <div class="card-sub" id="weekly-carryover-sub"></div>
       <div class="card-interpretation">Total bags sold this week (Sun–Sat).</div>
-    </div>
-
-    <div class="card purple">
-      <div class="card-label">Weekly vs Last Month</div>
-      <div class="card-value pct" id="kpi-mom-weekly"></div>
-      <div class="card-sub" id="mom-weekly-sub"></div>
-      <div class="card-interpretation">This month's per-day pace vs last month's final-week pace. Above 1× means the new month is outrunning how last month closed.</div>
     </div>
 
     <div class="card red" id="remaining-card">
@@ -468,22 +456,26 @@ const PERF = {
   cpPrevWeekly:       [{"label": "Wk 1", "pct": 3.57}, {"label": "Wk 2", "pct": 17.16}, {"label": "Wk 3", "pct": 16.49}, {"label": "Wk 4", "pct": 16.9}, {"label": "Wk 5", "pct": 18.22}, {"label": "Wk 6", "pct": 3.72}],
   cpPrevLabel:        "August 2026",
   cpCurLabel:         "September 2026",
-  remainingTarget:    "14,119",
-  salesPctAchieved:   "47.98%",
-  sales:              "13,022",
-  salesPos:           "12,951",
-  corporateBags:      "71",
+  remainingTarget:    "12,603",
+  salesPctAchieved:   "53.56%",
+  sales:              "14,538",
+  salesPos:           "14,461",
+  corporateBags:      "77",
   rejectBags:         "166",
-  rejectPct:          "1.28%",
-  masterBags:         "12,654",
-  previousSalesPct:   "39.29%",
+  rejectPct:          "1.15%",
+  giftBags:           "237",
+  giftPct:            "1.64%",
+  samples:            "4",
+  customBags:         "1",
+  customFees:         "0",
+  previousSalesPct:   "53.19%",
   previousSalesBags:  "140",
-  wowSalesPct:        "+1583.57%",
-  wowSalesBags:       "+2,217",
-  weeklySalesTotal:   "2,357",
-  weeklySalesPct:     "8.68%",
-  growthHistory:      [{"date": "2026-07-27", "growth": 14.52}, {"date": "2026-07-28", "growth": 14.52}, {"date": "2026-07-30", "growth": 14.52}, {"date": "2026-07-31", "growth": 14.52}, {"date": "2026-08-01", "growth": 14.52}, {"date": "2026-08-02", "growth": 19.73}, {"date": "2026-08-03", "growth": 71.8}, {"date": "2026-08-04", "growth": 2.9}, {"date": "2026-08-05", "growth": 2.9}, {"date": "2026-08-06", "growth": 7.2}, {"date": "2026-08-07", "growth": 7.2}, {"date": "2026-08-08", "growth": 13.65}, {"date": "2026-08-10", "growth": 1.01}, {"date": "2026-08-11", "growth": 3.59}, {"date": "2026-08-13", "growth": 9.34}, {"date": "2026-08-14", "growth": 11.67}, {"date": "2026-08-16", "growth": 0.84}, {"date": "2026-08-17", "growth": 1.28}, {"date": "2026-08-20", "growth": 8.17}, {"date": "2026-08-21", "growth": 11.23}, {"date": "2026-08-22", "growth": 14.12}, {"date": "2026-08-23", "growth": 1.02}, {"date": "2026-08-24", "growth": 1.18}, {"date": "2026-08-26", "growth": 9.32}, {"date": "2026-08-27", "growth": 9.43}, {"date": "2026-08-28", "growth": 12.4}, {"date": "2026-08-31", "growth": 3.11}, {"date": "2026-09-01", "growth": 4.24}, {"date": "2026-09-02", "growth": 8.84}, {"date": "2026-09-03", "growth": 9.13}, {"date": "2026-09-04", "growth": 11.66}, {"date": "2026-09-06", "growth": 0.49}, {"date": "2026-09-07", "growth": 0.69}, {"date": "2026-09-08", "growth": 8.49}, {"date": "2026-09-09", "growth": 8.55}, {"date": "2026-09-10", "growth": 13.61}, {"date": "2026-09-12", "growth": 15.64}, {"date": "2026-09-13", "growth": 0.71}, {"date": "2026-09-14", "growth": 0.87}, {"date": "2026-09-17", "growth": 7.9}, {"date": "2026-09-18", "growth": 11.43}, {"date": "2026-09-19", "growth": 12.29}, {"date": "2026-09-20", "growth": 0.57}, {"date": "2026-09-21", "growth": 1.46}, {"date": "2026-09-22", "growth": 3.25}, {"date": "2026-09-23", "growth": 4.64}, {"date": "2026-09-24", "growth": 7.33}, {"date": "2026-09-25", "growth": 8.68}],
-  weeklyThisMonth:    "2,357",
+  wowSalesPct:        "-27.86%",
+  wowSalesBags:       "-39",
+  weeklySalesTotal:   "101",
+  weeklySalesPct:     "0.37%",
+  growthHistory:      [{"date": "2026-07-27", "growth": 14.52}, {"date": "2026-07-28", "growth": 14.52}, {"date": "2026-07-30", "growth": 14.52}, {"date": "2026-07-31", "growth": 14.52}, {"date": "2026-08-01", "growth": 14.52}, {"date": "2026-08-02", "growth": 19.73}, {"date": "2026-08-03", "growth": 71.8}, {"date": "2026-08-04", "growth": 2.9}, {"date": "2026-08-05", "growth": 2.9}, {"date": "2026-08-06", "growth": 7.2}, {"date": "2026-08-07", "growth": 7.2}, {"date": "2026-08-08", "growth": 13.65}, {"date": "2026-08-10", "growth": 1.01}, {"date": "2026-08-11", "growth": 3.59}, {"date": "2026-08-13", "growth": 9.34}, {"date": "2026-08-14", "growth": 11.67}, {"date": "2026-08-16", "growth": 0.84}, {"date": "2026-08-17", "growth": 1.28}, {"date": "2026-08-20", "growth": 8.17}, {"date": "2026-08-21", "growth": 11.23}, {"date": "2026-08-22", "growth": 14.12}, {"date": "2026-08-23", "growth": 1.02}, {"date": "2026-08-24", "growth": 1.18}, {"date": "2026-08-26", "growth": 9.32}, {"date": "2026-08-27", "growth": 9.43}, {"date": "2026-08-28", "growth": 12.4}, {"date": "2026-08-31", "growth": 3.11}, {"date": "2026-09-01", "growth": 4.24}, {"date": "2026-09-02", "growth": 8.84}, {"date": "2026-09-03", "growth": 9.13}, {"date": "2026-09-04", "growth": 11.66}, {"date": "2026-09-06", "growth": 0.49}, {"date": "2026-09-07", "growth": 0.69}, {"date": "2026-09-08", "growth": 8.49}, {"date": "2026-09-09", "growth": 8.55}, {"date": "2026-09-10", "growth": 13.61}, {"date": "2026-09-12", "growth": 15.64}, {"date": "2026-09-13", "growth": 0.71}, {"date": "2026-09-14", "growth": 0.87}, {"date": "2026-09-17", "growth": 7.9}, {"date": "2026-09-18", "growth": 11.43}, {"date": "2026-09-19", "growth": 12.29}, {"date": "2026-09-20", "growth": 0.57}, {"date": "2026-09-21", "growth": 1.46}, {"date": "2026-09-22", "growth": 3.25}, {"date": "2026-09-23", "growth": 4.64}, {"date": "2026-09-24", "growth": 7.33}, {"date": "2026-09-25", "growth": 8.68}, {"date": "2026-09-27", "growth": 0.37}],
+  weeklyThisMonth:    "101",
   weeklyThisMonthDays: 0,
   prevMonthDays:      0,
   weeklyCarryover:    "",
@@ -491,8 +483,8 @@ const PERF = {
   carryoverDate:      "",
   prevMonthWeekly:    "722",
   prevMonthLabel:     "August",
-  momWeeklyBags:      "+1,635",
-  momWeeklyPct:       "+226.45%",
+  momWeeklyBags:      "-621",
+  momWeeklyPct:       "-86.01%",
   bareMinimum:        "",
   declinedBy:         ""
 };
@@ -502,20 +494,20 @@ const PERF = {
 <!-- PROJ_DATA_START -->
 <script>
 const PROJ = {
-  currentDay:               24,
+  currentDay:               26,
   daysInMonth:              30,
   projMonth:                "September",
-  velocityFactor:           "1.25x",
+  velocityFactor:           "1.15x",
   totalTarget:              "27,141",
-  totalSales:               "12,951",
-  standardProjection:       "59.65%",
-  forecastedProjection:     "59.97%",
-  corporateBags:            "71",
+  totalSales:               "14,461",
+  standardProjection:       "61.48%",
+  forecastedProjection:     "61.81%",
+  corporateBags:            "77",
   bareMinimum:              "6,785",
   bareMinimumGrowthPct:     "25.00%",
-  declinedBy:               "-4,428",
-  weeklySalesTotal:         "2,357",
-  weeklyHistory:            [{"weekStart": "2026-09-01", "label": "Wk 1", "month": "Sep", "salesPct": 11.82, "salesBags": 3208, "prevSalesPct": 0.0, "prevSalesBags": 0, "weeklySales": 3208, "declinedBy": -3577}, {"weekStart": "2026-09-06", "label": "Wk 2", "month": "Sep", "salesPct": 26.05, "salesBags": 7071, "prevSalesPct": 11.82, "prevSalesBags": 3208, "weeklySales": 3863, "declinedBy": -2922}, {"weekStart": "2026-09-13", "label": "Wk 3", "month": "Sep", "salesPct": 39.03, "salesBags": 10594, "prevSalesPct": 26.05, "prevSalesBags": 7071, "weeklySales": 3523, "declinedBy": -3262}, {"weekStart": "2026-09-20", "label": "Wk 4", "month": "Sep", "salesPct": 47.72, "salesBags": 12951, "prevSalesPct": 39.03, "prevSalesBags": 10594, "weeklySales": 2357, "declinedBy": -4428}]
+  declinedBy:               "-6,684",
+  weeklySalesTotal:         "101",
+  weeklyHistory:            [{"weekStart": "2026-09-01", "label": "Wk 1", "month": "Sep", "salesPct": 11.82, "salesBags": 3208, "prevSalesPct": 0.0, "prevSalesBags": 0, "weeklySales": 3208, "declinedBy": -3577}, {"weekStart": "2026-09-06", "label": "Wk 2", "month": "Sep", "salesPct": 26.05, "salesBags": 7071, "prevSalesPct": 11.82, "prevSalesBags": 3208, "weeklySales": 3863, "declinedBy": -2922}, {"weekStart": "2026-09-13", "label": "Wk 3", "month": "Sep", "salesPct": 39.03, "salesBags": 10594, "prevSalesPct": 26.05, "prevSalesBags": 7071, "weeklySales": 3523, "declinedBy": -3262}, {"weekStart": "2026-09-20", "label": "Wk 4", "month": "Sep", "salesPct": 52.91, "salesBags": 14360, "prevSalesPct": 39.03, "prevSalesBags": 10594, "weeklySales": 3766, "declinedBy": -3019}, {"weekStart": "2026-09-27", "label": "Wk 5", "month": "Sep", "salesPct": 53.28, "salesBags": 14461, "prevSalesPct": 52.91, "prevSalesBags": 14360, "weeklySales": 101, "declinedBy": -6684}]
 };
 </script>
 <!-- PROJ_DATA_END -->
@@ -556,9 +548,27 @@ const PROJ = {
       ? ' <span style="color:#64748b">·</span> <span style="color:#fca5a5" title="Of the bags sold, these were Kitengela reject-clearance items ([REJECT]-tagged products). The rest are normal stock.">'
         + PERF.rejectBags + ' rejects' + (PERF.rejectPct ? ' (' + PERF.rejectPct + ')' : '') + '</span>'
       : '';
-    el.innerHTML = base + rejNote;
+    // …and the gift bags (also part of the POS total).
+    var gift = parseInt(String(PERF.giftBags || '0').replace(/[^0-9]/g, '')) || 0;
+    var giftNote = gift > 0
+      ? ' <span style="color:#64748b">·</span> <span style="color:#f0abfc" title="Of the bags sold, these were gift bags (Gift Bag A3 / A4 / A5 and colours).">'
+        + PERF.giftBags + ' gift bags' + (PERF.giftPct ? ' (' + PERF.giftPct + ')' : '') + '</span>'
+      : '';
+    // Samples + customisation sold. Samples and customisation charges are NOT in Sales;
+    // customised bags are (they're bags).
+    var num = function (v) { return parseInt(String(v || '0').replace(/[^0-9-]/g, '')) || 0; };
+    var smp = num(PERF.samples), cBags = num(PERF.customBags), cFees = num(PERF.customFees);
+    var smpNote = smp
+      ? ' <span style="color:#64748b">·</span> <span style="color:#fcd34d" title="Sample units sold this month. Not counted in Sales.">'
+        + PERF.samples + ' sample' + (smp === 1 ? '' : 's') + ' <span style="color:#64748b">(not in Sales)</span></span>'
+      : '';
+    var cusNote = (cBags + cFees)
+      ? ' <span style="color:#64748b">·</span> <span style="color:#93c5fd" title="' + cBags + ' customised bag' + (cBags === 1 ? '' : 's')
+        + ' (counted in Sales) + ' + cFees + ' customisation charge' + (cFees === 1 ? '' : 's') + ' (not in Sales).">'
+        + (cBags + cFees).toLocaleString() + ' customisation</span>'
+      : '';
+    el.innerHTML = base + rejNote + giftNote + smpNote + cusNote;
   })();
-  setText('kpi-master',       PERF.masterBags);
   setText('kpi-weekly-sales', PERF.weeklySalesTotal);
   // Shown in the Sales hover popover
   setText('sales-pop-growth', PERF.weeklySalesPct);
@@ -566,9 +576,7 @@ const PROJ = {
 
   var _tmw    = parseInt(String(PERF.weeklyThisMonth).replace(/[^0-9]/g, '')) || 0;   // this month's slice (e.g. Aug 1)
   var _wk     = parseInt(String(PERF.weeklySalesTotal).replace(/[^0-9]/g, '')) || 0;  // whole Sun–Sat week
-  var _lm     = parseInt(String(PERF.prevMonthWeekly).replace(/[^0-9]/g, '')) || 0;   // last month's final weekly
   var _tmDays = Number(PERF.weeklyThisMonthDays) || 0;                                // days of this month with data
-  var _lmDays = Number(PERF.prevMonthDays) || 0;                                      // days last month gave the week
   var _thisMon = new Date().toLocaleDateString('en-US', { month: 'short' });          // "Aug" in the viewer's clock
   var _salesTotal = parseInt(String(PERF.sales).replace(/[^0-9]/g, '')) || 0;
   var _carry = parseInt(String(PERF.weeklyCarryover).replace(/[^0-9]/g, '')) || 0;   // last month's part of this week
@@ -599,40 +607,6 @@ const PROJ = {
               Math.round(_projWeek).toLocaleString() + ' bags';
     }
     setText('weekly-carryover-sub', _sub);
-  }
-
-  // Weekly vs Last Month — compare PACE, not raw totals. One day of the new month
-  // vs many days of last month's close is unfair as a total; per-day it reveals momentum.
-  if (_weeklyStraddle) {
-    setText('kpi-mom-weekly', '—');
-    setText('mom-weekly-sub', 'This week still spans ' + PERF.carryoverMonth +
-      ' — a clean weekly comparison returns once ' + _thisMon + ' has a full week of its own.');
-    document.getElementById('kpi-mom-weekly').style.color = '#94a3b8';
-  } else if (_weeklyIsWholeMonth) {
-    setText('kpi-mom-weekly', '—');
-    setText('mom-weekly-sub', 'Weekly total equals the month total — a fair weekly comparison isn\'t available until the new week has its own data.');
-    document.getElementById('kpi-mom-weekly').style.color = '#94a3b8';
-  } else if (PERF.prevMonthWeekly) {
-    if (_tmDays > 0 && _lmDays > 0 && _tmw > 0) {
-      var augPerDay = _tmw / _tmDays;
-      var julPerDay = _lmDays ? (_lm / _lmDays) : 0;
-      var paceRatio = julPerDay ? (augPerDay / julPerDay * 100) : 0;
-      setText('kpi-mom-weekly', (paceRatio / 100).toFixed(2) + '×');
-      setText('mom-weekly-sub',
-        _thisMon + ': ' + _tmw.toLocaleString() + ' in ' + _tmDays + ' day' + (_tmDays > 1 ? 's' : '') +
-        ' (' + Math.round(augPerDay).toLocaleString() + '/day) vs ' + PERF.prevMonthLabel + ': ' +
-        _lm.toLocaleString() + ' in ' + _lmDays + ' days (' + Math.round(julPerDay).toLocaleString() + '/day)');
-      document.getElementById('kpi-mom-weekly').style.color = paceRatio >= 100 ? '#34d399' : '#facc15';
-    } else {
-      // Not the month-transition (straddling) week — we're settled inside the new
-      // month, so a weekly "vs last month" reading isn't meaningful. Show no data.
-      setText('kpi-mom-weekly', '—');
-      setText('mom-weekly-sub', 'Only shown during the month-transition week — we\'re now inside the new month.');
-      document.getElementById('kpi-mom-weekly').style.color = '#94a3b8';
-    }
-  } else {
-    setText('kpi-mom-weekly', '—');
-    setText('mom-weekly-sub', 'Available after the first month change');
   }
 
   // Previous-sales % consistent with Previous-sales bags: bags ÷ (same week's target).

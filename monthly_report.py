@@ -553,6 +553,7 @@ HEAD = """<!DOCTYPE html>
   @media (max-width:640px){ .aura-layer-1{ filter:blur(75px);} .aura-layer-2{ filter:blur(40px);} .aura-layer-3{ filter:blur(88px);} }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="chart_switcher.js"></script>
 </head>
 <body>
 <div class="aura-layer-1" aria-hidden="true"></div>

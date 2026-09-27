@@ -31,10 +31,10 @@ straps excluded) and every qualifying corporate invoice line falls into exactly 
 | Bucket | Rule | Tag |
 |---|---|---|
 | **On offer** | a combo product (`name LIKE '%+%'`) — running *and* self-made, rung on the combo button | `Combo sale` |
-| **On offer** | a single bag that resolves to a bag that is a **running-combo component**, a **Deal of the Week** or a **Power Deal** | `Combo component` / `Deal of the Week` / `Power Deal` (several allowed; money counted **once** — see *Counted by how it was sold*) |
+| **On offer** | a single bag sold inside a **timed offer** campaign, or that resolves to a bag that is a **running-combo component**, a **Deal of the Week** or a **Power Deal** | `Timed offer` / `Combo component` / `Deal of the Week` / `Power Deal` (several allowed; money counted **once** — see *Counted by how it was sold*) |
 | **Not on offer** | a single bag that resolves to a catalogue bag on no offer | — |
 | **Not on offer** | a **new product** (MONTHLY_TARGET sheet, col I ✅ — the New Products list) that is on no offer, **even if it isn't in the price catalogue yet** (e.g. LaFemme) | `NEW` |
-| **Others** | **gift bags** (POS `name ILIKE 'gift bag%'`), **laptop sleeves** (`LAPTOP SLEEVE…`), **samples** (`SAMPLE…`) and **corporate** sales (customer invoices, same qualifying rule as `sql/corporate_bags.sql`: posted `out_invoice`, paid / in payment or ≤25 % outstanding; product lines; `price_total`) | `Gift bags` / `Laptop sleeves` / `Samples` / `Corporate` |
+| **Others** | **gift bags** (POS `name ILIKE 'gift bag%'`), **samples** (`SAMPLE…`) and **corporate** sales (customer invoices, same qualifying rule as `sql/corporate_bags.sql`: posted `out_invoice`, paid / in payment or ≤25 % outstanding; product lines; `price_total`) | `Gift bags` / `Samples` / `Corporate` |
 | **Unclassified** | a single POS product that matches no catalogue bag and no new product | footnote count/revenue |
 
 - A new product that **is** on an offer (Sep 2026: **Lola** — combo component, **Zoezi** — deal)
@@ -44,6 +44,11 @@ straps excluded) and every qualifying corporate invoice line falls into exactly 
   both pages classify with the shared `bag_classifier()`. So the Monthly not-on-offer revenue equals
   Menu 4's `SMC.bagsNotOnOffer.notOnOfferRevenue` **plus** the new products Menu 4 can't resolve
   (the generator prints both figures).
+- **Deals guard:** if the on-offer source has **no Power Deal and no Deal of the Week** bags (the
+  deals sheet failed to load — the 25 Sep 15:55 build lost ~KES 3M of on-offer money this way,
+  all of it shown as combo bags or not on offer), the source is rebuilt live once; if it is still
+  deal-less the build stops and bags_on_offer.html is left unchanged. For a month that genuinely
+  has no deals, run with `BOO_ALLOW_NO_DEALS=1`.
 - New-product list: read from the sheet at build time; if the sheet can't be read, the list from
   the previous build (`BOO.newProducts`) is reused.
 
@@ -55,7 +60,18 @@ Every sale is counted **once**, in the channel it actually went through (agreed 
   else the bag is on. E.g. Sep 1–24: **367 Jumbos** were printed inside combos (290 in
   Jumbo + Jumbo, 77 in Jumbo + Standard/Liam + …) → Combos.
 - **Sold singly** → the offer the single sale belongs to, in this order:
-  **Power Deal → Deal of the Week → Combo bag sold singly**, and if none applies → **not on offer**.
+  **Timed offer → Power Deal → Deal of the Week → Combo bag sold singly**, and if none applies → **not on offer**.
+- **Timed offer** (added 27 Sep 2026) = a single-bag sale inside a campaign from
+  `timed_offers_config.json` (the Timed Offers menu), matched **per till line** with that menu's
+  own filters (`timed_offers._shop_sql / _time_sql / _price_sql / _name_sql`): its **shops**
+  (empty = all Kenya), **dates** (from `clearanceStart` when set — the day the clearance really
+  began), **hours** (`startTime`–`endTime`, Nairobi time) and **bags** (`bags` resolved with
+  `bag_classifier`; a `nameLike` offer such as `[REJECT]` takes every matching bag instead).
+  It comes first because the campaign is how the sale was actually priced. A line in two
+  overlapping campaigns counts once, for the first in the config. Sep 2026: *KES 300 Off — Bags
+  Not On Offer* (CBD 10–11 Sep; all Kenya 4–7 pm 11–12 Sep) and *Kitengela Rejects* (from 18 Sep).
+- The **KES 300 discount** till line ("300.0 KES DISCOUNT ON TOTAL AMOUNT") is a general reward
+  rung all month at almost every shop, not the timed offer's discount — it stays **Unclassified**.
   A sale is a **Deal of the Week** sale only if it happened **at a shop running that deal, in its
   tier's weeks** (Tier 1 = Wk 1–2, Tier 2 = Wk 3+; `dowRuns` in `bags_offer_source.json`). A DoW
   bag sold elsewhere / at another time is not a deal sale — e.g. Jumbo sold at Hilton counts as a
@@ -85,18 +101,93 @@ discount reward and a couple of one-off items (Enzo, KCB briefcase) stay unclass
 2. **Trend** — on offer / not on offer / others revenue per week (Monthly) or per day (weekly periods).
 3. **On-offer breakdown by source** — Combo sales / Deal of the Week / Power Deal / combo bags
    sold singly — counted by how it was sold (above). Bar length is relative to the largest row.
-4. **Shops by region** vs their Odoo target (below). Gift bags show in each shop's **Others** column.
+4. **Offer type summary** (below) — one matrix of offer type × category group × tier.
+5. **Shops by region** vs their Odoo target (below). Gift bags show in each shop's **Others** column.
    A **By region / All shops** toggle (remembered per browser): *By region* groups shops under
    their region (with the region filter buttons); *All shops* is one table of every shop with a
    **Region** column, ranked by pace (no-target shops last, then by revenue). Badges are unchanged.
    All shops has filters — region, status (red / amber / green / no target), shop search — and
    click-to-sort headers; **#** stays the Kenya-wide pace rank whatever the filter or sort.
-5. **Bag tables** — on-offer bags: offer tags, `NEW`, **in combos** (units printed inside combos),
+6. **Bag tables** — on-offer bags: offer tags, `NEW`, **in combos** (units printed inside combos),
    **sold singly** (units), which row the singles count in, and singles revenue. Not-on-offer bags:
    `NEW`, sold singly, in combos (self-made combos), revenue, stock, days of cover.
+   Both tables have a **Tier** column — a coloured tag per bag (**Premium** violet, **Core** blue,
+   **Entry** green, dim **No tier**), from `bag_tiers.csv` (each `onBags` / `offBags` row carries
+   `tier` + `category`) — with a **Tier** filter, and it sorts Premium → Core → Entry → No tier.
    Both tables sort by clicking a header (default revenue high→low; blanks always last) and filter
    by bag search + `NEW` only. On-offer adds an **Offer** filter (Power / DoW / Combo); not-on-offer
    adds **Stock** (30+ / 1–29 / out), **Cover** (<14 / 14–90 / >90 days) and **DoW elsewhere**.
+
+## Laptop sleeves are bags (27 Sep 2026)
+
+Any product with **`LAPTOP SLEEVE`** in its name (incl. *Handled Laptop Sleeve…*) resolves to the
+bag **LAPTOP SLEEVE** (category BRIEFCASE) and is counted like any other bag — **not on offer**
+unless an offer covers it. It is no longer an *Others* group.
+
+## Offer type summary (matrix)
+
+Every sale in the period lands in exactly one **offer type** row (same money as the buckets, so
+the rows add up to on + not on + others):
+
+| Row | What it holds |
+|---|---|
+| NOT ON OFFER | the *Not on offer* bucket |
+| POWER DEALS | single sales counted as Power Deal |
+| COMBOS | combo-button sales **+** combo bags sold singly |
+| DEAL OF WK | single sales counted as Deal of the Week |
+| MID-MONTH / OTHERS | timed-offer sales **+** samples |
+| GIFT BAG | gift bags |
+| CORPORATE | corporate invoices |
+
+Columns (revenue / units / share toggle): **All**, **Top 5 categories**, **Other 13 categories**,
+**Premium**, **Core**, **Entry**, and **Unassigned** when anything has no category / tier.
+- **Category** of a bag: `bag_tiers.csv` (`CATEGORY`) when set, else the offer sheet's category
+  (`offer_picking._read_offers` + `reject_sales._category_of`: aliases, then name keywords). The 18
+  categories are the offer sheet's `bag_names` list: BABY BAG, BACKPACK, BRIEFCASE, CHEST BAG,
+  GIFT BAG, HANDBAG, HOOD, LUNCH BAG, MAKE UP, MAN BAG, MESSENGER, SCHOOL BAG, SLING, SPORT,
+  THIGH BAG, TRAVEL, WAIST BAG, WASHBAG.
+- **Top 5** = the 5 categories with the most revenue **in the selected period**; **Other 13** = the
+  rest of the 18. Hovering a header lists its categories.
+- **Tier** of a bag: `bag_tiers.csv` (`TIER` = Premium / Core / Entry), editable. Seeded from the
+  tier pivot (27 Sep 2026) where a category sits in only one tier — Premium: WASHBAG, BABY BAG;
+  Entry: WAIST BAG, THIGH BAG, LUNCH BAG, GIFT BAG, SPORT (Zipped lunchset, Arm band); Core: HOOD,
+  SPORT (Spark, Gym bag). Categories found in several tiers (Backpack, Handbag, Sling, Travel,
+  Man bag, Make up, Briefcase, Messenger, School bag, Chest bag) need each bag's tier filled in;
+  until then those bags are **Unassigned**.
+- **Three tabs** (27 Sep 2026). A shared Revenue / Units / Mix % toggle and an **Offer types**
+  filter (chips — show / hide any offer type; totals and Mix % recompute over the ones shown)
+  drive all of them; tab, filters and toggle are remembered in the browser.
+  - **Offer type** —
+    - *Offer mix by period*: stacked bars + **By period** table for **Monthly, Weekly, Last week**,
+      with a **Periods** filter (pick any of the three; the page's selected period is highlighted).
+    - *Weekly breakdown*: Wk 1 … the current week (Sun–Sat weeks, clipped to the month, same as
+      the trend chart), from `periods.monthly.offerTypesByWeek`: stacked chart + table with a
+      **Weeks** filter; the change column compares the **first and last week picked** (absolute
+      and %). **Totals / Per day** divides each week by its days so far, so a part-week compares
+      fairly.
+    - *Week 1 → latest week*: grouped bars per offer type — the first picked week beside the last
+      (default Wk 1 vs the current week), each bar labelled with its number and the change
+      (▲ / ▼ %) above the pair; a Total pair on the right. Same filters and switches as above.
+  - **Numbers on the bars:** the Offer type tab's charts print each segment's value inside it
+    (when the segment is big enough to hold it) and each stacked bar's total above it.
+  - **Category** — for the page's selected period: the 18 categories ranked by revenue (Top 5
+    tagged), each split by offer type — stacked chart + table (total, share). Mix % = each offer
+    type's share within the category.
+  - **Tier** — a **Tier → Category → Bag** tree (like the tier pivot), for the selected period:
+    Premium / Core / Entry / No tier, each expanding to its categories, each to its individual
+    bags, with every level split by offer type (+ total, share) and a stacked chart per tier.
+    Each **bag row carries its offer tags** (Timed / Power / DoW / Combo — the same pills as the
+    on-offer bag table). Data: `offerTypes.tree` = `{row: {"tier|category|bag": {units, revenue}}}`. Bags without a
+    tier in `bag_tiers.csv` sit under **No tier** — the tree shows exactly which ones.
+- **A combo is one sale:** *Jumbo + Jumbo* rung on the combo button is **1** combo sale (1 unit in
+  the Combos row, its money once) containing **2** bags (the bag tables' *In combos* count 2). For
+  category / tier / bag its money and unit are split evenly over its slots (½ + ½ to JUMBO).
+- **Checked 27 Sep 2026** against independent SQL (`pos_order_line` / `account_move`): every row
+  (Combos' combo-button part, Gift bag, samples + timed = Mid-month, Corporate) and every
+  period / week total matched to rounding (≤ KES 15); category and tier columns each sum to the
+  total; the Top 5 are the 5 highest-revenue categories; Last week = Wk 4.
+- A **combo sale** is split evenly across its slots (each slot's bag → its category / tier).
+  **Corporate** and **samples** have no bag, so they sit in **Unassigned**.
 
 ## Shop metrics (vs the Odoo revenue target)
 

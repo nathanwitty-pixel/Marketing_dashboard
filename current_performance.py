@@ -110,25 +110,9 @@ def monthly_from_db(sheet_value):
         pass
     return sheet_value
 
-def master_from_db():
-    """Reporting month's NET catalogue bags from Postgres (monthly_sales_db.json,
-    written by monthly_sales.py). None if unavailable or not the reporting month."""
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "monthly_sales_db.json")
-    if not os.path.exists(path):
-        return None
-    try:
-        with open(path, encoding="utf-8") as f:
-            data = json.load(f)
-        if data.get("monthKey", "") == report_month.live_month_key():
-            mb = data.get("masterBags")
-            return int(mb) if mb is not None else None
-    except (ValueError, OSError, KeyError, TypeError):
-        pass
-    return None
-
-def reject_from_db():
-    """Reporting month's reject-clearance bags ([REJECT] tag) from monthly_sales_db.json —
-    the subset of Sales that were rejects. 0 if unavailable / not the reporting month."""
+def _db_count(key):
+    """Reporting month's subset count (e.g. rejectBags, giftBags) from monthly_sales_db.json,
+    written by monthly_sales.py. 0 if unavailable / not the reporting month."""
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "monthly_sales_db.json")
     if not os.path.exists(path):
         return 0
@@ -136,7 +120,7 @@ def reject_from_db():
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
         if data.get("monthKey", "") == report_month.live_month_key():
-            return int(data.get("rejectBags") or 0)
+            return int(data.get(key) or 0)
     except (ValueError, OSError, KeyError, TypeError):
         pass
     return 0
@@ -263,11 +247,8 @@ weekly_sales_total = weekly_from_db(weekly_sales_total)
 # SALES column for past months or when the DB/file isn't there.
 total_sales = monthly_from_db(total_sales)
 
-# Net catalogue bags (master-list products only) for the KPI card.
-master_bags = master_from_db()
-
 # Corporate bags (dynamic, from Odoo customer invoices — NOT the POS tills, so
-# they're absent from Weekly Sales and Net Bags Sold, which stay POS-only).
+# they're absent from Weekly Sales, which stays POS-only).
 # Added on top of POS in the Sales card only.
 def corporate_from_db():
     """Current month's corporate bags, live from Odoo invoices. 0 when the DB
@@ -291,13 +272,19 @@ def corporate_from_db():
     return 0
 
 corporate_bags = corporate_from_db()
-sales_pos      = total_sales                    # POS-only (Weekly / Net Bags basis)
+sales_pos      = total_sales                    # POS-only (Weekly basis)
 total_sales    = total_sales + corporate_bags   # Sales card = POS + corporate
 
-# Reject-clearance bags ([REJECT] tag) — a subset of the POS bags, so the Sales card can
-# split "of N sold, R were rejects". % is of the POS total (rejects are POS, not corporate).
-reject_bags = reject_from_db()
+# Subsets of the POS bags for the Sales-card breakdown — reject-clearance bags ([REJECT] tag)
+# and gift bags: "of N sold, R were rejects, G were gift bags". % is of the POS total.
+reject_bags = _db_count("rejectBags")
 reject_pct  = (reject_bags / sales_pos * 100) if sales_pos else 0
+gift_bags   = _db_count("giftBags")
+gift_pct    = (gift_bags / sales_pos * 100) if sales_pos else 0
+# Samples and customisation sold, shown alongside (samples + customisation charges aren't in Sales).
+samples     = _db_count("samples")
+custom_bags = _db_count("customBags")
+custom_fees = _db_count("customFees")
 
 # Month-boundary handling: split the straddling week's total by month.
 carryover_bags, carryover_date, prev_month_rec = update_month_boundary(weekly_sales_total)
@@ -508,7 +495,11 @@ inline_script = (
     f'  corporateBags:      "{fmt_int(corporate_bags)}",\n'
     f'  rejectBags:         "{fmt_int(reject_bags)}",\n'
     f'  rejectPct:          "{fmt_pct(reject_pct)}",\n'
-    f'  masterBags:         "{fmt_int(master_bags) if master_bags is not None else "—"}",\n'
+    f'  giftBags:           "{fmt_int(gift_bags)}",\n'
+    f'  giftPct:            "{fmt_pct(gift_pct)}",\n'
+    f'  samples:            "{fmt_int(samples)}",\n'
+    f'  customBags:         "{fmt_int(custom_bags)}",\n'
+    f'  customFees:         "{fmt_int(custom_fees)}",\n'
     f'  previousSalesPct:   "{fmt_pct(previous_sales_pct)}",\n'
     f'  previousSalesBags:  "{fmt_int(previous_sales_bags)}",\n'
     f'  wowSalesPct:        "{fmt_signed_pct(wow_sales_pct)}",\n'
