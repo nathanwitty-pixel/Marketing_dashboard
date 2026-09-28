@@ -526,7 +526,7 @@ def _seasonality(cost, prices, catalog):
     LEFT JOIN pos_config pc ON ps.config_id=pc.id
     LEFT JOIN product_product pp ON pl.product_id=pp.id
     LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
-    WHERE p.state IN ('done','paid') AND pl.qty>0 AND pl.price_subtotal>0
+    WHERE p.state IN ('done', 'invoiced', 'paid') AND pl.qty>0 AND pl.price_subtotal>0
       AND pt."name" LIKE '%+%' AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
       AND lower(COALESCE(pc."name",'')) NOT IN ('sinza','dar-es-alam','uganda')
       AND p.date_order >= '2025-07-01'

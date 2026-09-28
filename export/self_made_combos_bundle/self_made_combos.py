@@ -67,7 +67,7 @@ LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 WHERE p.date_order::date BETWEEN :start_date AND :end_date
-  AND p.state IN ('done', 'paid')
+  AND p.state IN ('done', 'invoiced', 'paid')
   AND pl.qty <> 0
   AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
   -- A combo follows the naming convention "A + B" — every real running and
@@ -95,7 +95,7 @@ LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 WHERE p.date_order::date BETWEEN :start_date AND :end_date
-  AND p.state IN ('done', 'paid') AND pl.qty <> 0
+  AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
   AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
   AND pt."name" LIKE '%+%'
 """
@@ -264,7 +264,7 @@ ORDER BY r.create_date DESC, r.id DESC
 _WK_EXPR = ("(((p.date_order::date - (EXTRACT(DOW FROM p.date_order::date)::int)) "
             "- :anchor) / 7 + 1)")
 _COMBO_WHERE = """
-  AND p.state IN ('done', 'paid') AND pl.qty <> 0
+  AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
   AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
   AND pt."name" LIKE '%+%'
   AND pt."name" NOT ILIKE '%delivery%'
@@ -374,7 +374,7 @@ LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 WHERE p.date_order::date BETWEEN :start_date AND :end_date
-  AND p.state IN ('done', 'paid') AND pl.qty <> 0
+  AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
   AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
   AND pt."name" NOT LIKE '%+%'   -- combo products belong to the combos view, not deals
 GROUP BY UPPER(pt."name")
@@ -389,7 +389,7 @@ LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 WHERE p.date_order::date BETWEEN :start_date AND :end_date
-  AND p.state IN ('done', 'paid') AND pl.qty <> 0
+  AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
   AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
   AND pt."name" NOT LIKE '%+%'   -- combo products belong to the combos view, not deals
 GROUP BY UPPER(pt."name"), wk
@@ -405,7 +405,7 @@ LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 WHERE p.date_order::date BETWEEN :start_date AND :end_date
-  AND p.state IN ('done', 'paid') AND pl.qty <> 0
+  AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
   AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
   AND pt."name" NOT LIKE '%+%'   -- combo products belong to the combos view, not deals
 GROUP BY UPPER(pc."name"), UPPER(pt."name")
@@ -740,7 +740,7 @@ LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
-WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid') AND pl.qty <> 0
+WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
   AND lower(COALESCE(pc."name",'')) NOT IN ('sinza','dar-es-alam','uganda')
   AND pt."name" NOT LIKE '%+%'
   AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
@@ -821,7 +821,7 @@ LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
-WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid') AND pl.qty <> 0
+WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
   AND lower(COALESCE(pc."name",'')) NOT IN ('sinza','dar-es-alam','uganda')
   AND pt."name" LIKE '%+%' AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
 GROUP BY shop, pt."name"
@@ -833,7 +833,7 @@ LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
-WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid') AND pl.qty <> 0
+WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
   AND lower(COALESCE(pc."name",'')) NOT IN ('sinza','dar-es-alam','uganda')
   AND pt."name" NOT LIKE '%+%'
 GROUP BY shop, UPPER(pt."name")

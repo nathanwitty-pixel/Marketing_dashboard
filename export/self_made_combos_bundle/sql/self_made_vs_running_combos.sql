@@ -44,7 +44,7 @@ combo_sales AS (   -- this month's Kenya sales for each combo product
            ROUND(SUM(pl.price_subtotal_incl))::int       AS revenue
     FROM params pr
     JOIN pos_order      p  ON p.date_order::date BETWEEN pr.start_date AND pr.end_date
-                          AND p.state IN ('done', 'paid')
+                          AND p.state IN ('done', 'invoiced', 'paid')
     JOIN pos_order_line pl ON pl.order_id = p.id AND pl.qty <> 0
     JOIN product_product  pp ON pp.id = pl.product_id
     JOIN combo_flags      cf ON cf.tmpl_id = pp.product_tmpl_id

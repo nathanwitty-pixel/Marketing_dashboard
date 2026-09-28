@@ -44,10 +44,9 @@ Sold figures match a new product to its Odoo variants by **name prefix**
 (`re.sub(r"^\[[^\]]*\]\s*", "", p)`) — without it, that variant is silently dropped.
 This once cost Lamora 4 units this month (10 vs 14) and 38 lifetime.
 
-> Note: New Products counts standalone `full_product_name` sales and excludes
-> combo/reward/strap/gift lines (via `_BAGS_WHERE`), so its Lamora lifetime is 227 /
-> Black 118. A raw template-name count is 229 / Black 120 — the 2-unit gap is Black units
-> sold on excluded line types. Both are correct; they answer different questions.
+> Note: New Products counts `full_product_name` sales via `_BAGS_WHERE` (reward/strap/gift
+> lines excluded) **plus** the bags inside combos (sub-lines, added by
+> `odoo_combo_product_bags()` — see *Odoo sales window* below).
 
 ## Per-product chart (Sold vs Still needed) — targets per period
 
@@ -66,12 +65,22 @@ read as far behind when 32 vs a weekly share of ~55 was the real picture.)
 
 ## Odoo sales window (`odoo_sales_window`) — same rules as the monthly total
 
-The per-colour monthly / this-week / last-week figures come from `odoo_sales_window`. It now
-uses the same rules as the product totals (`queries._BAGS_WHERE`): **Nairobi-local order date**
-(`date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi'`) and **no combo sub-lines**
-(`sub_product_line` — the bags printed inside a combo, KES 0; they're combo sales, not single
-sales). Previously it used the UTC date and counted sub-lines, so weekly figures were ±1 off the
-monthly totals (e.g. Voyage's only sale was a bag inside a combo).
+The per-colour monthly / this-week / last-week figures come from `odoo_sales_window`. It uses
+the **Nairobi-local order date** (`date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi'`)
+and order states **done / invoiced / paid**.
+
+**Bags sold inside combos count** (decided 28 Sep 2026). A new bag sold in a combo is still a
+sale of that bag, so every period includes the combo **sub-lines** (`sub_product_line` — one
+line per bag inside the combo, exact colour, KES 0); only the combo line itself
+(`is_combo_line`, e.g. "Zula + Antitheft Combo") is left out. The product totals
+(monthly Sold, Lifetime) add the same sub-lines via `odoo_combo_product_bags()` on top of
+`queries.WEEKLY_BAGS_SOLD`, so per-colour and per-product figures agree. E.g. last week
+(20–26 Sep) Zula = 24 standalone + 2 in combos = **26**; Voyage = 0 + 1 = **1**.
+
+**Invoiced orders count.** A till order re-rung as an invoice has state `invoiced`, not
+`done` — e.g. HAZINA/29593 (Amora Black, 26 Sep) was refunded and re-rung as HAZINA/29594
+(`invoiced`); a done/paid-only filter nets the pair to 0 and drops the sale (Amora showed 1,
+really 2). All POS queries in the repo now use `('done', 'invoiced', 'paid')`.
 
 ## Month / week windows
 

@@ -51,7 +51,7 @@ LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
-WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid') AND pl.qty <> 0 AND NOT COALESCE(pl.sub_product_line, false)
+WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0 AND NOT COALESCE(pl.sub_product_line, false)
   {_KENYA_TILLS}
   AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
   AND pt."name" NOT ILIKE '%strap%'
@@ -65,7 +65,7 @@ SELECT UPPER(COALESCE(pc."name",'?')) AS shop, p.date_order::date AS d,
 FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
-WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid')
+WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid')
   {_KENYA_TILLS}
 GROUP BY 1, 2
 """
@@ -106,7 +106,7 @@ LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
-WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid') AND pl.qty <> 0
+WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
   AND COALESCE(pl.sub_product_line, false)
   {_KENYA_TILLS}
 GROUP BY 1, 2
@@ -122,7 +122,7 @@ LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
-WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid') AND pl.qty < 0
+WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty < 0
   {_KENYA_TILLS}
   AND pt."name" LIKE '%+%' AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
   AND NOT EXISTS (SELECT 1 FROM pos_order_line sl WHERE sl.order_id = p.id AND COALESCE(sl.sub_product_line, false))
@@ -140,7 +140,7 @@ LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
-WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','paid') AND pl.qty <> 0 AND NOT COALESCE(pl.sub_product_line, false)
+WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0 AND NOT COALESCE(pl.sub_product_line, false)
   {_KENYA_TILLS}
   AND pt."name" NOT LIKE '%+%'
 """

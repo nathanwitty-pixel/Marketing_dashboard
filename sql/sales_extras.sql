@@ -20,6 +20,6 @@ JOIN pos_order_line pl ON pl.order_id = p.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 WHERE p.date_order::date BETWEEN dp.start_date AND dp.end_date
-  AND p.state IN ('done', 'paid')
+  AND p.state IN ('done', 'invoiced', 'paid')
   AND pl.qty <> 0
   AND (pt."name" ILIKE '%sample%' OR pt."name" ILIKE '%customi%')

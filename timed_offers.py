@@ -243,7 +243,7 @@ def odoo_window_sales(bags, start, end, market):
     LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
     LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
     WHERE p.date_order::date BETWEEN CAST(:s AS date) AND CAST(:e AS date)
-      AND p.state IN ('done','paid'){_QTY_SQL}
+      AND p.state IN ('done', 'invoiced', 'paid'){_QTY_SQL}
       AND lower(COALESCE(pc."name",'')) NOT IN {non_kenya}
     {_SHOP_SQL}{_TIME_SQL}{_PRICE_SQL}{_NAME_SQL}
       AND COALESCE(pt."name",'') NOT LIKE '%+%'
@@ -297,7 +297,7 @@ def odoo_daily_kenya(bags, start, end, name_sql=None):
     LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
     LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
     WHERE p.date_order::date BETWEEN CAST(:s AS date) AND CAST(:e AS date)
-      AND p.state IN ('done','paid'){_QTY_SQL}
+      AND p.state IN ('done', 'invoiced', 'paid'){_QTY_SQL}
       AND lower(COALESCE(pc."name",'')) NOT IN ('sinza','dar-es-alam','uganda')
     {_SHOP_SQL}{_TIME_SQL}{_PRICE_SQL}{_nm}
       AND COALESCE(pt."name",'') NOT LIKE '%+%'
@@ -337,7 +337,7 @@ def odoo_bag_prices(bags, start, end):
     LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
     LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
     WHERE p.date_order::date BETWEEN CAST(:s AS date) AND CAST(:e AS date)
-      AND p.state IN ('done','paid')
+      AND p.state IN ('done', 'invoiced', 'paid')
       AND lower(COALESCE(pc."name",'')) NOT IN ('sinza','dar-es-alam','uganda')
       AND COALESCE(pt."name",'') NOT LIKE '%+%'
       AND COALESCE(pt."name",'') NOT ILIKE '%delivery%'
@@ -482,7 +482,7 @@ def reject_variants(start, end):
     LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
     LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
     WHERE p.date_order::date BETWEEN CAST(:s AS date) AND CAST(:e AS date)
-      AND p.state IN ('done','paid'){_QTY_SQL}
+      AND p.state IN ('done', 'invoiced', 'paid'){_QTY_SQL}
       AND lower(COALESCE(pc."name",'')) NOT IN {non_kenya}
     {_SHOP_SQL}{_TIME_SQL}{_PRICE_SQL}{_NAME_SQL}
       AND COALESCE(pt."name",'') NOT LIKE '%+%'
@@ -644,7 +644,7 @@ def odoo_bag_daily_value(bags, start, end):
          'LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id '
          'LEFT JOIN product_category pcat ON pcat.id = pt.categ_id '
          'WHERE p.date_order::date BETWEEN CAST(:s AS date) AND CAST(:e AS date) '
-         "  AND p.state IN ('done','paid') "
+         "  AND p.state IN ('done', 'invoiced', 'paid') "
          '  AND lower(COALESCE(pc."name",\'\')) NOT IN (\'sinza\',\'dar-es-alam\',\'uganda\') '
          + _QTY_SQL + _SHOP_SQL + _TIME_SQL + _PRICE_SQL + _NAME_SQL +
          '  AND COALESCE(pt."name",\'\') NOT LIKE \'%+%\' '

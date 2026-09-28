@@ -80,7 +80,7 @@ LEFT JOIN product_product pp ON pl.product_id = pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
 WHERE p.date_order::date BETWEEN CAST(:start_date AS DATE) AND CAST(:end_date AS DATE)
-  AND p.state IN ('done', 'paid')
+  AND p.state IN ('done', 'invoiced', 'paid')
   AND pl.qty <> 0
   AND COALESCE(pt."name", '') NOT LIKE '%+%'
   AND COALESCE(pt."name", '') NOT ILIKE '%delivery%'

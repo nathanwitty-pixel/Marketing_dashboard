@@ -60,6 +60,21 @@ def fmt_pct(p):
 
 
 # ── ODOO SALES (source of truth for new-product sold) ─────────
+def odoo_combo_product_bags(start_date, end_date):
+    """[(product name, bags)] for bags sold INSIDE combos (sub_product_line) in the window.
+    queries.WEEKLY_BAGS_SOLD leaves these out (they're combo sales there), but a new bag
+    sold in a combo still counts on this page, so callers add these to that list. Same
+    filters otherwise (states, Nairobi dates, straps/gift bags/etc. excluded)."""
+    from lib import db, queries
+    sql = queries.WEEKLY_BAGS_SOLD.replace(
+        "COALESCE(l.sub_product_line, false)   = false",
+        "COALESCE(l.sub_product_line, false)   = true")
+    df = db.run_query(sql, {"start_date": start_date, "end_date": end_date})
+    if df is None or df.empty:
+        return []
+    return [(str(r["product"]), int(round(float(r["bags"] or 0)))) for _, r in df.iterrows()]
+
+
 def odoo_month_product_bags():
     """Reporting month's bags per product from Odoo (Postgres), or None if the DB
     isn't reachable. Product list still comes from MONTHLY_TARGET; only the SOLD
@@ -80,9 +95,8 @@ def odoo_month_product_bags():
                       {"start_date": start.isoformat(), "end_date": end.isoformat()})
     if df is None:
         return None
-    if df.empty:
-        return []
-    return [(str(r["product"]), int(round(float(r["bags"] or 0)))) for _, r in df.iterrows()]
+    return ([(str(r["product"]), int(round(float(r["bags"] or 0)))) for _, r in df.iterrows()]
+            + odoo_combo_product_bags(start.isoformat(), end.isoformat()))
 
 
 def odoo_lifetime_product_bags():
@@ -100,9 +114,8 @@ def odoo_lifetime_product_bags():
                       {"start_date": "2000-01-01", "end_date": date.today().isoformat()})
     if df is None:
         return None
-    if df.empty:
-        return []
-    return [(str(r["product"]), int(round(float(r["bags"] or 0)))) for _, r in df.iterrows()]
+    return ([(str(r["product"]), int(round(float(r["bags"] or 0)))) for _, r in df.iterrows()]
+            + odoo_combo_product_bags("2000-01-01", date.today().isoformat()))
 
 
 # One matching key for sheet/catalogue names and Odoo names alike: odoo_tabs.base_name folds
@@ -258,8 +271,9 @@ def odoo_sales_window(start, end):
     LEFT JOIN product_product pp ON pl.product_id = pp.id
     LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
     WHERE (p.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETWEEN :s AND :e
-      AND p.state IN ('done', 'paid') AND pl.qty <> 0
-      AND NOT COALESCE(pl.sub_product_line, false)   -- bags inside a combo are combo sales
+      AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
+      AND NOT COALESCE(pl.is_combo_line, false)   -- the combo line itself; the bags inside it
+                                                  -- (sub_product_line) ARE counted as sales
     GROUP BY UPPER(pt."name")
     """
     df = db.run_query(sql, {"s": start.isoformat(), "e": end.isoformat()})

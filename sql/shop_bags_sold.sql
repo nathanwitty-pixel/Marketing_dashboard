@@ -24,7 +24,7 @@ LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
 CROSS JOIN params dr
 WHERE p.date_order::date BETWEEN dr.start_date AND dr.end_date
-  AND p.state IN ('done', 'paid')
+  AND p.state IN ('done', 'invoiced', 'paid')
   AND COALESCE(pt."name", '') NOT LIKE '%+%'
   AND COALESCE(pt."name", '') NOT ILIKE '%Delivery Fee%'
   AND COALESCE(pt."name", '') NOT ILIKE '%Gift Bag%'
