@@ -1161,6 +1161,18 @@
       "source_location": "L171"
     },
     {
+      "id": "lib_db_drop_shared_conn",
+      "label": "_drop_shared_conn()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 10,
+      "community_name": "lib/db.py",
+      "file_type": "code",
+      "norm_label": "_drop_shared_conn()",
+      "source_file": "lib/db.py",
+      "source_location": "L129"
+    },
+    {
       "id": "lib_db_env",
       "label": "_env()",
       "_callable": true,
@@ -2109,6 +2121,18 @@
       "source_location": "L354"
     },
     {
+      "id": "new_products_odoo_colour",
+      "label": "_odoo_colour()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "odoo_tabs.py",
+      "file_type": "code",
+      "norm_label": "_odoo_colour()",
+      "source_file": "new_products.py",
+      "source_location": "L138"
+    },
+    {
       "id": "lib_db_check_connection",
       "label": "check_connection()",
       "_callable": true,
@@ -2205,18 +2229,6 @@
       "source_location": "L758"
     },
     {
-      "id": "timed_offers_name_sql",
-      "label": "_name_sql()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 17,
-      "community_name": "check_connection",
-      "file_type": "code",
-      "norm_label": "_name_sql()",
-      "source_file": "timed_offers.py",
-      "source_location": "L176"
-    },
-    {
       "id": "timed_offers_odoo_bag_daily_value",
       "label": "odoo_bag_daily_value()",
       "_callable": true,
@@ -2287,6 +2299,18 @@
       "norm_label": "odoo_window_sales()",
       "source_file": "timed_offers.py",
       "source_location": "L219"
+    },
+    {
+      "id": "timed_offers_shop_sql",
+      "label": "_shop_sql()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "check_connection",
+      "file_type": "code",
+      "norm_label": "_shop_sql()",
+      "source_file": "timed_offers.py",
+      "source_location": "L144"
     },
     {
       "id": "timed_offers_time_sql",
@@ -2685,6 +2709,18 @@
       "source_location": "L417"
     },
     {
+      "id": "timed_offers_price_sql",
+      "label": "_price_sql()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "timed_offers.py",
+      "file_type": "code",
+      "norm_label": "_price_sql()",
+      "source_file": "timed_offers.py",
+      "source_location": "L164"
+    },
+    {
       "id": "timed_offers_reject_variants",
       "label": "reject_variants()",
       "_callable": true,
@@ -2731,18 +2767,6 @@
       "norm_label": "_sheet_category_by_bag()",
       "source_file": "timed_offers.py",
       "source_location": "L368"
-    },
-    {
-      "id": "timed_offers_shop_sql",
-      "label": "_shop_sql()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "timed_offers.py",
-      "file_type": "code",
-      "norm_label": "_shop_sql()",
-      "source_file": "timed_offers.py",
-      "source_location": "L144"
     },
     {
       "id": "timed_offers_singular_tokens",
@@ -2973,16 +2997,16 @@
       "source_location": "L1744"
     },
     {
-      "id": "self_made_combos_dstr",
-      "label": "_dstr()",
+      "id": "self_made_combos_build_sheet_slots",
+      "label": "_build_sheet_slots()",
       "_callable": true,
       "_origin": "ast",
       "community": 20,
       "community_name": "build_payload",
       "file_type": "code",
-      "norm_label": "_dstr()",
+      "norm_label": "_build_sheet_slots()",
       "source_file": "self_made_combos.py",
-      "source_location": "L301"
+      "source_location": "L813"
     },
     {
       "id": "self_made_combos_odoo_stock_for",
@@ -2997,72 +3021,12 @@
       "source_location": "L179"
     },
     {
-      "id": "bags_on_offer_fetch_base",
-      "label": "base()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "bag_classifier",
-      "file_type": "code",
-      "norm_label": "base()",
-      "source_file": "bags_on_offer.py",
-      "source_location": "L612"
-    },
-    {
-      "id": "bags_on_offer_fetch_new_of",
-      "label": "new_of()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "bag_classifier",
-      "file_type": "code",
-      "norm_label": "new_of()",
-      "source_file": "bags_on_offer.py",
-      "source_location": "L598"
-    },
-    {
-      "id": "bags_on_offer_fetch_resolve",
-      "label": "resolve()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "bag_classifier",
-      "file_type": "code",
-      "norm_label": "resolve()",
-      "source_file": "bags_on_offer.py",
-      "source_location": "L729"
-    },
-    {
-      "id": "bags_on_offer_fetch_sources_of",
-      "label": "sources_of()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "bag_classifier",
-      "file_type": "code",
-      "norm_label": "sources_of()",
-      "source_file": "bags_on_offer.py",
-      "source_location": "L591"
-    },
-    {
-      "id": "bags_on_offer_other_group",
-      "label": "_other_group()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "bag_classifier",
-      "file_type": "code",
-      "norm_label": "_other_group()",
-      "source_file": "bags_on_offer.py",
-      "source_location": "L193"
-    },
-    {
       "id": "self_made_combos_bag_classifier",
       "label": "bag_classifier()",
       "_callable": true,
       "_origin": "ast",
       "community": 22,
-      "community_name": "bag_classifier",
+      "community_name": "Bags on offer vs not on offer",
       "file_type": "code",
       "norm_label": "bag_classifier()",
       "source_file": "self_made_combos.py",
@@ -3074,23 +3038,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 22,
-      "community_name": "bag_classifier",
+      "community_name": "Bags on offer vs not on offer",
       "file_type": "code",
       "norm_label": "infer()",
       "source_file": "self_made_combos.py",
       "source_location": "L933"
-    },
-    {
-      "id": "self_made_combos_bag_classifier_is_on_offer",
-      "label": "is_on_offer()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "bag_classifier",
-      "file_type": "code",
-      "norm_label": "is_on_offer()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L942"
     },
     {
       "id": "self_made_combos_bag_classifier_norm",
@@ -3098,11 +3050,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 22,
-      "community_name": "bag_classifier",
+      "community_name": "Bags on offer vs not on offer",
       "file_type": "code",
       "norm_label": "_norm()",
       "source_file": "self_made_combos.py",
       "source_location": "L926"
+    },
+    {
+      "id": "self_made_combos_load_bag_prices",
+      "label": "_load_bag_prices()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 22,
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "code",
+      "norm_label": "_load_bag_prices()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L837"
     },
     {
       "id": "streamlit_app_inline_local_script",
@@ -3285,72 +3249,12 @@
       "source_location": "L325"
     },
     {
-      "id": "bags_on_offer_load_source",
-      "label": "_load_source()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "fetch",
-      "file_type": "code",
-      "norm_label": "_load_source()",
-      "source_file": "bags_on_offer.py",
-      "source_location": "L215"
-    },
-    {
-      "id": "self_made_combos_bags_not_on_offer",
-      "label": "_bags_not_on_offer()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "fetch",
-      "file_type": "code",
-      "norm_label": "_bags_not_on_offer()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L949"
-    },
-    {
-      "id": "self_made_combos_fetch",
-      "label": "fetch()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "fetch",
-      "file_type": "code",
-      "norm_label": "fetch()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L1888"
-    },
-    {
-      "id": "self_made_combos_read_deals",
-      "label": "_read_deals()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "fetch",
-      "file_type": "code",
-      "norm_label": "_read_deals()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L692"
-    },
-    {
-      "id": "self_made_combos_read_deals_pn",
-      "label": "_pn()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "fetch",
-      "file_type": "code",
-      "norm_label": "_pn()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L704"
-    },
-    {
       "id": "self_made_combos_read_offer_analysis",
       "label": "_read_offer_analysis()",
       "_callable": true,
       "_origin": "ast",
       "community": 26,
-      "community_name": "fetch",
+      "community_name": "_read_offer_analysis",
       "file_type": "code",
       "norm_label": "_read_offer_analysis()",
       "source_file": "self_made_combos.py",
@@ -3362,23 +3266,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 26,
-      "community_name": "fetch",
+      "community_name": "_read_offer_analysis",
       "file_type": "code",
       "norm_label": "_region_stock()",
       "source_file": "self_made_combos.py",
       "source_location": "L327"
-    },
-    {
-      "id": "self_made_combos_region_on_offer_bags",
-      "label": "_region_on_offer_bags()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "fetch",
-      "file_type": "code",
-      "norm_label": "_region_on_offer_bags()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L1016"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_enrich_deals",
@@ -3523,18 +3415,6 @@
       "norm_label": "_corporate_bags()",
       "source_file": "forward_projections.py",
       "source_location": "L40"
-    },
-    {
-      "id": "lib_db_drop_shared_conn",
-      "label": "_drop_shared_conn()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "new_products.py",
-      "file_type": "code",
-      "norm_label": "_drop_shared_conn()",
-      "source_file": "lib/db.py",
-      "source_location": "L129"
     },
     {
       "id": "lib_db_run_query",
@@ -3825,18 +3705,6 @@
       "source_location": "L695"
     },
     {
-      "id": "new_products_odoo_colour",
-      "label": "_odoo_colour()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "new_products.py",
-      "file_type": "code",
-      "norm_label": "_odoo_colour()",
-      "source_file": "new_products.py",
-      "source_location": "L138"
-    },
-    {
       "id": "new_products_odoo_combo_product_bags",
       "label": "odoo_combo_product_bags()",
       "_callable": true,
@@ -3969,6 +3837,18 @@
       "source_location": "L563"
     },
     {
+      "id": "bags_on_offer_fetch_base",
+      "label": "base()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "bags_on_offer.py",
+      "file_type": "code",
+      "norm_label": "base()",
+      "source_file": "bags_on_offer.py",
+      "source_location": "L612"
+    },
+    {
       "id": "bags_on_offer_fetch_cat_tier",
       "label": "cat_tier()",
       "_callable": true,
@@ -3979,6 +3859,30 @@
       "norm_label": "cat_tier()",
       "source_file": "bags_on_offer.py",
       "source_location": "L771"
+    },
+    {
+      "id": "bags_on_offer_fetch_new_of",
+      "label": "new_of()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "bags_on_offer.py",
+      "file_type": "code",
+      "norm_label": "new_of()",
+      "source_file": "bags_on_offer.py",
+      "source_location": "L598"
+    },
+    {
+      "id": "bags_on_offer_fetch_resolve",
+      "label": "resolve()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "bags_on_offer.py",
+      "file_type": "code",
+      "norm_label": "resolve()",
+      "source_file": "bags_on_offer.py",
+      "source_location": "L729"
     },
     {
       "id": "bags_on_offer_fetch_rows",
@@ -4003,6 +3907,18 @@
       "norm_label": "seg_of()",
       "source_file": "bags_on_offer.py",
       "source_location": "L783"
+    },
+    {
+      "id": "bags_on_offer_fetch_sources_of",
+      "label": "sources_of()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "bags_on_offer.py",
+      "file_type": "code",
+      "norm_label": "sources_of()",
+      "source_file": "bags_on_offer.py",
+      "source_location": "L591"
     },
     {
       "id": "bags_on_offer_fmt",
@@ -4077,6 +3993,18 @@
       "source_location": "L258"
     },
     {
+      "id": "bags_on_offer_other_group",
+      "label": "_other_group()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "bags_on_offer.py",
+      "file_type": "code",
+      "norm_label": "_other_group()",
+      "source_file": "bags_on_offer.py",
+      "source_location": "L193"
+    },
+    {
       "id": "bags_on_offer_previous_payload",
       "label": "_previous_payload()",
       "_callable": true,
@@ -4113,16 +4041,28 @@
       "source_location": "L281"
     },
     {
-      "id": "timed_offers_price_sql",
-      "label": "_price_sql()",
+      "id": "self_made_combos_bag_classifier_is_on_offer",
+      "label": "is_on_offer()",
       "_callable": true,
       "_origin": "ast",
       "community": 32,
       "community_name": "bags_on_offer.py",
       "file_type": "code",
-      "norm_label": "_price_sql()",
+      "norm_label": "is_on_offer()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L942"
+    },
+    {
+      "id": "timed_offers_name_sql",
+      "label": "_name_sql()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "bags_on_offer.py",
+      "file_type": "code",
+      "norm_label": "_name_sql()",
       "source_file": "timed_offers.py",
-      "source_location": "L164"
+      "source_location": "L176"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_combo_button_usage",
@@ -4567,6 +4507,66 @@
       "norm_label": "_is_combo_bag()",
       "source_file": "self_made_combos.py",
       "source_location": "L628"
+    },
+    {
+      "id": "self_made_combos_enrich_deals_match",
+      "label": "_match()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 41,
+      "community_name": "_enrich_deals",
+      "file_type": "code",
+      "norm_label": "_match()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L515"
+    },
+    {
+      "id": "self_made_combos_enrich_deals_match_full",
+      "label": "_full()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 41,
+      "community_name": "_enrich_deals",
+      "file_type": "code",
+      "norm_label": "_full()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L524"
+    },
+    {
+      "id": "self_made_combos_enrich_deals_match_full_of",
+      "label": "_full_of()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 41,
+      "community_name": "_enrich_deals",
+      "file_type": "code",
+      "norm_label": "_full_of()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L523"
+    },
+    {
+      "id": "self_made_combos_enrich_deals_match_rooted",
+      "label": "_rooted()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 41,
+      "community_name": "_enrich_deals",
+      "file_type": "code",
+      "norm_label": "_rooted()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L525"
+    },
+    {
+      "id": "self_made_combos_enrich_deals_match_stock_match",
+      "label": "_stock_match()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 41,
+      "community_name": "_enrich_deals",
+      "file_type": "code",
+      "norm_label": "_stock_match()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L526"
     },
     {
       "id": "self_made_combos_enrich_deals_norm",
@@ -5582,7 +5582,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 60,
-      "community_name": "month_end.py",
+      "community_name": "datetime",
       "file_type": "code",
       "norm_label": "clear_timed_offers()",
       "source_file": "month_end.py",
@@ -5594,7 +5594,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 60,
-      "community_name": "month_end.py",
+      "community_name": "datetime",
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "month_end.py",
@@ -5606,7 +5606,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 60,
-      "community_name": "month_end.py",
+      "community_name": "datetime",
       "file_type": "code",
       "norm_label": "run()",
       "source_file": "month_end.py",
@@ -5618,7 +5618,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 60,
-      "community_name": "month_end.py",
+      "community_name": "datetime",
       "file_type": "code",
       "norm_label": "target_month()",
       "source_file": "month_end.py",
@@ -6621,6 +6621,18 @@
       "source_location": "L21"
     },
     {
+      "id": "bags_on_offer_load_source",
+      "label": "_load_source()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 85,
+      "community_name": "self_made_combos.py",
+      "file_type": "code",
+      "norm_label": "_load_source()",
+      "source_file": "bags_on_offer.py",
+      "source_location": "L215"
+    },
+    {
       "id": "self_made_combos_bag_sales_daily_sql",
       "label": "_bag_sales_daily_sql()",
       "_callable": true,
@@ -6645,16 +6657,16 @@
       "source_location": "L861"
     },
     {
-      "id": "self_made_combos_build_sheet_slots",
-      "label": "_build_sheet_slots()",
+      "id": "self_made_combos_bags_not_on_offer",
+      "label": "_bags_not_on_offer()",
       "_callable": true,
       "_origin": "ast",
       "community": 85,
       "community_name": "self_made_combos.py",
       "file_type": "code",
-      "norm_label": "_build_sheet_slots()",
+      "norm_label": "_bags_not_on_offer()",
       "source_file": "self_made_combos.py",
-      "source_location": "L813"
+      "source_location": "L949"
     },
     {
       "id": "self_made_combos_dow_tier_weeks",
@@ -6667,6 +6679,30 @@
       "norm_label": "dow_tier_weeks()",
       "source_file": "self_made_combos.py",
       "source_location": "L445"
+    },
+    {
+      "id": "self_made_combos_dstr",
+      "label": "_dstr()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 85,
+      "community_name": "self_made_combos.py",
+      "file_type": "code",
+      "norm_label": "_dstr()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L301"
+    },
+    {
+      "id": "self_made_combos_fetch",
+      "label": "fetch()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 85,
+      "community_name": "self_made_combos.py",
+      "file_type": "code",
+      "norm_label": "fetch()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L1888"
     },
     {
       "id": "self_made_combos_fmt",
@@ -6693,18 +6729,6 @@
       "source_location": "L1935"
     },
     {
-      "id": "self_made_combos_load_bag_prices",
-      "label": "_load_bag_prices()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 85,
-      "community_name": "self_made_combos.py",
-      "file_type": "code",
-      "norm_label": "_load_bag_prices()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L837"
-    },
-    {
       "id": "self_made_combos_load_shop_regions",
       "label": "_load_shop_regions()",
       "_callable": true,
@@ -6729,6 +6753,42 @@
       "source_location": "L1978"
     },
     {
+      "id": "self_made_combos_read_deals",
+      "label": "_read_deals()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 85,
+      "community_name": "self_made_combos.py",
+      "file_type": "code",
+      "norm_label": "_read_deals()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L692"
+    },
+    {
+      "id": "self_made_combos_read_deals_pn",
+      "label": "_pn()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 85,
+      "community_name": "self_made_combos.py",
+      "file_type": "code",
+      "norm_label": "_pn()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L704"
+    },
+    {
+      "id": "self_made_combos_region_on_offer_bags",
+      "label": "_region_on_offer_bags()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 85,
+      "community_name": "self_made_combos.py",
+      "file_type": "code",
+      "norm_label": "_region_on_offer_bags()",
+      "source_file": "self_made_combos.py",
+      "source_location": "L1016"
+    },
+    {
       "id": "self_made_combos_write_bags_offer_source",
       "label": "write_bags_offer_source()",
       "_callable": true,
@@ -6739,66 +6799,6 @@
       "norm_label": "write_bags_offer_source()",
       "source_file": "self_made_combos.py",
       "source_location": "L1955"
-    },
-    {
-      "id": "self_made_combos_enrich_deals_match",
-      "label": "_match()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "_match",
-      "file_type": "code",
-      "norm_label": "_match()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L515"
-    },
-    {
-      "id": "self_made_combos_enrich_deals_match_full",
-      "label": "_full()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "_match",
-      "file_type": "code",
-      "norm_label": "_full()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L524"
-    },
-    {
-      "id": "self_made_combos_enrich_deals_match_full_of",
-      "label": "_full_of()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "_match",
-      "file_type": "code",
-      "norm_label": "_full_of()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L523"
-    },
-    {
-      "id": "self_made_combos_enrich_deals_match_rooted",
-      "label": "_rooted()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "_match",
-      "file_type": "code",
-      "norm_label": "_rooted()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L525"
-    },
-    {
-      "id": "self_made_combos_enrich_deals_match_stock_match",
-      "label": "_stock_match()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "_match",
-      "file_type": "code",
-      "norm_label": "_stock_match()",
-      "source_file": "self_made_combos.py",
-      "source_location": "L526"
     },
     {
       "id": "main_offer_active_today",
@@ -8267,6 +8267,17 @@
       "source_location": "L410"
     },
     {
+      "id": "new_products_rationale_139",
+      "label": "The colour as the product itself is named \u2014 the product name minus its bag\u2026",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "odoo_tabs.py",
+      "file_type": "rationale",
+      "norm_label": "the colour as the product itself is named \u2014 the product name minus its bag...",
+      "source_file": "new_products.py",
+      "source_location": "L139"
+    },
+    {
       "id": "lib_db_rationale_177",
       "label": "run_query with a TTL disk cache. Identical to run_query for callers, but a\u2026",
       "_origin": "ast",
@@ -8619,11 +8630,34 @@
       "source_location": "L180"
     },
     {
+      "id": "self_made_combos_rationale_814",
+      "label": "[(label, slots)] for each running combo on the offer sheet (skips the TOTAL\u2026",
+      "_origin": "ast",
+      "community": 20,
+      "community_name": "build_payload",
+      "file_type": "rationale",
+      "norm_label": "[(label, slots)] for each running combo on the offer sheet (skips the total...",
+      "source_file": "self_made_combos.py",
+      "source_location": "L814"
+    },
+    {
+      "id": "docs_bags_on_offer_bags_on_offer_vs_not_on_offer",
+      "label": "Bags on offer vs not on offer",
+      "_origin": "ast",
+      "community": 22,
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "bags on offer vs not on offer",
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L1"
+    },
+    {
       "id": "docs_bags_on_offer_buckets",
       "label": "Buckets",
       "_origin": "ast",
       "community": 22,
-      "community_name": "bag_classifier",
+      "community_name": "Bags on offer vs not on offer",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "buckets",
@@ -8631,11 +8665,106 @@
       "source_location": "L26"
     },
     {
+      "id": "docs_bags_on_offer_counted_by_how_it_was_sold",
+      "label": "Counted by how it was sold",
+      "_origin": "ast",
+      "community": 22,
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "counted by how it was sold",
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L55"
+    },
+    {
+      "id": "docs_bags_on_offer_laptop_sleeves_are_bags_27_sep_2026",
+      "label": "Laptop sleeves are bags (27 Sep 2026)",
+      "_origin": "ast",
+      "community": 22,
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "laptop sleeves are bags (27 sep 2026)",
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L121"
+    },
+    {
+      "id": "docs_bags_on_offer_layout_laptop_tablet_phone",
+      "label": "Layout (laptop / tablet / phone)",
+      "_origin": "ast",
+      "community": 22,
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "layout (laptop / tablet / phone)",
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L219"
+    },
+    {
+      "id": "docs_bags_on_offer_period_selector_monthly_weekly_last_week",
+      "label": "Period selector (Monthly / Weekly / Last week)",
+      "_origin": "ast",
+      "community": 22,
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "period selector (monthly / weekly / last week)",
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L12"
+    },
+    {
+      "id": "docs_bags_on_offer_regenerate",
+      "label": "Regenerate",
+      "_origin": "ast",
+      "community": 22,
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "regenerate",
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L210"
+    },
+    {
+      "id": "docs_bags_on_offer_shop_metrics_vs_the_odoo_revenue_target",
+      "label": "Shop metrics (vs the Odoo revenue target)",
+      "_origin": "ast",
+      "community": 22,
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "shop metrics (vs the odoo revenue target)",
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L192"
+    },
+    {
+      "id": "docs_bags_on_offer_what_the_page_shows_per_period",
+      "label": "What the page shows (per period)",
+      "_origin": "ast",
+      "community": 22,
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "what the page shows (per period)",
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L97"
+    },
+    {
+      "id": "self_made_combos_rationale_838",
+      "label": "{BAG_UPPER: original full price} from bag_original_prices.json \u2014 the baseline\u2026",
+      "_origin": "ast",
+      "community": 22,
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "rationale",
+      "norm_label": "{bag_upper: original full price} from bag_original_prices.json \u2014 the baseline...",
+      "source_file": "self_made_combos.py",
+      "source_location": "L838"
+    },
+    {
       "id": "self_made_combos_rationale_912",
       "label": "(infer, is_on_offer) for a market's on-offer bag names \u2014 shared by the \"Bags\u2026",
       "_origin": "ast",
       "community": 22,
-      "community_name": "bag_classifier",
+      "community_name": "Bags on offer vs not on offer",
       "file_type": "rationale",
       "norm_label": "(infer, is_on_offer) for a market's on-offer bag names \u2014 shared by the \"bags...",
       "source_file": "self_made_combos.py",
@@ -8719,59 +8848,15 @@
       "source_location": "L576"
     },
     {
-      "id": "bags_on_offer_rationale_216",
-      "label": "bags_offer_source.json if written in the last 15 min for this month (and it has\u2026",
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "fetch",
-      "file_type": "rationale",
-      "norm_label": "bags_offer_source.json if written in the last 15 min for this month (and it has...",
-      "source_file": "bags_on_offer.py",
-      "source_location": "L216"
-    },
-    {
-      "id": "self_made_combos_rationale_1017",
-      "label": "The component bag names across a region's sheet combos/singles/specials cards\u2026",
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "fetch",
-      "file_type": "rationale",
-      "norm_label": "the component bag names across a region's sheet combos/singles/specials cards...",
-      "source_file": "self_made_combos.py",
-      "source_location": "L1017"
-    },
-    {
       "id": "self_made_combos_rationale_312",
       "label": "Pull the Kenya offer-sheet combos + bag targets + Kenya stock from the Offer\u2026",
       "_origin": "ast",
       "community": 26,
-      "community_name": "fetch",
+      "community_name": "_read_offer_analysis",
       "file_type": "rationale",
       "norm_label": "pull the kenya offer-sheet combos + bag targets + kenya stock from the offer...",
       "source_file": "self_made_combos.py",
       "source_location": "L312"
-    },
-    {
-      "id": "self_made_combos_rationale_693",
-      "label": "Power Deals & Deal of the Week for the given month (Kenya sheet). Columns: A\u2026",
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "fetch",
-      "file_type": "rationale",
-      "norm_label": "power deals & deal of the week for the given month (kenya sheet). columns: a...",
-      "source_file": "self_made_combos.py",
-      "source_location": "L693"
-    },
-    {
-      "id": "self_made_combos_rationale_951",
-      "label": "Bags with sales this month (in the market `sql` scopes to) that are on NO\u2026",
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "fetch",
-      "file_type": "rationale",
-      "norm_label": "bags with sales this month (in the market `sql` scopes to) that are on no...",
-      "source_file": "self_made_combos.py",
-      "source_location": "L951"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_rationale_206",
@@ -8992,17 +9077,6 @@
       "norm_label": "re-key an odoo {name: value} dict by _key(), merging values of names that...",
       "source_file": "new_products.py",
       "source_location": "L130"
-    },
-    {
-      "id": "new_products_rationale_139",
-      "label": "The colour as the product itself is named \u2014 the product name minus its bag\u2026",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "new_products.py",
-      "file_type": "rationale",
-      "norm_label": "the colour as the product itself is named \u2014 the product name minus its bag...",
-      "source_file": "new_products.py",
-      "source_location": "L139"
     },
     {
       "id": "new_products_rationale_174",
@@ -9770,7 +9844,7 @@
       "label": "month_end.py",
       "_origin": "ast",
       "community": 60,
-      "community_name": "month_end.py",
+      "community_name": "datetime",
       "file_type": "code",
       "norm_label": "month_end.py",
       "source_file": "month_end.py",
@@ -9781,7 +9855,7 @@
       "label": "month_end.py \u2014 the end-of-month archival routine.\u2026",
       "_origin": "ast",
       "community": 60,
-      "community_name": "month_end.py",
+      "community_name": "datetime",
       "file_type": "rationale",
       "norm_label": "month_end.py \u2014 the end-of-month archival routine....",
       "source_file": "month_end.py",
@@ -9792,7 +9866,7 @@
       "label": "YYYY-MM to archive. Explicit DENRI_REPORT_MONTH wins; otherwise the month that\u2026",
       "_origin": "ast",
       "community": 60,
-      "community_name": "month_end.py",
+      "community_name": "datetime",
       "file_type": "rationale",
       "norm_label": "yyyy-mm to archive. explicit denri_report_month wins; otherwise the month that...",
       "source_file": "month_end.py",
@@ -9803,7 +9877,7 @@
       "label": "After the closing month's timed offers are safely in Supabase, empty the config\u2026",
       "_origin": "ast",
       "community": 60,
-      "community_name": "month_end.py",
+      "community_name": "datetime",
       "file_type": "rationale",
       "norm_label": "after the closing month's timed offers are safely in supabase, empty the config...",
       "source_file": "month_end.py",
@@ -10459,6 +10533,17 @@
       "source_location": "L1"
     },
     {
+      "id": "bags_on_offer_rationale_216",
+      "label": "bags_offer_source.json if written in the last 15 min for this month (and it has\u2026",
+      "_origin": "ast",
+      "community": 85,
+      "community_name": "self_made_combos.py",
+      "file_type": "rationale",
+      "norm_label": "bags_offer_source.json if written in the last 15 min for this month (and it has...",
+      "source_file": "bags_on_offer.py",
+      "source_location": "L216"
+    },
+    {
       "id": "self_made_combos_rationale_1",
       "label": "self_made_combos.py\u2026",
       "_origin": "ast",
@@ -10468,6 +10553,17 @@
       "norm_label": "self_made_combos.py...",
       "source_file": "self_made_combos.py",
       "source_location": "L1"
+    },
+    {
+      "id": "self_made_combos_rationale_1017",
+      "label": "The component bag names across a region's sheet combos/singles/specials cards\u2026",
+      "_origin": "ast",
+      "community": 85,
+      "community_name": "self_made_combos.py",
+      "file_type": "rationale",
+      "norm_label": "the component bag names across a region's sheet combos/singles/specials cards...",
+      "source_file": "self_made_combos.py",
+      "source_location": "L1017"
     },
     {
       "id": "self_made_combos_rationale_139",
@@ -10503,26 +10599,15 @@
       "source_location": "L446"
     },
     {
-      "id": "self_made_combos_rationale_814",
-      "label": "[(label, slots)] for each running combo on the offer sheet (skips the TOTAL\u2026",
+      "id": "self_made_combos_rationale_693",
+      "label": "Power Deals & Deal of the Week for the given month (Kenya sheet). Columns: A\u2026",
       "_origin": "ast",
       "community": 85,
       "community_name": "self_made_combos.py",
       "file_type": "rationale",
-      "norm_label": "[(label, slots)] for each running combo on the offer sheet (skips the total...",
+      "norm_label": "power deals & deal of the week for the given month (kenya sheet). columns: a...",
       "source_file": "self_made_combos.py",
-      "source_location": "L814"
-    },
-    {
-      "id": "self_made_combos_rationale_838",
-      "label": "{BAG_UPPER: original full price} from bag_original_prices.json \u2014 the baseline\u2026",
-      "_origin": "ast",
-      "community": 85,
-      "community_name": "self_made_combos.py",
-      "file_type": "rationale",
-      "norm_label": "{bag_upper: original full price} from bag_original_prices.json \u2014 the baseline...",
-      "source_file": "self_made_combos.py",
-      "source_location": "L838"
+      "source_location": "L693"
     },
     {
       "id": "self_made_combos_rationale_862",
@@ -10545,6 +10630,17 @@
       "norm_label": "per-day bag sales (units only) for a market \u2014 same product filters as...",
       "source_file": "self_made_combos.py",
       "source_location": "L888"
+    },
+    {
+      "id": "self_made_combos_rationale_951",
+      "label": "Bags with sales this month (in the market `sql` scopes to) that are on NO\u2026",
+      "_origin": "ast",
+      "community": 85,
+      "community_name": "self_made_combos.py",
+      "file_type": "rationale",
+      "norm_label": "bags with sales this month (in the market `sql` scopes to) that are on no...",
+      "source_file": "self_made_combos.py",
+      "source_location": "L951"
     },
     {
       "id": "docs_chart_switcher",
@@ -10629,102 +10725,6 @@
       "norm_label": "bags-on-offer.md",
       "source_file": "docs/bags-on-offer.md",
       "source_location": "L1"
-    },
-    {
-      "id": "docs_bags_on_offer_bags_on_offer_vs_not_on_offer",
-      "label": "Bags on offer vs not on offer",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "Denri Africa Dashboard Design System (skill)",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "bags on offer vs not on offer",
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L1"
-    },
-    {
-      "id": "docs_bags_on_offer_counted_by_how_it_was_sold",
-      "label": "Counted by how it was sold",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "Denri Africa Dashboard Design System (skill)",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "counted by how it was sold",
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L55"
-    },
-    {
-      "id": "docs_bags_on_offer_laptop_sleeves_are_bags_27_sep_2026",
-      "label": "Laptop sleeves are bags (27 Sep 2026)",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "Denri Africa Dashboard Design System (skill)",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "laptop sleeves are bags (27 sep 2026)",
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L121"
-    },
-    {
-      "id": "docs_bags_on_offer_layout_laptop_tablet_phone",
-      "label": "Layout (laptop / tablet / phone)",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "Denri Africa Dashboard Design System (skill)",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "layout (laptop / tablet / phone)",
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L219"
-    },
-    {
-      "id": "docs_bags_on_offer_period_selector_monthly_weekly_last_week",
-      "label": "Period selector (Monthly / Weekly / Last week)",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "Denri Africa Dashboard Design System (skill)",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "period selector (monthly / weekly / last week)",
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L12"
-    },
-    {
-      "id": "docs_bags_on_offer_regenerate",
-      "label": "Regenerate",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "Denri Africa Dashboard Design System (skill)",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "regenerate",
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L210"
-    },
-    {
-      "id": "docs_bags_on_offer_shop_metrics_vs_the_odoo_revenue_target",
-      "label": "Shop metrics (vs the Odoo revenue target)",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "Denri Africa Dashboard Design System (skill)",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "shop metrics (vs the odoo revenue target)",
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L192"
-    },
-    {
-      "id": "docs_bags_on_offer_what_the_page_shows_per_period",
-      "label": "What the page shows (per period)",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "Denri Africa Dashboard Design System (skill)",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "what the page shows (per period)",
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L97"
     },
     {
       "id": "main_rationale_139",
@@ -14145,22 +14145,6 @@
       "source_url": null
     },
     {
-      "id": "report_2026_august_legacyarchivepattern",
-      "label": "Legacy dated report_YYYY_month.html archive pattern",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 55,
-      "community_name": "Month-End Routine (doc)",
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "legacy dated report_yyyy_month.html archive pattern",
-      "rationale": "Superseded by the History/Supabase archive system described in MONTH_END.md; month_end.py no longer writes dated report_YYYY_month.html files, and old ones like this can be deleted safely.",
-      "source_file": "report_2026_august.html",
-      "source_location": null,
-      "source_url": null
-    },
-    {
       "id": "insights_needs_attention_section",
       "label": "What Needs Attention Section",
       "_origin": "semantic",
@@ -15716,62 +15700,18 @@
       "source_url": null
     },
     {
-      "id": "docs_shop_regions_selfmadecombospy",
-      "label": "self_made_combos.py",
+      "id": "report_2026_august_legacyarchivepattern",
+      "label": "Legacy dated report_YYYY_month.html archive pattern",
       "_origin": "semantic",
       "author": null,
       "captured_at": null,
-      "community": 89,
-      "community_name": "self_made_combos.py",
+      "community": 87,
+      "community_name": "August 2026 Monthly Report",
       "contributor": null,
-      "file_type": "code",
-      "norm_label": "self_made_combos.py",
-      "source_file": "docs/shop-regions.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "shell_selfmadecomboshtml",
-      "label": "self_made_combos.html (nav target)",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 89,
-      "community_name": "self_made_combos.py",
-      "contributor": null,
-      "file_type": "code",
-      "norm_label": "self_made_combos.html (nav target)",
-      "source_file": "shell.html",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "docs_shop_regions_percsopcombobuttonchips",
-      "label": "Per-shop combo-button chips (red when < half best-in-region)",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 89,
-      "community_name": "self_made_combos.py",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "per-shop combo-button chips (red when < half best-in-region)",
-      "source_file": "docs/shop-regions.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "docs_shop_regions_shoptoregiontable",
-      "label": "Shop -> Region table",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 89,
-      "community_name": "self_made_combos.py",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "shop -> region table",
-      "source_file": "docs/shop-regions.md",
+      "file_type": "rationale",
+      "norm_label": "legacy dated report_yyyy_month.html archive pattern",
+      "rationale": "Superseded by the History/Supabase archive system described in MONTH_END.md; month_end.py no longer writes dated report_YYYY_month.html files, and old ones like this can be deleted safely.",
+      "source_file": "report_2026_august.html",
       "source_location": null,
       "source_url": null
     },
@@ -15847,6 +15787,36 @@
       "file_type": "code",
       "norm_label": "status badge / tag component",
       "source_file": ".claude/skills/dashboard-design.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "docs_shop_regions_selfmadecombospy",
+      "label": "self_made_combos.py",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 9,
+      "community_name": "Denri Africa Dashboard Design System (skill)",
+      "contributor": null,
+      "file_type": "code",
+      "norm_label": "self_made_combos.py",
+      "source_file": "docs/shop-regions.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "shell_selfmadecomboshtml",
+      "label": "self_made_combos.html (nav target)",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 9,
+      "community_name": "Denri Africa Dashboard Design System (skill)",
+      "contributor": null,
+      "file_type": "code",
+      "norm_label": "self_made_combos.html (nav target)",
+      "source_file": "shell.html",
       "source_location": null,
       "source_url": null
     },
@@ -16061,6 +16031,21 @@
       "source_url": null
     },
     {
+      "id": "docs_shop_regions_percsopcombobuttonchips",
+      "label": "Per-shop combo-button chips (red when < half best-in-region)",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 9,
+      "community_name": "Denri Africa Dashboard Design System (skill)",
+      "contributor": null,
+      "file_type": "concept",
+      "norm_label": "per-shop combo-button chips (red when < half best-in-region)",
+      "source_file": "docs/shop-regions.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
       "id": "docs_shop_regions_regioncolourpalette",
       "label": "Region colour palette (reference for Executive Dashboard)",
       "_origin": "semantic",
@@ -16071,6 +16056,21 @@
       "contributor": null,
       "file_type": "concept",
       "norm_label": "region colour palette (reference for executive dashboard)",
+      "source_file": "docs/shop-regions.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "docs_shop_regions_shoptoregiontable",
+      "label": "Shop -> Region table",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 9,
+      "community_name": "Denri Africa Dashboard Design System (skill)",
+      "contributor": null,
+      "file_type": "concept",
+      "norm_label": "shop -> region table",
       "source_file": "docs/shop-regions.md",
       "source_location": null,
       "source_url": null
@@ -16226,18 +16226,6 @@
       "external": true,
       "file_type": "concept",
       "norm_label": "csv",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "datetime",
-      "label": "datetime",
-      "_origin": "semantic",
-      "community": 1,
-      "community_name": "offer_picking.py",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "datetime",
       "source_file": "",
       "type": "external"
     },
@@ -16446,6 +16434,18 @@
       "type": "external"
     },
     {
+      "id": "lib",
+      "label": "lib",
+      "_origin": "semantic",
+      "community": 3,
+      "community_name": "new_products.py",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "lib",
+      "source_file": "",
+      "type": "external"
+    },
+    {
       "id": "calendar",
       "label": "calendar",
       "_origin": "semantic",
@@ -16470,11 +16470,23 @@
       "type": "external"
     },
     {
+      "id": "datetime",
+      "label": "datetime",
+      "_origin": "semantic",
+      "community": 60,
+      "community_name": "datetime",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "datetime",
+      "source_file": "",
+      "type": "external"
+    },
+    {
       "id": "subprocess",
       "label": "subprocess",
       "_origin": "semantic",
       "community": 60,
-      "community_name": "month_end.py",
+      "community_name": "datetime",
       "external": true,
       "file_type": "concept",
       "norm_label": "subprocess",
@@ -16486,7 +16498,7 @@
       "label": "sys",
       "_origin": "semantic",
       "community": 60,
-      "community_name": "month_end.py",
+      "community_name": "datetime",
       "external": true,
       "file_type": "concept",
       "norm_label": "sys",
@@ -16526,18 +16538,6 @@
       "external": true,
       "file_type": "concept",
       "norm_label": "os",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "lib",
-      "label": "lib",
-      "_origin": "semantic",
-      "community": 90,
-      "community_name": "lib",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "lib",
       "source_file": "",
       "type": "external"
     }
@@ -26696,18 +26696,6 @@
       "weight": 1.0
     },
     {
-      "source": "new_products",
-      "target": "google_auth_get_gspread_client",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "new_products.py",
-      "source_location": "L34",
-      "weight": 1.0
-    },
-    {
       "source": "offer_data",
       "target": "json",
       "relation": "imports",
@@ -27789,7 +27777,7 @@
     },
     {
       "source": "new_products",
-      "target": "export_self_made_combos_bundle_lib_init",
+      "target": "lib",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -41976,5 +41964,5 @@
       "source_file": "docs/timed-offers.md"
     }
   ],
-  "built_at_commit": "c15268d22aa190701f9df66488409b099fd24206"
+  "built_at_commit": "956df8966e0d40c4038cbca8e9d77eee11df0393"
 }
