@@ -346,17 +346,29 @@ ke_wk_mkt = num(gstr(pa, "wkMktPct"))
 ke_mo_mkt = num(gstr(pa, "moMktPct"))
 sz_mo_mkt = num(gstr(pa, "szMoMktPct"))
 ug_mo_mkt = num(gstr(pa, "ugMoMktPct"))
-posted    = num(gstr(pa, "s3Posted"))
-notposted = num(gstr(pa, "s3NotPosted"))
-instock   = posted + notposted
+# s3Posted / s3NotPosted are Kenya stock ON OFFER / NOT ON OFFER (their sum = Kenya stock) —
+# NOT posted vs unposted. "Never posted" is moInstockNotPostedSum: Kenya lines holding >20
+# units with zero posts all month.
+instock   = num(gstr(pa, "s3Posted")) + num(gstr(pa, "s3NotPosted"))
+notposted = num(gstr(pa, "moInstockNotPostedSum"))
+posted    = max(instock - notposted, 0)
 unposted_pct = (notposted / instock * 100) if instock else 0
 mo_sales_posting  = num(gstr(pa, "monthlySalesTotal"))
 mo_expect_posting = num(gstr(pa, "monthlyExpected"))
 posting_mult = (mo_sales_posting / mo_expect_posting) if mo_expect_posting else 0
 mo_posts_made = gnum(pa, "monthlyPostsMade")
+# Posting yield (Posting page's Marketing & Sales Alignment): posts × spp vs Odoo sales, capped
+# per bag. Its post count covers EVERY posted row (monthlyPostsMade is the on-offer ✅ rows only).
+_py_m = re.search(r'\n\s*postYield:\s*(\{.*?\}),\n', pa)
+try:
+    post_yield_mo = (json.loads(_py_m.group(1)) if _py_m else {}).get("monthly", {})
+except ValueError:
+    post_yield_mo = {}
+if post_yield_mo.get("posts"):
+    mo_posts_made = post_yield_mo["posts"]
 
 # Per-bag "which bags were never posted" (in stock, no marketing posts).
-unmarketed_bags = garr(pa, "instockNotPosted")
+unmarketed_bags = garr(pa, "moInstockNotPostedList")   # zero posts all month
 unm_sorted = sorted(unmarketed_bags, key=lambda b: num(b.get("stock")), reverse=True)[:10]
 
 # Weakest region by monthly sales-achieved
@@ -471,6 +483,45 @@ offer_clear_pct = (offer_clear / total_target * 100) if total_target else 0
 post_convert    = notposted * 0.20
 post_gap_share  = (post_convert / gap * 100) if gap else 0
 
+# ── Remaining stock: WHY it isn't moving and HOW to sell it in the days left ──
+# Kenya, bags only (the Posting page drops wipes / gift bags / promo products).
+#   never posted  = in stock, zero posts this month      → not being seen
+#   posted, stuck = in stock, posted, sold < 50% of what its posts should bring → seen, not bought
+# "How" is bounded by the month: the posts marketing can still make before month-end at this
+# month's own pace (posts/day), × the bags a post actually brings in Kenya.
+_acc          = garr(pa, "accuracyBags")
+_unm_all      = garr(pa, "moInstockNotPostedList")   # zero posts ALL MONTH (not just last week)
+if post_yield_mo.get("bags"):     # same rule as the Posting page: posts × spp, capped per bag
+    _stuck = sorted([{"productName": b["productName"], "stock": b["stock"],
+                      "postingTotal": b["posts"], "salesTotal": b["sold"]}
+                     for b in post_yield_mo["bags"] if b.get("pct", 0) < 50 and b.get("stock", 0) > 0],
+                    key=lambda b: b["stock"], reverse=True)
+else:
+    _stuck = sorted([b for b in _acc if num(b.get("expectedPct")) < 50],
+                    key=lambda b: num(b.get("stock")), reverse=True)
+_unm_units    = sum(num(b.get("stock")) for b in _unm_all)
+_stuck_units  = sum(num(b.get("stock")) for b in _stuck)
+_month_last   = _cal_fin.monthrange(year, _fin_num)[1]
+_days_left    = (_month_last - _today_rpt.day + 1) if _in_progress else 0   # today included
+_days_done    = max(_today_rpt.day - 1, 1) if _in_progress else _month_last
+_posts_day    = (mo_posts_made / _days_done) if _days_done else 0
+_acc_posts    = sum(num(b.get("postingTotal")) for b in _acc)
+_spp          = post_yield_mo.get("spp") or ((sum(num(b.get("expectedSales")) for b in _acc) / _acc_posts) if _acc_posts else 0)
+_bags_post    = _spp * (ke_mo_mkt / 100)          # expected bags/post × how much of that Kenya hits
+_posts_left   = _posts_day * _days_left
+_bags_left    = _posts_left * _bags_post
+_carry_units  = max(_unm_units + _stuck_units - _bags_left, 0)
+
+# The lead's "the gap is unmarketed stock" only holds when unposted stock is big enough to
+# explain it; otherwise say how much of the gap it covers (the rest is sales pace).
+_unm_gap_share = (notposted / gap * 100) if gap else 0
+if gap and _unm_gap_share < 50:
+    _exec_lead = (f"{month} {'is' if _in_progress else 'closed'} at <b>{pct(achieved)} of target</b>"
+                  f"{' so far' if _in_progress else ''} — {fmt(total_sales)} of {fmt(total_target)} bags, "
+                  f"<b>{fmt(gap)} bags</b> {'still to go' if _in_progress else 'short'}. Unposted stock "
+                  f"({fmt(notposted)} bags) explains only <b>{pct(_unm_gap_share)}</b> of that — "
+                  f"<b>the rest is sales pace</b>.")
+
 
 # ── BUILD THE HTML ────────────────────────────────────────────
 HEAD = """<!DOCTYPE html>
@@ -582,6 +633,60 @@ if unm_sorted:
     )
 else:
     unm_block = ''
+
+# Section 5 — Remaining stock: why it isn't moving & how to sell it (bounded by the month).
+def _stock_rows(bags, show_posts):
+    return "".join(
+        '<div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)">'
+        f'<span style="color:#e2e8f0">{esc(b.get("productName", b.get("bagType", "")))}</span>'
+        f'<span style="color:#94a3b8;white-space:nowrap">{fmt(num(b.get("stock")))} in stock'
+        + (f' &middot; {fmt(num(b.get("postingTotal")))} posts &middot; {fmt(num(b.get("salesTotal")))} sold' if show_posts else ' &middot; 0 posts')
+        + '</span></div>'
+        for b in bags)
+
+_unm_top   = sorted(_unm_all, key=lambda b: num(b.get("stock")), reverse=True)[:8]
+_stuck_top = _stuck[:8]
+if _in_progress:
+    _window_txt = (f"<b>{_days_left} selling day{'s' if _days_left != 1 else ''} left</b> in {month} "
+                   f"(to {_month_last} {month[:3]})")
+    _how_lead = (f"At this month's pace of <b>~{fmt(_posts_day)} posts/day</b>, marketing can still make "
+                 f"<b>~{fmt(_posts_left)} posts</b> before month-end; at the ~{_bags_post:.1f} bags a Kenya post "
+                 f"brings in, that is <b>~{fmt(_bags_left)} bags</b>. Spend them where they move the most stock:")
+    _carry_txt = (f"The remaining <b>~{fmt(_carry_units)} units</b> won't clear by {_month_last} {month[:3]} — "
+                  f"make them the <b>first-week plan for {next_month}</b> (posting schedule + offer picks) "
+                  f"rather than stretching this month's posts thinner.")
+else:
+    _window_txt = f"{month} has closed, so this is the <b>opening plan for {next_month}</b>"
+    _how_lead = (f"At {month}'s pace of <b>~{fmt(_posts_day)} posts/day</b>, each Kenya post brought in "
+                 f"~{_bags_post:.1f} bags. Start {next_month} with the posts where they move the most stock:")
+    _carry_txt = (f"<b>~{fmt(_unm_units + _stuck_units)} units</b> carry into {next_month} — schedule them "
+                  f"week by week so they are posted or on an offer by mid-month.")
+
+remaining_section = f"""
+  <div class="sec">
+    <div class="sec-head"><div class="sec-num" style="background:#f472b6">5</div><h2>Remaining Stock — Why It Isn't Moving &amp; How to Sell It</h2></div>
+    <div class="row"><div class="tag bottom">The Bottom Line</div>
+      <p>{_window_txt}. Kenya is holding <b>{fmt(_unm_units)} units that were never posted</b> ({len(_unm_all)} bag lines) and
+      <b>{fmt(_stuck_units)} units that were posted but sold under half of what their posts should bring</b> ({len(_stuck)} lines).
+      Posting alone can move <b>~{fmt(_bags_left if _in_progress else _unm_units * 0.2)}</b> of these {'before month-end' if _in_progress else 'early next month'} — so the question is <i>which</i> bags get the posts.</p></div>
+    <div class="row"><div class="tag insight">Why — two different problems</div>
+      <p style="margin-bottom:.5rem"><b style="color:#fca5a5">Not being seen:</b> in stock, <b>zero posts</b> this month. These have never had a chance — posting is the fix.</p>
+      <div style="background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.22);border-radius:10px;padding:.5rem .85rem;margin-bottom:.8rem">{_stock_rows(_unm_top, False) or '<div style="font-size:.82rem;color:#64748b">None — every in-stock bag was posted.</div>'}</div>
+      <p style="margin-bottom:.5rem"><b style="color:#fbbf24">Seen but not bought:</b> posted, yet sold <b>under 50% of expected</b>. More posts won't fix these — price, colour or offer will.</p>
+      <div style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.22);border-radius:10px;padding:.5rem .85rem">{_stock_rows(_stuck_top, True) or '<div style="font-size:.82rem;color:#64748b">None — posted bags are converting.</div>'}</div></div>
+    <div class="row"><div class="tag rec">How — within the month</div>
+      <p style="margin-bottom:.5rem">{_how_lead}</p>
+      <div class="recs">
+        <div class="rec-item"><span class="badge start">Start</span><span><b>Post the biggest never-posted lines first</b> (top of the red list) — they hold the most stock and have had no marketing at all.</span></div>
+        <div class="rec-item"><span class="badge test">Start testing</span><span><b>Move the "seen but not bought" lines onto an offer</b> — a power deal, a combo slot (Offer Picking) or a price step — instead of re-posting them.</span></div>
+        <div class="rec-item"><span class="badge stop">Stop</span><span>Spending posts on bags that already sell without them, while these lines sit.</span></div>
+      </div></div>
+    <div class="row"><div class="tag impact">Business Impact</div>
+      <div class="impact"><p>{_carry_txt}</p></div>
+      <div class="assump">Posts/day = {fmt(mo_posts_made)} posts ÷ {_days_done} days so far; bags/post = {_spp:.2f} expected × Kenya's {pct(ke_mo_mkt)} sales-achieved. Kenya bags only (wipes, gift bags and promo products excluded). "Under 50%" = posted bags whose sales were below half their posting-expected sales.</div></div>
+    __REM_STRIP__
+  </div>
+"""
 
 # Looking-into-next-month outlook (Section 1) — the two live weekly cards
 if show_outlook:
@@ -895,21 +1000,38 @@ _weak_reg = min(ke_mo_mkt, sz_mo_mkt, ug_mo_mkt)              # worst region's s
 _np_pct   = num(gstr(np_, "salesPct"))                        # new-products sales % of target
 
 # The Bottom Line — one strip per point.
-bl1_strip = ladder_strip(achieved,  f"Own the {fmt(gap)}-bag miss vs the {fmt(total_target)} target — the gap is unmarketed stock, so the fix is posting, not demand.")
+bl1_strip = ladder_strip(achieved,  (f"Own the {fmt(gap)}-bag miss vs the {fmt(total_target)} target — the gap is unmarketed stock, so the fix is posting, not demand."
+                                     if _unm_gap_share >= 50 else
+                                     f"Own the {fmt(gap)}-bag miss vs the {fmt(total_target)} target — unposted stock is only {pct(_unm_gap_share)} of it; lift the weekly sales pace."))
+bl5_strip = ladder_strip(_post_cov, f"Post the biggest never-posted lines first; move the non-converters onto an offer; plan the rest for {next_month}.")
+remaining_section = remaining_section.replace("__REM_STRIP__", ladder_strip(
+    _post_cov, f"Post the <b>{fmt(_unm_units)}</b> never-posted units first; put the <b>{fmt(_stuck_units)}</b> non-converting units on an offer."))
 bl2_strip = ladder_strip(_post_cov, f"Post the <b>{pct(unposted_pct)}</b> of Kenya stock left unmarketed — posted bags already sell at {pct(ke_mo_mkt)} of expectation.")
 bl3_strip = ladder_strip(_wk_pace,  f"Hold a hard <b>{fmt(bare_min)}/wk</b> commit reviewed every Monday; recover ~{fmt(weekly_short/2)}/wk to close the gap.")
-bl4_strip = ladder_strip(_weak_reg, f"Run the Kenya playbook ({pct(ke_mo_mkt)}) in Sinza ({pct(sz_mo_mkt)}) and Uganda ({pct(ug_mo_mkt)}) — same posting discipline everywhere.")
+# Regions point follows the data: name the best region, and only call them "uneven" when the
+# spread is real (≥ 10 points) — the yield is now posts × spp capped per bag, so they can be level.
+_best_name, _best_val = max(regions, key=lambda r: r[1])
+_reg_spread = _best_val - weak_val
+if _reg_spread >= 10:
+    _reg_head = "Regions are uneven:"
+    _reg_tail = f"The {_best_name} playbook isn't being run elsewhere."
+    bl4_strip = ladder_strip(_weak_reg, f"Run the {_best_name} playbook ({pct(_best_val)}) in {weak_name} ({pct(weak_val)}) — same posting discipline everywhere.")
+else:
+    _reg_head = "Regions convert about the same:"
+    _reg_tail = (f"Posting yields within {_reg_spread:.0f} points of each other — the gap is "
+                 f"what gets posted, not where.")
+    bl4_strip = ladder_strip(_weak_reg, f"Lift every region's posting yield (best {_best_name} {pct(_best_val)}) by pointing posts at bags that convert.")
 
 # Section headline metrics.
 cp_strip   = ladder_strip(achieved, f"Recover ~<b>{fmt(weekly_short/2)}/wk</b> to lift {pct(achieved)} toward ~{pct(cp_new_pct)}; own the {fmt(gap)}-bag gap.")
 np_strip   = ladder_strip(_np_pct,  f"New products at <b>{pct(_np_pct)}</b> of target — {fmt(np_deficit)} bags to go; push the launched lines with posting.")
-post_strip = ladder_strip(ke_mo_mkt, f"Lift Sinza ({pct(sz_mo_mkt)}) and Uganda ({pct(ug_mo_mkt)}) posting to the Kenya <b>{pct(ke_mo_mkt)}</b> bar, and post the {pct(unposted_pct)} still unmarketed.")
+post_strip = ladder_strip(ke_mo_mkt, f"Lift every region toward the best posting yield ({_best_name} <b>{pct(_best_val)}</b>), and post the {pct(unposted_pct)} still unmarketed.")
 
 body = f"""
   <div class="rpt-head">
     <span class="rpt-pill">Monthly Report</span>
     <h1>{month} {year} — {_headline_verb}</h1>
-    <div class="dek">Current Performance · New Products · Offer Type Analysis · Self-Made Combos · Posting Yields</div>
+    <div class="dek">Current Performance · New Products · Offer Type Analysis · Self-Made Combos · Posting Yields · Remaining Stock</div>
   </div>
 
   <div class="exec">
@@ -921,7 +1043,8 @@ body = f"""
     <ul>
       <li><b>{pct(unposted_pct)} of Kenya stock ({fmt(notposted)} bags) was never posted</b> — yet posted bags sold at {pct(ke_mo_mkt)} of expectation. Marketing is the lever, and much of it went unused.{bl2_strip}</li>
       <li><b>Weekly output (~{fmt(avg_weekly)} bags) ran below the {fmt(bare_min)}/week floor</b> needed to hit target — the problem is consistency, not a bad month.{bl3_strip}</li>
-      <li><b>Regions are uneven:</b> Kenya posts at {pct(ke_mo_mkt)} sales-achieved, Sinza {pct(sz_mo_mkt)}, Uganda {pct(ug_mo_mkt)}. The Kenya playbook isn't being run elsewhere.{bl4_strip}</li>
+      <li><b>{_reg_head}</b> Kenya posts at {pct(ke_mo_mkt)} sales-achieved, Sinza {pct(sz_mo_mkt)}, Uganda {pct(ug_mo_mkt)}. {_reg_tail}{bl4_strip}</li>
+      <li><b>Why stock isn't moving, and how to sell it{' in the ' + str(_days_left) + ' days left' if _in_progress else ''}:</b> {fmt(_unm_units)} units were never posted (not seen) and {fmt(_stuck_units)} posted units sold under half their expected (seen, not bought). {('Posting at ~' + fmt(_posts_day) + '/day can still move ~' + fmt(_bags_left) + ' bags this month — see section 5.') if _in_progress else 'See section 5 for the ' + next_month + ' plan.'}{bl5_strip}</li>
     </ul>
   </div>
 
@@ -1028,14 +1151,14 @@ body = f"""
       <p>Marketing posting is our most effective lever — Kenya posted bags hit <b>{pct(ke_mo_mkt)} of expected sales monthly</b> — but <b>{pct(unposted_pct)} of in-stock bags ({fmt(notposted)}) were never posted</b>. The target gap is sitting in unmarketed stock.</p></div>
     {unm_block}
     <div class="row"><div class="tag insight">The Insight</div>
-      <p>Where we post, we sell: monthly sales on posted bags ({fmt(mo_sales_posting)}) ran <b>~{posting_mult:.1f}× the {fmt(mo_expect_posting)} expected</b>. Yet only <b>{fmt(posted)} bags were on offer/posted vs {fmt(notposted)} not</b>. Regionally the discipline collapses — Kenya {pct(ke_mo_mkt)}, <b>Sinza {pct(sz_mo_mkt)}, Uganda {pct(ug_mo_mkt)}</b> — so the biggest untapped demand is in <b>{weak_name}</b> and in unmarketed stock.</p></div>
+      <p>Where we post, we sell: monthly sales on posted bags ({fmt(mo_sales_posting)}) ran <b>~{posting_mult:.1f}× the {fmt(mo_expect_posting)} expected</b>. Yet of <b>{fmt(instock)} bags in Kenya stock, {fmt(notposted)} got no post all month</b>. Regionally the discipline collapses — Kenya {pct(ke_mo_mkt)}, <b>Sinza {pct(sz_mo_mkt)}, Uganda {pct(ug_mo_mkt)}</b> — so the biggest untapped demand is in <b>{weak_name}</b> and in unmarketed stock.</p></div>
     {notoffer_block}
     <div class="chart-cap">Bags NOT on offer, by region — the dead stock marketing must move</div>
     <div class="chart-wrap"><canvas id="notoffer-chart"></canvas></div>
     <div class="row"><div class="tag rec">Recommendation</div>
       <div class="recs">
         <div class="rec-item"><span class="badge start">Start</span><span>Systematically <b>posting the {fmt(notposted)} unmarketed in-stock bags</b> — the single largest, cheapest lever against the {fmt(gap)}-bag target gap.</span></div>
-        <div class="rec-item"><span class="badge test">Start testing</span><span>The <b>Kenya posting playbook in {weak_name}</b>, where sales-achieved is {pct(weak_val)} vs Kenya's {pct(ke_mo_mkt)}.</span></div>
+        <div class="rec-item"><span class="badge test">Start testing</span><span>The <b>{_best_name} posting playbook in {weak_name}</b>, where sales-achieved is {pct(weak_val)} vs {_best_name}'s {pct(_best_val)}.</span></div>
         <div class="rec-item"><span class="badge stop">Stop</span><span>Letting <b>in-stock bags sit unposted</b> — every unmarketed bag is a bag that reliably does not sell.</span></div>
       </div></div>
     <div class="row"><div class="tag impact">Business Impact</div>
@@ -1043,7 +1166,7 @@ body = f"""
       <div class="assump">Assumes a conservative 20% conversion on newly-posted stock (posted bags ran ~{posting_mult:.1f}× their expected rate, so this is deliberately cautious).</div></div>
     {post_strip}
   </div>
-
+{remaining_section}
   <div class="foot">Denri Africa · Marketing Analytics — {month} {year} report. Figures from the live dashboards (Current Performance, New Products, Offer Type Analysis, Posting Yields).</div>
 
 </div>

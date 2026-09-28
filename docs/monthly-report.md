@@ -70,3 +70,23 @@ python monthly_report.py          # run AFTER the data pages
 ```
 </content>
 </invoke>
+
+## Section 5 — Remaining Stock: why it isn't moving & how to sell it (added 28 Sep 2026)
+
+Answers two questions for Kenya bags (wipes, gift bags, promo products excluded), **bounded by the
+month**:
+- **Why** — two lists: *not being seen* (in stock >20, **zero posts all month** —
+  `moInstockNotPostedList` from the Posting page) and *seen but not bought* (posted, sales below
+  50% of posting-expected — `accuracyBags` with `expectedPct < 50`).
+- **How** — the posts marketing can still make before month-end at this month's own pace
+  (`monthlyPostsMade ÷ days elapsed × days left`) × bags per Kenya post (expected-per-post ×
+  Kenya sales-achieved). Post the biggest never-posted lines; move non-converters onto an offer;
+  what can't clear becomes next month's first-week plan. For a closed month it becomes the
+  next month's opening plan.
+- A 5th Bottom Line point links to it.
+
+**"Never posted" definition (fixed 28 Sep 2026):** `moInstockNotPostedSum` (Kenya lines >20 units,
+no post in MONTHLY_MARKETING_POST) ÷ Kenya stock. Before, the report used `s3Posted/s3NotPosted`,
+which are **on offer / not on offer** stock — not posting — and counted wipes and promo products
+(6,053 "never posted" → really 4,181). The lead sentence only blames unmarketed stock for the gap
+when unposted stock covers ≥ 50% of it; otherwise it says what share it explains.

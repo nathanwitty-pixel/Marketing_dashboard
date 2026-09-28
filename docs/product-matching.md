@@ -138,3 +138,18 @@ Then reconcile the real name with the sheet label — add an alias (deals) or re
 `[...]`-strip + prefix rule (new products).
 </content>
 </invoke>
+
+## Colour families (28 Sep 2026)
+
+Pages group colours into **families** from `bag_names.csv` — a saved snapshot of the main
+spreadsheet's `bag_names` tab (CATEGORY, PRODUCT NAME, COLOUR); the sheet is **not** read at run
+time. Shades fold into their family: Chocolate / Choco / Spice / Mustard / Cracked / Dark Brown /
+Yellow Dotted → **Brown**; CN / TT / Croc / 018 editions → their base colour; Nude → **Beige**;
+Maroon → **Red**; Lilac → **Pink**. Lookup: `lib/colours.family(name)` (exact entry, then
+product_aliases.csv, then the name's colour words as bag_names classifies them).
+
+Applied on **every page except New Products** (which keeps exact colours — it tracks which specific
+colours of a new bag move): Posting (catalogue colour + the alignment table's *Group: Bag + colour
+family*), Shops Efficiency (push-list Colour filter), Timed Offers (reject table: one row per bag +
+family, shades summed), Self-Made Combos, Monthly Report. `product_catalog.csv` COLOUR is kept in
+line with it. To refresh: re-export the `bag_names` tab over `bag_names.csv`.

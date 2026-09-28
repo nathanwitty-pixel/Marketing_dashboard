@@ -29,6 +29,7 @@ import re, webbrowser, os, pathlib, json, datetime
 
 from lib import report_month   # which month these figures belong to
 from lib import odoo_tabs      # WEEKLY_SALES / MONTHLY_SALES / STOCK_LEVELS rebuilt from Odoo
+from lib import colours as _colours   # colour families (bag_names.csv)
 
 SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 
@@ -590,6 +591,202 @@ def _alignment_region(sales_rows, post_rows, sl_rows, offer_bagtypes,
     on_k  = [k for k in all_keys if _onoff(k)]
     off_k = [k for k in all_keys if not _onoff(k)]
     return {"total": _for(all_keys), "on": _for(on_k), "off": _for(off_k)}
+
+
+def _post_yield(post_rows, post_col, sales_rows, sales_name_col, sales_col, sl_rows, stock_col, spp,
+                offer_set=None):
+    """Marketing & Sales Alignment — posting yield, measured the way marketing measures it.
+
+    For ONE region and ONE period (the posting sheet's own period: MONTHLY_MARKETING_POST =
+    the report month, WEEKLY_MARKETING_POST = the last complete Sun–Sat week), each posted bag:
+        expected = posts × spp                 (Kenya 225,000 × 5% × 1% × 2% = 2.25 / post)
+        sold     = Odoo sales of that bag in the SAME window (sales_rows are Odoo-built)
+        credited = min(sold, expected)         (selling above expected still counts as 100%)
+    Totals: achievedPct = Σ credited ÷ Σ expected — e.g. 974 posts × 2.25 = 2,191.5 expected.
+    Stock = live Odoo on-hand at the region's shops (received by the shops; not warehouse or
+    in-transit). Each bag is tagged onOffer (its bag type is in the region's live offers —
+    `_bt_on_offer` against the Self-Made-Combos offer set) and the same totals are also given for
+    the on-offer and not-on-offer bags (`on` / `off`), measured exactly the same way."""
+    def _k(s):
+        return re.sub(r"\s+", " ", str(s).lower()).strip()
+    posts = {}
+    for row in post_rows[1:]:
+        # Name (col C) is the key — a blank colour cell must not drop the posts (LOTUS BEIGE, 15).
+        name = str(row[2]).strip() if len(row) > 2 else ""
+        if not name or "total" in name.lower() or len(row) <= post_col:
+            continue
+        n = safe_int(row[post_col])
+        if n > 0:
+            k = _k(row[2])
+            posts[k] = posts.get(k, 0) + n
+    sold, stock, label, btype = {}, {}, {}, {}
+    for row in sales_rows[1:]:
+        if len(row) <= max(sales_name_col, sales_col):
+            continue
+        name = str(row[sales_name_col]).strip()
+        if not name or "total" in name.lower():
+            continue
+        k = _k(name)
+        sold[k] = sold.get(k, 0) + safe_int(row[sales_col])
+        label.setdefault(k, name)
+    for row in sl_rows[1:]:
+        if len(row) <= max(2, stock_col):
+            continue
+        k = _k(row[2])
+        stock[k] = stock.get(k, 0) + safe_int(row[stock_col])
+        label.setdefault(k, str(row[2]).strip())
+        if len(row) > 3 and str(row[3]).strip():
+            btype.setdefault(k, str(row[3]).strip())
+    bags = []
+    for k, n in posts.items():
+        exp = n * spp
+        s = max(sold.get(k, 0), 0)
+        cred = min(s, exp)
+        bags.append({"productName": label.get(k, k.upper()), "posts": n,
+                     "expected": round(exp, 2), "sold": s, "credited": round(cred, 2),
+                     "pct": round(cred / exp * 100, 1) if exp else 0.0,
+                     "stock": stock.get(k, 0), "matched": k in label,
+                     "bagType": btype.get(k, ""),
+                     "family": _colours.family(label.get(k, k), ""),     # bag_names.csv colour family
+                     "onOffer": _bt_on_offer(btype.get(k, ""), offer_set or set())})
+    bags.sort(key=lambda b: (-b["expected"], b["productName"]))
+    t_posts = sum(b["posts"] for b in bags)
+    t_exp   = sum(b["expected"] for b in bags)
+    t_cred  = sum(b["credited"] for b in bags)
+    posted_keys = set(posts)
+
+    def _seg(bs):
+        e = sum(b["expected"] for b in bs); c = sum(b["credited"] for b in bs)
+        return {"posts": sum(b["posts"] for b in bs), "bagsPosted": len(bs), "expected": round(e, 2),
+                "soldPosted": sum(b["sold"] for b in bs), "credited": round(c, 2),
+                "achievedPct": round(c / e * 100, 1) if e else 0.0,
+                "bagsHit": sum(1 for b in bs if b["pct"] >= 100),
+                "bagsZero": sum(1 for b in bs if b["sold"] <= 0),
+                "stock": sum(b["stock"] for b in bs)}
+    return {
+        "on":  _seg([b for b in bags if b["onOffer"]]),
+        "off": _seg([b for b in bags if not b["onOffer"]]),
+        "spp": spp,
+        "posts": t_posts,
+        "bagsPosted": len(bags),
+        "expected": round(t_exp, 2),
+        "soldPosted": sum(b["sold"] for b in bags),              # actual units on posted bags
+        "credited": round(t_cred, 2),                            # capped at each bag's expected
+        "achievedPct": round(t_cred / t_exp * 100, 1) if t_exp else 0.0,
+        "bagsHit": sum(1 for b in bags if b["pct"] >= 100),
+        "bagsZero": sum(1 for b in bags if b["sold"] <= 0),
+        "unmatched": sum(1 for b in bags if not b["matched"]),   # posted name not in the catalogue
+        "soldNotPosted": sum(v for k, v in sold.items() if k not in posted_keys and v > 0),
+        "bags": bags,
+    }
+
+
+def _region_net_moves(codes, since):
+    """{catalogue name: net units moved INTO the region's shops on/after `since`} from Odoo
+    stock moves (done). In = to a region shop from anywhere else; out = from a region shop to
+    anywhere else (sales, transfers, returns). Shop ↔ shop moves inside the region net to 0.
+    Used to roll today's on-hand back to a past date. {} if Odoo is unreachable."""
+    try:
+        from lib import db
+        ok, _ = db.check_connection()
+        if not ok:
+            return {}
+    except Exception:                                        # noqa: BLE001
+        return {}
+    inl = ", ".join("'" + c + "'" for c in codes)
+    sql = f"""
+    SELECT pt."name" AS name,
+           SUM(CASE WHEN ld.usage = 'internal' AND split_part(ld.complete_name, '/', 1) IN ({inl})
+                     AND NOT (ls.usage = 'internal' AND split_part(ls.complete_name, '/', 1) IN ({inl}))
+                    THEN m.product_qty
+                    WHEN ls.usage = 'internal' AND split_part(ls.complete_name, '/', 1) IN ({inl})
+                     AND NOT (ld.usage = 'internal' AND split_part(ld.complete_name, '/', 1) IN ({inl}))
+                    THEN -m.product_qty ELSE 0 END)::numeric AS net
+    FROM stock_move m
+    JOIN stock_location ls ON ls.id = m.location_id
+    JOIN stock_location ld ON ld.id = m.location_dest_id
+    JOIN product_product pp ON pp.id = m.product_id
+    JOIN product_template pt ON pt.id = pp.product_tmpl_id
+    WHERE m.state = 'done'
+      AND (m.date AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date >= :since
+    GROUP BY pt."name"
+    """
+    df = db.run_query(sql, {"since": since.isoformat()})
+    if df is None:
+        return {}
+    out = {}
+    for _, r in df.iterrows():
+        k = re.sub(r"\s+", " ", odoo_tabs.base_name(r["name"]).lower()).strip()
+        out[k] = out.get(k, 0) + float(r["net"] or 0)
+    return out
+
+
+def _dead_clear(post_rows, post_col, sales_rows, sales_name_col, sales_col, sl_rows, stock_col,
+                net_after_end, offer_set=None):
+    """Dead-stock clearance for ONE region and ONE period, posted vs not posted × on offer vs not.
+
+    Universe = every bag the region's shops had stock of in the period (Odoo on-hand at the shops,
+    i.e. received by the shops). Per bag:
+        stock_end = today's shop on-hand − net units moved in after the period ended
+        available = stock_end + sold in the period          (what the period had to clear)
+        cleared%  = sold ÷ available                          (0–100)
+        dead      = had stock available and sold 0
+    posted = ≥1 post on the period's posting sheet; onOffer = bag type in the region's live offers.
+    Each segment's clearance = Σ sold ÷ Σ available over its bags."""
+    def _k(s):
+        return re.sub(r"\s+", " ", str(s).lower()).strip()
+    posts, sold, stock, label, btype = {}, {}, {}, {}, {}
+    for row in post_rows[1:]:
+        name = str(row[2]).strip() if len(row) > 2 else ""
+        if not name or "total" in name.lower() or len(row) <= post_col:
+            continue
+        n = safe_int(row[post_col])
+        if n > 0:
+            posts[_k(name)] = posts.get(_k(name), 0) + n
+    for row in sales_rows[1:]:
+        if len(row) <= max(sales_name_col, sales_col):
+            continue
+        name = str(row[sales_name_col]).strip()
+        if not name or "total" in name.lower():
+            continue
+        sold[_k(name)] = sold.get(_k(name), 0) + max(safe_int(row[sales_col]), 0)
+    for row in sl_rows[1:]:
+        if len(row) <= max(3, stock_col):
+            continue
+        k = _k(row[2])
+        stock[k] = stock.get(k, 0) + safe_int(row[stock_col])
+        label.setdefault(k, str(row[2]).strip())
+        if str(row[3]).strip():
+            btype.setdefault(k, str(row[3]).strip())
+    bags = []
+    for k in set(stock) | set(sold):
+        end = max(stock.get(k, 0) - (net_after_end or {}).get(k, 0), 0)
+        s = sold.get(k, 0)
+        avail = end + s
+        if avail <= 0 or k not in label:            # not a stocked catalogue bag in this region
+            continue
+        bags.append({"productName": label[k], "bagType": btype.get(k, ""),
+                     "family": _colours.family(label[k], ""),
+                     "available": int(avail), "sold": s, "stockEnd": int(end), "stockNow": stock.get(k, 0),
+                     "pct": round(s / avail * 100, 1), "dead": s <= 0,
+                     "posts": posts.get(k, 0), "posted": posts.get(k, 0) > 0,
+                     "onOffer": _bt_on_offer(btype.get(k, ""), offer_set or set())})
+    bags.sort(key=lambda b: (-b["available"], b["productName"]))
+
+    def _seg(bs):
+        a = sum(b["available"] for b in bs); s = sum(b["sold"] for b in bs)
+        dead = [b for b in bs if b["dead"]]
+        return {"bags": len(bs), "available": a, "sold": s,
+                "clearPct": round(s / a * 100, 1) if a else 0.0,
+                "deadBags": len(dead), "deadUnits": sum(b["available"] for b in dead),
+                "posts": sum(b["posts"] for b in bs)}
+    seg = {}
+    for pk, pf in (("posted", True), ("notposted", False)):
+        for ok_, of in (("on", True), ("off", False)):
+            seg[pk + "_" + ok_] = _seg([b for b in bags if b["posted"] == pf and b["onOffer"] == of])
+        seg[pk] = _seg([b for b in bags if b["posted"] == pf])
+    seg["all"] = _seg(bags)
+    return {"seg": seg, "bags": bags}
 
 
 def _offer_bagtypes_by_region(fallback=None):
@@ -1857,6 +2054,17 @@ def fetch_posting_data():
     odoo_tabs.prime_offer_flags(mt_rows)
     ms_rows  = odoo_tabs.get_rows(sh, "MONTHLY_SALES")
     sl_rows  = odoo_tabs.get_rows(sh, "STOCK_LEVELS")
+    # Only BAGS are posted, so non-bag stock must not count as "in stock, never posted":
+    # sales_exclusions.txt (wipes, cleaners …), gift bags and "Buy X get Y free" promo
+    # products. Without this, 1,673 promo units + 1,144 wipes inflated the unposted figure.
+    from lib import queries as _q
+    _excl = set(_q.excluded_products())
+    _NON_BAG = re.compile(r"^GIFT BAG\b|\bWIPES?\b|\bCLEANER\b|\bGET\b.*\bFREE\b|\bSAMPLE\b|\bSTRAP\b", re.I)
+    _before = len(sl_rows) - 1
+    sl_rows = [sl_rows[0]] + [r for r in sl_rows[1:]
+                              if not (len(r) > 2 and (str(r[2]).strip().lower() in _excl
+                                                      or _NON_BAG.search(str(r[2]))))]
+    print(f"  STOCK_LEVELS non-bags dropped: {_before - (len(sl_rows) - 1)}")
     print(f"  MONTHLY_SALES rows         : {len(ms_rows) - 1}")
     print(f"  MONTHLY_MARKETING_POST rows: {len(mmp_rows) - 1}")
     print(f"  STOCK_LEVELS rows          : {len(sl_rows) - 1}")
@@ -2213,6 +2421,15 @@ def fetch_posting_data():
         if len(row) > 24 and safe_int(row[24]) > 20
         and (str(row[0]).lower().strip(), str(row[2]).lower().strip()) not in kenya_mmp_keys
     )
+    # …and the bags behind it: in Kenya stock (>20), ZERO posts all month (MONTHLY_MARKETING_POST).
+    # (instockNotPosted above is the WEEKLY version — not posted in last week's posting.)
+    kenya["moInstockNotPostedList"] = sorted((
+        {"colour": str(row[0]).strip(), "productName": str(row[2]).strip(),
+         "bagType": str(row[3]).strip() if len(row) > 3 else "", "stock": safe_int(row[24])}
+        for row in sl_rows[1:]
+        if len(row) > 24 and safe_int(row[24]) > 20
+        and (str(row[0]).lower().strip(), str(row[2]).lower().strip()) not in kenya_mmp_keys
+    ), key=lambda x: -x["stock"])
 
     # No-convert monthly: posted (col I checked) but zero MONTHLY_SALES col X
     nc_mo = _build_no_convert(
@@ -2230,6 +2447,72 @@ def fetch_posting_data():
     print(f"  S3 weekly posts  (WEEKLY_MARKETING_POST col E, x or ✅ in I): {s3_wk_posts}")
     print(f"  S3 monthly posts (MONTHLY_MARKETING_POST col E, x or ✅ in I): {fmt_int(s3_mo_posts)}")
     print(f"  No-convert monthly bags                                     : {len(nc_mo)}")
+
+    # ── Marketing & Sales Alignment = posting yield (posts × spp vs Odoo sales, capped per bag) ──
+    # Same windows as the posting sheets: monthly = report month (ms_rows), weekly = last complete
+    # Sun–Sat week (ws_rows_wk) — the week WEEKLY_MARKETING_POST describes (posted in arrears).
+    # Cols: sales Kenya/Sinza/Uganda mo 23/24/25, wk 27/17/18; posts E/F/G = 4/5/6;
+    # shop stock Kenya/Sinza/Uganda = 24/17/18 (live Odoo on-hand, received at the shops).
+    _mo_s, _mo_e = report_month.month_window()
+    _wk_s, _wk_e = odoo_tabs.last_complete_week()
+    _lbl = lambda s, e: f"{s.day} {s.strftime('%b')} – {e.day} {e.strftime('%b %Y')}"
+    def _yield(post_col, mo_col, wk_col, stock_col, spp, region_key):
+        ob = _off_by_region.get(region_key) or _offer_bt      # same on-offer set as the rest of the page
+        mo = _post_yield(mmp_rows, post_col, ms_rows, 1, mo_col, sl_rows, stock_col, spp, ob)
+        wk = _post_yield(wmp_rows_wk, post_col, ws_rows_wk, 2, wk_col, sl_rows, stock_col, spp, ob)
+        mo["window"] = _lbl(_mo_s, _mo_e) + " (report month)"
+        wk["window"] = _lbl(_wk_s, _wk_e) + " (last week — the weekly posting sheet's week; Odoo sales for the same days)"
+        # This week: marketing tallies a week's posts the FOLLOWING week, so the current week has
+        # 0 posts recorded yet (same rule as New Products) — nothing to measure until it closes.
+        cw = _post_yield([["", "", ""]], post_col, [["", "", ""]], 1, 1, sl_rows, stock_col, spp, ob)
+        _cw_s = _wk_e + datetime.timedelta(days=1)
+        cw["window"] = _lbl(_cw_s, datetime.date.today()) + " (this week — posts are tallied next week)"
+        cw["pending"] = True
+        # "weekly" kept = last week (headline wkMktPct and older readers use it).
+        return {"monthly": mo, "lastweek": wk, "weekly": wk, "thisweek": cw}
+    kenya['postYield']  = _yield(4, 23, 27, 24, KENYA_SPP, "kenya")
+    sinza['postYield']  = _yield(5, 24, 17, 17, SINZA_SPP, "sinza")
+    uganda['postYield'] = _yield(6, 25, 18, 18, UGANDA_SPP, "uganda")
+    for _nm, _r in (("Kenya", kenya), ("Sinza", sinza), ("Uganda", uganda)):
+        for _per in ("monthly", "lastweek"):
+            _y = _r['postYield'][_per]
+            print(f"  Post yield {_nm:<6} {_per:<7}: {_y['posts']} posts × {_y['spp']:.4g} = "
+                  f"{_y['expected']:,.1f} expected · {_y['soldPosted']:,} sold · "
+                  f"{_y['credited']:,.1f} credited → {_y['achievedPct']}%  ({_y['unmatched']} posted names unmatched)"
+                  f"  | on offer {_y['on']['achievedPct']}% ({_y['on']['posts']} posts) · "
+                  f"not on offer {_y['off']['achievedPct']}% ({_y['off']['posts']} posts)")
+    # ── Dead-stock clearance: posted vs not posted × on offer vs not (same windows & offer set) ──
+    from lib import stock as _stk
+    _today = datetime.date.today()
+    def _clear(post_col, mo_col, wk_col, stock_col, codes, region_key):
+        ob = _off_by_region.get(region_key) or _offer_bt
+        # month (in progress) ends today → no roll-back; last week ends _wk_e → undo moves since
+        mo_end_next = min(_mo_e, _today) + datetime.timedelta(days=1)
+        mo = _dead_clear(mmp_rows, post_col, ms_rows, 1, mo_col, sl_rows, stock_col,
+                         _region_net_moves(codes, mo_end_next) if mo_end_next <= _today else {}, ob)
+        wk = _dead_clear(wmp_rows_wk, post_col, ws_rows_wk, 2, wk_col, sl_rows, stock_col,
+                         _region_net_moves(codes, _wk_e + datetime.timedelta(days=1)), ob)
+        mo["window"] = _lbl(_mo_s, _mo_e) + " (report month)"
+        wk["window"] = _lbl(_wk_s, _wk_e) + " (last week)"
+        return {"monthly": mo, "lastweek": wk}
+    kenya['deadClear']  = _clear(4, 23, 27, 24, _stk.KENYA_SHOP_CODES, "kenya")
+    sinza['deadClear']  = _clear(5, 24, 17, 17, _stk.SINZA_CODES, "sinza")
+    uganda['deadClear'] = _clear(6, 25, 18, 18, _stk.UGANDA_CODES, "uganda")
+    for _nm, _r in (("Kenya", kenya), ("Sinza", sinza), ("Uganda", uganda)):
+        for _per in ("monthly", "lastweek"):
+            _sg = _r['deadClear'][_per]['seg']
+            print(f"  Dead-stock clear {_nm:<6} {_per:<8}: all {_sg['all']['clearPct']}% · "
+                  + " · ".join(f"{k} {_sg[k]['clearPct']}% ({_sg[k]['bags']} bags, {_sg[k]['deadBags']} dead)"
+                               for k in ("posted_on", "posted_off", "notposted_on", "notposted_off")))
+
+    # The headline "sales achieved from posting" % now IS this yield (was: per-bag sold ÷ posts,
+    # averaged — it divided by posts, not by posts × spp).
+    wk_mkt_pct = kenya['postYield']['weekly']['achievedPct']
+    mo_mkt_pct = kenya['postYield']['monthly']['achievedPct']
+    sinza['szWkMktPct']  = f"{sinza['postYield']['weekly']['achievedPct']}%"
+    sinza['szMoMktPct']  = f"{sinza['postYield']['monthly']['achievedPct']}%"
+    uganda['ugWkMktPct'] = f"{uganda['postYield']['weekly']['achievedPct']}%"
+    uganda['ugMoMktPct'] = f"{uganda['postYield']['monthly']['achievedPct']}%"
 
     return (kenya, sinza, uganda,
             wk_posts, wk_sales, wk_expected, wk_unposted,
@@ -2443,6 +2726,7 @@ inline_script = (
     f'  s3WkPostsCount:       {s3_wk_posts_count},\n'
     f'  s3MoPostsCount:       {s3_mo_posts_count},\n'
     f'  moInstockNotPostedSum:"{fmt_int(mo_instock_not_posted_sum)}",\n'
+    f'  moInstockNotPostedList: {json.dumps(kenya.get("moInstockNotPostedList", []))},\n'
     f'  noConvertWk:         {json.dumps(nc_wk, ensure_ascii=False, separators=(",", ":"))},\n'
     f'  noConvertMo:         {json.dumps(nc_mo, ensure_ascii=False, separators=(",", ":"))},\n'
     f'  mktPctHistory:       {json.dumps(mkt_pct_history)},\n'
@@ -2483,6 +2767,8 @@ inline_script = (
     f'  s1Posts:          {kenya["s1Posts"]},\n'
     f'  s1Expected:       "{kenya["s1Expected"]}",\n'
     f'  alignment:        {json.dumps(kenya["alignment"])},\n'
+    f'  postYield:        {json.dumps(kenya.get("postYield", {}))},\n'
+    f'  deadClear:        {json.dumps(kenya.get("deadClear", {}))},\n'
     f'  postRelevance:    {json.dumps(kenya["postRelevance"])},\n'
     f'  salesFromPosting: {json.dumps(kenya["salesFromPosting"], ensure_ascii=False, separators=(",", ":"))},\n'
     f'  salesNoPost:      {json.dumps(kenya["salesNoPost"],      ensure_ascii=False)},\n'
@@ -2506,7 +2792,7 @@ with open(html_path, "r", encoding="utf-8") as f:
 
 html = re.sub(
     r"<!-- POST_DATA_START -->.*?<!-- POST_DATA_END -->",
-    inline_script,
+    lambda _m: inline_script,          # literal — the JSON holds \u escapes re.sub would misread
     html,
     flags=re.DOTALL
 )

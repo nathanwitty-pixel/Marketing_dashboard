@@ -88,6 +88,7 @@ BUFFER_CLEARANCE_TARGET_PCT    = 70   # of buffer stock, % cleared w/o dispatch
 
 # Shared auth: service account (permanent) or self-healing OAuth — see google_auth.py
 from google_auth import get_gspread_client
+from lib import colours as _colours      # colour families (bag_names.csv)
 
 
 # ══════════════════════════════════════════════════════════════
@@ -290,6 +291,9 @@ def compute_period(dispatch, sales, stock, meta, bags_target, buffer_stock):
         if not _pushable(name):
             continue
         bt, colour, cat = _split(name)
+        # Colour FAMILY from bag_names.csv (Choco/Spice/Dark Brown → Brown, CN/018 Black → Black …),
+        # not the raw name suffix — so the Colour filter groups shades the way the business does.
+        colour = _colours.family(name, colour)
         for shop in shops:
             onhand = strec.get(shop, 0)
             if onhand > 0:

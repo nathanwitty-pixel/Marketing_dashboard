@@ -9,12 +9,45 @@
 How well marketing's **posting** lines up with actual **sales**, per region (Kenya /
 Sinza / Uganda), with a weekly/monthly toggle.
 
-1. **Marketing & Sales Alignment — POSTED × SOLD.** The posted-vs-sold universe split into
-   **On-Offer** vs **Not-On-Offer** bags. Each side reports: posted & sold, posted & not
-   sold, sales-driven (sold, no marketing), not-posted & unsold — with percentages and a
-   bar chart per metric.
-2. **NOT POSTED × SOLD** companion — bags that sold with **no** marketing activity
-   ("Sold · no marketing (Sales-driven)") vs "Not sold · untouched".
+1. **Marketing & Sales Alignment — posting yield (rebuilt 28 Sep 2026).** Measured the way
+   marketing measures it, per region, Monthly / Weekly:
+   - **Posts** = every post on MONTHLY / WEEKLY_MARKETING_POST (col E Kenya, F Sinza, G Uganda) —
+     **all rows**, not only col-I ✅ (col I is the on-offer flag; the weekly Kenya total is 974 =
+     667 x + 307 ✅). Rows keyed by product name (a blank colour cell no longer drops posts).
+   - **Expected** = posts × expected sales per post (Kenya 225,000 × 5% × 1% × 2% = **2.25**;
+     Sinza 1.4; Uganda 0.0216). E.g. 974 × 2.25 = 2,191.5.
+   - **Sold** = Odoo sales of that bag in the **same window** as the sheet: monthly = report
+     month; weekly = last complete Sun–Sat week (the week the weekly sheet describes).
+   - **Credited** = min(sold, expected) per bag — selling above expected counts as 100%
+     (Antitheft Black: 17 posts → 38.25 expected; 12 sold = 31%).
+   - **Achieved** = Σ credited ÷ Σ expected. This is now also the headline
+     `wkMktPct / moMktPct / szMoMktPct / ugMoMktPct` (and the Monthly Report's figure). The old
+     figure divided sales by *posts* (not posts × 2.25) and averaged per bag.
+   - **Shop stock** = live Odoo on-hand at the region's shops — bags already received by the shops
+     (not warehouse / in transit).
+   - **On offer vs not on offer** (added 28 Sep 2026): each posted bag is tagged `onOffer` from
+     the region's live offers (Self-Made Combos set, `_bt_on_offer` on its bag type), and the same
+     yield is given for each side (`on` / `off`) — shown as two comparison tiles plus a
+     **Segment** filter (All / On offer / Not on offer) and an On-offer column. Both sides are
+     measured identically (posts × spp, capped per bag).
+   - **Periods:** *Monthly* (report month) · *Last week* (weekly posting sheet + Odoo sales for
+     the same Sun–Sat days) · *This week* (0 posts — marketing tallies a week's posts the
+     following week, so there is nothing to measure until it closes).
+     Data: `PA.postYield`, `PA.sinza.postYield`, `PA.uganda.postYield` (`_post_yield()`), keys
+     `monthly` / `lastweek` / `thisweek` (`weekly` = `lastweek`, kept for older readers).
+2. *(Removed 28 Sep 2026: the old POSTED × SOLD / NOT POSTED × SOLD on-offer cards.)*
+2b. **Dead Stock Clearance (added 28 Sep 2026)** — sits under the alignment card in each region,
+   same windows (Monthly / Last week) and the same on-offer set. Instead of sales vs posts it asks
+   *is the stock we hold clearing*, split **posted vs not posted × on offer vs not on offer**
+   (2×2 tiles, click a tile to filter the table; Group by bag + colour family):
+   - **Universe** = every bag the region's shops had stock of (Odoo on-hand at the shops — bags
+     already received, not warehouse / in-transit).
+   - **Available** = stock at the period end + units sold in the period. Period-end stock = today's
+     shop on-hand with Odoo stock moves after the period rolled back (`_region_net_moves`).
+   - **Cleared %** = sold ÷ available (per bag and per segment, Σ sold ÷ Σ available).
+   - **Still dead** = had stock available and sold 0.
+   - **Posted** = ≥1 post on the period's posting sheet. Data `PA.deadClear` (+ sinza/uganda),
+     `_dead_clear()`.
 3. **Marketing Alignment with Clearing Dead Stock** — a gauge (reframed from the old
    dead-stock donut) showing how aligned marketing is with clearing dead stock.
 4. **Visibility carry-over** — will last week's posts still be relevant this week, given
@@ -66,3 +99,9 @@ Run **after** `self_made_combos.py` (it reads that page's SMC block for the on-o
 Injects `alignment` (per region, `{monthly, weekly}`) and `postRelevance`.
 </content>
 </invoke>
+
+**Non-bags excluded from stock (28 Sep 2026):** STOCK_LEVELS rows for `sales_exclusions.txt`
+products, gift bags, wipes/cleaners and "Buy X get Y free" promo products are dropped before any
+section runs — they are never posted, so they inflated "in stock, not posted" (1,673 promo units +
+1,144 wipes). `s3Posted / s3NotPosted` are Kenya stock **on offer / not on offer**; the monthly
+never-posted figure is `moInstockNotPostedSum`, with its bags in `moInstockNotPostedList`.

@@ -564,8 +564,8 @@ def fetch_new_products_data():
         _wn = _keyed(_odoo_w, _add_units)
         for r in weekly_combined:
             s = _wn.get(_key(r["productName"]))
-            r["weeklySales"] = (s["kenya"] if s else 0)   # WEEKLY_SALES col X is Kenya
-        print("  Weekly sales source   : Odoo (Kenya, this week to date)")
+            r["weeklySales"] = (s["kenya"] + s["outside"]) if s else 0   # Kenya + outside, like last week
+        print("  Weekly sales source   : Odoo (Kenya + outside, this week to date)")
 
     # Last COMPLETE Sun-Sat week — for the "last week's performance" hover, useful in
     # early-week (Mon-Wed) presentations when this week's numbers are still thin.
@@ -639,7 +639,7 @@ def fetch_new_products_data():
                             "bagType": _btd, "kenyaSales": _m.get("kenya", 0), "outsideKenya": _m.get("outside", 0),
                             "mpostKenya": 0, "mpostOutside": 0, "sKenya": _sk, "sOutside": _so, "sRestock": _sr})
             weekly_combined.append({"colour": _colour, "category": _cat, "productName": str(_nm).title(),
-                            "bagType": _btd, "weeklySales": _w.get("kenya", 0), "wpostKenya": 0, "wpostOutside": 0,
+                            "bagType": _btd, "weeklySales": _w.get("kenya", 0) + _w.get("outside", 0), "wpostKenya": 0, "wpostOutside": 0,
                             "sKenya": _sk, "sOutside": _so, "sRestock": _sr,
                             "lastWeekKenya": _lw.get("kenya", 0), "lastWeekOutside": _lw.get("outside", 0)})
             _have.add(_k)
@@ -734,38 +734,32 @@ def _np_perfect_week_index(d):
         ws += timedelta(days=7)
     return idx
 
+def _np_week_bags(ws, we):
+    """New-product bags sold (Kenya + outside) in [ws, we] — the same counting as the
+    last-week figure, so a week reads the same in the table, chart and popups. None if
+    Odoo is unreachable."""
+    odoo = odoo_sales_window(ws, we)
+    if odoo is None:
+        return None
+    n = _keyed(odoo, lambda a, b: {"kenya": a["kenya"] + b["kenya"], "outside": a["outside"] + b["outside"]})
+    tot = 0
+    for r in weekly_combined:                        # new-product colour rows only
+        v = n.get(_key(r["productName"]))
+        tot += (v["kenya"] + v["outside"]) if v else 0
+    return tot
+
+
 def update_np_weekly_history():
-    ref = date.today() - timedelta(days=1)
-    ws  = _np_week_start(ref)
-    wk_idx = _np_perfect_week_index(ref)
-    # `weekly_total` (module-level, lines ~510-519) is computed from TODAY's Sun-Sat window, which
-    # only matches ref's own week when ref falls in that same week (the normal case: ref =
-    # yesterday, no week boundary crossed). On the FIRST day of a new week (today = Sunday), ref is
-    # the LAST day of the week that just ended — a different, already-completed week — so reusing
-    # `weekly_total` would silently store that new week's near-zero start under the completed
-    # week's label. Requery Odoo for ref's own window in that case instead.
-    _today_wk_start = _np_week_start(date.today())
-    if ws == _today_wk_start:
-        ref_total = weekly_total
-    else:
-        _ref_odoo = odoo_sales_window(ws, ref)
-        if _ref_odoo is not None:
-            _refn = _keyed(_ref_odoo, lambda a, b: {"kenya": a["kenya"] + b["kenya"],
-                                                    "outside": a["outside"] + b["outside"]})
-            ref_total = 0
-            for r in weekly_combined:
-                s = _refn.get(_key(r["productName"]))
-                ref_total += (s["kenya"] if s else 0)
-        else:
-            ref_total = weekly_total   # Odoo unreachable — fall back rather than write nothing
-    entry = {
-        "weekStart":    ws.isoformat(),
-        "label":        ("Wk " + str(wk_idx)) if wk_idx else "Partial",
-        "month":        ref.strftime("%b"),
-        "weeklyTotal":  ref_total,
-        "kenyaPosts":   wpost_kenya,
-        "outsidePosts": wpost_outside,
-    }
+    """Snapshot each Sun–Sat week (sales, Kenya/Outside posts) into new_products_weekly_history.json.
+
+    This month's weeks are RECALCULATED from Odoo on every run (Kenya + outside), so a week's
+    bags/% always match the live last-week figure — nothing frozen mid-week. Posts follow the
+    posting rule: WEEKLY_MARKETING_POST (read now) is the LAST COMPLETE week's posting work, so
+    it is written to that week; the current week carries 0 posts."""
+    today = date.today()
+    cur_ws = _np_week_start(today)
+    last_ws = cur_ws - timedelta(days=7)
+    ref = today - timedelta(days=1)
     weeks = []
     if os.path.exists(WEEKLY_POSTS_HISTORY):
         try:
@@ -773,32 +767,36 @@ def update_np_weekly_history():
                 weeks = json.load(f).get("weeks", [])
         except (ValueError, OSError):
             weeks = []
-    # Monotonic-safety guard: never let a fresh write regress a previously-recorded total for the
-    # same week. Belt-and-suspenders alongside the ref_total fix above — even if the reference-week
-    # figure is ever wrong again, a lower value can never clobber a higher one already on disk.
-    _existing = next((w for w in weeks if w.get("weekStart") == entry["weekStart"]), None)
-    if _existing is not None:
-        _prev_total = safe_int(_existing.get("weeklyTotal"))
-        if _prev_total > entry["weeklyTotal"]:
-            entry["weeklyTotal"] = _prev_total
-    weeks = [w for w in weeks if w.get("weekStart") != entry["weekStart"]]
-    weeks.append(entry)
-    weeks.sort(key=lambda w: w.get("weekStart", ""))
-    weeks = weeks[-16:]
-    # Re-label every stored week from its own weekStart, so the numbering stays
-    # consistent (opening partial week = Wk 1) even for previously-frozen rows. Also backfill a
-    # "pct" (% of that week's OWN weekly target) on any entry that doesn't have one yet — every
-    # week's target is derived from ITS OWN month's complete-week count, not the live one, so a
-    # frozen prior-month value stays correct even after the month rolls over. This is what lets
-    # the prior-month comparison line (built below) show a real % series without re-deriving a
-    # stale weekly_target later.
+    by_ws = {w.get("weekStart"): w for w in weeks}
+
+    def _row(ws):
+        return by_ws.setdefault(ws.isoformat(), {"weekStart": ws.isoformat(), "month": ws.strftime("%b"),
+                                                 "weeklyTotal": 0, "kenyaPosts": 0, "outsidePosts": 0})
+
+    # The week the run belongs to (ref = yesterday) and the week the posting sheet describes.
+    _row(_np_week_start(ref))["month"] = ref.strftime("%b")
+    lw = _row(last_ws)
+    lw["kenyaPosts"], lw["outsidePosts"] = wpost_kenya, wpost_outside
+    if cur_ws.isoformat() in by_ws:
+        by_ws[cur_ws.isoformat()]["kenyaPosts"] = by_ws[cur_ws.isoformat()]["outsidePosts"] = 0
+
+    weeks = sorted(by_ws.values(), key=lambda w: w.get("weekStart", ""))[-16:]
+    cur_month = ref.strftime("%b")
     for w in weeks:
         try:
             _wd = date.fromisoformat(w["weekStart"])
-            wi = _np_perfect_week_index(_wd)
+            # A week that starts in the previous month but belongs to this one (Aug 30 → Sep) is
+            # numbered within the month it's attributed to, via its last day.
+            _idx_day = _wd if _wd.strftime("%b") == w.get("month") else _wd + timedelta(days=6)
+            wi = _np_perfect_week_index(_idx_day)
             w["label"] = ("Wk " + str(wi)) if wi else "Partial"
-            if w.get("pct") is None:
-                _wcw = _np_complete_weeks_in_month(ref=_wd)
+            live = w.get("month") == cur_month and _wd >= today - timedelta(days=45)
+            if live:                                   # this month: recompute from Odoo
+                bags = _np_week_bags(_wd, min(_wd + timedelta(days=6), today))
+                if bags is not None:
+                    w["weeklyTotal"] = bags
+            if live or w.get("pct") is None:
+                _wcw = _np_complete_weeks_in_month(ref=_idx_day)
                 _wtgt = round(total_target / _wcw) if _wcw else 0
                 w["pct"] = round(safe_int(w.get("weeklyTotal")) / _wtgt * 100, 2) if _wtgt else 0
         except Exception:

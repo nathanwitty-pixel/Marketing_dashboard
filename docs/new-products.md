@@ -117,9 +117,17 @@ month only** (no last-month dashed line). Table columns: Week · Sales % Achieve
 Declined By (`weeklyTotal − weeklyTarget`) · **Kenya Posts · Outside Posts** (the marketing
 effort behind each week). Fed by `NP.weeklyPostsHistory` **filtered to the current month by
 each entry's `month` field** (not `weekStart`, so the Aug-starting opening week of a month is
-attributed correctly) and `NP.weeklyTarget`. Per-week sales are **Kenya-only** (matching the
-`Weekly Sales % Achieved` KPI); the footer's "last week (incl. outside)" stat is the
-Kenya+Outside `lastWeekPct`/`lastWeekTotal`, labelled to flag the scope difference.
+attributed correctly) and `NP.weeklyTarget`.
+
+**One rule for every weekly figure (28 Sep 2026):** weekly sales = **Kenya + outside**, same
+counting as everywhere else (bags in combos, invoiced orders), so a week shows the **same bags
+and %** in the table, the chart, the Weekly Sales % KPI (this week) and the last-week popup /
+footer (`lastWeekPct`). Before this the history was Kenya-only and frozen when the week ran
+(Wk 4 showed 48.89% / 88 bags in the table vs 51.67% / 93 bags in the popup).
+- **This month's weeks are recalculated live from Odoo on every run** (not frozen), and their
+  `pct` recomputed; earlier months' rows stay as stored.
+- **Posts a week in arrears:** WEEKLY_MARKETING_POST (read now) is the **last complete week's**
+  posting, so it is written to that week's row; the current week's row carries 0 posts.
 
 ## Regenerate
 

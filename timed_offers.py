@@ -18,6 +18,7 @@ Injects the campaign payload (const TO) into timed_offers.html between the
 """
 
 import re, os, json, webbrowser, pathlib
+from lib import colours as _colours      # colour families (bag_names.csv)
 from datetime import date, timedelta
 
 SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
@@ -456,8 +457,9 @@ def reject_variants(start, end):
                 bt = (row.get("BAG TYPE") or "").strip().upper()
                 if not bt:
                     continue
-                col = _parse_colour(row.get("COLOR") or row.get("COLOUR") or "") \
-                      or (row.get("COLOR") or "").strip().title()
+                _raw = (row.get("COLOR") or row.get("COLOUR") or "").strip()
+                # colour FAMILY (bag_names.csv): CHOCO / SPICE / DARK BROWN → Brown, CN BLACK → Black …
+                col = _colours.family(bt + " " + _raw, _parse_colour(_raw) or _raw.title())
                 stock_var[(bt, col.upper())] = stock_var.get((bt, col.upper()), 0) + safe_int(row.get("UNITS"))
                 if bt not in seen:
                     seen.add(bt); csv_bags.append((bt, _singular_tokens(bt)))
@@ -502,7 +504,7 @@ def reject_variants(start, end):
             raw = str(r["product"])
             clean = re.sub(r"\s+", " ", re.sub(r"\[?REJECT\]?", "", raw, flags=re.I)).strip()
             bag = _match_bag(clean.upper()) or _bucket(clean) or _OTHER_REJECTS.upper()
-            colour = _parse_colour(clean)
+            colour = _colours.family(clean, _parse_colour(clean))      # colour family, not the shade
             qty = int(r["qty"] or 0)
             now = round(float(r["val"] or 0) / qty) if qty else None
             was = round(float(r["lp"]) * TAX_INCL) if r["lp"] else None
@@ -530,6 +532,32 @@ def reject_variants(start, end):
             "sold": 0, "stock": int(units), "priceWas": None, "priceNow": None,
             "rev": 0, "discountKes": None, "discountPct": None,
         })
+    # One row per bag + colour FAMILY: shades of a family (Chocolate, Spice, Dark Brown → Brown)
+    # are summed, and the family's reject stock sits on that one row.
+    merged, order = {}, []
+    for r in rows:
+        k = (r["bagType"], r["colour"])
+        if k not in merged:
+            merged[k] = dict(r, product=(r["bagType"] + " " + r["colour"]).strip())
+            order.append(k)
+            continue
+        m = merged[k]
+        m["sold"] += r["sold"]
+        m["stock"] += r["stock"]
+        m["rev"] += r["rev"]
+        m["priceWas"] = max([x for x in (m["priceWas"], r["priceWas"]) if x] or [0]) or None
+    rows = []
+    for k in order:
+        m = merged[k]
+        if m["sold"]:
+            m["priceNow"] = round(m["rev"] / m["sold"])
+            if m["priceWas"] and m["priceNow"] > m["priceWas"]:
+                m["priceNow"] = m["priceWas"]
+        was, now = m.get("priceWas"), m.get("priceNow")
+        disc = (was - now) if (was and now) else None
+        m["discountKes"] = disc if (disc and disc > 0) else None
+        m["discountPct"] = round((now - was) / was * 100) if (was and now and was > 0) else None
+        rows.append(m)
     rows.sort(key=lambda x: (-x["sold"], -x["stock"]))
     return rows
 
