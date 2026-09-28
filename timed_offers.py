@@ -419,7 +419,9 @@ def _parse_colour(name):
     up = " " + re.sub(r"[^A-Z0-9 ]+", " ", str(name).upper()) + " "
     for c in _PRIMARY_COLOURS:
         if (" " + c + " ") in up:
-            return c.title()
+            # CHOCO is the reject list's short spelling of CHOCOLATE — one colour, so the
+            # sold "Cathy Handbag Chocolate" picks up the list's "CATHY HANDBAG, CHOCO" stock.
+            return "Chocolate" if c == "CHOCO" else c.title()
     return ""
 
 def _singular_tokens(s):

@@ -1,7 +1,7 @@
 # Graph Report - Marketing_dashboard  (2026-09-28)
 
 ## Corpus Check
-- 116 files · ~526,204 words
+- 116 files · ~527,077 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 9 file(s) not represented in the graph (top: .csv 4, (none) 2, .toml 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c15268d2`
+- Built from commit: `67923912`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -118,10 +118,10 @@
   docs/bags-on-offer.md → self_made_combos.py
 - `Self-made combos vs running combos (export bundle copy)` --semantically_similar_to--> `Self-made combos vs running combos (doc)`  [INFERRED] [semantically similar]
   export/self_made_combos_bundle/docs/self-made-combos.md → docs/self-made-combos.md
-- `August 2026 Monthly Report` --semantically_similar_to--> `monthly_report.html (nav target)`  [INFERRED] [semantically similar]
-  report_2026_august.html → shell.html
 - `Sidebar Navigation (icon rail / expanded drawer)` --semantically_similar_to--> `Reject Sale page (reject_sales.html)`  [INFERRED] [semantically similar]
   shell.html → reject_sales.html
+- `August 2026 Monthly Report` --semantically_similar_to--> `monthly_report.html (nav target)`  [INFERRED] [semantically similar]
+  report_2026_august.html → shell.html
 
 ## Import Cycles
 - None detected.
@@ -452,7 +452,7 @@ Cohesion: 0.50
 Nodes (4): _offer_active_today(), True if ANY timed-offer window is set and today falls inside it. Handles the…, Once per calendar day, while an offer window is active, re-run timed_offers.py…, start_daily_snapshot()
 
 ## Ambiguous Edges - Review These
-- `August 2026 Monthly Report` → `Legacy dated report_YYYY_month.html archive pattern`  [AMBIGUOUS]
+- `Legacy dated report_YYYY_month.html archive pattern` → `August 2026 Monthly Report`  [AMBIGUOUS]
   report_2026_august.html · relation: conceptually_related_to
 - `Reject Sale page (reject_sales.html)` → `Card entrance animation via CSS @keyframes + animation-fill-mode: both`  [AMBIGUOUS]
   .claude/skills/dashboard-design.md · relation: conceptually_related_to
@@ -465,16 +465,16 @@ Nodes (4): _offer_active_today(), True if ANY timed-offer window is set and toda
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **What is the exact relationship between `August 2026 Monthly Report` and `Legacy dated report_YYYY_month.html archive pattern`?**
+- **What is the exact relationship between `Legacy dated report_YYYY_month.html archive pattern` and `August 2026 Monthly Report`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `Reject Sale page (reject_sales.html)` and `Card entrance animation via CSS @keyframes + animation-fill-mode: both`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **Why does `Current Performance (doc)` connect `Current Performance (doc)` to `monthly_sales.py`, `forward_projections.py`, `current_performance.py`, `self_made_combos_bundle/lib/__init__.py`, `Product / name matching (doc)`?**
-  _High betweenness centrality (0.105) - this node is a cross-community bridge._
+  _High betweenness centrality (0.093) - this node is a cross-community bridge._
 - **Why does `New Products Analytics (doc)` connect `Product / name matching (doc)` to `Current Performance (doc)`, `Dashboard Insights skill`?**
-  _High betweenness centrality (0.078) - this node is a cross-community bridge._
+  _High betweenness centrality (0.076) - this node is a cross-community bridge._
 - **Why does `get_gspread_client()` connect `os` to `bags_on_offer.py`, `offer_picking.py`, `POSTING (SALES YIELDS FROM ACCURATE POSTING).py`, `new_products.py`, `fetch`, `timed_offers.py`, `forward_projections.py`, `shops_efficiency.py`, `current_performance.py`, `self_made_combos_bundle/offer_data.py`, `odoo_tabs.py`, `self_made_combos_bundle/lib/__init__.py`, `self_made_combos.py`, `self_made_combos_bundle/self_made_combos.py`, `fetch_offer_data`?**
-  _High betweenness centrality (0.070) - this node is a cross-community bridge._
+  _High betweenness centrality (0.071) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `fetch()` (e.g. with `classify()` and `seg_of()`) actually correct?**
   _`fetch()` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `PERF`, `graphify`, `Period selector (Monthly / Weekly / Last week)` to the rest of the system?**

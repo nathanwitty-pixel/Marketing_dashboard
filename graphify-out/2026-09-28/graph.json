@@ -1050,7 +1050,7 @@
       "file_type": "code",
       "norm_label": "_combo_odoo_slots()",
       "source_file": "self_made_combos.py",
-      "source_location": "L807"
+      "source_location": "L813"
     },
     {
       "id": "self_made_combos_combo_sheet_slots",
@@ -1062,7 +1062,7 @@
       "file_type": "code",
       "norm_label": "_combo_sheet_slots()",
       "source_file": "self_made_combos.py",
-      "source_location": "L801"
+      "source_location": "L807"
     },
     {
       "id": "export_self_made_combos_bundle_lib_db_check_connection",
@@ -2310,7 +2310,7 @@
       "file_type": "code",
       "norm_label": "build_payload()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L937"
+      "source_location": "L943"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_build_payload_agg",
@@ -2322,7 +2322,7 @@
       "file_type": "code",
       "norm_label": "agg()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1033"
+      "source_location": "L1039"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_build_payload_anchor_sunday",
@@ -2334,7 +2334,7 @@
       "file_type": "code",
       "norm_label": "_anchor_sunday()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1129"
+      "source_location": "L1135"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_build_payload_bag_price",
@@ -2346,7 +2346,7 @@
       "file_type": "code",
       "norm_label": "_bag_price()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1459"
+      "source_location": "L1465"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_build_payload_combo_bags",
@@ -2358,7 +2358,7 @@
       "file_type": "code",
       "norm_label": "_combo_bags()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1086"
+      "source_location": "L1092"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_build_payload_fill_from_odoo",
@@ -2370,7 +2370,7 @@
       "file_type": "code",
       "norm_label": "_fill_from_odoo()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1110"
+      "source_location": "L1116"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_build_payload_groups",
@@ -2382,7 +2382,7 @@
       "file_type": "code",
       "norm_label": "_groups()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1423"
+      "source_location": "L1429"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_build_payload_match_bag",
@@ -2394,7 +2394,7 @@
       "file_type": "code",
       "norm_label": "_match_bag()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1059"
+      "source_location": "L1065"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_build_payload_mi_row",
@@ -2406,7 +2406,7 @@
       "file_type": "code",
       "norm_label": "_mi_row()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1462"
+      "source_location": "L1468"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_build_payload_mi_tot",
@@ -2418,7 +2418,7 @@
       "file_type": "code",
       "norm_label": "_mi_tot()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1482"
+      "source_location": "L1488"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_build_payload_month_weekly",
@@ -2430,7 +2430,7 @@
       "file_type": "code",
       "norm_label": "_month_weekly()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1133"
+      "source_location": "L1139"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_build_payload_num2",
@@ -2442,7 +2442,7 @@
       "file_type": "code",
       "norm_label": "_num2()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1196"
+      "source_location": "L1202"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_build_payload_offer_trend",
@@ -2454,7 +2454,7 @@
       "file_type": "code",
       "norm_label": "_offer_trend()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1202"
+      "source_location": "L1208"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_build_payload_region_cards",
@@ -2466,7 +2466,7 @@
       "file_type": "code",
       "norm_label": "_region_cards()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1391"
+      "source_location": "L1397"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_build_payload_rnum",
@@ -2478,7 +2478,7 @@
       "file_type": "code",
       "norm_label": "_rnum()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1385"
+      "source_location": "L1391"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_dstr",
@@ -2802,7 +2802,7 @@
       "file_type": "code",
       "norm_label": "build_payload()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1262"
+      "source_location": "L1268"
     },
     {
       "id": "self_made_combos_build_payload_agg",
@@ -2814,7 +2814,7 @@
       "file_type": "code",
       "norm_label": "agg()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1358"
+      "source_location": "L1364"
     },
     {
       "id": "self_made_combos_build_payload_anchor_sunday",
@@ -2826,7 +2826,7 @@
       "file_type": "code",
       "norm_label": "_anchor_sunday()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1457"
+      "source_location": "L1463"
     },
     {
       "id": "self_made_combos_build_payload_bag_price",
@@ -2838,7 +2838,7 @@
       "file_type": "code",
       "norm_label": "_bag_price()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1820"
+      "source_location": "L1826"
     },
     {
       "id": "self_made_combos_build_payload_combo_bags",
@@ -2850,7 +2850,7 @@
       "file_type": "code",
       "norm_label": "_combo_bags()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1411"
+      "source_location": "L1417"
     },
     {
       "id": "self_made_combos_build_payload_fill_from_odoo",
@@ -2862,7 +2862,7 @@
       "file_type": "code",
       "norm_label": "_fill_from_odoo()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1437"
+      "source_location": "L1443"
     },
     {
       "id": "self_made_combos_build_payload_groups",
@@ -2874,7 +2874,7 @@
       "file_type": "code",
       "norm_label": "_groups()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1782"
+      "source_location": "L1788"
     },
     {
       "id": "self_made_combos_build_payload_match_bag",
@@ -2886,7 +2886,7 @@
       "file_type": "code",
       "norm_label": "_match_bag()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1384"
+      "source_location": "L1390"
     },
     {
       "id": "self_made_combos_build_payload_mi_row",
@@ -2898,7 +2898,7 @@
       "file_type": "code",
       "norm_label": "_mi_row()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1823"
+      "source_location": "L1829"
     },
     {
       "id": "self_made_combos_build_payload_mi_tot",
@@ -2910,7 +2910,7 @@
       "file_type": "code",
       "norm_label": "_mi_tot()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1843"
+      "source_location": "L1849"
     },
     {
       "id": "self_made_combos_build_payload_month_weekly",
@@ -2922,7 +2922,7 @@
       "file_type": "code",
       "norm_label": "_month_weekly()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1461"
+      "source_location": "L1467"
     },
     {
       "id": "self_made_combos_build_payload_num2",
@@ -2934,7 +2934,7 @@
       "file_type": "code",
       "norm_label": "_num2()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1549"
+      "source_location": "L1555"
     },
     {
       "id": "self_made_combos_build_payload_offer_trend",
@@ -2946,7 +2946,7 @@
       "file_type": "code",
       "norm_label": "_offer_trend()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1555"
+      "source_location": "L1561"
     },
     {
       "id": "self_made_combos_build_payload_region_cards",
@@ -2958,7 +2958,7 @@
       "file_type": "code",
       "norm_label": "_region_cards()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1750"
+      "source_location": "L1756"
     },
     {
       "id": "self_made_combos_build_payload_rnum",
@@ -2970,7 +2970,7 @@
       "file_type": "code",
       "norm_label": "_rnum()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1744"
+      "source_location": "L1750"
     },
     {
       "id": "self_made_combos_dstr",
@@ -3066,7 +3066,7 @@
       "file_type": "code",
       "norm_label": "bag_classifier()",
       "source_file": "self_made_combos.py",
-      "source_location": "L911"
+      "source_location": "L917"
     },
     {
       "id": "self_made_combos_bag_classifier_infer",
@@ -3078,7 +3078,7 @@
       "file_type": "code",
       "norm_label": "infer()",
       "source_file": "self_made_combos.py",
-      "source_location": "L933"
+      "source_location": "L939"
     },
     {
       "id": "self_made_combos_bag_classifier_is_on_offer",
@@ -3090,7 +3090,7 @@
       "file_type": "code",
       "norm_label": "is_on_offer()",
       "source_file": "self_made_combos.py",
-      "source_location": "L942"
+      "source_location": "L948"
     },
     {
       "id": "self_made_combos_bag_classifier_norm",
@@ -3102,7 +3102,7 @@
       "file_type": "code",
       "norm_label": "_norm()",
       "source_file": "self_made_combos.py",
-      "source_location": "L926"
+      "source_location": "L932"
     },
     {
       "id": "streamlit_app_inline_local_script",
@@ -3186,7 +3186,7 @@
       "file_type": "code",
       "norm_label": "fetch()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1514"
+      "source_location": "L1520"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_fmt",
@@ -3210,7 +3210,7 @@
       "file_type": "code",
       "norm_label": "inject()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1533"
+      "source_location": "L1539"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_load_shop_regions",
@@ -3234,7 +3234,7 @@
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1553"
+      "source_location": "L1559"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_read_deals",
@@ -3306,7 +3306,7 @@
       "file_type": "code",
       "norm_label": "_bags_not_on_offer()",
       "source_file": "self_made_combos.py",
-      "source_location": "L949"
+      "source_location": "L955"
     },
     {
       "id": "self_made_combos_fetch",
@@ -3318,7 +3318,7 @@
       "file_type": "code",
       "norm_label": "fetch()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1888"
+      "source_location": "L1894"
     },
     {
       "id": "self_made_combos_read_deals",
@@ -3378,7 +3378,7 @@
       "file_type": "code",
       "norm_label": "_region_on_offer_bags()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1016"
+      "source_location": "L1022"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_enrich_deals",
@@ -4134,7 +4134,7 @@
       "file_type": "code",
       "norm_label": "_combo_button_usage()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L843"
+      "source_location": "L849"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_combo_button_usage_implied",
@@ -4146,7 +4146,7 @@
       "file_type": "code",
       "norm_label": "_implied()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L894"
+      "source_location": "L900"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_combo_button_usage_shop",
@@ -4158,7 +4158,7 @@
       "file_type": "code",
       "norm_label": "_shop()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L870"
+      "source_location": "L876"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_combo_norm_option",
@@ -4170,7 +4170,7 @@
       "file_type": "code",
       "norm_label": "_combo_norm_option()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L664"
+      "source_location": "L670"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_combo_odoo_slots",
@@ -4182,7 +4182,7 @@
       "file_type": "code",
       "norm_label": "_combo_odoo_slots()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L681"
+      "source_location": "L687"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_matches_sheet",
@@ -4194,7 +4194,7 @@
       "file_type": "code",
       "norm_label": "_matches_sheet()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L698"
+      "source_location": "L704"
     },
     {
       "id": "bags_on_offer_build_period",
@@ -4326,7 +4326,7 @@
       "file_type": "code",
       "norm_label": "_combo_button_usage()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1084"
+      "source_location": "L1090"
     },
     {
       "id": "self_made_combos_combo_button_usage_implied",
@@ -4338,7 +4338,7 @@
       "file_type": "code",
       "norm_label": "_implied()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1135"
+      "source_location": "L1141"
     },
     {
       "id": "self_made_combos_combo_button_usage_shop",
@@ -4350,7 +4350,7 @@
       "file_type": "code",
       "norm_label": "_shop()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1111"
+      "source_location": "L1117"
     },
     {
       "id": "self_made_combos_matches_sheet",
@@ -4362,7 +4362,7 @@
       "file_type": "code",
       "norm_label": "_matches_sheet()",
       "source_file": "self_made_combos.py",
-      "source_location": "L824"
+      "source_location": "L830"
     },
     {
       "id": "theme_css_variables",
@@ -5118,7 +5118,7 @@
       "file_type": "code",
       "norm_label": "_bags_not_on_offer()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L752"
+      "source_location": "L758"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_bags_not_on_offer_infer",
@@ -5130,7 +5130,7 @@
       "file_type": "code",
       "norm_label": "_infer()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L769"
+      "source_location": "L775"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_bags_not_on_offer_is_on_offer",
@@ -5142,7 +5142,7 @@
       "file_type": "code",
       "norm_label": "_is_on_offer()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L784"
+      "source_location": "L790"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_bags_not_on_offer_norm",
@@ -5154,7 +5154,7 @@
       "file_type": "code",
       "norm_label": "_norm()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L762"
+      "source_location": "L768"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_load_bag_prices",
@@ -5166,7 +5166,7 @@
       "file_type": "code",
       "norm_label": "_load_bag_prices()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L711"
+      "source_location": "L717"
     },
     {
       "id": "self_made_combos_combo_norm_option",
@@ -5178,7 +5178,7 @@
       "file_type": "code",
       "norm_label": "_combo_norm_option()",
       "source_file": "self_made_combos.py",
-      "source_location": "L790"
+      "source_location": "L796"
     },
     {
       "id": "self_made_combos_combos_by_shop",
@@ -5190,7 +5190,7 @@
       "file_type": "code",
       "norm_label": "combos_by_shop()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1191"
+      "source_location": "L1197"
     },
     {
       "id": "self_made_combos_combos_by_shop_norm",
@@ -5202,7 +5202,7 @@
       "file_type": "code",
       "norm_label": "_norm()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1204"
+      "source_location": "L1210"
     },
     {
       "id": "self_made_combos_combos_by_shop_tdig",
@@ -5214,7 +5214,7 @@
       "file_type": "code",
       "norm_label": "_tdig()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1205"
+      "source_location": "L1211"
     },
     {
       "id": "self_made_combos_combos_by_shop_tokmatch",
@@ -5226,7 +5226,7 @@
       "file_type": "code",
       "norm_label": "_tokmatch()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1208"
+      "source_location": "L1214"
     },
     {
       "id": "main_start_server",
@@ -5778,7 +5778,7 @@
       "file_type": "code",
       "norm_label": "_build_sheet_slots()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L687"
+      "source_location": "L693"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_combo_sheet_slots",
@@ -5790,7 +5790,7 @@
       "file_type": "code",
       "norm_label": "_combo_sheet_slots()",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L675"
+      "source_location": "L681"
     },
     {
       "id": "lib_queries_excluded_products",
@@ -6630,7 +6630,7 @@
       "file_type": "code",
       "norm_label": "_bag_sales_daily_sql()",
       "source_file": "self_made_combos.py",
-      "source_location": "L887"
+      "source_location": "L893"
     },
     {
       "id": "self_made_combos_bag_sales_sql",
@@ -6642,7 +6642,7 @@
       "file_type": "code",
       "norm_label": "_bag_sales_sql()",
       "source_file": "self_made_combos.py",
-      "source_location": "L861"
+      "source_location": "L867"
     },
     {
       "id": "self_made_combos_build_sheet_slots",
@@ -6654,7 +6654,7 @@
       "file_type": "code",
       "norm_label": "_build_sheet_slots()",
       "source_file": "self_made_combos.py",
-      "source_location": "L813"
+      "source_location": "L819"
     },
     {
       "id": "self_made_combos_dow_tier_weeks",
@@ -6690,7 +6690,7 @@
       "file_type": "code",
       "norm_label": "inject()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1935"
+      "source_location": "L1941"
     },
     {
       "id": "self_made_combos_load_bag_prices",
@@ -6702,7 +6702,7 @@
       "file_type": "code",
       "norm_label": "_load_bag_prices()",
       "source_file": "self_made_combos.py",
-      "source_location": "L837"
+      "source_location": "L843"
     },
     {
       "id": "self_made_combos_load_shop_regions",
@@ -6726,7 +6726,7 @@
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1978"
+      "source_location": "L1984"
     },
     {
       "id": "self_made_combos_write_bags_offer_source",
@@ -6738,7 +6738,7 @@
       "file_type": "code",
       "norm_label": "write_bags_offer_source()",
       "source_file": "self_made_combos.py",
-      "source_location": "L1955"
+      "source_location": "L1961"
     },
     {
       "id": "self_made_combos_enrich_deals_match",
@@ -7398,7 +7398,7 @@
       "source_location": "L90"
     },
     {
-      "id": "self_made_combos_rationale_802",
+      "id": "self_made_combos_rationale_808",
       "label": "Sheet label \"AMAYA/ELYSE+MOON/NIZANA\" \u2192 [ {AMAYA,ELYSE}, {MOON,NIZANA} ].",
       "_origin": "ast",
       "community": 1,
@@ -7406,10 +7406,10 @@
       "file_type": "rationale",
       "norm_label": "sheet label \"amaya/elyse+moon/nizana\" \u2192 [ {amaya,elyse}, {moon,nizana} ].",
       "source_file": "self_made_combos.py",
-      "source_location": "L802"
+      "source_location": "L808"
     },
     {
-      "id": "self_made_combos_rationale_808",
+      "id": "self_made_combos_rationale_814",
       "label": "Odoo name \"Amaya Handbag or Elyse Handbag + Moon Bag or Nizana\" \u2192 the same\u2026",
       "_origin": "ast",
       "community": 1,
@@ -7417,7 +7417,7 @@
       "file_type": "rationale",
       "norm_label": "odoo name \"amaya handbag or elyse handbag + moon bag or nizana\" \u2192 the same...",
       "source_file": "self_made_combos.py",
-      "source_location": "L808"
+      "source_location": "L814"
     },
     {
       "id": "export_self_made_combos_bundle_lib_db",
@@ -8377,7 +8377,7 @@
       "source_location": "L180"
     },
     {
-      "id": "export_self_made_combos_bundle_self_made_combos_rationale_938",
+      "id": "export_self_made_combos_bundle_self_made_combos_rationale_944",
       "label": "Query + shape the self-made/running split and the combo-request log for the\u2026",
       "_origin": "ast",
       "community": 18,
@@ -8385,7 +8385,7 @@
       "file_type": "rationale",
       "norm_label": "query + shape the self-made/running split and the combo-request log for the...",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L938"
+      "source_location": "L944"
     },
     {
       "id": "main",
@@ -8597,7 +8597,7 @@
       "source_location": "L72"
     },
     {
-      "id": "self_made_combos_rationale_1263",
+      "id": "self_made_combos_rationale_1269",
       "label": "Query + shape the self-made/running split and the combo-request log for the\u2026",
       "_origin": "ast",
       "community": 20,
@@ -8605,7 +8605,7 @@
       "file_type": "rationale",
       "norm_label": "query + shape the self-made/running split and the combo-request log for the...",
       "source_file": "self_made_combos.py",
-      "source_location": "L1263"
+      "source_location": "L1269"
     },
     {
       "id": "self_made_combos_rationale_180",
@@ -8631,7 +8631,7 @@
       "source_location": "L26"
     },
     {
-      "id": "self_made_combos_rationale_912",
+      "id": "self_made_combos_rationale_918",
       "label": "(infer, is_on_offer) for a market's on-offer bag names \u2014 shared by the \"Bags\u2026",
       "_origin": "ast",
       "community": 22,
@@ -8639,7 +8639,7 @@
       "file_type": "rationale",
       "norm_label": "(infer, is_on_offer) for a market's on-offer bag names \u2014 shared by the \"bags...",
       "source_file": "self_made_combos.py",
-      "source_location": "L912"
+      "source_location": "L918"
     },
     {
       "id": "streamlit_app",
@@ -8730,7 +8730,7 @@
       "source_location": "L216"
     },
     {
-      "id": "self_made_combos_rationale_1017",
+      "id": "self_made_combos_rationale_1023",
       "label": "The component bag names across a region's sheet combos/singles/specials cards\u2026",
       "_origin": "ast",
       "community": 26,
@@ -8738,7 +8738,7 @@
       "file_type": "rationale",
       "norm_label": "the component bag names across a region's sheet combos/singles/specials cards...",
       "source_file": "self_made_combos.py",
-      "source_location": "L1017"
+      "source_location": "L1023"
     },
     {
       "id": "self_made_combos_rationale_312",
@@ -8763,7 +8763,7 @@
       "source_location": "L693"
     },
     {
-      "id": "self_made_combos_rationale_951",
+      "id": "self_made_combos_rationale_957",
       "label": "Bags with sales this month (in the market `sql` scopes to) that are on NO\u2026",
       "_origin": "ast",
       "community": 26,
@@ -8771,7 +8771,7 @@
       "file_type": "rationale",
       "norm_label": "bags with sales this month (in the market `sql` scopes to) that are on no...",
       "source_file": "self_made_combos.py",
-      "source_location": "L951"
+      "source_location": "L957"
     },
     {
       "id": "export_self_made_combos_bundle_self_made_combos_rationale_206",
@@ -9313,7 +9313,7 @@
       "source_location": "L249"
     },
     {
-      "id": "export_self_made_combos_bundle_self_made_combos_rationale_665",
+      "id": "export_self_made_combos_bundle_self_made_combos_rationale_671",
       "label": "One combo slot-option \u2192 its distinctive bag token(s), colours/category words\u2026",
       "_origin": "ast",
       "community": 35,
@@ -9321,10 +9321,10 @@
       "file_type": "rationale",
       "norm_label": "one combo slot-option \u2192 its distinctive bag token(s), colours/category words...",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L665"
+      "source_location": "L671"
     },
     {
-      "id": "export_self_made_combos_bundle_self_made_combos_rationale_682",
+      "id": "export_self_made_combos_bundle_self_made_combos_rationale_688",
       "label": "Odoo name \"Amaya Handbag or Elyse Handbag + Moon Bag or Nizana\" \u2192 the same\u2026",
       "_origin": "ast",
       "community": 35,
@@ -9332,10 +9332,10 @@
       "file_type": "rationale",
       "norm_label": "odoo name \"amaya handbag or elyse handbag + moon bag or nizana\" \u2192 the same...",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L682"
+      "source_location": "L688"
     },
     {
-      "id": "export_self_made_combos_bundle_self_made_combos_rationale_699",
+      "id": "export_self_made_combos_bundle_self_made_combos_rationale_705",
       "label": "The sheet label this Odoo combo maps to (same slot count, every slot overlaps),\u2026",
       "_origin": "ast",
       "community": 35,
@@ -9343,10 +9343,10 @@
       "file_type": "rationale",
       "norm_label": "the sheet label this odoo combo maps to (same slot count, every slot overlaps),...",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L699"
+      "source_location": "L705"
     },
     {
-      "id": "export_self_made_combos_bundle_self_made_combos_rationale_844",
+      "id": "export_self_made_combos_bundle_self_made_combos_rationale_850",
       "label": "Per running combo: units rung through the combo button (Odoo) vs the sheet's\u2026",
       "_origin": "ast",
       "community": 35,
@@ -9354,7 +9354,7 @@
       "file_type": "rationale",
       "norm_label": "per running combo: units rung through the combo button (odoo) vs the sheet's...",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L844"
+      "source_location": "L850"
     },
     {
       "id": "bags_on_offer_rationale_295",
@@ -9379,7 +9379,7 @@
       "source_location": "L540"
     },
     {
-      "id": "self_made_combos_rationale_1085",
+      "id": "self_made_combos_rationale_1091",
       "label": "Per running combo: units rung through the combo button (Odoo) vs the sheet's\u2026",
       "_origin": "ast",
       "community": 37,
@@ -9387,10 +9387,10 @@
       "file_type": "rationale",
       "norm_label": "per running combo: units rung through the combo button (odoo) vs the sheet's...",
       "source_file": "self_made_combos.py",
-      "source_location": "L1085"
+      "source_location": "L1091"
     },
     {
-      "id": "self_made_combos_rationale_825",
+      "id": "self_made_combos_rationale_831",
       "label": "The sheet label this Odoo combo maps to (same slot count, every slot overlaps),\u2026",
       "_origin": "ast",
       "community": 37,
@@ -9398,7 +9398,7 @@
       "file_type": "rationale",
       "norm_label": "the sheet label this odoo combo maps to (same slot count, every slot overlaps),...",
       "source_file": "self_made_combos.py",
-      "source_location": "L825"
+      "source_location": "L831"
     },
     {
       "id": "theme",
@@ -9656,7 +9656,7 @@
       "source_location": "L1"
     },
     {
-      "id": "export_self_made_combos_bundle_self_made_combos_rationale_712",
+      "id": "export_self_made_combos_bundle_self_made_combos_rationale_718",
       "label": "{BAG_UPPER: original full price} from bag_original_prices.json \u2014 the baseline\u2026",
       "_origin": "ast",
       "community": 51,
@@ -9664,10 +9664,10 @@
       "file_type": "rationale",
       "norm_label": "{bag_upper: original full price} from bag_original_prices.json \u2014 the baseline...",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L712"
+      "source_location": "L718"
     },
     {
-      "id": "export_self_made_combos_bundle_self_made_combos_rationale_753",
+      "id": "export_self_made_combos_bundle_self_made_combos_rationale_759",
       "label": "Bags with sales this month that are on NO offer \u2014 i.e. not a running-combo\u2026",
       "_origin": "ast",
       "community": 51,
@@ -9675,7 +9675,7 @@
       "file_type": "rationale",
       "norm_label": "bags with sales this month that are on no offer \u2014 i.e. not a running-combo...",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L753"
+      "source_location": "L759"
     },
     {
       "id": "build_all",
@@ -9700,7 +9700,7 @@
       "source_location": "L2"
     },
     {
-      "id": "self_made_combos_rationale_1192",
+      "id": "self_made_combos_rationale_1198",
       "label": "Per-shop view for Shops Efficiency, keyed by shop-location label (e.g.\u2026",
       "_origin": "ast",
       "community": 53,
@@ -9708,10 +9708,10 @@
       "file_type": "rationale",
       "norm_label": "per-shop view for shops efficiency, keyed by shop-location label (e.g....",
       "source_file": "self_made_combos.py",
-      "source_location": "L1192"
+      "source_location": "L1198"
     },
     {
-      "id": "self_made_combos_rationale_791",
+      "id": "self_made_combos_rationale_797",
       "label": "One combo slot-option \u2192 its distinctive bag token(s), colours/category words\u2026",
       "_origin": "ast",
       "community": 53,
@@ -9719,7 +9719,7 @@
       "file_type": "rationale",
       "norm_label": "one combo slot-option \u2192 its distinctive bag token(s), colours/category words...",
       "source_file": "self_made_combos.py",
-      "source_location": "L791"
+      "source_location": "L797"
     },
     {
       "id": "offer_data",
@@ -9942,7 +9942,7 @@
       "source_location": null
     },
     {
-      "id": "export_self_made_combos_bundle_self_made_combos_rationale_676",
+      "id": "export_self_made_combos_bundle_self_made_combos_rationale_682",
       "label": "Sheet label \"AMAYA/ELYSE+MOON/NIZANA\" \u2192 [ {AMAYA,ELYSE}, {MOON,NIZANA} ].",
       "_origin": "ast",
       "community": 64,
@@ -9950,10 +9950,10 @@
       "file_type": "rationale",
       "norm_label": "sheet label \"amaya/elyse+moon/nizana\" \u2192 [ {amaya,elyse}, {moon,nizana} ].",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L676"
+      "source_location": "L682"
     },
     {
-      "id": "export_self_made_combos_bundle_self_made_combos_rationale_688",
+      "id": "export_self_made_combos_bundle_self_made_combos_rationale_694",
       "label": "[(label, slots)] for each running combo on the offer sheet (skips the TOTAL\u2026",
       "_origin": "ast",
       "community": 64,
@@ -9961,7 +9961,7 @@
       "file_type": "rationale",
       "norm_label": "[(label, slots)] for each running combo on the offer sheet (skips the total...",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L688"
+      "source_location": "L694"
     },
     {
       "id": "monthly_sales",
@@ -10481,7 +10481,7 @@
       "source_location": "L139"
     },
     {
-      "id": "self_made_combos_rationale_1956",
+      "id": "self_made_combos_rationale_1962",
       "label": "Kenya on-offer bag set (tagged by offer) + the not-on-offer list, for\u2026",
       "_origin": "ast",
       "community": 85,
@@ -10489,7 +10489,7 @@
       "file_type": "rationale",
       "norm_label": "kenya on-offer bag set (tagged by offer) + the not-on-offer list, for...",
       "source_file": "self_made_combos.py",
-      "source_location": "L1956"
+      "source_location": "L1962"
     },
     {
       "id": "self_made_combos_rationale_446",
@@ -10503,7 +10503,7 @@
       "source_location": "L446"
     },
     {
-      "id": "self_made_combos_rationale_814",
+      "id": "self_made_combos_rationale_820",
       "label": "[(label, slots)] for each running combo on the offer sheet (skips the TOTAL\u2026",
       "_origin": "ast",
       "community": 85,
@@ -10511,10 +10511,10 @@
       "file_type": "rationale",
       "norm_label": "[(label, slots)] for each running combo on the offer sheet (skips the total...",
       "source_file": "self_made_combos.py",
-      "source_location": "L814"
+      "source_location": "L820"
     },
     {
-      "id": "self_made_combos_rationale_838",
+      "id": "self_made_combos_rationale_844",
       "label": "{BAG_UPPER: original full price} from bag_original_prices.json \u2014 the baseline\u2026",
       "_origin": "ast",
       "community": 85,
@@ -10522,10 +10522,10 @@
       "file_type": "rationale",
       "norm_label": "{bag_upper: original full price} from bag_original_prices.json \u2014 the baseline...",
       "source_file": "self_made_combos.py",
-      "source_location": "L838"
+      "source_location": "L844"
     },
     {
-      "id": "self_made_combos_rationale_862",
+      "id": "self_made_combos_rationale_868",
       "label": "Standalone bag sales (units + revenue) for a market, given the POS-till WHERE\u2026",
       "_origin": "ast",
       "community": 85,
@@ -10533,10 +10533,10 @@
       "file_type": "rationale",
       "norm_label": "standalone bag sales (units + revenue) for a market, given the pos-till where...",
       "source_file": "self_made_combos.py",
-      "source_location": "L862"
+      "source_location": "L868"
     },
     {
-      "id": "self_made_combos_rationale_888",
+      "id": "self_made_combos_rationale_894",
       "label": "Per-day bag sales (units only) for a market \u2014 same product filters as\u2026",
       "_origin": "ast",
       "community": 85,
@@ -10544,7 +10544,7 @@
       "file_type": "rationale",
       "norm_label": "per-day bag sales (units only) for a market \u2014 same product filters as...",
       "source_file": "self_made_combos.py",
-      "source_location": "L888"
+      "source_location": "L894"
     },
     {
       "id": "docs_chart_switcher",
@@ -17896,7 +17896,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L756",
+      "source_location": "L762",
       "weight": 1.0
     },
     {
@@ -17908,7 +17908,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L789",
+      "source_location": "L795",
       "weight": 1.0
     },
     {
@@ -17920,7 +17920,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L770",
+      "source_location": "L776",
       "weight": 1.0
     },
     {
@@ -17932,7 +17932,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1019",
+      "source_location": "L1025",
       "weight": 1.0
     },
     {
@@ -17944,7 +17944,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1320",
+      "source_location": "L1326",
       "weight": 1.0
     },
     {
@@ -17956,7 +17956,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1457",
+      "source_location": "L1463",
       "weight": 1.0
     },
     {
@@ -17968,7 +17968,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L944",
+      "source_location": "L950",
       "weight": 1.0
     },
     {
@@ -17980,7 +17980,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L945",
+      "source_location": "L951",
       "weight": 1.0
     },
     {
@@ -17992,7 +17992,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L946",
+      "source_location": "L952",
       "weight": 1.0
     },
     {
@@ -18004,7 +18004,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L964",
+      "source_location": "L970",
       "weight": 1.0
     },
     {
@@ -18016,7 +18016,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1095",
+      "source_location": "L1101",
       "weight": 1.0
     },
     {
@@ -18028,7 +18028,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1112",
+      "source_location": "L1118",
       "weight": 1.0
     },
     {
@@ -18040,7 +18040,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1113",
+      "source_location": "L1119",
       "weight": 1.0
     },
     {
@@ -18052,7 +18052,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1426",
+      "source_location": "L1432",
       "weight": 1.0
     },
     {
@@ -18064,7 +18064,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1135",
+      "source_location": "L1141",
       "weight": 1.0
     },
     {
@@ -18076,7 +18076,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1220",
+      "source_location": "L1226",
       "weight": 1.0
     },
     {
@@ -18088,7 +18088,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1223",
+      "source_location": "L1229",
       "weight": 1.0
     },
     {
@@ -18100,7 +18100,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1406",
+      "source_location": "L1412",
       "weight": 1.0
     },
     {
@@ -18112,7 +18112,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1410",
+      "source_location": "L1416",
       "weight": 1.0
     },
     {
@@ -18124,7 +18124,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L694",
+      "source_location": "L700",
       "weight": 1.0
     },
     {
@@ -18136,7 +18136,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L867",
+      "source_location": "L873",
       "weight": 1.0
     },
     {
@@ -18148,7 +18148,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L875",
+      "source_location": "L881",
       "weight": 1.0
     },
     {
@@ -18160,7 +18160,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L888",
+      "source_location": "L894",
       "weight": 1.0
     },
     {
@@ -18172,7 +18172,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L683",
+      "source_location": "L689",
       "weight": 1.0
     },
     {
@@ -18184,7 +18184,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L677",
+      "source_location": "L683",
       "weight": 1.0
     },
     {
@@ -18232,7 +18232,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1515",
+      "source_location": "L1521",
       "weight": 1.0
     },
     {
@@ -18244,7 +18244,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1516",
+      "source_location": "L1522",
       "weight": 1.0
     },
     {
@@ -18256,7 +18256,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1520",
+      "source_location": "L1526",
       "weight": 1.0
     },
     {
@@ -18268,7 +18268,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1521",
+      "source_location": "L1527",
       "weight": 1.0
     },
     {
@@ -18280,7 +18280,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1525",
+      "source_location": "L1531",
       "weight": 1.0
     },
     {
@@ -18292,7 +18292,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1526",
+      "source_location": "L1532",
       "weight": 1.0
     },
     {
@@ -18304,7 +18304,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1528",
+      "source_location": "L1534",
       "weight": 1.0
     },
     {
@@ -18316,7 +18316,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1554",
+      "source_location": "L1560",
       "weight": 1.0
     },
     {
@@ -18328,7 +18328,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1557",
+      "source_location": "L1563",
       "weight": 1.0
     },
     {
@@ -18340,7 +18340,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1561",
+      "source_location": "L1567",
       "weight": 1.0
     },
     {
@@ -18352,7 +18352,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L701",
+      "source_location": "L707",
       "weight": 1.0
     },
     {
@@ -22336,7 +22336,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L920",
+      "source_location": "L926",
       "weight": 1.0
     },
     {
@@ -22348,7 +22348,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L934",
+      "source_location": "L940",
       "weight": 1.0
     },
     {
@@ -22360,7 +22360,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L959",
+      "source_location": "L965",
       "weight": 1.0
     },
     {
@@ -22372,7 +22372,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L962",
+      "source_location": "L968",
       "weight": 1.0
     },
     {
@@ -22384,7 +22384,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1269",
+      "source_location": "L1275",
       "weight": 1.0
     },
     {
@@ -22396,7 +22396,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1270",
+      "source_location": "L1276",
       "weight": 1.0
     },
     {
@@ -22408,7 +22408,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1271",
+      "source_location": "L1277",
       "weight": 1.0
     },
     {
@@ -22420,7 +22420,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1289",
+      "source_location": "L1295",
       "weight": 1.0
     },
     {
@@ -22432,7 +22432,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1344",
+      "source_location": "L1350",
       "weight": 1.0
     },
     {
@@ -22444,7 +22444,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1602",
+      "source_location": "L1608",
       "weight": 1.0
     },
     {
@@ -22456,7 +22456,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1678",
+      "source_location": "L1684",
       "weight": 1.0
     },
     {
@@ -22468,7 +22468,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1696",
+      "source_location": "L1702",
       "weight": 1.0
     },
     {
@@ -22480,7 +22480,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1818",
+      "source_location": "L1824",
       "weight": 1.0
     },
     {
@@ -22492,7 +22492,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1420",
+      "source_location": "L1426",
       "weight": 1.0
     },
     {
@@ -22504,7 +22504,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1439",
+      "source_location": "L1445",
       "weight": 1.0
     },
     {
@@ -22516,7 +22516,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1440",
+      "source_location": "L1446",
       "weight": 1.0
     },
     {
@@ -22528,7 +22528,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1785",
+      "source_location": "L1791",
       "weight": 1.0
     },
     {
@@ -22540,7 +22540,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1463",
+      "source_location": "L1469",
       "weight": 1.0
     },
     {
@@ -22552,7 +22552,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1573",
+      "source_location": "L1579",
       "weight": 1.0
     },
     {
@@ -22564,7 +22564,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1576",
+      "source_location": "L1582",
       "weight": 1.0
     },
     {
@@ -22576,7 +22576,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1765",
+      "source_location": "L1771",
       "weight": 1.0
     },
     {
@@ -22588,7 +22588,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1769",
+      "source_location": "L1775",
       "weight": 1.0
     },
     {
@@ -22600,7 +22600,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L820",
+      "source_location": "L826",
       "weight": 1.0
     },
     {
@@ -22612,7 +22612,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1108",
+      "source_location": "L1114",
       "weight": 1.0
     },
     {
@@ -22624,7 +22624,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1116",
+      "source_location": "L1122",
       "weight": 1.0
     },
     {
@@ -22636,7 +22636,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1129",
+      "source_location": "L1135",
       "weight": 1.0
     },
     {
@@ -22648,7 +22648,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L809",
+      "source_location": "L815",
       "weight": 1.0
     },
     {
@@ -22660,7 +22660,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L803",
+      "source_location": "L809",
       "weight": 1.0
     },
     {
@@ -22672,7 +22672,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1230",
+      "source_location": "L1236",
       "weight": 1.0
     },
     {
@@ -22684,7 +22684,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1209",
+      "source_location": "L1215",
       "weight": 1.0
     },
     {
@@ -22696,7 +22696,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1209",
+      "source_location": "L1215",
       "weight": 1.0
     },
     {
@@ -22768,7 +22768,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1889",
+      "source_location": "L1895",
       "weight": 1.0
     },
     {
@@ -22780,7 +22780,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1890",
+      "source_location": "L1896",
       "weight": 1.0
     },
     {
@@ -22792,7 +22792,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1894",
+      "source_location": "L1900",
       "weight": 1.0
     },
     {
@@ -22804,7 +22804,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1895",
+      "source_location": "L1901",
       "weight": 1.0
     },
     {
@@ -22816,7 +22816,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1899",
+      "source_location": "L1905",
       "weight": 1.0
     },
     {
@@ -22828,7 +22828,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1900",
+      "source_location": "L1906",
       "weight": 1.0
     },
     {
@@ -22840,7 +22840,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1904",
+      "source_location": "L1910",
       "weight": 1.0
     },
     {
@@ -22852,7 +22852,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1922",
+      "source_location": "L1928",
       "weight": 1.0
     },
     {
@@ -22864,7 +22864,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1927",
+      "source_location": "L1933",
       "weight": 1.0
     },
     {
@@ -22876,7 +22876,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1979",
+      "source_location": "L1985",
       "weight": 1.0
     },
     {
@@ -22888,7 +22888,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1982",
+      "source_location": "L1988",
       "weight": 1.0
     },
     {
@@ -22900,7 +22900,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1991",
+      "source_location": "L1997",
       "weight": 1.0
     },
     {
@@ -22912,7 +22912,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1995",
+      "source_location": "L2001",
       "weight": 1.0
     },
     {
@@ -22924,7 +22924,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L827",
+      "source_location": "L833",
       "weight": 1.0
     },
     {
@@ -22972,7 +22972,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1966",
+      "source_location": "L1972",
       "weight": 1.0
     },
     {
@@ -24220,7 +24220,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L762",
+      "source_location": "L768",
       "weight": 1.0
     },
     {
@@ -24232,7 +24232,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L769",
+      "source_location": "L775",
       "weight": 1.0
     },
     {
@@ -24244,7 +24244,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L784",
+      "source_location": "L790",
       "weight": 1.0
     },
     {
@@ -24256,7 +24256,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1033",
+      "source_location": "L1039",
       "weight": 1.0
     },
     {
@@ -24268,7 +24268,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1059",
+      "source_location": "L1065",
       "weight": 1.0
     },
     {
@@ -24280,7 +24280,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1086",
+      "source_location": "L1092",
       "weight": 1.0
     },
     {
@@ -24292,7 +24292,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1110",
+      "source_location": "L1116",
       "weight": 1.0
     },
     {
@@ -24304,7 +24304,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1129",
+      "source_location": "L1135",
       "weight": 1.0
     },
     {
@@ -24316,7 +24316,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1133",
+      "source_location": "L1139",
       "weight": 1.0
     },
     {
@@ -24328,7 +24328,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1202",
+      "source_location": "L1208",
       "weight": 1.0
     },
     {
@@ -24340,7 +24340,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1423",
+      "source_location": "L1429",
       "weight": 1.0
     },
     {
@@ -24352,7 +24352,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1459",
+      "source_location": "L1465",
       "weight": 1.0
     },
     {
@@ -24364,7 +24364,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1462",
+      "source_location": "L1468",
       "weight": 1.0
     },
     {
@@ -24376,7 +24376,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1482",
+      "source_location": "L1488",
       "weight": 1.0
     },
     {
@@ -24388,7 +24388,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L870",
+      "source_location": "L876",
       "weight": 1.0
     },
     {
@@ -24400,7 +24400,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L894",
+      "source_location": "L900",
       "weight": 1.0
     },
     {
@@ -24880,7 +24880,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L926",
+      "source_location": "L932",
       "weight": 1.0
     },
     {
@@ -24892,7 +24892,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1358",
+      "source_location": "L1364",
       "weight": 1.0
     },
     {
@@ -24904,7 +24904,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1384",
+      "source_location": "L1390",
       "weight": 1.0
     },
     {
@@ -24916,7 +24916,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1411",
+      "source_location": "L1417",
       "weight": 1.0
     },
     {
@@ -24928,7 +24928,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1437",
+      "source_location": "L1443",
       "weight": 1.0
     },
     {
@@ -24940,7 +24940,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1457",
+      "source_location": "L1463",
       "weight": 1.0
     },
     {
@@ -24952,7 +24952,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1461",
+      "source_location": "L1467",
       "weight": 1.0
     },
     {
@@ -24964,7 +24964,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1555",
+      "source_location": "L1561",
       "weight": 1.0
     },
     {
@@ -24976,7 +24976,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1782",
+      "source_location": "L1788",
       "weight": 1.0
     },
     {
@@ -24988,7 +24988,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1820",
+      "source_location": "L1826",
       "weight": 1.0
     },
     {
@@ -25000,7 +25000,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1823",
+      "source_location": "L1829",
       "weight": 1.0
     },
     {
@@ -25012,7 +25012,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1843",
+      "source_location": "L1849",
       "weight": 1.0
     },
     {
@@ -25024,7 +25024,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1111",
+      "source_location": "L1117",
       "weight": 1.0
     },
     {
@@ -25036,7 +25036,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1135",
+      "source_location": "L1141",
       "weight": 1.0
     },
     {
@@ -25048,7 +25048,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1205",
+      "source_location": "L1211",
       "weight": 1.0
     },
     {
@@ -25060,7 +25060,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "self_made_combos.py",
-      "source_location": "L1208",
+      "source_location": "L1214",
       "weight": 1.0
     },
     {
@@ -29790,7 +29790,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1514",
+      "source_location": "L1520",
       "weight": 1.0
     },
     {
@@ -29801,7 +29801,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1533",
+      "source_location": "L1539",
       "weight": 1.0
     },
     {
@@ -29812,7 +29812,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1553",
+      "source_location": "L1559",
       "weight": 1.0
     },
     {
@@ -29900,7 +29900,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L664",
+      "source_location": "L670",
       "weight": 1.0
     },
     {
@@ -29911,7 +29911,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L675",
+      "source_location": "L681",
       "weight": 1.0
     },
     {
@@ -29922,7 +29922,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L681",
+      "source_location": "L687",
       "weight": 1.0
     },
     {
@@ -29933,7 +29933,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L687",
+      "source_location": "L693",
       "weight": 1.0
     },
     {
@@ -29944,7 +29944,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L698",
+      "source_location": "L704",
       "weight": 1.0
     },
     {
@@ -29955,7 +29955,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L711",
+      "source_location": "L717",
       "weight": 1.0
     },
     {
@@ -29966,7 +29966,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L752",
+      "source_location": "L758",
       "weight": 1.0
     },
     {
@@ -29977,7 +29977,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L843",
+      "source_location": "L849",
       "weight": 1.0
     },
     {
@@ -29988,7 +29988,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L937",
+      "source_location": "L943",
       "weight": 1.0
     },
     {
@@ -29999,7 +29999,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1196",
+      "source_location": "L1202",
       "weight": 1.0
     },
     {
@@ -30010,7 +30010,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1385",
+      "source_location": "L1391",
       "weight": 1.0
     },
     {
@@ -30021,7 +30021,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L1391",
+      "source_location": "L1397",
       "weight": 1.0
     },
     {
@@ -32705,7 +32705,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L1016",
+      "source_location": "L1022",
       "weight": 1.0
     },
     {
@@ -32716,7 +32716,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L1084",
+      "source_location": "L1090",
       "weight": 1.0
     },
     {
@@ -32727,7 +32727,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L1191",
+      "source_location": "L1197",
       "weight": 1.0
     },
     {
@@ -32738,7 +32738,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L1262",
+      "source_location": "L1268",
       "weight": 1.0
     },
     {
@@ -32771,7 +32771,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L1888",
+      "source_location": "L1894",
       "weight": 1.0
     },
     {
@@ -32782,7 +32782,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L1935",
+      "source_location": "L1941",
       "weight": 1.0
     },
     {
@@ -32793,7 +32793,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L1955",
+      "source_location": "L1961",
       "weight": 1.0
     },
     {
@@ -32804,7 +32804,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L1978",
+      "source_location": "L1984",
       "weight": 1.0
     },
     {
@@ -32892,7 +32892,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L790",
+      "source_location": "L796",
       "weight": 1.0
     },
     {
@@ -32903,7 +32903,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L801",
+      "source_location": "L807",
       "weight": 1.0
     },
     {
@@ -32914,7 +32914,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L807",
+      "source_location": "L813",
       "weight": 1.0
     },
     {
@@ -32925,7 +32925,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L813",
+      "source_location": "L819",
       "weight": 1.0
     },
     {
@@ -32936,7 +32936,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L824",
+      "source_location": "L830",
       "weight": 1.0
     },
     {
@@ -32947,7 +32947,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L837",
+      "source_location": "L843",
       "weight": 1.0
     },
     {
@@ -32958,7 +32958,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L861",
+      "source_location": "L867",
       "weight": 1.0
     },
     {
@@ -32969,7 +32969,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L887",
+      "source_location": "L893",
       "weight": 1.0
     },
     {
@@ -32980,7 +32980,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L911",
+      "source_location": "L917",
       "weight": 1.0
     },
     {
@@ -32991,7 +32991,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L949",
+      "source_location": "L955",
       "weight": 1.0
     },
     {
@@ -33002,7 +33002,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L1549",
+      "source_location": "L1555",
       "weight": 1.0
     },
     {
@@ -33013,7 +33013,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L1744",
+      "source_location": "L1750",
       "weight": 1.0
     },
     {
@@ -33024,7 +33024,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L1750",
+      "source_location": "L1756",
       "weight": 1.0
     },
     {
@@ -33035,7 +33035,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L1204",
+      "source_location": "L1210",
       "weight": 1.0
     },
     {
@@ -34293,30 +34293,19 @@
       "weight": 1.0
     },
     {
-      "source": "export_self_made_combos_bundle_self_made_combos_rationale_665",
+      "source": "export_self_made_combos_bundle_self_made_combos_rationale_671",
       "target": "export_self_made_combos_bundle_self_made_combos_combo_norm_option",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L665",
-      "weight": 1.0
-    },
-    {
-      "source": "export_self_made_combos_bundle_self_made_combos_rationale_676",
-      "target": "export_self_made_combos_bundle_self_made_combos_combo_sheet_slots",
-      "relation": "rationale_for",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L676",
+      "source_location": "L671",
       "weight": 1.0
     },
     {
       "source": "export_self_made_combos_bundle_self_made_combos_rationale_682",
-      "target": "export_self_made_combos_bundle_self_made_combos_combo_odoo_slots",
+      "target": "export_self_made_combos_bundle_self_made_combos_combo_sheet_slots",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -34327,7 +34316,7 @@
     },
     {
       "source": "export_self_made_combos_bundle_self_made_combos_rationale_688",
-      "target": "export_self_made_combos_bundle_self_made_combos_build_sheet_slots",
+      "target": "export_self_made_combos_bundle_self_made_combos_combo_odoo_slots",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -34337,58 +34326,69 @@
       "weight": 1.0
     },
     {
-      "source": "export_self_made_combos_bundle_self_made_combos_rationale_699",
+      "source": "export_self_made_combos_bundle_self_made_combos_rationale_694",
+      "target": "export_self_made_combos_bundle_self_made_combos_build_sheet_slots",
+      "relation": "rationale_for",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "export/self_made_combos_bundle/self_made_combos.py",
+      "source_location": "L694",
+      "weight": 1.0
+    },
+    {
+      "source": "export_self_made_combos_bundle_self_made_combos_rationale_705",
       "target": "export_self_made_combos_bundle_self_made_combos_matches_sheet",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L699",
+      "source_location": "L705",
       "weight": 1.0
     },
     {
-      "source": "export_self_made_combos_bundle_self_made_combos_rationale_712",
+      "source": "export_self_made_combos_bundle_self_made_combos_rationale_718",
       "target": "export_self_made_combos_bundle_self_made_combos_load_bag_prices",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L712",
+      "source_location": "L718",
       "weight": 1.0
     },
     {
-      "source": "export_self_made_combos_bundle_self_made_combos_rationale_753",
+      "source": "export_self_made_combos_bundle_self_made_combos_rationale_759",
       "target": "export_self_made_combos_bundle_self_made_combos_bags_not_on_offer",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L753",
+      "source_location": "L759",
       "weight": 1.0
     },
     {
-      "source": "export_self_made_combos_bundle_self_made_combos_rationale_844",
+      "source": "export_self_made_combos_bundle_self_made_combos_rationale_850",
       "target": "export_self_made_combos_bundle_self_made_combos_combo_button_usage",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L844",
+      "source_location": "L850",
       "weight": 1.0
     },
     {
-      "source": "export_self_made_combos_bundle_self_made_combos_rationale_938",
+      "source": "export_self_made_combos_bundle_self_made_combos_rationale_944",
       "target": "export_self_made_combos_bundle_self_made_combos_build_payload",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "export/self_made_combos_bundle/self_made_combos.py",
-      "source_location": "L938",
+      "source_location": "L944",
       "weight": 1.0
     },
     {
@@ -35965,47 +35965,47 @@
       "weight": 1.0
     },
     {
-      "source": "self_made_combos_rationale_1017",
+      "source": "self_made_combos_rationale_1023",
       "target": "self_made_combos_region_on_offer_bags",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L1017",
+      "source_location": "L1023",
       "weight": 1.0
     },
     {
-      "source": "self_made_combos_rationale_1085",
+      "source": "self_made_combos_rationale_1091",
       "target": "self_made_combos_combo_button_usage",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L1085",
+      "source_location": "L1091",
       "weight": 1.0
     },
     {
-      "source": "self_made_combos_rationale_1192",
+      "source": "self_made_combos_rationale_1198",
       "target": "self_made_combos_combos_by_shop",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L1192",
+      "source_location": "L1198",
       "weight": 1.0
     },
     {
-      "source": "self_made_combos_rationale_1263",
+      "source": "self_made_combos_rationale_1269",
       "target": "self_made_combos_build_payload",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L1263",
+      "source_location": "L1269",
       "weight": 1.0
     },
     {
@@ -36031,14 +36031,14 @@
       "weight": 1.0
     },
     {
-      "source": "self_made_combos_rationale_1956",
+      "source": "self_made_combos_rationale_1962",
       "target": "self_made_combos_write_bags_offer_source",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L1956",
+      "source_location": "L1962",
       "weight": 1.0
     },
     {
@@ -36097,30 +36097,19 @@
       "weight": 1.0
     },
     {
-      "source": "self_made_combos_rationale_791",
+      "source": "self_made_combos_rationale_797",
       "target": "self_made_combos_combo_norm_option",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L791",
-      "weight": 1.0
-    },
-    {
-      "source": "self_made_combos_rationale_802",
-      "target": "self_made_combos_combo_sheet_slots",
-      "relation": "rationale_for",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "self_made_combos.py",
-      "source_location": "L802",
+      "source_location": "L797",
       "weight": 1.0
     },
     {
       "source": "self_made_combos_rationale_808",
-      "target": "self_made_combos_combo_odoo_slots",
+      "target": "self_made_combos_combo_sheet_slots",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -36131,7 +36120,7 @@
     },
     {
       "source": "self_made_combos_rationale_814",
-      "target": "self_made_combos_build_sheet_slots",
+      "target": "self_made_combos_combo_odoo_slots",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -36141,69 +36130,80 @@
       "weight": 1.0
     },
     {
-      "source": "self_made_combos_rationale_825",
+      "source": "self_made_combos_rationale_820",
+      "target": "self_made_combos_build_sheet_slots",
+      "relation": "rationale_for",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "self_made_combos.py",
+      "source_location": "L820",
+      "weight": 1.0
+    },
+    {
+      "source": "self_made_combos_rationale_831",
       "target": "self_made_combos_matches_sheet",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L825",
+      "source_location": "L831",
       "weight": 1.0
     },
     {
-      "source": "self_made_combos_rationale_838",
+      "source": "self_made_combos_rationale_844",
       "target": "self_made_combos_load_bag_prices",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L838",
+      "source_location": "L844",
       "weight": 1.0
     },
     {
-      "source": "self_made_combos_rationale_862",
+      "source": "self_made_combos_rationale_868",
       "target": "self_made_combos_bag_sales_sql",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L862",
+      "source_location": "L868",
       "weight": 1.0
     },
     {
-      "source": "self_made_combos_rationale_888",
+      "source": "self_made_combos_rationale_894",
       "target": "self_made_combos_bag_sales_daily_sql",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L888",
+      "source_location": "L894",
       "weight": 1.0
     },
     {
-      "source": "self_made_combos_rationale_912",
+      "source": "self_made_combos_rationale_918",
       "target": "self_made_combos_bag_classifier",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L912",
+      "source_location": "L918",
       "weight": 1.0
     },
     {
-      "source": "self_made_combos_rationale_951",
+      "source": "self_made_combos_rationale_957",
       "target": "self_made_combos_bags_not_on_offer",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "self_made_combos.py",
-      "source_location": "L951",
+      "source_location": "L957",
       "weight": 1.0
     },
     {
@@ -36904,7 +36904,7 @@
       "confidence_score": 0.85,
       "context": "return",
       "source_file": "self_made_combos.py",
-      "source_location": "L946",
+      "source_location": "L952",
       "weight": 1.0
     },
     {
@@ -36916,7 +36916,7 @@
       "confidence_score": 0.85,
       "context": "return",
       "source_file": "self_made_combos.py",
-      "source_location": "L946",
+      "source_location": "L952",
       "weight": 1.0
     },
     {
@@ -41976,5 +41976,5 @@
       "source_file": "docs/timed-offers.md"
     }
   ],
-  "built_at_commit": "c15268d22aa190701f9df66488409b099fd24206"
+  "built_at_commit": "67923912a9379ccc2d3f84e3ab4525999dc71970"
 }

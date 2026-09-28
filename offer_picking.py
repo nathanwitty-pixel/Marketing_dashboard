@@ -367,8 +367,14 @@ def _build_catalog(cost, prod, bomkeys, offers):
     `valueWas` = full price (col D) and `valueNow` = offer price (col F). Bags not on the
     sheet fall back to 2 × production cost for both. `value` mirrors valueNow."""
     bag_stock = {}
+    # A bag with no BOM row (e.g. LAMORA) would otherwise keep each colour as its own entry
+    # ("LAMORA BLACK", "LAMORA RED" …) while the offers-sheet "LAMORA" showed 0 stock — so
+    # fold it into the offers-sheet bag type it starts with (whole words, longest first).
+    offer_keys = sorted(offers.keys(), key=len, reverse=True)
     for nm, q in prod.items():
-        canon, _, _ = _resolve_bag(nm, cost, bomkeys)
+        canon, _, in_bom = _resolve_bag(nm, cost, bomkeys)
+        if not in_bom:
+            canon = next((k for k in offer_keys if canon == k or canon.startswith(k + " ")), canon)
         bag_stock[canon] = bag_stock.get(canon, 0) + int(q or 0)
     names = set(cost.keys()) | set(bag_stock.keys()) | set(offers.keys())
     cat = []

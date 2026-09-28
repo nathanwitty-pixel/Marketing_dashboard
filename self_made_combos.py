@@ -709,6 +709,9 @@ def _read_deals(month_name):
 
     # Sheet location labels → the shop name we use elsewhere.
     LOC_ALIASES = {"nairobi town": "Starmall"}
+    # Sheet product wording → the name Odoo uses (Odoo: "JADE BLACK" …, not "JADE BRIEFCASE").
+    PRODUCT_RENAME = {"jade briefcase": "Jade", "doublepress backpack": "Double Press",
+                      "luna man bag": "Luna", "sky handbag": "Skye HB"}
 
     # Shops that run the SAME Deal of the Week as another shop but aren't listed
     # separately in the sheet. Each mirror shop inherits every DoW product its
@@ -723,6 +726,7 @@ def _read_deals(month_name):
         tier, mon, prod, loc, typ = (str(r[0]).strip(), str(r[1]).strip(), str(r[2]).strip(),
                                      str(r[3]).strip(), str(r[4]).strip())
         loc = LOC_ALIASES.get(loc.lower(), loc)
+        prod = PRODUCT_RENAME.get(re.sub(r"\s+", " ", prod.lower()), prod)
         if not prod or mon.lower() != month_name.lower():
             continue
         item = {"tier": tier, "product": prod, "location": loc,
@@ -784,7 +788,9 @@ _COMBO_COLOURS = {"BLACK", "GREY", "GREEN", "BROWN", "NUDE", "RED", "BLUE", "MAR
                   "TT", "PURPLE", "PINK", "ORANGE", "WHITE", "GOLD", "SILVER", "NAVY"}
 # Promo wording on the sheet ↔ catalogue wording in Odoo.
 _COMBO_PHRASE_ALIAS = {"LAPTOP BACKPACK": "CODE 3", "STANDARD TRAVEL": "STANDARD",
-                       "NEO MAN BAG": "NEO MAN", "CAIRO BACKPACK": "CAIRO BP"}
+                       "NEO MAN BAG": "NEO MAN", "CAIRO BACKPACK": "CAIRO BP",
+                       # Jade first, so "JADE BRIEFCASE" → JADE before BRIEFCASE is rewritten
+                       "JADE BRIEFCASE": "JADE", "BRIEFCASE": "BRIEF CASE"}
 
 
 def _combo_norm_option(opt):
