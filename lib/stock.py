@@ -104,6 +104,31 @@ def odoo_stock_by_product(market="kenya", include_combos=False, positive_only=Tr
     return {str(r["name"]).upper(): _qty(r["qty"]) for _, r in dfr.iterrows()}
 
 
+RESTOCK_LOCATION = "CBD/Stock"   # the CBD store that restocks the shops (New Products "Restock")
+
+
+def odoo_stock_at_location(complete_name=RESTOCK_LOCATION, include_combos=False):
+    """{UPPER(product name): on-hand units} at ONE exact internal location (complete_name,
+    e.g. "CBD/Stock") — not the whole top-level code, whose other sub-locations aren't
+    restock stock. {} if Postgres is unreachable."""
+    if not _ok():
+        return {}
+    combo = "" if include_combos else " AND pt.\"name\" NOT LIKE '%+%'"
+    sql = f"""
+    SELECT UPPER(pt."name") AS name, SUM(q.quantity)::int AS qty
+    {_BASE}
+    WHERE l.complete_name = :loc{combo}
+    GROUP BY UPPER(pt."name") HAVING SUM(q.quantity) > 0
+    """
+    try:
+        dfr = db.run_query(sql, {"loc": complete_name})
+    except Exception:                                        # noqa: BLE001
+        return {}
+    if dfr is None or dfr.empty:
+        return {}
+    return {str(r["name"]).upper(): _qty(r["qty"]) for _, r in dfr.iterrows()}
+
+
 def odoo_stock_by_shop_code(codes=None, include_combos=False, positive_only=True):
     """{top-level location code: {UPPER(product name): on-hand}} — live per-shop stock.
 

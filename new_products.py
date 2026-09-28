@@ -451,7 +451,7 @@ def fetch_new_products_data():
 
     # ── STOCK: LIVE Odoo on-hand ONLY (the STOCK_LEVELS sheet is not read) ──
     # sKenya / sOutside are set from live Odoo stock further below (odoo_stock_kenya_outside).
-    # sRestock is a sheet planning number with no Odoo on-hand equivalent, so it is 0.
+    # sRestock = live Odoo on-hand at CBD/Stock (the store that restocks the shops).
 
     # Merge posts into each monthly colour-level row (stock is applied later, from Odoo)
     for r in ms_base:
@@ -503,7 +503,7 @@ def fetch_new_products_data():
             "wpostOutside": post["outsideKenya"],
             "sKenya":       0,    # set from live Odoo stock below
             "sOutside":     0,    # set from live Odoo stock below
-            "sRestock":     0     # no Odoo on-hand equivalent (sheet planning number)
+            "sRestock":     0     # set from live Odoo CBD/Stock below
         })
 
     # ── Sales from Odoo — the single source of truth for EVERY sales figure ──
@@ -518,21 +518,27 @@ def fetch_new_products_data():
     # sKenya = Kenya shop on-hand, sOutside = Sinza(Dar)+Uganda on-hand, matched to each
     # colour-level row by product name (exact upper, then alphanumeric-normalised — the
     # same matching the sales merge uses). A row Odoo has no on-hand for — or an
-    # unreachable DB — shows 0; the sheet is never a fallback. sRestock has no Odoo
-    # equivalent, so it is 0.
+    # unreachable DB — shows 0; the sheet is never a fallback. sRestock = on-hand at the
+    # CBD/Stock location (lib/stock.RESTOCK_LOCATION).
     _sk_odoo, _so_odoo = odoo_stock_kenya_outside()
     _skn = _keyed(_sk_odoo, _add_qty)
     _son = _keyed(_so_odoo, _add_qty)
+    try:
+        from lib import stock as _stock
+        _sr_odoo = _stock.odoo_stock_at_location()
+    except Exception:                                        # noqa: BLE001
+        _sr_odoo = {}
+    _srn = _keyed(_sr_odoo, _add_qty)
 
     def _apply_stock(rows):
         for r in rows:
             k = _key(r["productName"])
             r["sKenya"]   = int(_skn.get(k, 0))
             r["sOutside"] = int(_son.get(k, 0))
-            r["sRestock"] = 0
+            r["sRestock"] = int(_srn.get(k, 0))
     _apply_stock(ms_base)
     _apply_stock(weekly_combined)
-    print("  Stock source          : Odoo (live on-hand only; sRestock=0, no sheet)"
+    print("  Stock source          : Odoo (live on-hand; restock = CBD/Stock, no sheet)"
           if (_sk_odoo or _so_odoo) else
           "  Stock source          : Odoo unreachable — stock shown as 0 (no sheet fallback)")
 
@@ -628,12 +634,13 @@ def fetch_new_products_data():
             _lw = _lwn_.get(_k) or {}
             _sk = int(_skn.get(_k, 0))
             _so = int(_son.get(_k, 0))
+            _sr = int(_srn.get(_k, 0))
             ms_base.append({"colour": _colour, "category": _cat, "productName": str(_nm).title(),
                             "bagType": _btd, "kenyaSales": _m.get("kenya", 0), "outsideKenya": _m.get("outside", 0),
-                            "mpostKenya": 0, "mpostOutside": 0, "sKenya": _sk, "sOutside": _so, "sRestock": 0})
+                            "mpostKenya": 0, "mpostOutside": 0, "sKenya": _sk, "sOutside": _so, "sRestock": _sr})
             weekly_combined.append({"colour": _colour, "category": _cat, "productName": str(_nm).title(),
                             "bagType": _btd, "weeklySales": _w.get("kenya", 0), "wpostKenya": 0, "wpostOutside": 0,
-                            "sKenya": _sk, "sOutside": _so, "sRestock": 0,
+                            "sKenya": _sk, "sOutside": _so, "sRestock": _sr,
                             "lastWeekKenya": _lw.get("kenya", 0), "lastWeekOutside": _lw.get("outside", 0)})
             _have.add(_k)
             _added += 1

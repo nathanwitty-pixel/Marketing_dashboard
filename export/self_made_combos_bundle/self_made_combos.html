@@ -1124,7 +1124,7 @@ window.addEventListener('DOMContentLoaded', function () {
         });
       });
       dowLocDetail = loc;   // expose for the row-hover tooltip
-      var pick = function (a) { return a.map(function (d) { return { product: d.product, stock: d.stock || 0, sold: d.sold || 0, locations: d.locations || [] }; }); };
+      var pick = function (a) { return a.map(function (d) { return { product: d.product, stock: d.stock || 0, sold: d.sold || 0, locations: d.locations || [], stockByLoc: d.stockByLoc || null }; }); };
       var bySold = function (a) { return a.slice().sort(function (x, y) { return (y.sold || 0) - (x.sold || 0); }); };
       dowCatDetail = { selling: bySold(pick(selling)), notsell: pick(idle), oos: bySold(pick(cleared)), idle: pick(idleIn) };
       var rows = Object.keys(loc).map(function (k) { return loc[k]; })
@@ -1268,7 +1268,13 @@ window.addEventListener('DOMContentLoaded', function () {
         var right;
         if (cat === 'selling') right = '<b style="color:#6ee7b7">' + fmt(x.sold) + ' sold</b> · <b style="color:' + sc + '">' + fmt(x.stock) + ' stk</b>';
         else if (cat === 'oos') right = '<b style="color:' + ((x.sold || 0) > 0 ? '#6ee7b7' : '#64748b') + '">' + fmt(x.sold) + ' sold</b> · <b style="color:#f87171">0 stk</b>';
-        else if (cat === 'idle') { var shops = (x.locations || []).join(' · '); right = '<b style="color:' + sc + '">' + fmt(x.stock) + ' stk</b>' + (shops ? ' <span style="color:#94a3b8">@ ' + esc(shops) + '</span>' : ''); }
+        else if (cat === 'idle') {
+          // Each shop with the bags it holds (this deal's per-shop on-hand), e.g. "Kakamega 80 · Busia 68".
+          var sbl = (x.stockByLoc && typeof x.stockByLoc === 'object') ? x.stockByLoc : null;
+          var shops = (x.locations || []).map(function (L) {
+            if (/website/i.test(L)) return esc(L) + ' <b style="color:#94a3b8">online</b>';
+            return esc(L) + (sbl ? ' <b style="color:#e2e8f0">' + fmt(sbl[L] || 0) + '</b>' : '');
+          }).join(' · '); right = '<b style="color:' + sc + '">' + fmt(x.stock) + ' stk</b>' + (shops ? ' <span style="color:#94a3b8">@ ' + shops + '</span>' : ''); }
         else right = '<b style="color:' + sc + '">' + fmt(x.stock) + ' in stock</b>';
         return '<span style="display:inline-block;background:#161824;border:1px solid #2d3148;border-radius:5px;padding:0.12rem 0.45rem;margin:0.12rem;font-size:0.72rem;color:#cbd5e1">'
           + esc(x.product) + ' ' + right + '</span>';

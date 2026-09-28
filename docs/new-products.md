@@ -21,7 +21,10 @@ Spreadsheet `1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0`:
 - **MONTHLY_SALES / WEEKLY_SALES** — colour-level rows (colour / category / product /
   bag type + sales columns). Sales are **overwritten** by Odoo.
 - **MONTHLY_MARKETING_POST / WEEKLY_MARKETING_POST** — col E Kenya posts, col H Outside.
-- **STOCK_LEVELS** — col Y Kenya, Z Outside, AA restock (per colour).
+- **Stock (live Odoo on-hand, `lib/stock.py`; the STOCK_LEVELS sheet is not read):**
+  **Kenya Stock** = the 16 Kenya shop locations (`KENYA_SHOP_CODES`);
+  **Sinza+UG Stock** = DAR (Sinza) + UG (Uganda); **Restock** = the exact location
+  `CBD/Stock` (`RESTOCK_LOCATION`, via `odoo_stock_at_location()`). Restock was 0 before 28 Sep 2026.
 
 Odoo:
 
