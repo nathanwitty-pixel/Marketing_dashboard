@@ -48,12 +48,12 @@
       "weekStart": "2026-09-27",
       "label": "Wk 5",
       "month": "Sep",
-      "salesPct": 53.7,
-      "salesBags": 14575,
+      "salesPct": 56.19,
+      "salesBags": 15250,
       "prevSalesPct": 52.93,
       "prevSalesBags": 14367,
-      "weeklySales": 208,
-      "declinedBy": -6577
+      "weeklySales": 883,
+      "declinedBy": -5902
     }
   ]
 }

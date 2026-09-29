@@ -4,374 +4,256 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Denri Africa · Marketing Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+  <script>
+    // Theme before first paint (V5 light is the default; 'denri_theme' remembers the choice)
+    (function () {
+      var t = 'light';
+      try { t = localStorage.getItem('denri_theme') || 'light'; } catch (e) {}
+      document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+    })();
+  </script>
+  <script src="v5_theme.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* ── Dashboard V5 tokens ─────────────────────────────────── */
     :root {
-      --sidebar-w: 216px;
-      --header-h: 52px;
-      --bg-app:     #07090f;
-      --bg-sidebar: #0b0d16;
-      --bg-content: #0f1117;
-      --border:     #1a1e2e;
-      --text-hi:    #f1f5f9;
-      --text-mid:   #94a3b8;
-      --text-lo:    #3d4a5c;
-      --accent:     #10b981;
-      --accent-dim: rgba(16,185,129,0.12);
+      --bg-app:      #f4f5fa;
+      --bg-bar:      #ffffff;
+      --bg-content:  #f4f5fa;
+      --bg-raised:   #ffffff;
+      --border:      #e4e7ef;
+      --text-hi:     #0f172a;
+      --text-mid:    #475569;
+      --text-lo:     #64748b;
+      --track:       #14161f;     /* dark pill track — same in both themes, as in V5 */
+      --track-ink:   #a1a7bb;
+      --accent:      #4f46e5;     /* V5 indigo */
+      --accent-hi:   #6366f1;
+      --accent-dim:  rgba(79,70,229,0.10);
+      --live:        #10b981;     /* data-freshness dot stays semantic green */
+      --shadow:      0 1px 2px rgba(16,24,40,0.04), 0 6px 18px rgba(16,24,40,0.06);
+      --menu-shadow: 0 16px 40px rgba(16,24,40,0.14);
+      --ease:        cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    :root[data-theme="dark"] {
+      --bg-app:      #0b0d14;
+      --bg-bar:      #11131c;
+      --bg-content:  #0f1117;
+      --bg-raised:   #1a1d2b;
+      --border:      #232738;
+      --text-hi:     #f1f5f9;
+      --text-mid:    #aab4c3;
+      --text-lo:     #8a97a8;
+      --track:       #1c1f2d;
+      --accent-dim:  rgba(99,102,241,0.16);
+      --shadow:      0 8px 24px rgba(0,0,0,0.3);
+      --menu-shadow: 0 16px 40px rgba(0,0,0,0.5);
     }
 
-    html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
-    body { background: var(--bg-app); color: var(--text-hi); display: flex; flex-direction: row; }
+    html, body { height: 100%; overflow: hidden; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    body { background: var(--bg-app); color: var(--text-hi); display: flex; flex-direction: column; }
 
-    /* Right-hand column: top bar + content stacked */
-    .main-col { flex: 1; display: flex; flex-direction: column; overflow: hidden; height: 100vh; min-width: 0; }
-
-    /* ── Top bar ───────────────────────────────────────────── */
+    /* ── Header row: brand · pill nav · status ───────────────── */
     .topbar {
-      height: var(--header-h);
-      background: var(--bg-sidebar);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      padding: 0 1rem;
-      flex-shrink: 0;
-      gap: 0;
+      display: flex; align-items: center; gap: 1rem;
+      padding: 0.7rem 1.25rem; background: var(--bg-bar);
+      border-bottom: 1px solid var(--border); flex-shrink: 0; min-width: 0;
     }
-
+    .brand { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
     .brand-mark {
-      background: linear-gradient(135deg, #10b981, #06b6d4);
-      border-radius: 8px;
+      width: 36px; height: 36px; border-radius: 11px;
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
       display: flex; align-items: center; justify-content: center;
-      font-weight: 800; color: #fff;
-      letter-spacing: 0.04em; flex-shrink: 0;
+      font-weight: 800; font-size: 0.78rem; color: #fff; letter-spacing: 0.04em;
+      box-shadow: 0 4px 12px rgba(79,70,229,0.35);
     }
-    .brand-name { font-weight: 700; color: var(--text-hi); line-height: 1.2; }
-    .brand-sub  { color: var(--text-lo); letter-spacing: 0.05em; margin-top: 2px; }
+    .brand-name { font-weight: 800; font-size: 0.92rem; letter-spacing: 0.01em; color: var(--text-hi); line-height: 1.15; }
+    .brand-sub  { font-size: 0.64rem; color: var(--text-lo); letter-spacing: 0.02em; }
 
-    .topbar-mid {
-      flex: 1;
-      padding: 0 1.25rem;
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--text-mid);
+    /* The V5 signature: a dark pill track of tabs with an indigo active tab */
+    .pillnav-wrap { flex: 1; min-width: 0; display: flex; justify-content: center; }
+    .pillnav {
+      display: flex; align-items: center; gap: 2px; max-width: 100%;
+      background: var(--track); border-radius: 999px; padding: 4px;
+      overflow-x: auto; scrollbar-width: none; box-shadow: 0 6px 18px rgba(16,24,40,0.12);
     }
-
-    .topbar-right { display: flex; align-items: center; gap: 0.5rem; }
-
-    .dot-live {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--accent);
-      animation: dotPulse 1.8s ease-out infinite;
+    .pillnav::-webkit-scrollbar { display: none; }
+    .nav-item {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.46rem 0.85rem; border-radius: 999px;
+      font-size: 0.74rem; font-weight: 600; white-space: nowrap;
+      color: var(--track-ink); cursor: pointer; user-select: none; flex-shrink: 0;
+      background: transparent; border: none; font-family: inherit;
+      transition: background 0.2s var(--ease), color 0.2s var(--ease), box-shadow 0.2s var(--ease);
     }
+    .nav-item:hover { color: #ffffff; background: rgba(255,255,255,0.07); }
+    .nav-item.active { background: var(--accent); color: #ffffff; box-shadow: 0 4px 14px rgba(79,70,229,0.5); }
+    .nav-icon { width: 14px; height: 14px; flex-shrink: 0; }
+    .nav-sep { width: 1px; height: 16px; background: rgba(255,255,255,0.12); margin: 0 3px; flex-shrink: 0; }
+
+    .topbar-right { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+    .status {
+      display: flex; align-items: center; gap: 0.45rem; margin-right: 0.35rem;
+      padding: 0.5rem 0.85rem; border-radius: 999px; background: var(--bg-raised); border: 1px solid var(--border);
+    }
+    .dot-live { width: 8px; height: 8px; border-radius: 50%; background: var(--live); animation: dotPulse 1.8s ease-out infinite; }
     @keyframes dotPulse {
       0%   { box-shadow: 0 0 0 0 rgba(16,185,129,0.55); }
       70%  { box-shadow: 0 0 0 7px rgba(16,185,129,0); }
       100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
     }
-    .dot-live.stale { background: #f59e0b; animation: none; box-shadow: 0 0 6px rgba(245,158,11,0.5); }
+    .dot-live.stale { background: #f59e0b; animation: none; }
+    .topbar-time { font-size: 0.74rem; color: var(--text-mid); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-    /* subtle animated accent under the live time */
-    .topbar-time::after {
-      content: ''; display: inline-block; width: 5px; height: 5px; margin-left: 6px;
-      border-radius: 50%; background: var(--accent); vertical-align: middle;
-      animation: blink 1s step-start infinite;
+    .icon-btn {
+      width: 36px; height: 36px; border-radius: 11px; flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--bg-raised); border: 1px solid var(--border); color: var(--text-mid);
+      cursor: pointer; text-decoration: none;
+      transition: border-color 0.16s var(--ease), color 0.16s var(--ease);
     }
-    @keyframes blink { 50% { opacity: 0.15; } }
+    .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-    .topbar-time {
-      font-size: 0.84rem; color: var(--text-mid); font-weight: 600;
-      font-variant-numeric: tabular-nums; letter-spacing: 0.01em;
+    .user { display: flex; align-items: center; gap: 0.55rem; }
+    .avatar {
+      width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, #1e1b4b, #4f46e5); color: #fff;
+      display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700;
     }
+    .user-text { display: flex; flex-direction: column; line-height: 1.2; }
+    .tu-name { font-size: 0.78rem; font-weight: 700; color: var(--text-hi); white-space: nowrap; }
+    .tu-role { font-size: 0.62rem; color: var(--text-lo); white-space: nowrap; }
 
-    .topbar-user {
-      display: flex; flex-direction: column; align-items: flex-end;
-      line-height: 1.25; margin-right: 0.5rem;
+    /* Theme switch — a small dark pill, like V5's "Dashboard 1 / Dashboard 2" */
+    .theme-pill { display: inline-flex; background: var(--track); border-radius: 999px; padding: 3px; flex-shrink: 0; }
+    .theme-opt {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      padding: 0.36rem 0.7rem; border-radius: 999px; border: none; background: transparent;
+      font-family: inherit; font-size: 0.7rem; font-weight: 600; color: var(--track-ink); cursor: pointer;
+      transition: background 0.2s var(--ease), color 0.2s var(--ease);
     }
-    .tu-name {
-      font-size: 0.84rem; font-weight: 700;
-      background: linear-gradient(90deg, #e2e8f0 0%, #e2e8f0 30%, #34d399 50%, #22d3ee 60%, #e2e8f0 80%, #e2e8f0 100%);
-      background-size: 220% auto;
-      -webkit-background-clip: text; background-clip: text;
-      -webkit-text-fill-color: transparent; color: transparent;
-      animation: nameShimmer 7s linear infinite;
+    .theme-opt:hover { color: #fff; }
+    .theme-opt[aria-pressed="true"] { background: var(--accent); color: #fff; }
+
+    /* ── Title row: page title · actions ─────────────────────── */
+    .pagebar {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 0.95rem 1.5rem 0.85rem; flex-shrink: 0; min-width: 0;
     }
-    @keyframes nameShimmer { to { background-position: -220% center; } }
-    .tu-role { font-size: 0.64rem; color: var(--text-lo); letter-spacing: 0.03em; }
+    .page-titles { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    h1#page-title { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text-hi);
+                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .topbar-purpose { font-size: 0.74rem; color: var(--text-lo); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .page-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
 
     .btn-ref {
-      display: flex; align-items: center; gap: 0.35rem;
-      background: transparent; border: 1px solid var(--border);
-      color: var(--text-mid); font-size: 0.71rem;
-      padding: 0.3rem 0.7rem; border-radius: 6px;
-      cursor: pointer; transition: border-color 0.16s cubic-bezier(0.16, 1, 0.3, 1), color 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.52rem 0.95rem; border-radius: 999px;
+      background: var(--bg-raised); border: 1px solid var(--border); color: var(--text-mid);
+      font-family: inherit; font-size: 0.74rem; font-weight: 600; cursor: pointer;
+      transition: border-color 0.16s var(--ease), color 0.16s var(--ease), background 0.16s var(--ease), transform 0.16s var(--ease);
     }
     .btn-ref:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-ref svg { transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1); }
     .btn-ref.spinning svg { animation: spin 0.6s linear infinite; }
-
+    /* One clear primary action, V5-style: solid indigo pill */
+    #btn-export { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 6px 16px rgba(79,70,229,0.35); }
+    #btn-export:hover { background: var(--accent-hi); border-color: var(--accent-hi); color: #fff; transform: translateY(-1px); }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Export dropdown ───────────────────────────────────── */
+    /* ── Export dropdown ─────────────────────────────────────── */
     .export-wrap { position: relative; }
     .export-menu {
-      position: absolute; top: calc(100% + 6px); right: 0;
-      background: var(--bg-sidebar); border: 1px solid var(--border);
-      border-radius: 8px; padding: 0.3rem; min-width: 168px;
-      box-shadow: 0 12px 32px rgba(0,0,0,0.5);
-      display: none; z-index: 50; transform-origin: top right;
+      position: absolute; top: calc(100% + 8px); right: 0;
+      background: var(--bg-raised); border: 1px solid var(--border);
+      border-radius: 14px; padding: 0.35rem; min-width: 190px;
+      box-shadow: var(--menu-shadow); display: none; z-index: 50;
     }
     .export-menu.open { display: block; }
     .export-item {
       display: flex; align-items: center; gap: 0.55rem;
-      width: 100%; padding: 0.45rem 0.6rem;
-      background: transparent; border: none; border-radius: 5px;
-      color: var(--text-mid); font-size: 0.73rem; text-align: left;
-      cursor: pointer; transition: background 0.16s cubic-bezier(0.16, 1, 0.3, 1), color 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%; padding: 0.5rem 0.6rem;
+      background: transparent; border: none; border-radius: 9px;
+      color: var(--text-mid); font-family: inherit; font-size: 0.74rem; text-align: left;
+      cursor: pointer; transition: background 0.16s var(--ease), color 0.16s var(--ease);
     }
-    .export-item:hover { background: rgba(255,255,255,0.05); color: var(--text-hi); }
+    .export-item:hover { background: var(--accent-dim); color: var(--text-hi); }
     .export-item .fmt {
       font-size: 0.55rem; font-weight: 800; letter-spacing: 0.05em;
-      padding: 0.12rem 0.35rem; border-radius: 4px; flex-shrink: 0;
-      min-width: 34px; text-align: center;
+      padding: 0.14rem 0.35rem; border-radius: 5px; flex-shrink: 0; min-width: 34px; text-align: center;
     }
-    .fmt-pdf   { background: rgba(239,68,68,0.18);  color: #fca5a5; }
-    .fmt-doc   { background: rgba(59,130,246,0.18); color: #93c5fd; }
-    .fmt-xls   { background: rgba(16,185,129,0.18); color: #6ee7b7; }
+    .fmt-pdf { background: rgba(239,68,68,0.14);  color: #dc2626; }
+    .fmt-doc { background: rgba(59,130,246,0.14); color: #2563eb; }
+    .fmt-xls { background: rgba(16,185,129,0.14); color: #059669; }
+    :root[data-theme="dark"] .fmt-pdf { color: #fca5a5; }
+    :root[data-theme="dark"] .fmt-doc { color: #93c5fd; }
+    :root[data-theme="dark"] .fmt-xls { color: #6ee7b7; }
 
-    /* ── App body ──────────────────────────────────────────── */
-    .app-body { display: flex; flex: 1; overflow: hidden; }
-
-    /* ── Sidebar (slim icon rail) ──────────────────────────── */
-    .sidebar {
-      width: 72px;
-      background: #0b0d16;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      margin: 12px 0 12px 12px;
-      height: calc(100vh - 24px);
-      flex-shrink: 0;
-      display: flex; flex-direction: column; align-items: center;
-      padding: 0.7rem 0;
+    /* ── Content: the page sits in a rounded V5 canvas ───────── */
+    .content {
+      flex: 1; min-height: 0; position: relative; overflow: hidden;
+      margin: 0 1.25rem 1.25rem; border-radius: 20px;
+      background: var(--bg-content); border: 1px solid var(--border); box-shadow: var(--shadow);
     }
-
-    /* Brand mark at the top (hover shows full name) */
-    .sidebar-brand {
-      display: flex; align-items: center; justify-content: center;
-      padding: 0 0 0.6rem; flex-shrink: 0; position: relative;
-    }
-    .sidebar-brand .brand-mark { width: 42px; height: 42px; border-radius: 13px; font-size: 0.82rem; }
-    .brand-text { display: none; }
-    .sidebar-brand::after {
-      content: 'Denri Africa · Marketing Analytics';
-      position: absolute; left: calc(100% + 14px); top: 50%; transform: translateY(-50%);
-      background: #ffffff; color: #0b0d16; padding: 0.4rem 0.75rem; border-radius: 9px;
-      font-size: 0.74rem; font-weight: 700; white-space: nowrap;
-      opacity: 0; pointer-events: none; transition: opacity 0.12s;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.45); z-index: 200;
-    }
-    .sidebar-brand:hover::after { opacity: 1; }
-
-    .sidebar-nav {
-      flex: 1; overflow: visible;
-      display: flex; flex-direction: column; align-items: center;
-      gap: 0.25rem; padding: 0.4rem 0; width: 100%;
-    }
-
-    /* Section labels don't fit an icon rail */
-    .nav-section { display: none; }
-
-    .nav-item {
-      width: 46px; height: 46px;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 14px;
-      color: var(--text-mid);
-      cursor: pointer; position: relative;
-      font-size: 0;                    /* hides the text label */
-      transition: background 0.16s cubic-bezier(0.16, 1, 0.3, 1), color 0.16s cubic-bezier(0.16, 1, 0.3, 1);
-      user-select: none; flex-shrink: 0;
-    }
-    .nav-item:hover { background: rgba(255,255,255,0.07); color: var(--text-hi); }
-    .nav-item.active { background: #ffffff; color: #0b0d16; }
-    .nav-item.active .nav-icon { opacity: 1; }
-
-    .nav-icon { flex-shrink: 0; width: 22px; height: 22px; opacity: 0.7; }
-    .nav-item:hover .nav-icon { opacity: 1; }
-
-    /* White tooltip on hover (from data-title) */
-    .nav-item::after {
-      content: attr(data-title);
-      position: absolute; left: calc(100% + 14px); top: 50%; transform: translateY(-50%);
-      background: #ffffff; color: #0b0d16; padding: 0.4rem 0.75rem; border-radius: 9px;
-      font-size: 0.74rem; font-weight: 600; white-space: nowrap;
-      opacity: 0; pointer-events: none; transition: opacity 0.12s;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.45); z-index: 200;
-    }
-    .nav-item:hover::after { opacity: 1; }
-
-    .nav-divider { height: 1px; width: 28px; background: var(--border); margin: 0.4rem 0; flex-shrink: 0; }
-
-    /* Toggle (hamburger) */
-    .sidebar-toggle {
-      width: 38px; height: 38px; flex-shrink: 0; align-self: center;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(255,255,255,0.05); border: none; border-radius: 11px;
-      color: var(--text-mid); cursor: pointer; margin-bottom: 0.45rem;
-      transition: background 0.16s cubic-bezier(0.16, 1, 0.3, 1), color 0.16s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .sidebar-toggle:hover { background: rgba(255,255,255,0.1); color: var(--text-hi); }
-    .toggle-icon { width: 18px; height: 18px; }
-    .sidebar.expanded .sidebar-toggle { align-self: flex-end; }
-
-    /* ── Expanded state ─────────────────────────────────────── */
-    .sidebar.expanded { width: 236px; align-items: stretch; padding: 0.7rem 0.6rem; }
-    .sidebar.expanded .sidebar-brand { justify-content: flex-start; gap: 0.7rem; padding: 0 0.35rem 0.7rem; }
-    .sidebar.expanded .sidebar-brand::after { display: none; }
-    .sidebar.expanded .brand-text { display: block; }
-    .sidebar.expanded .brand-name { font-size: 0.92rem; }
-    .sidebar.expanded .brand-sub  { font-size: 0.62rem; }
-    .sidebar.expanded .sidebar-nav { align-items: stretch; }
-    .sidebar.expanded .nav-section { display: block; align-self: stretch; padding: 0.75rem 0.85rem 0.3rem; }
-    .sidebar.expanded .nav-item { width: 100%; justify-content: flex-start; gap: 0.85rem; padding: 0 0.7rem; font-size: 0.84rem; }
-    .sidebar.expanded .nav-item::after { display: none; }
-    .sidebar.expanded .nav-item.active { background: var(--accent-dim); color: #34d399; }
-    .sidebar.expanded .nav-item.active .nav-icon { color: #34d399; opacity: 1; }
-    .sidebar.expanded .nav-divider { width: auto; align-self: stretch; margin: 0.5rem 0.85rem; }
-
-    /* ── Content + iframe ──────────────────────────────────── */
-    .content { flex: 1; overflow: hidden; position: relative; background: var(--bg-content); }
-    #dash-frame { width: 100%; height: 100%; border: none; display: block; }
+    #dash-frame { width: 100%; height: 100%; border: none; display: block; background: var(--bg-content); }
 
     .overlay {
-      position: absolute; inset: 0;
-      background: var(--bg-content);
+      position: absolute; inset: 0; background: var(--bg-content);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 1rem; opacity: 0; pointer-events: none;
-      transition: opacity 0.18s;
+      gap: 1rem; opacity: 0; pointer-events: none; transition: opacity 0.18s;
     }
     .overlay.show { opacity: 1; pointer-events: all; }
-    .spinner {
-      width: 28px; height: 28px;
-      border: 2px solid #1e2235; border-top-color: var(--accent);
-      border-radius: 50%; animation: spin 0.65s linear infinite;
-    }
-    .overlay-text { font-size: 0.74rem; color: #3d4a5c; }
+    .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.65s linear infinite; }
+    .overlay-text { font-size: 0.76rem; color: var(--text-lo); text-align: center; }
 
-    /* ── Mobile: hamburger + off-canvas sidebar drawer ───────── */
-    .mobile-menu-btn { display: none; }
-    .mobile-backdrop { display: none; }
-
-    @media (max-width: 820px) {
-      /* Sidebar slides in from the left as a drawer, always in labelled mode */
-      .sidebar, .sidebar.expanded {
-        position: fixed; top: 0; left: 0; height: 100vh; z-index: 300;
-        width: 250px; max-width: 82vw;
-        transform: translateX(-100%);
-        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        align-items: stretch; padding: 0.7rem 0.6rem;
-        box-shadow: 0 0 50px rgba(0,0,0,0.6);
-      }
-      .sidebar.mobile-open { transform: translateX(0); }
-      .sidebar .brand-text { display: block; }
-      .sidebar .sidebar-brand { justify-content: flex-start; gap: 0.7rem; padding: 0 0.35rem 0.7rem; }
-      .sidebar .sidebar-brand::after { display: none; }
-      .sidebar .sidebar-nav { align-items: stretch; }
-      .sidebar .nav-section { display: block; align-self: stretch; padding: 0.75rem 0.85rem 0.3rem; }
-      .sidebar .nav-item { width: 100%; height: 44px; justify-content: flex-start; gap: 0.85rem; padding: 0 0.7rem; font-size: 0.92rem; }
-      .sidebar .nav-item::after { display: none; }
-      .sidebar .nav-divider { width: auto; align-self: stretch; margin: 0.5rem 0.85rem; }
-      .sidebar-toggle { display: none; }
-
-      .mobile-backdrop {
-        display: block; position: fixed; inset: 0; z-index: 250;
-        background: rgba(0,0,0,0.55); opacity: 0; visibility: hidden;
-        transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-      .mobile-backdrop.show { opacity: 1; visibility: visible; }
-
-      .mobile-menu-btn {
-        display: inline-flex; align-items: center; justify-content: center;
-        width: 38px; height: 38px; flex-shrink: 0; margin-right: 0.35rem;
-        background: transparent; border: none; color: var(--text-hi); cursor: pointer;
-      }
-      .topbar { padding: 0 0.65rem; }
-      .topbar-mid { padding: 0 0.5rem; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-      .topbar-user { display: none; }
-      .topbar-time { display: none; }
-      .topbar-right { gap: 0.35rem; }
-      .btn-ref { padding: 0.4rem 0.55rem; font-size: 0.7rem; }
-    }
-
-    @media (prefers-reduced-motion: reduce){
-      *,*::before,*::after{ transition-duration:.12s!important; transition-property:opacity!important;
-        animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; }
-    }
-  
-    /* Spectral Edge — aura backdrop (decorative; fixed, behind all content). */
-    body{ background-color:#100e0b; }
-    .aura-layer-1,.aura-layer-2,.aura-layer-3{ position:fixed; inset:0; z-index:-1;
-      pointer-events:none; transform:translateZ(0); will-change:transform; }
-    .aura-layer-1{ mix-blend-mode:screen; filter:blur(108px);
-      background:linear-gradient(90deg, transparent 0%, rgba(59,130,246,0.04) 32%, rgba(6,182,212,0.12) 45%, rgba(34,197,94,0.13) 51%, rgba(250,204,21,0.12) 57%, rgba(244,63,94,0.11) 64%, transparent 82%); }
-    .aura-layer-2{ mix-blend-mode:screen; filter:blur(58px); opacity:0.24;
-      background:linear-gradient(102deg, transparent 38%, rgba(255,255,255,0.08) 46%, rgba(125,211,252,0.06) 51%, transparent 60%); }
-    .aura-layer-3{ mix-blend-mode:screen; filter:blur(126px); opacity:0.55;
-      background:radial-gradient(ellipse 25% 65% at 92% 50%, rgba(139,92,246,0.16) 0%, transparent 78%); }
-    @media (max-width:640px){
-      .aura-layer-1{ filter:blur(75px); } .aura-layer-2{ filter:blur(40px); } .aura-layer-3{ filter:blur(88px); }
-    }
-
-    /* ── Design-audit fixes (contrast · H1 · CTA hierarchy · focus · touch) ── */
-    :root{ --text-lo:#8a97a8; }   /* header metadata contrast — was #3d4a5c, failed AA */
-    .topbar-mid{ display:flex; flex-direction:column; justify-content:center; gap:1px; line-height:1.12; overflow:hidden; }
-    h1#page-title{ font-size:0.9rem; font-weight:700; color:var(--text-hi); margin:0;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .topbar-purpose{ font-size:0.66rem; font-weight:500; color:var(--text-mid);
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    /* One clear primary action: Export (accent) vs Refresh (secondary ghost) */
-    #btn-export{ background:var(--accent-dim); border-color:rgba(16,185,129,0.4); color:#34d399; }
-    #btn-export:hover{ background:rgba(16,185,129,0.18); border-color:var(--accent); color:#6ee7b7; }
-    #btn-ref{ color:var(--text-mid); }
     /* Visible keyboard focus on every interactive control */
-    .btn-ref:focus-visible,.export-item:focus-visible,.nav-item:focus-visible,.sidebar-toggle:focus-visible,
-    .mobile-menu-btn:focus-visible,.contact-link:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:8px; }
-    /* Long nav labels wrap instead of clipping in the labelled rail/drawer */
-    .sidebar.expanded .nav-item{ white-space:normal; line-height:1.2; height:auto; min-height:46px;
-      padding-top:0.4rem; padding-bottom:0.4rem; }
-    .sidebar .nav-item{ overflow:hidden; }
-    /* Sidebar footer: an external contact path */
-    .sidebar-foot{ display:none; }
-    .sidebar.expanded .sidebar-foot,.sidebar.mobile-open .sidebar-foot{
-      display:block; margin-top:auto; padding:0.6rem 0.85rem 0.2rem; border-top:1px solid var(--border); }
-    .contact-link{ display:inline-flex; align-items:center; gap:0.45rem; font-size:0.72rem;
-      color:var(--text-mid); text-decoration:none; }
-    .contact-link:hover{ color:#34d399; }
-    @media (max-width:820px){
-      .btn-ref{ min-height:44px; }              /* touch targets */
-      .mobile-menu-btn{ width:44px; height:44px; }
-      .export-item{ min-height:44px; }
-      .topbar-purpose{ display:none; }          /* keep the mobile topbar to one line */
-      .sidebar .nav-item{ height:auto; min-height:44px; white-space:normal; line-height:1.2; }
+    .btn-ref:focus-visible, .export-item:focus-visible, .nav-item:focus-visible,
+    .icon-btn:focus-visible, .theme-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* ── Responsive ──────────────────────────────────────────── */
+    @media (max-width: 1600px) { .user-text { display: none; } }
+    @media (max-width: 1560px) {
+      .pillnav .nav-icon { display: none; }            /* labels only — keeps all 10 tabs in view */
+      .nav-item { padding: 0.46rem 0.72rem; }
     }
-</style>
+    @media (max-width: 900px)  { .status { display: none; } }
+    @media (max-width: 1340px) {
+      /* Pill nav drops to its own full-width row */
+      .topbar { flex-wrap: wrap; row-gap: 0.6rem; }
+      .pillnav-wrap { order: 3; flex-basis: 100%; justify-content: flex-start; }
+      .topbar-right { margin-left: auto; }
+    }
+    @media (max-width: 940px) {
+      /* Tabs scroll inside the pill; the fade says "there's more" */
+      .pillnav { -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); }
+    }
+    @media (max-width: 640px) {
+      .topbar { padding: 0.6rem 1rem; }
+      .brand-sub, .user .avatar, .status { display: none; }
+      .theme-opt .lbl { display: none; }
+      .pagebar { padding: 0.75rem 1rem 0.6rem; }
+      h1#page-title { font-size: 1.05rem; }
+      .topbar-purpose { display: none; }
+      .btn-ref { padding: 0 0.8rem; min-height: 44px; }
+      .btn-ref .lbl { display: none; }
+      .nav-item { min-height: 40px; }
+      .icon-btn, .theme-opt { min-height: 40px; min-width: 40px; justify-content: center; }
+      .export-item { min-height: 44px; }
+      .content { margin: 0 0.5rem 0.5rem; border-radius: 16px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: .12s !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+    }
+  </style>
 </head>
 <body>
-<div class="aura-layer-1" aria-hidden="true"></div>
-<div class="aura-layer-2" aria-hidden="true"></div>
-<div class="aura-layer-3" aria-hidden="true"></div>
 
-<!-- ── Sidebar ───────────────────────────────────────────── -->
-<aside class="sidebar expanded" id="sidebar">
-
-  <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">
-    <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="4" y1="7" x2="20" y2="7"></line>
-      <line x1="4" y1="12" x2="20" y2="12"></line>
-      <line x1="4" y1="17" x2="20" y2="17"></line>
-    </svg>
-  </button>
-
-  <div class="sidebar-brand">
+<!-- ── Header row ─────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="brand">
     <div class="brand-mark">DA</div>
     <div class="brand-text">
       <div class="brand-name">Denri Africa</div>
@@ -379,172 +261,121 @@
     </div>
   </div>
 
-  <nav class="sidebar-nav">
-
-    <div class="nav-section">Performance</div>
-    <div class="nav-item active" data-src="current_performance.html" data-title="Current Performance" onclick="navigate(this)">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-      </svg>
-      Current Performance
-    </div>
-
-    <div class="nav-divider"></div>
-    <div class="nav-section">Products</div>
-    <div class="nav-item" data-src="new_products.html" data-title="New Products Analytics" onclick="navigate(this)">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-        <line x1="12" y1="22.08" x2="12" y2="12"></line>
-      </svg>
-      New Products
-    </div>
-    <div class="nav-item" data-src="timed_offers.html" data-title="Timed Offers Analytics" onclick="navigate(this)">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="13" r="8"></circle>
-        <path d="M12 9v4l2 2"></path>
-        <path d="M5 3 2 6"></path>
-        <path d="m22 6-3-3"></path>
-      </svg>
-      Timed Offers
-    </div>
-    <div class="nav-item" data-src="self_made_combos.html" data-title="Self made combos vs running combos" onclick="navigate(this)">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-        <path d="M3 6h18"></path>
-        <path d="M16 10a4 4 0 0 1-8 0"></path>
-      </svg>
-      Self made combos vs running combos
-    </div>
-    <div class="nav-item" data-src="bags_on_offer.html" data-title="Bags on offer vs not on offer" onclick="navigate(this)">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-        <line x1="7" y1="7" x2="7.01" y2="7"></line>
-      </svg>
-      Bags on vs off offer
-    </div>
-
-    <div class="nav-divider"></div>
-    <div class="nav-section">Marketing</div>
-    <div class="nav-item" data-src="POSTING (SALES YIELDS FROM ACCURATE POSTING).html" data-title="Posting – Sales Yields from Accurate Posting" onclick="navigate(this)">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 11v2a1 1 0 0 0 1 1h2l4.5 4V6L6 10H4a1 1 0 0 0-1 1z"></path>
-        <path d="M15.5 8.5a4 4 0 0 1 0 7"></path>
-        <path d="M18.5 6a7 7 0 0 1 0 12"></path>
-      </svg>
-      Posting Yields
-    </div>
-    <div class="nav-item" data-src="shops_efficiency.html" data-title="Shops Efficiency Tracking" onclick="navigate(this)">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 9l1-5h16l1 5"></path>
-        <path d="M4 9v11a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"></path>
-        <path d="M9 21v-6h6v6"></path>
-      </svg>
-      Shops Efficiency
-    </div>
-
-    <div class="nav-divider"></div>
-    <div class="nav-section">Intelligence</div>
-    <div class="nav-item" data-src="insights.html" data-title="Dashboard Insights" onclick="navigate(this)">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 18h6"></path>
-        <path d="M10 22h4"></path>
-        <path d="M12 2a7 7 0 0 0-4 12.7c.5.4.9 1 1 1.6h6c.1-.6.5-1.2 1-1.6A7 7 0 0 0 12 2z"></path>
-      </svg>
-      Insights
-    </div>
-    <div class="nav-item" data-src="monthly_report.html" data-title="Monthly Report" onclick="navigate(this)">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-        <polyline points="14 2 14 8 20 8"></polyline>
-        <line x1="8" y1="13" x2="16" y2="13"></line>
-        <line x1="8" y1="17" x2="16" y2="17"></line>
-        <line x1="8" y1="9" x2="10" y2="9"></line>
-      </svg>
-      Monthly Report
-    </div>
-    <div class="nav-item" data-src="history.html" data-title="Reporting History (Supabase)" onclick="navigate(this)">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 3v5h5"></path>
-        <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"></path>
-        <path d="M12 7v5l4 2"></path>
-      </svg>
-      History
-    </div>
-
-  </nav>
-
-  <div class="sidebar-foot">
-    <a class="contact-link" href="mailto:jonathan.owiti@denriafrica.co.ke" aria-label="Contact the dashboard owner by email">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <rect x="3" y="5" width="18" height="14" rx="2"></rect>
-        <path d="m3 7 9 6 9-6"></path>
-      </svg>
-      Contact &amp; help
-    </a>
+  <div class="pillnav-wrap">
+    <nav class="pillnav" aria-label="Dashboards">
+      <button class="nav-item active" aria-current="page" data-src="current_performance.html" data-title="Current Performance" onclick="navigate(this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        Performance
+      </button>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <button class="nav-item" data-src="new_products.html" data-title="New Products Analytics" onclick="navigate(this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline></svg>
+        New Products
+      </button>
+      <button class="nav-item" data-src="timed_offers.html" data-title="Timed Offers Analytics" onclick="navigate(this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l2 2"></path></svg>
+        Timed Offers
+      </button>
+      <button class="nav-item" data-src="self_made_combos.html" data-title="Self made combos vs running combos" onclick="navigate(this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+        Combos
+      </button>
+      <button class="nav-item" data-src="bags_on_offer.html" data-title="Bags on offer vs not on offer" onclick="navigate(this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+        Bags on Offer
+      </button>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <button class="nav-item" data-src="POSTING (SALES YIELDS FROM ACCURATE POSTING).html" data-title="Posting – Sales Yields from Accurate Posting" onclick="navigate(this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h2l4.5 4V6L6 10H4a1 1 0 0 0-1 1z"></path><path d="M15.5 8.5a4 4 0 0 1 0 7"></path></svg>
+        Posting
+      </button>
+      <button class="nav-item" data-src="shops_efficiency.html" data-title="Shops Efficiency Tracking" onclick="navigate(this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5"></path><path d="M4 9v11a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"></path><path d="M9 21v-6h6v6"></path></svg>
+        Shops
+      </button>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <button class="nav-item" data-src="insights.html" data-title="Dashboard Insights" onclick="navigate(this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M12 2a7 7 0 0 0-4 12.7c.5.4.9 1 1 1.6h6c.1-.6.5-1.2 1-1.6A7 7 0 0 0 12 2z"></path></svg>
+        Insights
+      </button>
+      <button class="nav-item" data-src="monthly_report.html" data-title="Monthly Report" onclick="navigate(this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line></svg>
+        Monthly Report
+      </button>
+      <button class="nav-item" data-src="history.html" data-title="Reporting History (Supabase)" onclick="navigate(this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"></path><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"></path><path d="M12 7v5l4 2"></path></svg>
+        History
+      </button>
+    </nav>
   </div>
-</aside>
 
-<!-- Backdrop shown behind the mobile drawer -->
-<div class="mobile-backdrop" id="mobile-backdrop" onclick="closeMobileNav()"></div>
-
-<!-- ── Main column ───────────────────────────────────────── -->
-<div class="main-col">
-
-  <!-- ── Top bar ─────────────────────────────────────────── -->
-  <div class="topbar">
-    <button class="mobile-menu-btn" onclick="openMobileNav()" aria-label="Open menu">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="3" y1="6" x2="21" y2="6"></line>
-        <line x1="3" y1="12" x2="21" y2="12"></line>
-        <line x1="3" y1="18" x2="21" y2="18"></line>
-      </svg>
-    </button>
-    <div class="topbar-mid">
-      <h1 id="page-title">Current Performance</h1>
-      <span class="topbar-purpose" id="page-purpose">Month-to-date sales vs target — live from Odoo POS &amp; Sheets</span>
+  <div class="topbar-right">
+    <div class="theme-pill" role="group" aria-label="Colour theme">
+      <button class="theme-opt" data-mode="light" onclick="setTheme('light')" aria-label="Light theme">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+        <span class="lbl">Light</span>
+      </button>
+      <button class="theme-opt" data-mode="dark" onclick="setTheme('dark')" aria-label="Dark theme">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+        <span class="lbl">Dark</span>
+      </button>
     </div>
-    <div class="topbar-right">
-      <div class="topbar-user">
+    <a class="icon-btn" href="mailto:jonathan.owiti@denriafrica.co.ke" aria-label="Contact the dashboard owner by email" title="Contact &amp; help">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg>
+    </a>
+    <div class="user">
+      <div class="avatar" aria-hidden="true">JO</div>
+      <div class="user-text">
         <span class="tu-name">Jonathan Owiti</span>
         <span class="tu-role">Business Intelligence (BI) Analyst</span>
       </div>
-      <div class="dot-live" id="status-dot"></div>
-      <span class="topbar-time" id="clock"></span>
-      <div class="export-wrap">
-        <button class="btn-ref" id="btn-export" onclick="toggleExportMenu(event)">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          Export
-        </button>
-        <div class="export-menu" id="export-menu">
-          <button class="export-item" onclick="exportPDF()"><span class="fmt fmt-pdf">PDF</span> PDF — full colour</button>
-          <button class="export-item" onclick="exportWord()"><span class="fmt fmt-doc">DOC</span> Word — colour on white</button>
-          <button class="export-item" onclick="exportExcel()"><span class="fmt fmt-xls">XLS</span> Excel workbook</button>
-        </div>
-      </div>
-      <button class="btn-ref" id="btn-ref" onclick="reloadFrame()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <polyline points="23 4 23 10 17 10"></polyline>
-          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-        </svg>
-        Refresh
-      </button>
     </div>
   </div>
+</header>
 
-  <main class="content">
-    <iframe id="dash-frame" src="current_performance.html"></iframe>
-    <div class="overlay" id="overlay">
-      <div class="spinner"></div>
-      <div class="overlay-text" id="overlay-text">Loading…</div>
+<!-- ── Title row ──────────────────────────────────────────── -->
+<div class="pagebar">
+  <div class="page-titles">
+    <h1 id="page-title">Current Performance</h1>
+    <span class="topbar-purpose" id="page-purpose">Month-to-date sales vs target — live from Odoo POS &amp; Sheets</span>
+  </div>
+  <div class="page-actions">
+    <div class="status" title="Data freshness">
+      <div class="dot-live" id="status-dot"></div>
+      <span class="topbar-time" id="clock"></span>
     </div>
-  </main>
-
+    <button class="btn-ref" id="btn-ref" onclick="reloadFrame()" aria-label="Refresh data">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <polyline points="23 4 23 10 17 10"></polyline>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+      </svg>
+      <span class="lbl">Refresh</span>
+    </button>
+    <div class="export-wrap">
+      <button class="btn-ref" id="btn-export" onclick="toggleExportMenu(event)" aria-label="Export">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span class="lbl">Export</span>
+      </button>
+      <div class="export-menu" id="export-menu">
+        <button class="export-item" onclick="exportPDF()"><span class="fmt fmt-pdf">PDF</span> PDF — as on screen</button>
+        <button class="export-item" onclick="exportWord()"><span class="fmt fmt-doc">DOC</span> Word — colour on white</button>
+        <button class="export-item" onclick="exportExcel()"><span class="fmt fmt-xls">XLS</span> Excel workbook</button>
+      </div>
+    </div>
+  </div>
 </div>
+
+<main class="content">
+  <iframe id="dash-frame" src="current_performance.html" title="Dashboard page"></iframe>
+  <div class="overlay show" id="overlay">
+    <div class="spinner"></div>
+    <div class="overlay-text" id="overlay-text">Loading…</div>
+  </div>
+</main>
 
 <script>
   var frame   = document.getElementById('dash-frame');
@@ -553,18 +384,35 @@
   var clockEl = document.getElementById('clock');
   var btnRef  = document.getElementById('btn-ref');
 
-  // Collapsible sidebar (expanded = labels + user card; collapsed = icon rail)
-  var sidebarEl = document.getElementById('sidebar');
-  function toggleSidebar() {
-    sidebarEl.classList.toggle('expanded');
-    try { localStorage.setItem('denri_sidebar', sidebarEl.classList.contains('expanded') ? '1' : '0'); } catch (e) {}
+  // ── Theme (V5 light default / dark) ──────────────────────
+  // The shell recolours itself via :root[data-theme]; each page inside the iframe is themed by
+  // v5_theme.js on load. Light is applied in place; going back to dark reloads the page so it
+  // shows its native colours again.
+  function currentTheme() { return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; }
+  function syncThemeButtons() {
+    var t = currentTheme();
+    document.querySelectorAll('.theme-opt').forEach(function(b) {
+      b.setAttribute('aria-pressed', b.dataset.mode === t ? 'true' : 'false');
+    });
   }
-  try { if (localStorage.getItem('denri_sidebar') === '0') sidebarEl.classList.remove('expanded'); } catch (e) {}
-
-  // Mobile drawer (slides the sidebar in over a backdrop on small screens)
-  var backdropEl = document.getElementById('mobile-backdrop');
-  function openMobileNav()  { sidebarEl.classList.add('mobile-open');  if (backdropEl) backdropEl.classList.add('show'); }
-  function closeMobileNav() { sidebarEl.classList.remove('mobile-open'); if (backdropEl) backdropEl.classList.remove('show'); }
+  function themeFrame() {
+    var doc;
+    try { doc = frame.contentDocument; } catch (e) { return; }
+    if (!doc || !window.V5Theme || /^about:/.test(doc.URL)) return;
+    try { window.V5Theme.apply(doc, currentTheme()); } catch (e) { console.error('V5 theme:', e); }
+  }
+  function setTheme(mode) {
+    var prev = currentTheme();
+    if (mode === prev) return;
+    document.documentElement.setAttribute('data-theme', mode);
+    try { localStorage.setItem('denri_theme', mode); } catch (e) {}
+    syncThemeButtons();
+    if (mode === 'light') { themeFrame(); return; }
+    overlay.classList.add('show');
+    document.getElementById('overlay-text').textContent = 'Switching to dark…';
+    frame.src = bust(decodeURIComponent(frame.src.split('/').pop().split('?')[0]));
+  }
+  syncThemeButtons();
 
   // Append a cache-busting timestamp so the browser never serves a stale iframe
   function bust(file) {
@@ -590,10 +438,10 @@
   }
 
   function navigate(el) {
-    closeMobileNav();   // tapping a page closes the drawer on phones
     document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); n.removeAttribute('aria-current'); });
     el.classList.add('active');
     el.setAttribute('aria-current', 'page');
+    if (el.scrollIntoView) el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });   // keep the tab visible in a scrolled pill nav
     var title = el.dataset.title;
     titleEl.textContent = title;
     setPurpose(el.dataset.src);
@@ -601,10 +449,6 @@
     overlay.classList.add('show');
     frame.src = bust(el.dataset.src);
   }
-
-  frame.addEventListener('load', function() {
-    overlay.classList.remove('show');
-  });
 
   var SCRIPT_MAP = {
     'current_performance.html':                             'current_performance.html',
@@ -670,7 +514,10 @@
     }
   }
 
+  // Theme the page first, then lift the overlay, so it never flashes the old colours.
   frame.addEventListener('load', function() {
+    if (/^about:/.test(frame.src)) return;   // refresh bounces through about:blank
+    themeFrame();
     overlay.classList.remove('show');
     btnRef.classList.remove('spinning');
   });
@@ -807,6 +654,16 @@
     }
   }
 
+  // First opaque background behind a chart canvas (white card in V5 light, dark tile in dark).
+  function chartTileColor(doc, el) {
+    var view = doc.defaultView;
+    for (var n = el; n && n.nodeType === 1; n = n.parentElement) {
+      var c = parseRGB(view.getComputedStyle(n).backgroundColor);
+      if (c && c.a > 0.5) return 'rgb(' + c.r + ',' + c.g + ',' + c.b + ')';
+    }
+    return currentTheme() === 'dark' ? '#1e2130' : '#ffffff';
+  }
+
   // Clone the live dashboard, snapshot charts to images, strip scripts.
   // mode: 'dark' keeps the on-screen theme; 'paper' converts to white
   // background with readable full-colour accents.
@@ -829,7 +686,7 @@
         backing.width  = cv.width;
         backing.height = cv.height;
         var ctx = backing.getContext('2d');
-        ctx.fillStyle = '#1e2130';   // charts stay on their dark tile — full colour
+        ctx.fillStyle = chartTileColor(doc, cv);   // charts keep the tile colour they sit on
         ctx.fillRect(0, 0, backing.width, backing.height);
         ctx.drawImage(cv, 0, 0);
         var img = document.createElement('img');
