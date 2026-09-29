@@ -216,32 +216,38 @@ st.markdown(f"""
 
   /* nav buttons: tight, left-aligned, ghost; active = V5 indigo pill */
   section[data-testid="stSidebar"] .stButton {{margin-bottom:-0.55rem;}}
-  section[data-testid="stSidebar"] .stButton > button {{
+  /* a button with a tooltip (help=) sits inside a hover-target wrapper — let it fill the row */
+  section[data-testid="stSidebar"] .stButton [data-testid="stTooltipHoverTarget"] {{width:100%; display:block;}}
+  section[data-testid="stSidebar"] .st-key-themepill .stButton [data-testid="stTooltipHoverTarget"],
+  section[data-testid="stSidebar"] .st-key-nav_toggle .stButton [data-testid="stTooltipHoverTarget"] {{width:auto;}}
+  section[data-testid="stSidebar"] .stButton button {{
     width:100%; justify-content:flex-start; text-align:left; gap:0.6rem;
     background:transparent; border:none; box-shadow:none; color:var(--v5-mid); font-weight:600;
     padding:0.42rem 0.7rem; border-radius:12px;
     transition: background .2s cubic-bezier(.16,1,.3,1), color .2s cubic-bezier(.16,1,.3,1);}}
-  section[data-testid="stSidebar"] .stButton > button p {{font-size:0.84rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}}
-  section[data-testid="stSidebar"] .stButton > button:hover {{background:rgba(79,70,229,0.08); color:var(--v5-hi);}}
-  section[data-testid="stSidebar"] .stButton > button[kind="primary"],
-  section[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-primary"],
-  section[data-testid="stSidebar"] .stButton > button[data-testid="baseButton-primary"] {{
+  section[data-testid="stSidebar"] .stButton button p {{font-size:0.84rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}}
+  section[data-testid="stSidebar"] .stButton button:hover {{background:rgba(79,70,229,0.08); color:var(--v5-hi);}}
+  section[data-testid="stSidebar"] .stButton button[kind="primary"],
+  section[data-testid="stSidebar"] .stButton button[data-testid="stBaseButton-primary"],
+  section[data-testid="stSidebar"] .stButton button[data-testid="baseButton-primary"] {{
     background:var(--v5-indigo); color:#ffffff; font-weight:700; box-shadow:0 4px 14px rgba(79,70,229,0.35);}}
-  section[data-testid="stSidebar"] .stButton > button[kind="primary"] p {{color:#ffffff;}}
+  section[data-testid="stSidebar"] .stButton button[kind="primary"] p {{color:#ffffff;}}
 
   /* Theme switch — a small dark pill (V5), under the brand */
   .st-key-themepill {{background: var(--v5-track); border-radius: 999px; padding: 3px !important; gap: 2px !important;
     width: fit-content !important; margin: 0 0 0.3rem 0.35rem; flex-wrap: nowrap !important;}}
   section[data-testid="stSidebar"] .st-key-themepill .stButton {{margin-bottom: 0;}}
-  section[data-testid="stSidebar"] .st-key-themepill .stButton > button {{
+  section[data-testid="stSidebar"] .st-key-themepill .stButton button {{
     width:auto; background: transparent; color: #a1a7bb; border-radius: 999px; padding: 0.3rem 0.7rem;
     min-height: 0; box-shadow: none;}}
-  section[data-testid="stSidebar"] .st-key-themepill .stButton > button p {{font-size: 0.72rem; color: inherit;}}
-  section[data-testid="stSidebar"] .st-key-themepill .stButton > button:hover {{color:#fff; background: rgba(255,255,255,0.07);}}
-  section[data-testid="stSidebar"] .st-key-themepill .stButton > button[kind="primary"] {{background: var(--v5-indigo); color: #fff;}}
+  section[data-testid="stSidebar"] .st-key-themepill .stButton button p {{font-size: 0.72rem; color: inherit;}}
+  section[data-testid="stSidebar"] .st-key-themepill .stButton button:hover {{color:#fff; background: rgba(255,255,255,0.07);}}
+  section[data-testid="stSidebar"] .st-key-themepill .stButton button[kind="primary"] {{background: var(--v5-indigo); color: #fff;}}
 
-  .v5-user {{display:flex; align-items:center; gap:0.55rem; margin:1.2rem 0.35rem 0.4rem; padding-top:0.8rem;
-    border-top:1px solid var(--v5-border);}}
+  /* User card — title row, right-aligned, directly above the clock pill */
+  .v5-user {{display:flex; align-items:center; justify-content:flex-end; gap:0.55rem; margin:0 0 -0.35rem;
+    text-align:left;}}
+  @media (max-width: 640px) {{ .v5-user .rl {{display:none;}} }}
   .v5-user .av {{width:32px; height:32px; border-radius:50%; flex-shrink:0;
     background:linear-gradient(135deg,#1e1b4b,#4f46e5); color:#fff; font-size:0.68rem; font-weight:700;
     display:flex; align-items:center; justify-content:center;}}
@@ -274,8 +280,69 @@ if _qp_page and any(it[0] == _qp_page for it in ALL_ITEMS):
 if "page" not in st.session_state:
     st.session_state.page = ALL_ITEMS[0][0]
 
-# ── Sidebar: brand · theme switch · grouped icon nav · user ──
-# (Use Streamlit's built-in « chevron at the top of the sidebar to minimize/hide it.)
+# ── Sidebar: collapse toggle · brand · theme switch · grouped icon nav ──
+# « / » at the top folds the sidebar to an ICON RAIL (desktop/tablet): icons stay, the labels pop
+# out on hover (button tooltips), and the page widens into the freed space. Remembered in
+# session + ?nav=mini so a reload / shared link keeps it. Phones keep Streamlit's own slide-away
+# sidebar (the phone icon bar is the nav there), so the rail styles only apply ≥ 769px.
+if st.query_params.get("nav") in ("mini", "full"):
+    st.session_state.nav_mini = st.query_params.get("nav") == "mini"
+MINI = st.session_state.setdefault("nav_mini", False)
+if st.sidebar.button("Toggle menu", key="nav_toggle",
+                     icon=(":material/keyboard_double_arrow_right:" if MINI else ":material/keyboard_double_arrow_left:"),
+                     help=("Expand menu" if MINI else "Collapse to icons")):
+    st.session_state.nav_mini = not MINI
+    st.query_params["nav"] = "mini" if not MINI else "full"
+    st.rerun()
+
+st.markdown("""
+<style>
+  /* Our « replaces Streamlit's hide-the-sidebar chevron on larger screens */
+  @media (min-width: 769px) {
+    [data-testid="stSidebarCollapseButton"] {display: none !important;}
+  }
+  .st-key-nav_toggle {display: flex; justify-content: flex-end; margin: -0.4rem 0 0.2rem;}
+  section[data-testid="stSidebar"] .st-key-nav_toggle .stButton button {
+    width: auto !important; padding: 0.3rem 0.45rem !important; color: var(--v5-lo) !important;
+    background: transparent !important; box-shadow: none !important; justify-content: center !important;}
+  section[data-testid="stSidebar"] .st-key-nav_toggle .stButton button p {display: none;}
+  section[data-testid="stSidebar"] .st-key-nav_toggle .stButton button:hover {color: var(--v5-indigo) !important;
+    background: rgba(79,70,229,0.08) !important;}
+</style>""", unsafe_allow_html=True)
+
+if MINI:
+    st.markdown("""
+<style>
+  @media (min-width: 769px) {
+    /* the rail: fixed narrow width (drop Streamlit's drag-to-resize) — the page widens to fill */
+    section[data-testid="stSidebar"], section[data-testid="stSidebar"] > div {
+      width: 84px !important; min-width: 84px !important; max-width: 84px !important;}
+    section[data-testid="stSidebar"] [data-testid="stSidebarResizeHandle"],
+    section[data-testid="stSidebar"] div[style*="cursor: col-resize"] {display: none !important;}
+    [data-testid="stSidebarUserContent"] {padding-left: 0.55rem !important; padding-right: 0.55rem !important;}
+    .st-key-nav_toggle {justify-content: center;}
+    /* brand → just the DA mark */
+    .v5-brand {justify-content: center; padding: 0.2rem 0 0.6rem;}
+    .v5-brand > div:not(.mark) {display: none;}
+    /* theme pill → a compact pill of two icon buttons, centred in the rail */
+    .st-key-themepill {margin: 0 auto 0.3rem !important; padding: 2px !important; gap: 0 !important;}
+    .st-key-themepill > div {width: auto !important; min-width: 0 !important; flex: 0 0 auto !important;}
+    section[data-testid="stSidebar"] .st-key-themepill .stButton button {
+      padding: 0.28rem 0.38rem !important; gap: 0 !important; min-width: 0 !important;}
+    section[data-testid="stSidebar"] .st-key-themepill .stButton button p {display: none;}
+    section[data-testid="stSidebar"] .st-key-themepill [data-testid="stIconMaterial"] {font-size: 0.95rem !important;}
+    /* section headings → a thin rule */
+    .nav-sec {font-size: 0 !important; height: 1px; margin: 0.7rem 0.6rem 0.45rem !important;
+      background: var(--v5-border);}
+    /* nav → centred icons; the label pops out on hover (tooltip) */
+    section[data-testid="stSidebar"] .stButton button {justify-content: center !important;
+      padding: 0.55rem 0 !important; gap: 0 !important;}
+    section[data-testid="stSidebar"] .stButton button p {display: none;}
+    section[data-testid="stSidebar"] .stButton button [data-testid="stIconMaterial"] {font-size: 1.25rem !important;}
+    section[data-testid="stSidebar"] .stButton {margin-bottom: -0.35rem;}
+  }
+</style>""", unsafe_allow_html=True)
+
 st.sidebar.markdown(
     "<div class='v5-brand'><div class='mark'>DA</div>"
     "<div><div class='nm'>Denri Africa</div><div class='sb'>Marketing Analytics</div></div></div>",
@@ -283,6 +350,7 @@ st.sidebar.markdown(
 with st.sidebar.container(horizontal=True, key="themepill", gap=None):
     for _mode, _lbl, _ic in (("light", "Light", "light_mode"), ("dark", "Dark", "dark_mode")):
         if st.button(_lbl, key=f"theme_{_mode}", icon=f":material/{_ic}:",
+                     help=(f"{_lbl} theme" if MINI else None),
                      type=("primary" if THEME == _mode else "secondary")):
             st.session_state.theme = _mode
             st.query_params["theme"] = _mode
@@ -293,15 +361,13 @@ for section, items in NAV:
     for _lbl, _f, _s, _ic in items:
         if st.sidebar.button(_lbl, icon=f":material/{_ic}:", key=f"nav_{_lbl}",
                              use_container_width=True,
+                             help=(_lbl if MINI else None),          # the label pops out on the rail
                              type=("primary" if st.session_state.page == _lbl else "secondary")):
             st.session_state.page = _lbl
             st.query_params["page"] = _lbl
             st.rerun()
 
-st.sidebar.markdown(
-    "<div class='v5-user'><div class='av'>JO</div><div>"
-    "<div class='nm'>Jonathan Owiti</div><div class='rl'>Business Intelligence (BI) Analyst</div>"
-    "</div></div>", unsafe_allow_html=True)
+# (The user card now sits in the title row, above the live clock — see below.)
 
 # resolve the selected page
 label, html_file, scripts, icon = next(it for it in ALL_ITEMS if it[0] == st.session_state.page)
@@ -458,6 +524,11 @@ else:
 with _tt:
     st.markdown(_title_html, unsafe_allow_html=True)
 with _ck:
+    # User card above the live clock pill (both right-aligned in the title row)
+    st.markdown(
+        "<div class='v5-user'><div class='av'>JO</div><div>"
+        "<div class='nm'>Jonathan Owiti</div><div class='rl'>Business Intelligence (BI) Analyst</div>"
+        "</div></div>", unsafe_allow_html=True)
     components.html(CLOCK_HTML, height=48)
 with _rc:
     _do_refresh = st.button("Refresh", icon=":material/refresh:", use_container_width=True,
