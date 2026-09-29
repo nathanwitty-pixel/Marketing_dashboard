@@ -1,7 +1,7 @@
 # Graph Report - Marketing_dashboard  (2026-09-29)
 
 ## Corpus Check
-- 118 files · ~612,774 words
+- 118 files · ~613,634 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 11 file(s) not represented in the graph (top: .csv 5, (none) 2, .toml 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `4b771d89`
+- Built from commit: `f1449f16`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -465,7 +465,7 @@ Nodes (5): Chart type switcher (every chart, every menu), Layout rules, Skipped 
   report_2026_august.html · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **150 isolated node(s):** `PERF`, `graphify`, `Period selector (Monthly / Weekly / Last week)`, `What the page shows (per period)`, `Laptop sleeves are bags (27 Sep 2026)` (+145 more)
+- **150 isolated node(s):** `graphify`, `PERF`, `Layout rules`, `Skipped charts`, `Types offered (only when the data suits them)` (+145 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 563 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **6 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -477,12 +477,12 @@ _Questions this graph is uniquely positioned to answer:_
 - **What is the exact relationship between `Legacy dated report_YYYY_month.html archive pattern` and `August 2026 Monthly Report`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **Why does `Sidebar Navigation (icon rail / expanded drawer)` connect `Sidebar Navigation (icon rail / expanded drawer)` to `August 2026 Monthly Report`, `current_performance.html`, `Kitengela Rejects tracker (timed offer)`, `Semantic color rules (green=good, amber=risk, red=critical, cyan=info)`?**
-  _High betweenness centrality (0.073) - this node is a cross-community bridge._
+  _High betweenness centrality (0.074) - this node is a cross-community bridge._
+- **Why does `get_gspread_client()` connect `os` to `fetch_posting_data`, `offer_picking.py`, `timed_offers.py`, `new_products.py`, `POSTING (SALES YIELDS FROM ACCURATE POSTING).py`, `forward_projections.py`, `shops_efficiency.py`, `current_performance.py`, `json`, `odoo_tabs.py`, `datetime`, `self_made_combos.py`, `bags_on_offer.py`, `self_made_combos_bundle/self_made_combos.py`?**
+  _High betweenness centrality (0.067) - this node is a cross-community bridge._
 - **Why does `Current Performance (doc)` connect `lib/__init__.py` to `forward_projections.py`, `current_performance.py`, `build_all.py`, `datetime`, `Product / name matching (doc)`?**
   _High betweenness centrality (0.065) - this node is a cross-community bridge._
-- **Why does `get_gspread_client()` connect `os` to `fetch_posting_data`, `offer_picking.py`, `timed_offers.py`, `new_products.py`, `POSTING (SALES YIELDS FROM ACCURATE POSTING).py`, `forward_projections.py`, `shops_efficiency.py`, `current_performance.py`, `json`, `odoo_tabs.py`, `datetime`, `self_made_combos.py`, `bags_on_offer.py`, `self_made_combos_bundle/self_made_combos.py`?**
-  _High betweenness centrality (0.064) - this node is a cross-community bridge._
-- **What connects `PERF`, `graphify`, `Period selector (Monthly / Weekly / Last week)` to the rest of the system?**
+- **What connects `graphify`, `PERF`, `Layout rules` to the rest of the system?**
   _150 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `offer_picking.py` be split into smaller, more focused modules?**
   _Cohesion score 0.05493863237872589 - nodes in this community are weakly interconnected._

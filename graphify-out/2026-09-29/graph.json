@@ -4146,7 +4146,7 @@
       "file_type": "code",
       "norm_label": "_inline_local_script()",
       "source_file": "streamlit_app.py",
-      "source_location": "L556"
+      "source_location": "L589"
     },
     {
       "id": "streamlit_app_load_secrets_into_env",
@@ -4182,7 +4182,7 @@
       "file_type": "code",
       "norm_label": "_page_age_secs()",
       "source_file": "streamlit_app.py",
-      "source_location": "L349"
+      "source_location": "L382"
     },
     {
       "id": "streamlit_app_run_scripts",
@@ -4194,7 +4194,7 @@
       "file_type": "code",
       "norm_label": "run_scripts()",
       "source_file": "streamlit_app.py",
-      "source_location": "L318"
+      "source_location": "L351"
     },
     {
       "id": "streamlit_app_under_streamlit",
@@ -34679,7 +34679,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "streamlit_app.py",
-      "source_location": "L318",
+      "source_location": "L351",
       "weight": 1.0
     },
     {
@@ -34690,7 +34690,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "streamlit_app.py",
-      "source_location": "L349",
+      "source_location": "L382",
       "weight": 1.0
     },
     {
@@ -34712,7 +34712,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "streamlit_app.py",
-      "source_location": "L556",
+      "source_location": "L589",
       "weight": 1.0
     },
     {
