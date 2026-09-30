@@ -96,6 +96,8 @@ discount reward and a couple of one-off items (Enzo, KCB briefcase) stay unclass
 
 ## What the page shows (per period)
 
+**Sidebar** ([page sidebar](README.md#page-sidebar)) — sections only (Money per week … Bags not on offer). No picker: the region chips here are Kenyan sales areas that filter the shops table, so they stay beside it.
+
 1. **Money KPIs** — on-offer, not-on-offer and others revenue (KES) + units; on-offer share of
    all revenue; average price per unit (on vs not on offer); under-performing shops.
 2. **Trend** — on offer / not on offer / others revenue per week (Monthly) or per day (weekly periods).

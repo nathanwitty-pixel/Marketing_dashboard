@@ -6,6 +6,8 @@ units — *this list only*, not Kitengela's or any shop's live Odoo stock) and p
 into one of three sale prices — **KES 1,000 / 1,200 / 1,500** — chosen against the bag's **BOM
 production cost** so nothing is knowingly sold below cost.
 
+**Sidebar** ([page sidebar](README.md#page-sidebar)) — one entry per card (Price tiers, By category, Pricing board).
+
 ## The pricing rule (two tiers + hand pins)
 
 There are **two sale prices — KES 1,000 and 1,500** (no 1,200). The auto rule is a single

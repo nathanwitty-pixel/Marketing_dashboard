@@ -7,6 +7,8 @@
 
 ## What the page shows
 
+**Sidebar** ([page sidebar](README.md#page-sidebar)) — one entry per block — Overview, Weekly Sales vs Marketing Posts, Weekly Performance, Sold vs Remaining to Target, Top 10, Colour Movement & Stock Guidance, Sales vs Posts (per Colour).
+
 Per new-product KPIs (target vs sold vs deficit), monthly and weekly sales split
 Kenya vs Outside, marketing posts, stock levels, a weekly-sales-vs-posts chart, and a
 lifetime tally. **The product LIST + TARGET come from the sheet; every SOLD figure comes

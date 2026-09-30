@@ -6,6 +6,8 @@
 
 ## What the page shows
 
+**Sidebar** ([page sidebar](README.md#page-sidebar)) — **Regions** picker (Kenya · Sinza · Uganda) replaces the three in-page tab rows (hidden; one click switches all of them), then the region's headline cards and its Accuracy / Dead Stock groups with folding sub-items.
+
 How well marketing's **posting** lines up with actual **sales**, per region (Kenya /
 Sinza / Uganda), with a weekly/monthly toggle.
 

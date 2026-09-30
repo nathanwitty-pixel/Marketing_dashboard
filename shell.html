@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="darkreader-lock" /><!-- the dashboard has its own light/dark theme: stop the Dark Reader extension re-darkening it -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Denri Africa · Marketing Dashboard</title>
@@ -16,6 +17,7 @@
     })();
   </script>
   <script src="v5_theme.js"></script>
+  <script src="top_nav.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -79,9 +81,9 @@
     .pillnav {
       display: flex; align-items: center; gap: 2px; max-width: 100%;
       background: var(--track); border-radius: 999px; padding: 4px;
-      overflow-x: auto; scrollbar-width: none; box-shadow: 0 6px 18px rgba(16,24,40,0.12);
+      overflow-x: auto; box-shadow: 0 6px 18px rgba(16,24,40,0.12);   /* scroll bar + arrows: top_nav.js */
     }
-    .pillnav::-webkit-scrollbar { display: none; }
+    .tn-frame { display: flex; min-width: 0; max-width: 100%; border-radius: 999px; }   /* hugs the pill; carries the glow */
     .nav-item {
       display: inline-flex; align-items: center; gap: 0.4rem;
       padding: 0.46rem 0.85rem; border-radius: 999px;
@@ -124,9 +126,48 @@
       background: linear-gradient(135deg, #1e1b4b, #4f46e5); color: #fff;
       display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700;
     }
-    .user-text { display: flex; flex-direction: column; line-height: 1.2; }
+    .user-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
     .tu-name { font-size: 0.78rem; font-weight: 700; color: var(--text-hi); white-space: nowrap; }
     .tu-role { font-size: 0.62rem; color: var(--text-lo); white-space: nowrap; }
+
+    /* ── Owner credit — Jonathan Owiti, the person behind the dashboard ──
+       Shimmering gradient name + twinkling spark, a slowly turning ring on the avatar and the
+       title as a gradient-bordered pill. Darker gradient stops in light theme keep it readable. */
+    :root { --own-a: #4f46e5; --own-b: #0e7490; --own-c: #047857; --own-glow: rgba(79,70,229,0.28); }
+    :root[data-theme="dark"] { --own-a: #818cf8; --own-b: #22d3ee; --own-c: #34d399; --own-glow: rgba(99,102,241,0.45); }
+    @property --own-spin { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+    .owner-avatar { position: relative; isolation: isolate; box-shadow: 0 0 0 2px var(--bg-bar), 0 0 16px var(--own-glow); }
+    .owner-avatar::before {
+      content: ''; position: absolute; inset: -4px; border-radius: 50%; z-index: -1;
+      background: conic-gradient(from var(--own-spin), var(--own-a), var(--own-b), var(--own-c), var(--own-a));
+      animation: ownSpin 6s linear infinite;
+    }
+    .owner-name {
+      font-weight: 800; letter-spacing: 0.01em;
+      background: linear-gradient(90deg, var(--own-a), var(--own-b), var(--own-c), var(--own-b), var(--own-a));
+      background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent;
+      animation: ownShimmer 6s linear infinite;
+    }
+    .owner-spark { display: inline-block; margin-left: 0.3rem; color: #f59e0b; font-size: 0.9em; -webkit-text-fill-color: #f59e0b;
+                   animation: ownTwinkle 2.4s ease-in-out infinite; }
+    .owner-role {
+      display: inline-block; margin-top: 3px; padding: 0.12rem 0.5rem; border-radius: 999px;
+      font-size: 0.6rem; font-weight: 700; letter-spacing: 0.02em; color: var(--text-mid); white-space: nowrap;
+      border: 1px solid transparent;
+      background: linear-gradient(var(--bg-raised), var(--bg-raised)) padding-box,
+                  linear-gradient(90deg, var(--own-a), var(--own-b), var(--own-c)) border-box;
+    }
+    .owner-role .role-short { display: none; }
+    @keyframes ownSpin { to { --own-spin: 360deg; } }
+    @keyframes ownShimmer { to { background-position: 200% center; } }
+    @keyframes ownTwinkle {
+      0%, 100% { opacity: 0.6; transform: scale(0.85) rotate(0deg); }
+      50%      { opacity: 1; transform: scale(1.15) rotate(20deg); text-shadow: 0 0 8px rgba(245,158,11,0.75); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .owner-avatar::before, .owner-name, .owner-spark { animation: none !important; }
+      .owner-spark { opacity: 1; }
+    }
 
     /* Theme switch — a small dark pill, like V5's "Dashboard 1 / Dashboard 2" */
     .theme-pill { display: inline-flex; background: var(--track); border-radius: 999px; padding: 3px; flex-shrink: 0; }
@@ -214,7 +255,11 @@
     .icon-btn:focus-visible, .theme-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
     /* ── Responsive ──────────────────────────────────────────── */
-    @media (max-width: 1600px) { .user-text { display: none; } }
+    /* Crowded widths (all ten tabs share the header row): keep the name, shorten the title pill */
+    @media (max-width: 1600px) and (min-width: 1341px) {
+      .owner-role .role-full { display: none; }
+      .owner-role .role-short { display: inline; }
+    }
     @media (max-width: 1560px) {
       .pillnav .nav-icon { display: none; }            /* labels only — keeps all 10 tabs in view */
       .nav-item { padding: 0.46rem 0.72rem; }
@@ -232,7 +277,7 @@
     }
     @media (max-width: 640px) {
       .topbar { padding: 0.6rem 1rem; }
-      .brand-sub, .user .avatar, .status { display: none; }
+      .brand-sub, .user .avatar, .status, .user .owner-role { display: none; }
       .theme-opt .lbl { display: none; }
       .pagebar { padding: 0.75rem 1rem 0.6rem; }
       h1#page-title { font-size: 1.05rem; }
@@ -262,7 +307,7 @@
   </div>
 
   <div class="pillnav-wrap">
-    <nav class="pillnav" aria-label="Dashboards">
+    <div class="tn-frame tn-glow"><nav class="pillnav" aria-label="Dashboards">
       <button class="nav-item active" aria-current="page" data-src="current_performance.html" data-title="Current Performance" onclick="navigate(this)">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
         Performance
@@ -306,7 +351,7 @@
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"></path><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"></path><path d="M12 7v5l4 2"></path></svg>
         History
       </button>
-    </nav>
+    </nav></div>
   </div>
 
   <div class="topbar-right">
@@ -323,11 +368,11 @@
     <a class="icon-btn" href="mailto:jonathan.owiti@denriafrica.co.ke" aria-label="Contact the dashboard owner by email" title="Contact &amp; help">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg>
     </a>
-    <div class="user">
-      <div class="avatar" aria-hidden="true">JO</div>
+    <div class="user" title="Built and maintained by Jonathan Owiti, Business Intelligence (BI) Analyst">
+      <div class="avatar owner-avatar" aria-hidden="true">JO</div>
       <div class="user-text">
-        <span class="tu-name">Jonathan Owiti</span>
-        <span class="tu-role">Business Intelligence (BI) Analyst</span>
+        <span class="tu-name owner-name">Jonathan Owiti<span class="owner-spark" aria-hidden="true">✦</span></span>
+        <span class="tu-role owner-role"><span class="role-full">Business Intelligence (BI) Analyst</span><span class="role-short">BI Analyst</span></span>
       </div>
     </div>
   </div>
@@ -340,7 +385,7 @@
     <span class="topbar-purpose" id="page-purpose">Month-to-date sales vs target — live from Odoo POS &amp; Sheets</span>
   </div>
   <div class="page-actions">
-    <div class="status" title="Data freshness">
+    <div class="status tn-glow" title="Data freshness">
       <div class="dot-live" id="status-dot"></div>
       <span class="topbar-time" id="clock"></span>
     </div>
@@ -436,6 +481,45 @@
   function setPurpose(src) {
     if (purposeEl) purposeEl.textContent = PAGE_PURPOSE[src] || '';
   }
+
+  // ── Nav from dashboard_pages.json — the ONE page list, shared with streamlit_app.py ──
+  // Rebuilds the pill nav, the purposes and the owner credit from the manifest; the baked
+  // buttons above stay as the fallback when it can't be fetched (e.g. shell opened from disk).
+  function escAttr(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  fetch('dashboard_pages.json', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (m) {
+    var nav = document.querySelector('.pillnav');
+    if (!nav || !m || !m.pages || !m.pages.length) return;
+    var icons = {}, generic = '';
+    nav.querySelectorAll('.nav-item').forEach(function (b) {
+      var svg = b.querySelector('svg');
+      if (svg) { icons[b.dataset.src] = svg.outerHTML; if (!generic) generic = svg.outerHTML; }
+    });
+    var cur = decodeURIComponent(frame.src.split('/').pop().split('?')[0]), html = '', last = null;
+    m.pages.slice().sort(function (a, b) { return a.order - b.order; }).forEach(function (p) {
+      if (last !== null && p.section !== last) html += '<span class="nav-sep" aria-hidden="true"></span>';
+      last = p.section;
+      var on = p.html === cur;
+      html += '<button class="nav-item' + (on ? ' active" aria-current="page' : '') + '" data-src="' + escAttr(p.html) + '" data-title="' + escAttr(p.title) +
+              '" title="' + escAttr(p.purpose) + '" onclick="navigate(this)">' + (icons[p.html] || generic) + escAttr(p.short || p.label) + '</button>';
+      PAGE_PURPOSE[p.html] = p.purpose;
+    });
+    nav.innerHTML = html;
+    if (window.TopNav) TopNav.reveal(nav);   // keep the current tab in view after the rebuild
+    setPurpose(cur);
+    var o = m.owner || {};
+    if (o.name) {
+      var n = document.querySelector('.owner-name'), fu = document.querySelector('.owner-role .role-full'),
+          sh = document.querySelector('.owner-role .role-short'), av = document.querySelector('.owner-avatar'), u = document.querySelector('.user');
+      if (n && n.firstChild) n.firstChild.nodeValue = o.name;
+      if (fu && o.title) fu.textContent = o.title;
+      if (sh && o.title_short) sh.textContent = o.title_short;
+      if (av && o.initials) av.textContent = o.initials;
+      if (u) u.title = 'Built and maintained by ' + o.name + (o.title ? ', ' + o.title : '');
+    }
+  }).catch(function () { /* keep the baked nav */ });
+
+  // Tabs scroll left ↔ right: wheel, drag, ‹ › arrows (top_nav.js)
+  if (window.TopNav) TopNav.attach(document.querySelector('.pillnav'));
 
   function navigate(el) {
     document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); n.removeAttribute('aria-current'); });
@@ -701,7 +785,7 @@
     var style = document.createElement('style');
     var common =
       '.card-reveal,.s1-reveal{animation:none!important;opacity:1!important;transform:none!important}' +
-      '.filter-bar,select,input,button{display:none!important}' +
+      '.filter-bar,select,input,button,[data-export-hide]{display:none!important}' +
       'body{display:block!important;min-height:auto!important}';
     if (mode === 'paper') {
       style.textContent = common +

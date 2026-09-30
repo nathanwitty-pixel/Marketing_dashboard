@@ -9,6 +9,8 @@
 
 ## What the page shows
 
+**Sidebar** ([page sidebar](README.md#page-sidebar)) — each offer numbered (named "KES 300 Off (CBD)" style so same-titled offers stay distinct), its panels as sub-items that fold away while another offer is on screen.
+
 **Every** timed-offer **campaign** running in the month, **stacked** on one page (Kenya):
 each shows per-bag sales over that campaign's exact date window, alongside the marketing
 posting that ran with it. One `<template id="to-offer-tpl">` is cloned per offer and filled

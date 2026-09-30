@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="darkreader-lock" /><!-- the dashboard has its own light/dark theme: stop the Dark Reader extension re-darkening it -->
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>History — Denri Africa Marketing Dashboard</title>
@@ -17,12 +18,7 @@
   .rpt-head h1 { font-size: 1.85rem; font-weight: 800; color: #f8fafc; letter-spacing: -0.01em; }
   .rpt-head .dek { font-size: 0.9rem; color: #94a3b8; margin-top: 0.35rem; }
 
-  .switcher { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 1.1rem 0 0.4rem; }
-  .switcher .lbl { font-size: 0.64rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; margin-right: 0.2rem; }
-  .mbtn { background: #171a27; border: 1px solid #2d3148; color: #cbd5e1; font-size: 0.8rem; font-weight: 600; padding: 0.4rem 0.85rem; border-radius: 9px; cursor: pointer; transition: border-color 160ms cubic-bezier(0.16, 1, 0.3, 1), color 160ms cubic-bezier(0.16, 1, 0.3, 1), background-color 160ms cubic-bezier(0.16, 1, 0.3, 1); }
-  .mbtn:hover { border-color: #3d4a5c; color: #f8fafc; }
-  .mbtn.active { background: #10b981; border-color: transparent; color: #fff; }
-  .src-note { font-size: 0.72rem; color: #475569; margin-top: 0.3rem; }
+  .src-note { font-size: 0.72rem; color: #475569; margin-top: 0.9rem; }
   .src-note b { color: #6ee7b7; }
 
   /* Exec headline */
@@ -130,9 +126,12 @@
       .card, .panel, .kpi, .sec, .exec, .mini{
         background-color:#141824 !important; backdrop-filter:none; -webkit-backdrop-filter:none; }
     }
+
+  @media (max-width: 640px) { body { padding: 1rem; } }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="chart_switcher.js"></script>
+<script src="page_sidebar.js"></script>
 </head>
 <body>
 <div class="aura-layer-1" aria-hidden="true"></div>
@@ -144,7 +143,6 @@
     <span class="rpt-pill"><span class="dot"></span>History · Stored in Supabase</span>
     <h1>Reporting History</h1>
     <div class="dek">Every month backed up to the database — Current Performance, New Products, Offer Type Analysis (all locations), Posting, Timed Offers &amp; Self-Made Combos.</div>
-    <div class="switcher" id="switcher"></div>
     <div class="src-note" id="src-note"></div>
   </div>
 
@@ -157,7 +155,7 @@
 <script id="history-data" type="application/json">
 {
 "source": "Supabase",
-"generatedOn": "2026-09-25",
+"generatedOn": "2026-09-30",
 "months": [
 {
 "key": "2026-08",
@@ -2387,9 +2385,28 @@ function buildCharts(m, wk, prevM){
 
 function rgba(hex,a){ var h=hex.replace('#',''); return 'rgba('+parseInt(h.slice(0,2),16)+','+parseInt(h.slice(2,4),16)+','+parseInt(h.slice(4,6),16)+','+a+')'; }
 
+/* ── Sidebar (page_sidebar.js): month picker + "In this report" ── */
+// Sections follow what render() produced (Timed Offers / Self-Made only exist for some months).
+function reportSections(){
+  var out = [];
+  var exec = document.querySelector('#report .exec');
+  if (exec) out.push({ el: exec, num: '★', color: '#34d399', name: 'Bottom line' });
+  document.querySelectorAll('#report .sec-head').forEach(function(h){
+    var n = h.querySelector('.sec-num'), t = h.querySelector('h2');
+    if (n && t) out.push({ el: h.parentElement, num: n.textContent, color: n.style.background, name: t.textContent.split(' — ')[0] });
+  });
+  return out;
+}
+
+function selectMonth(i){
+  render(i);
+  PageSidebar.setActive(String(i));
+  PageSidebar.refresh();
+  window.scrollTo({ top: 0 });
+}
+
 /* ── Boot ────────────────────────────────────────────────── */
 (function(){
-  var sw = document.getElementById('switcher');
   var srcNote = document.getElementById('src-note');
   var foot = document.getElementById('foot');
 
@@ -2400,21 +2417,27 @@ function rgba(hex,a){ var h=hex.replace('#',''); return 'rgba('+parseInt(h.slice
     return;
   }
 
-  sw.innerHTML = '<span class="lbl">Month</span>' + MONTHS.map(function(m,i){
-    return '<button class="mbtn'+(i===0?' active':'')+'" data-i="'+i+'">'+m.month+' '+m.year+'</button>';
-  }).join('');
   srcNote.innerHTML = 'Source: <b>Supabase</b> · '+MONTHS.length+' month'+(MONTHS.length>1?'s':'')+' stored'
     + (DATA.generatedOn?' · last synced '+fmtDate(DATA.generatedOn):'');
   foot.textContent = 'Denri Africa · Marketing Dashboard — history read live from Supabase.';
 
-  sw.addEventListener('click', function(e){
-    var b = e.target.closest('.mbtn'); if(!b) return;
-    sw.querySelectorAll('.mbtn').forEach(function(x){ x.classList.remove('active'); });
-    b.classList.add('active');
-    render(Number(b.dataset.i));
-  });
-
+  // Each month: a calendar tile, its name, and how close it closed to target.
   render(0);
+  PageSidebar.init({
+    content: '.wrap',
+    label: 'Reporting history navigation',
+    picker: {
+      label: 'Months',
+      active: '0',
+      items: MONTHS.map(function(m,i){
+        var pct = Number(m.monthly && m.monthly.achieved_pct) || 0;
+        return { id: String(i), label: m.month+' '+m.year, tile: [String(m.month).slice(0,3).toUpperCase(), String(m.year)],
+                 sub: pf(pct)+' of target', pct: pct, color: pct >= 100 ? '#34d399' : pct >= 80 ? '#fbbf24' : '#f87171' };
+      }),
+      onSelect: function(id){ selectMonth(Number(id)); }
+    },
+    sections: reportSections
+  });
 })();
 </script>
 

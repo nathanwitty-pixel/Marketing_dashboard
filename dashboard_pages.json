@@ -1,0 +1,174 @@
+{
+  "_about": "The ONE page list for the dashboard. streamlit_app.py builds its menu from it and shell.html (local fallback) builds its nav from it. Add / rename / reorder pages HERE only. Spec: docs/README.md › Where changes go.",
+  "owner": {
+    "name": "Jonathan Owiti",
+    "initials": "JO",
+    "title": "Business Intelligence (BI) Analyst",
+    "title_short": "BI Analyst",
+    "email": "jonathan.owiti@denriafrica.co.ke"
+  },
+  "pages": [
+    {
+      "order": 1,
+      "section": "Performance",
+      "label": "Current Performance",
+      "html": "current_performance.html",
+      "title": "Current Performance",
+      "scripts": [
+        "weekly_sales.py",
+        "monthly_sales.py",
+        "current_performance.py",
+        "forward_projections.py"
+      ],
+      "icon": "monitoring",
+      "purpose": "Month-to-date sales vs target — live from Odoo POS & Sheets",
+      "short": "Performance"
+    },
+    {
+      "order": 2,
+      "section": "Products",
+      "label": "New Products",
+      "html": "new_products.html",
+      "title": "New Products Analytics",
+      "scripts": [
+        "new_products.py"
+      ],
+      "icon": "inventory_2",
+      "purpose": "How this month’s new bags are selling",
+      "short": "New Products"
+    },
+    {
+      "order": 3,
+      "section": "Products",
+      "label": "Timed Offers",
+      "html": "timed_offers.html",
+      "title": "Timed Offers Analytics",
+      "scripts": [
+        "timed_offers.py"
+      ],
+      "icon": "schedule",
+      "purpose": "Live timed-offer campaigns and the sales lift they drive",
+      "short": "Timed Offers"
+    },
+    {
+      "order": 4,
+      "section": "Products",
+      "label": "Self-made vs Running Combos",
+      "html": "self_made_combos.html",
+      "title": "Self made combos vs running combos",
+      "scripts": [
+        "self_made_combos.py"
+      ],
+      "icon": "shopping_bag",
+      "purpose": "Running vs self-made combos, per market",
+      "short": "Combos"
+    },
+    {
+      "order": 5,
+      "section": "Products",
+      "label": "Bags On vs Off Offer",
+      "html": "bags_on_offer.html",
+      "title": "Bags on offer vs not on offer",
+      "scripts": [
+        "self_made_combos.py",
+        "bags_on_offer.py"
+      ],
+      "icon": "loyalty",
+      "purpose": "Offer vs non-offer bag revenue, and shops vs their Odoo target",
+      "short": "Bags on Offer"
+    },
+    {
+      "order": 6,
+      "section": "Products",
+      "label": "Offer Picking",
+      "html": "offer_picking.html",
+      "title": "Offer Picking",
+      "scripts": [
+        "self_made_combos.py",
+        "offer_picking.py"
+      ],
+      "icon": "local_offer",
+      "purpose": "Which bags to put on offer next",
+      "short": "Picking"
+    },
+    {
+      "order": 7,
+      "section": "Products",
+      "label": "Reject Sale",
+      "html": "reject_sales.html",
+      "title": "Reject Sale",
+      "scripts": [
+        "reject_sales.py"
+      ],
+      "icon": "sell",
+      "purpose": "Reject-stock sales and pricing",
+      "short": "Rejects"
+    },
+    {
+      "order": 8,
+      "section": "Marketing",
+      "label": "Posting Yields",
+      "html": "POSTING (SALES YIELDS FROM ACCURATE POSTING).html",
+      "title": "Posting – Sales Yields from Accurate Posting",
+      "scripts": [
+        "POSTING (SALES YIELDS FROM ACCURATE POSTING).py"
+      ],
+      "icon": "campaign",
+      "purpose": "Sales yield earned from accurate marketing posting",
+      "short": "Posting"
+    },
+    {
+      "order": 9,
+      "section": "Marketing",
+      "label": "Shops Efficiency",
+      "html": "shops_efficiency.html",
+      "title": "Shops Efficiency Tracking",
+      "scripts": [
+        "shops_dispatch.py",
+        "shops_efficiency.py"
+      ],
+      "icon": "storefront",
+      "purpose": "Per-shop dispatch, stock and sell-through",
+      "short": "Shops"
+    },
+    {
+      "order": 10,
+      "section": "Intelligence",
+      "label": "Insights",
+      "html": "insights.html",
+      "title": "Dashboard Insights",
+      "scripts": [
+        "generate_insights.py"
+      ],
+      "icon": "lightbulb",
+      "purpose": "Automated read-outs across the dashboards",
+      "short": "Insights"
+    },
+    {
+      "order": 11,
+      "section": "Intelligence",
+      "label": "Monthly Report",
+      "html": "monthly_report.html",
+      "title": "Monthly Report",
+      "scripts": [
+        "monthly_report.py"
+      ],
+      "icon": "description",
+      "purpose": "The month’s report, targets and commentary",
+      "short": "Monthly Report"
+    },
+    {
+      "order": 12,
+      "section": "Intelligence",
+      "label": "History",
+      "html": "history.html",
+      "title": "Reporting History (Supabase)",
+      "scripts": [
+        "history.py"
+      ],
+      "icon": "history",
+      "purpose": "Archived monthly reports from Supabase",
+      "short": "History"
+    }
+  ]
+}

@@ -402,13 +402,20 @@
       var nodes = pending; pending = [];
       busy = true;
       try {
-        var restyle = false;
+        var restyle = false, roots = [];
         nodes.forEach(function (n) {
           if (!n.isConnected) return;
           if (n.nodeName === 'STYLE' || (n.querySelector && n.querySelector('style:not([data-v5])'))) restyle = true;
           themeInline(n);
-          fixChipText(doc, n.parentNode || n);
+          var r = n.parentNode || n;
+          if (roots.indexOf(r) < 0) roots.push(r);
         });
+        // Chip-text pass once per affected subtree, not once per added node: a table that
+        // renders 500 rows used to rescan its whole <tbody> 500 times (≈80 s frozen on Posting
+        // when the theme was applied before the page finished rendering).
+        roots.filter(function (r) {
+          return !roots.some(function (o) { return o !== r && o.contains && o.contains(r); });
+        }).forEach(function (r) { fixChipText(doc, r); });
         if (restyle) themeStyles(doc);
         themeCharts(win);
       } finally {

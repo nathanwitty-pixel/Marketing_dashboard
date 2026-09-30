@@ -7,6 +7,8 @@
 
 ## What the page shows
 
+**Sidebar** ([page sidebar](README.md#page-sidebar)) — **Months** picker (calendar tile, % of target, colour meter) replaces the month buttons, then Bottom line + the month's numbered sections.
+
 The frozen monthly snapshots stored in Supabase — the read side of the Supabase
 round-trip. For each archived month: Current Performance, New Products, Offer Type
 Analysis (all locations), Posting Yields, and each month's Timed Offer campaigns with

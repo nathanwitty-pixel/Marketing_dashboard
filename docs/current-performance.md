@@ -11,6 +11,8 @@
 
 ## What the page shows
 
+**Sidebar** ([page sidebar](README.md#page-sidebar)) — Current Performance and Forward Projections, with Weekly Performance as a sub-item.
+
 The month's headline performance — total target vs sales vs deficit, sales % achieved,
 week-over-week movement, and a **current-vs-previous-month weekly comparison chart** (current
 month solid, previous month dashed — `cpPrevWeekly` from `monthly_report_history.json`; the

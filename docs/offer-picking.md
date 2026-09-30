@@ -73,6 +73,8 @@ A planning menu for **which offers/combos to run**. The page **leads with the Fo
    POS combo structure) are never counted as sales — only the priced `+` line is.
    Region from `self_made_combos._SHOP_REGION_DEFAULT` via `_region_of`.
 
+**Sidebar** ([page sidebar](README.md#page-sidebar)) — one entry per card (Forecast, Baseline forecast, Next month's combos to run, Power deal choosing, Seasonality).
+
 ## Pricing — WAS vs NOW, from the offers sheet
 
 The **offers sheet** (`_read_offers`, `OFFERS_SHEET_ID`) gives every bag two prices:

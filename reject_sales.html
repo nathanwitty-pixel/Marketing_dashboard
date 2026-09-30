@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="darkreader-lock" /><!-- the dashboard has its own light/dark theme: stop the Dark Reader extension re-darkening it -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reject Sale — Kitengela</title>
@@ -264,6 +265,21 @@
   parts.push('Edit <code style="color:#a5f3fc">reject_stock.csv</code> to change stock, or <code style="color:#a5f3fc">reject_overrides.json</code> to pin a bag\'s price.');
   document.getElementById('rj-flags').innerHTML = parts.join('<br>');
 })();
+</script>
+<!-- Page sidebar (page_sidebar.js): "In this report" with scroll-spy -->
+<script src="page_sidebar.js"></script>
+<script>
+  PageSidebar.init({
+    content: 'body > *:not(script):not(style):not(template):not(link)',
+    label: 'Reject sale navigation',
+    sections: function () {   // one entry per card, named by its heading's own words (not the grey note)
+      return Array.prototype.map.call(document.querySelectorAll('.psb-main .card > h2'), function (h) {
+        var own = Array.prototype.filter.call(h.childNodes, function (n) { return n.nodeType === 3; })
+          .map(function (n) { return n.textContent; }).join(' ').replace(/\s+/g, ' ').trim();
+        return { el: h.parentElement, name: own || h.textContent.trim() };
+      }).filter(function (t) { return t.el.offsetParent !== null; });
+    }
+  });
 </script>
 </body>
 </html>

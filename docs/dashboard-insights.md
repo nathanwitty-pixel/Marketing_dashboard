@@ -5,6 +5,8 @@
 
 ## What the page shows
 
+**Sidebar** ([page sidebar](README.md#page-sidebar)) — one entry per section label (Headline Numbers … Recommended Actions). The snippet lives in `generate_insights.py`'s template, since that script writes the whole page.
+
 An auto-written narrative that pulls the numbers **already injected** into the other
 dashboard pages and turns them into cross-page insights. **No Google Sheets / Odoo calls
 of its own** — it must run **after** every data page.

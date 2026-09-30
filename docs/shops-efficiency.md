@@ -6,6 +6,8 @@
 
 ## What the page shows
 
+**Sidebar** ([page sidebar](README.md#page-sidebar)) — every block title / card / table rendered at runtime (period prefix dropped — the Weekly/Monthly toggle says it; clashing names keep "· weekly"/"· monthly"); the toggle rebuilds the list.
+
 How well each Kenya shop converts the bags it holds and the bags dispatched to it.
 Per-shop metrics (D = dispatched, C = sold):
 

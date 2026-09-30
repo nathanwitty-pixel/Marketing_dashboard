@@ -11,7 +11,13 @@ injects it into HTML dashboards, and serves them through a unified shell.
 - **Shops Efficiency** Tracking (per-shop + per-region)
 - **Insights** — auto-generated summary
 
-## Run locally (full, live data)
+## Which version is real
+The dashboard is the **Streamlit app**: double-click `run_dashboard.bat` locally; Streamlit
+Cloud runs the same `streamlit_app.py` from GitHub `main`. To put local changes online,
+double-click `publish.bat` (checks → shows changes → asks → commits + pushes). Pages are listed
+once, in `dashboard_pages.json`. Details: [docs/README.md › Where changes go](docs/README.md#where-changes-go).
+
+## Run locally (full, live data) — fallback shell
 ```
 python main.py
 ```

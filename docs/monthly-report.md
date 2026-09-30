@@ -5,6 +5,8 @@
 
 ## What the page shows
 
+**Sidebar** ([page sidebar](README.md#page-sidebar)) — Bottom line, then each numbered section with its own badge colour. The snippet is `PAGE_SIDEBAR` in `monthly_report.py`, since that script writes the whole page.
+
 An executive monthly report that runs each area through a four-step framework:
 
 1. **Get attention** → lead with the conclusion

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="darkreader-lock" /><!-- the dashboard has its own light/dark theme: stop the Dark Reader extension re-darkening it -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Offer Picking</title>
@@ -171,9 +172,15 @@
     for (var i = 0; i < set.length; i++) if (set[i].v === v) return set[i].label;
     return esc(v);
   }
+  // Plain-text label for the hover tooltip — the chip itself is ellipsised at 250px.
+  function labelTip(opts, v) {
+    var d = document.createElement('div'); d.innerHTML = labelFor(opts, v);
+    return d.textContent.replace(/\s+/g, ' ').trim();
+  }
   function cbxHtml(v, opts, attrs) {
     return '<span class="cbx" data-value="' + esc(v) + '" data-opts="' + opts + '"' + (attrs || '') + '>' +
-      '<button type="button" class="cbx-btn">' + labelFor(opts, v) + ' <span style="color:#64748b">▾</span></button></span>';
+      '<button type="button" class="cbx-btn" title="' + esc(labelTip(opts, v)).replace(/"/g, '&quot;') + '">' +
+      labelFor(opts, v) + ' <span style="color:#64748b">▾</span></button></span>';
   }
   var openEl = null;
   function closeCbx() { if (openEl) { openEl.classList.remove('open'); var p = openEl.querySelector('.cbx-panel'); if (p) p.remove(); openEl = null; } }
@@ -198,7 +205,9 @@
   }
   function setCbx(cbx, v) {
     cbx.setAttribute('data-value', v);
-    cbx.querySelector('.cbx-btn').innerHTML = labelFor(cbx.getAttribute('data-opts'), v) + ' <span style="color:#64748b">▾</span>';
+    var btn = cbx.querySelector('.cbx-btn');
+    btn.innerHTML = labelFor(cbx.getAttribute('data-opts'), v) + ' <span style="color:#64748b">▾</span>';
+    btn.title = labelTip(cbx.getAttribute('data-opts'), v);
     closeCbx();
     cbx.dispatchEvent(new Event('cbxchange', { bubbles: true }));
   }
@@ -608,6 +617,21 @@
       'Month combo-sales totals: ' + months.map(function (m, i) { return m + ' ' + fmt(mt[i] || 0); }).join(' · ') + '.';
   })();
 })();
+</script>
+<!-- Page sidebar (page_sidebar.js): "In this report" with scroll-spy -->
+<script src="page_sidebar.js"></script>
+<script>
+  PageSidebar.init({
+    content: 'body > *:not(script):not(style):not(template):not(link)',
+    label: 'Offer picking navigation',
+    sections: function () {   // one entry per card, named by its heading's own words (not the grey note)
+      return Array.prototype.map.call(document.querySelectorAll('.psb-main .card > h2'), function (h) {
+        var own = Array.prototype.filter.call(h.childNodes, function (n) { return n.nodeType === 3; })
+          .map(function (n) { return n.textContent; }).join(' ').replace(/\s+/g, ' ').trim();
+        return { el: h.parentElement, name: own || h.textContent.trim() };
+      }).filter(function (t) { return t.el.offsetParent !== null; });
+    }
+  });
 </script>
 </body>
 </html>

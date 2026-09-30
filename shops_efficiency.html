@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="darkreader-lock" /><!-- the dashboard has its own light/dark theme: stop the Dark Reader extension re-darkening it -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Shops Efficiency Tracking</title>
@@ -916,6 +917,36 @@ const SE = {"generatedOn":"28 Sep 2026","shops":["STARMALL","MOMBASA","NAKURU","
   sel.addEventListener('change', function(){ render(this.value); });
   render(sel.value);
 })();
+</script>
+
+<!-- Page sidebar (page_sidebar.js): "In this report" with scroll-spy -->
+<script src="page_sidebar.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  PageSidebar.init({
+    content: 'body > .section',
+    label: 'Shops navigation',
+    // Everything here is rendered at runtime: one entry per block title / titled card / table.
+    // "Weekly — Shop Performance Score" → "Shop Performance Score" (the toggle already says Weekly /
+    // Monthly); where two titles would then match, each keeps its period ("… · monthly").
+    sections: function () {
+      var main = document.querySelector('.psb-main'), seen = [];
+      var out = Array.prototype.map.call(main ? main.querySelectorAll('.block-title, .card-label, .table-title') : [], function (n) {
+        var box = n.classList.contains('block-title') ? n : (n.closest('.card, .table-wrap') || n);
+        if (seen.indexOf(box) >= 0) return null;
+        seen.push(box);
+        var raw = n.textContent.replace(/\s+/g, ' ').trim(), per = (raw.match(/^(Weekly|Monthly)\b/) || [])[1] || '';
+        return { el: box, per: per, name: raw.replace(/^(Weekly|Monthly)\s*(—|·)?\s*/, '').split(' — ')[0] };
+      }).filter(function (t) { return t && t.name && t.el.offsetParent !== null; });
+      var count = {};
+      out.forEach(function (t) { count[t.name] = (count[t.name] || 0) + 1; });
+      out.forEach(function (t) { if (count[t.name] > 1 && t.per) t.name += ' · ' + t.per.toLowerCase(); });
+      return out;
+    }
+  });
+  var tog = document.getElementById('se-period-toggle');   // Weekly ↔ Monthly re-renders the cards
+  if (tog) tog.addEventListener('click', function () { setTimeout(PageSidebar.refresh, 0); });
+});
 </script>
 
 </body>

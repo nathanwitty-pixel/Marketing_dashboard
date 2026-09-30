@@ -290,6 +290,7 @@ today = date.today()
 html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="darkreader-lock" /><!-- the dashboard has its own light/dark theme: stop the Dark Reader extension re-darkening it -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Marketing Dashboard Insights &mdash; {month_name} {today.year}</title>
@@ -415,6 +416,20 @@ html = f'''<!DOCTYPE html>
   </div>
 
 </div>
+
+<!-- Page sidebar (page_sidebar.js): "In this report" with scroll-spy -->
+<script src="page_sidebar.js"></script>
+<script>
+  PageSidebar.init({{
+    content: 'body > .container',
+    label: 'Insights navigation',
+    sections: function () {{   // each section label, e.g. "Headline Numbers", "What Needs Attention"
+      return PageSidebar.headings('.psb-main .section-title').map(function (t) {{
+        return {{ el: t.el, name: t.name.replace(/ New Products by Monthly Sales$/, ' New Products') }};
+      }});
+    }}
+  }});
+</script>
 </body>
 </html>
 '''

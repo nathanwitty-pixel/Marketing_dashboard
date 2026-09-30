@@ -10,6 +10,8 @@
 
 ## What the page shows
 
+**Sidebar** ([page sidebar](README.md#page-sidebar)) — **Regions** picker (Kenya · Sinza · Uganda — sub-lines from `runTotals` / `regions[*].totalStock`) replaces the in-page region buttons (hidden; the picker clicks them), then the visible region's sections; Combos ↔ Power Deals rebuilds the list.
+
 Three areas, all scoped to the **current live month** (`report_month.live_month_window()`):
 
 1. **Self-made combos vs Running combos.** Combos sold this month, classified against

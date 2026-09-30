@@ -527,6 +527,7 @@ if gap and _unm_gap_share < 50:
 HEAD = """<!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="darkreader-lock" /><!-- the dashboard has its own light/dark theme: stop the Dark Reader extension re-darkening it -->
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>__TITLE__</title>
@@ -1586,7 +1587,30 @@ chart_js = r"""<script>
 </script>
 """
 
-_full = head + body + chart_data + chart_js + "\n</body>\n</html>\n"
+# Shared page sidebar ("In this report" + scroll-spy) — spec: docs/README.md › Page sidebar
+PAGE_SIDEBAR = r"""
+<!-- Page sidebar (page_sidebar.js): "In this report" with scroll-spy -->
+<script src="page_sidebar.js"></script>
+<script>
+  PageSidebar.init({
+    content: 'body > .wrap',
+    label: 'Monthly report navigation',
+    sections: function () {   // the bottom line, then each numbered section with its own badge colour
+      var out = [], exec = document.querySelector('.psb-main .exec');
+      if (exec) out.push({ el: exec, num: '★', color: '#34d399', name: 'Bottom line' });
+      document.querySelectorAll('.psb-main .sec-head').forEach(function (h) {
+        var n = h.querySelector('.sec-num'), t = h.querySelector('h2');
+        if (!t) return;
+        out.push({ el: h.parentElement, num: n ? n.textContent : '', color: n ? n.style.background : '',
+                   name: t.textContent.split(' — ')[0].replace(/\s*\([^)]*\)\s*$/, '').trim() });
+      });
+      return out;
+    }
+  });
+</script>
+"""
+
+_full = head + body + chart_data + chart_js + PAGE_SIDEBAR + "\n</body>\n</html>\n"
 
 out = os.path.join(BASE, "monthly_report.html")
 with open(out, "w", encoding="utf-8") as f:
