@@ -437,9 +437,15 @@
     id: 'chartSwitchUi',
     beforeLayout: function (chart) {
       if (!chart.$csBtn || !chart.options.layout) return;
-      var base = padOf(((chart.config.options || {}).layout || {}).padding);
-      base.right += GUTTER;
-      chart.options.layout.padding = base;
+      // chart.options writes through to chart.config.options, so the padding read here can be the
+      // one WE set last layout. Re-adding the gutter to it on every update shrank the chart 34px per
+      // redraw (scrolling in light mode redraws a lot). Keep the page's own padding and add to that.
+      var cur = ((chart.config.options || {}).layout || {}).padding;
+      if (!chart.$csPad || cur !== chart.$csPad.set) chart.$csPad = { base: padOf(cur) };
+      var p = padOf(chart.$csPad.base);
+      p.right += GUTTER;
+      chart.options.layout.padding = p;
+      chart.$csPad.set = ((chart.config.options || {}).layout || {}).padding;
     },
     afterInit: function (chart) { setTimeout(function () { attach(chart); }, 0); },
     resize: function (chart) { setTimeout(function () { if (chart.$csBtn) place(chart); else if (chart.$csOrig) attach(chart); }, 0); },

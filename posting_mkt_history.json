@@ -3,18 +3,6 @@
     {
       "label": "Wk 5",
       "month": "Jul",
-      "kenya": 78.2,
-      "sinza": 33.3,
-      "uganda": 11.2,
-      "_sig": [
-        133,
-        66,
-        78
-      ]
-    },
-    {
-      "label": "Wk 5",
-      "month": "Jul",
       "kenya": 67.0,
       "sinza": 40.5,
       "uganda": 9.9,
@@ -135,6 +123,18 @@
     {
       "label": "Wk 5",
       "month": "Sep",
+      "kenya": 30.4,
+      "sinza": 56.6,
+      "uganda": 22.9,
+      "_sig": [
+        307,
+        36,
+        57
+      ]
+    },
+    {
+      "label": "Wk 1",
+      "month": "Oct",
       "kenya": 30.4,
       "sinza": 56.6,
       "uganda": 22.9,

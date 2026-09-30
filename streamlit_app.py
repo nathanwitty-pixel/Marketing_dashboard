@@ -139,8 +139,8 @@ THEME = st.session_state.theme
 
 # Palette for the Streamlit chrome (the embedded pages are themed by v5_theme.js).
 _V5 = {
-    "light": dict(bg="#f4f5fa", bar="#ffffff", raised="#ffffff", border="#e4e7ef",
-                  hi="#0f172a", mid="#475569", lo="#64748b", track="#14161f"),
+    "light": dict(bg="#e9ebf0", bar="#f9fafb", raised="#f9fafb", border="#d9dde5",
+                  hi="#0f172a", mid="#334155", lo="#475569", track="#14161f"),
     "dark":  dict(bg="#0b0d14", bar="#11131c", raised="#1a1d2b", border="#232738",
                   hi="#f1f5f9", mid="#aab4c3", lo="#8a97a8", track="#1c1f2d"),
 }[THEME]
@@ -474,6 +474,72 @@ if (not NO_AUTOREFRESH
         "auto": True,
     }
     st.rerun()
+
+
+# ── Month-end catch-up: archive last month to Supabase (History) automatically ──
+# month_end.py freezes a finished month (numbers + report comments) into Supabase. It used to
+# rely on being run by hand, so a month could be missed. Now the first page view of a new month
+# checks Supabase and, if last month isn't there, starts month_end.py in the background, pinned
+# to last month. A lock file stops other viewers / reruns starting it twice. Spec: MONTH_END.md.
+MONTH_END_LOCK = os.path.join(BASE, ".month_end.lock")
+MONTH_END_LOG = os.path.join(BASE, "month_end.log")
+
+
+def _prev_month_key():
+    last = datetime.date.today().replace(day=1) - datetime.timedelta(days=1)
+    return f"{last.year}-{last.month:02d}"
+
+
+@st.cache_data(ttl=1800, show_spinner=False)
+def _month_archived(key):
+    """True when `key` is in Supabase (falls back to monthly_report_history.json). If neither
+    can be read, say True — never start a heavy archive run blind."""
+    url = os.environ.get("SUPABASE_DB_URL")
+    if url:
+        try:
+            import psycopg2
+            conn = psycopg2.connect(url, connect_timeout=10)
+            try:
+                with conn.cursor() as cur:
+                    cur.execute("SELECT 1 FROM denri_mkt_monthly WHERE month_key = %s", (key,))
+                    return cur.fetchone() is not None
+            finally:
+                conn.close()
+        except Exception:                                        # noqa: BLE001
+            pass
+    try:
+        with open(os.path.join(BASE, "monthly_report_history.json"), encoding="utf-8") as _fh:
+            return key in _json.load(_fh)
+    except (OSError, ValueError):
+        return True
+
+
+def _month_end_running(key):
+    """A month_end run for `key` started in the last 3 hours (the lock holds 'key|epoch')."""
+    try:
+        with open(MONTH_END_LOCK, encoding="utf-8") as _fh:
+            k, t = _fh.read().strip().split("|")
+        return k == key and time.time() - float(t) < 3 * 3600
+    except (OSError, ValueError):
+        return False
+
+
+if not NO_AUTOREFRESH:
+    _pm = _prev_month_key()
+    if _month_end_running(_pm):
+        st.info(f"Archiving {datetime.datetime.strptime(_pm, '%Y-%m'):%B %Y} to History in the background — "
+                "the pages refresh themselves when it finishes.", icon=":material/inventory:")
+    elif not _month_archived(_pm):
+        with open(MONTH_END_LOCK, "w", encoding="utf-8") as _fh:
+            _fh.write(f"{_pm}|{time.time()}")
+        _env = {**os.environ, "DENRI_REPORT_MONTH": _pm, "DENRI_MONTH_END_AUTO": "1",
+                "DENRI_LAUNCHER": "1", "PYTHONIOENCODING": "utf-8"}
+        with open(MONTH_END_LOG, "a", encoding="utf-8") as _log:
+            subprocess.Popen([sys.executable, os.path.join(BASE, "month_end.py")], cwd=BASE, env=_env,
+                             stdout=_log, stderr=subprocess.STDOUT)
+        _month_archived.clear()                                  # re-check once it has had time to finish
+        st.info(f"{datetime.datetime.strptime(_pm, '%Y-%m'):%B %Y} wasn't in History yet — archiving it "
+                "to Supabase now, in the background.", icon=":material/inventory:")
 
 
 # ── Title row: page title + purpose (left) · live clock pill · Refresh (right) ──

@@ -105,9 +105,9 @@ html[data-v5] .smc-region-btn {
 html[data-v5="light"] .seg-btn,
 html[data-v5="light"] .region-tab,
 html[data-v5="light"] .smc-region-btn {
-  background: #ffffff !important;
-  border: 1px solid #e4e7ef !important;
-  color: #475569 !important;
+  background: #f9fafb !important;
+  border: 1px solid #d9dde5 !important;
+  color: #334155 !important;
 }
 html[data-v5="light"] .seg-btn:hover,
 html[data-v5="light"] .region-tab:hover,
@@ -128,7 +128,7 @@ html[data-v5="light"] .aura-layer-3 { display: none !important; }
 
 html[data-v5="light"] ::selection { background: rgba(79, 70, 229, 0.18); }
 html[data-v5="light"] ::-webkit-scrollbar { width: 10px; height: 10px; }
-html[data-v5="light"] ::-webkit-scrollbar-thumb { background: #d6d9e4; border-radius: 999px; border: 2px solid #f4f5fa; }
+html[data-v5="light"] ::-webkit-scrollbar-thumb { background: #c3c8d4; border-radius: 999px; border: 2px solid #e9ebf0; }
 html[data-v5="light"] ::-webkit-scrollbar-track { background: transparent; }
 
 html[data-v5] :focus-visible { outline: 2px solid var(--v5-indigo); outline-offset: 2px; }

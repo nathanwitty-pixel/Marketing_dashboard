@@ -21,6 +21,7 @@ so early-August runs correctly report July.
 Change AVG_PRICE below if you want the revenue lines quantified with your real
 average selling price.
 """
+from lib.month_extras import build_extras
 import os, re, json
 import datetime
 
@@ -98,7 +99,7 @@ year  = _anchor.year
 # That is the supported way to correct a frozen month (August 2026 was rebuilt
 # this way after the report-month anchor bug filled it with September's day-1
 # numbers) — an unpinned run can still never touch it.
-FINALIZED_MONTHS = {"2026-07", "2026-08"}
+FINALIZED_MONTHS = {"2026-07", "2026-08", "2026-09"}
 import calendar as _cal_fin
 _fin_num = (list(_cal_fin.month_name).index(month)
             if month in list(_cal_fin.month_name) else _anchor.month)
@@ -1774,6 +1775,10 @@ _snapshot = {
         "reqTotal": self_made["reqTotal"],
     } if self_made else None),
     "comments": _comments,
+    # The newer pages (Power Deals vs Deal of the Week, Posting yield + dead stock clearance, Bags
+    # On vs Off Offer, self-made extras) — shown inside this month's History sections. Only read
+    # when archiving (the pages were just rebuilt for this month by month_end.py).
+    "extras": (build_extras(BASE, month, year) if report_month.is_pinned() else None),
 }
 HISTORY_FILE = os.path.join(BASE, "monthly_report_history.json")
 # History (→ Supabase) is written ONLY when archiving a completed month — i.e.

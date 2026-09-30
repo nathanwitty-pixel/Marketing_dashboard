@@ -7,7 +7,19 @@ month — with its analysis — lives in **History**.
 
 ---
 
-## Run it
+## Automatic (no need to remember)
+
+The dashboard does it for you. On the **first page view of a new month**, `streamlit_app.py`
+checks Supabase for last month (`denri_mkt_monthly.month_key`). If it isn't there, it starts
+`month_end.py` in the background, pinned to last month, and shows a blue "Archiving … to History"
+note until it finishes. `.month_end.lock` (deleted when the run ends, or stale after 3 h) stops a
+second viewer starting it twice. Output goes to `month_end.log`. This works locally and on
+Streamlit Cloud (it needs `SUPABASE_DB_URL` in Secrets). It is skipped under `DASH_NO_AUTOREFRESH=1`.
+
+The catch-up sets `DENRI_MONTH_END_AUTO=1`, so, like a plain run on the 1st, it also clears the
+finished month's timed offers.
+
+## Run it by hand
 
 Use the Python that has `psycopg2` (the dashboard's Anaconda Python):
 
@@ -36,6 +48,7 @@ string (the direct host is IPv6-only and fails here).
 | # | Script | What it does |
 |---|--------|--------------|
 | 1 | `monthly_sales.py` · `weekly_sales.py` · `current_performance.py` · `forward_projections.py` | Rebuild the current-month view **pinned to the target month**, so `current_performance.html` holds *that* month's figures (the report reads from it). |
+| 1b | `self_made_combos.py` · `bags_on_offer.py` · `POSTING (…).py` | Rebuild the newer pages **pinned to the target month**. The report stores their figures (`lib/month_extras.py`) in the snapshot's `extras`. |
 | 2 | `monthly_report.py` | Rebuilds the report and writes its snapshot — **metrics + comments** — into `monthly_report_history.json`. |
 | 3 | `push_to_supabase.py` | Upserts every stored month into the `denri_mkt_*` tables (metrics **and comments**). |
 | 4 | `history.py` | Re-reads Supabase into `history.html`. |
@@ -79,6 +92,23 @@ executive summary and each timed-offer verdict — is captured automatically.
   sit under the KPI tiles.
 
 ---
+
+## The newer pages in History (`extras`)
+
+The report snapshot also carries `extras` (`lib/month_extras.py`), stored in Supabase as
+`denri_mkt_monthly.extras` (jsonb) and shown **inside that month's own History sections**:
+
+| History section | Adds | From |
+|---|---|---|
+| 3 · Offer Type | Power Deals vs Deal of the Week (Kenya): totals, each Power Deal, top Deals of the Week, Tier 1 vs Tier 2 | `self_made_combos.html` (`SMC.deals`) |
+| 4 · Posting Yields | Posting yield per region (posts, expected, sold, achieved, on offer vs not) + dead stock clearance (posted / not posted × on offer / not) | `POSTING (…).html` (`PA.postYield`, `PA.deadClear`) |
+| 6 · Self-Made Combos | Monetary implication (discount given), combos per week vs last month, combo button usage | `self_made_combos.html` |
+| 7 · Bags On vs Off Offer (new) | Money on vs off offer, weekly trend, on-offer sources, offer types, regions vs target, top bags not on offer | `bags_on_offer.html` (`BOO.periods.monthly`) |
+
+A page that wasn't rebuilt for the month (Bags on offer's deals guard can leave it unchanged) is
+skipped rather than stored under the wrong month. The run prints an `extras: … skipped` line for it.
+Months archived before September 2026 have no extras, so these parts don't show for them. Stock
+columns reflect the day the month was archived (Odoo only holds today's stock).
 
 ## Where the data lives
 

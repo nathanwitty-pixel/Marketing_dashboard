@@ -99,14 +99,21 @@ def fetch_months(url):
                 _cmts = json.loads(_cmts)
             except (ValueError, TypeError):
                 _cmts = []
+        _extras = m.get("extras")
+        if isinstance(_extras, str):
+            try:
+                _extras = json.loads(_extras)
+            except (ValueError, TypeError):
+                _extras = None
         by_key[key] = {
             "key": key,
             "month": m.get("month"),
             "year": _num(m.get("year")),
             "generatedOn": str(m["generated_on"]) if m.get("generated_on") else None,
             "comments": _cmts or [],
+            "extras": _extras or {},
             "monthly": {k: _num(v) for k, v in m.items()
-                        if k not in ("month_key", "month", "generated_on", "comments")},
+                        if k not in ("month_key", "month", "generated_on", "comments", "extras")},
             "weekly": [],
             "newProducts": [],
             "offers": [],

@@ -1,15 +1,15 @@
 {
-  "monthKey": "2026-09",
-  "monthLabel": "September 2026",
-  "monthStart": "2026-09-01",
-  "monthEnd": "2026-09-30",
-  "monthlyBags": 15897,
-  "monthlyValue": 27207743,
-  "rejectBags": 166,
-  "giftBags": 254,
-  "samples": 4,
-  "customBags": 1,
-  "customFees": 1,
-  "lines": 16146,
-  "computedOn": "2026-09-30"
+  "monthKey": "2026-10",
+  "monthLabel": "October 2026",
+  "monthStart": "2026-10-01",
+  "monthEnd": "2026-10-31",
+  "monthlyBags": 1,
+  "monthlyValue": 2231,
+  "rejectBags": 0,
+  "giftBags": 0,
+  "samples": 0,
+  "customBags": 0,
+  "customFees": 0,
+  "lines": 1,
+  "computedOn": "2026-10-01"
 }

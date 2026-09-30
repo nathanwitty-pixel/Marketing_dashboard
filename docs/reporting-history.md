@@ -14,6 +14,11 @@ round-trip. For each archived month: Current Performance, New Products, Offer Ty
 Analysis (all locations), Posting Yields, and each month's Timed Offer campaigns with
 their bags and daily sales series.
 
+**Newer pages** (from September 2026) sit inside the month's own sections: Power Deals vs Deal of
+the Week under 3 · Offer Type, the posting yield + dead stock clearance under 4 · Posting Yields,
+monetary implication / weekly goal / combo button usage under 6 · Self-Made Combos, and a new
+7 · Bags On vs Off Offer. Data: `denri_mkt_monthly.extras`. See [MONTH_END.md](../MONTH_END.md#the-newer-pages-in-history-extras).
+
 ## Data flow
 
 ```

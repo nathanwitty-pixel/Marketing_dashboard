@@ -90,10 +90,13 @@ create table if not exists denri_mkt_monthly (
   notoffer_uganda       numeric,
   sales_from_posting    numeric,
   expected_from_posting numeric,
-  comments              jsonb
+  comments              jsonb,
+  extras                jsonb
 );
 -- Older databases created before comments existed: add it idempotently.
 alter table denri_mkt_monthly add column if not exists comments jsonb;
+-- The newer pages' figures (lib/month_extras.py), shown inside each month's History sections.
+alter table denri_mkt_monthly add column if not exists extras jsonb;
 
 create table if not exists denri_mkt_weekly (
   month_key      text references denri_mkt_monthly(month_key) on delete cascade,
@@ -253,7 +256,7 @@ MONTHLY_COLS = [
     "sinza_units", "sinza_value", "sinza_cleared", "uganda_units", "uganda_value",
     "uganda_cleared", "posting_kenya_pct", "posting_sinza_pct", "posting_uganda_pct",
     "posted_stock", "unposted_stock", "posts_made", "notoffer_kenya", "notoffer_sinza",
-    "notoffer_uganda", "sales_from_posting", "expected_from_posting", "comments",
+    "notoffer_uganda", "sales_from_posting", "expected_from_posting", "comments", "extras",
 ]
 
 
@@ -293,6 +296,8 @@ def month_block(key: str, s: dict) -> str:
         "expected_from_posting": num(py.get("expectedFromPosting")),
         "comments": (q(json.dumps(s.get("comments"), ensure_ascii=False)) + "::jsonb")
                     if s.get("comments") else "NULL",
+        "extras": (q(json.dumps(s.get("extras"), ensure_ascii=False, default=str)) + "::jsonb")
+                  if s.get("extras") else "NULL",
     }
 
     out = [f"\n-- ══ {s.get('month')} {s.get('year')} ({key}) ══"]

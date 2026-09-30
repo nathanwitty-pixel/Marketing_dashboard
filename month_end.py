@@ -43,15 +43,20 @@ TIMED_CFG = os.path.join(BASE, "timed_offers_config.json")
 # current_performance.html (which monthly_report.py reads) holds that month's
 # figures — not the live month the dashboard is currently showing.
 ARCHIVE_STEPS = ["monthly_sales.py", "weekly_sales.py", "current_performance.py",
-                 "forward_projections.py", "monthly_report.py",
-                 "push_to_supabase.py", "history.py"]
+                 "forward_projections.py",
+                 # the newer pages, so monthly_report.py stores their figures in the month's History
+                 # (lib/month_extras.py): Power Deals vs Deal of the Week, Bags On vs Off Offer, Posting
+                 "self_made_combos.py", "bags_on_offer.py", "POSTING (SALES YIELDS FROM ACCURATE POSTING).py",
+                 "monthly_report.py", "push_to_supabase.py", "history.py"]
 
 # After archiving, rebuild the live current-month view (unpinned) so the
 # dashboard AND the monthly report return to the month we are actually in.
 # (monthly_report.py run unpinned rebuilds the current-month HTML only; it does
 # not touch history.json — that was just written for the archived month above.)
 LIVE_RESTORE = ["monthly_sales.py", "weekly_sales.py", "current_performance.py",
-                "forward_projections.py", "monthly_report.py"]
+                "forward_projections.py",
+                "self_made_combos.py", "bags_on_offer.py", "POSTING (SALES YIELDS FROM ACCURATE POSTING).py",
+                "monthly_report.py"]
 
 
 def target_month():
@@ -124,8 +129,12 @@ def main():
     # Clear the finished month's timed offers now that they're archived \u2014 but only
     # on a real 1st-of-month rollover (no explicit pin) and only if every archive
     # step succeeded, so a manual re-archive or a failed push never wipes the list.
+    # (DENRI_MONTH_END_AUTO=1 = the dashboard's automatic catch-up: pinned to last month because it
+    # may run days into the new month, but it IS the rollover, so the old offers are cleared too.)
+    rollover = (not os.getenv("DENRI_REPORT_MONTH", "").strip()
+                or os.getenv("DENRI_MONTH_END_AUTO") == "1")
     to_status = "skipped"
-    if not failures and not os.getenv("DENRI_REPORT_MONTH", "").strip():
+    if not failures and rollover:
         to_status = clear_timed_offers(tm)
         # Rebuild the (now-empty) timed offers page so it reflects the cleared list.
         run("timed_offers.py", env_live)
@@ -146,4 +155,12 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        code = main()
+    finally:
+        # The dashboard's catch-up writes this lock while the run is going (streamlit_app.py).
+        try:
+            os.remove(os.path.join(BASE, ".month_end.lock"))
+        except OSError:
+            pass
+    sys.exit(code)

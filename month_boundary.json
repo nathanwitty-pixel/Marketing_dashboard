@@ -1,14 +1,23 @@
 {
   "last_run": {
-    "date": "2026-09-30",
+    "date": "2026-10-01",
     "week_start": "2026-09-27",
-    "weekly_sales_total": 1530
+    "weekly_sales_total": 1945
   },
-  "carryover": {},
+  "carryover": {
+    "month": "2026-10",
+    "week_start": "2026-09-27",
+    "bags_before_month": 1530,
+    "captured_on": "2026-09-30"
+  },
   "prev_month": {
-    "month": "2026-08",
-    "final_weekly_sales": 722,
-    "recorded_on": "2026-08-31"
+    "month": "2026-09",
+    "final_weekly_sales": 1530,
+    "recorded_on": "2026-09-30"
   },
-  "straddle_anchor": {}
+  "straddle_anchor": {
+    "week_total": 1945,
+    "data_date": "2026-09-30",
+    "prev_month_weekly": 1530
+  }
 }

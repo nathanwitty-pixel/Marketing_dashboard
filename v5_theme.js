@@ -71,31 +71,38 @@
           if (x.l < 4) return 'rgba(0,0,0,' + (+Math.min(0.35, x.a).toFixed(3)) + ')';  // scrim / backdrop
           return 'rgba(255,255,255,0.88)';                 // translucent "glass" card → white glass
         }
-        if (x.l < 9)  return '#f4f5fa';                    // page canvas
-        if (x.l < 13) return '#f7f8fc';                    // table heads, inset strips
-        if (x.l < 18) return '#ffffff';                    // cards
-        return '#eef0f6';                                  // raised / hovered rows, chips
+        // Soft greys, not pure white — a white page glares and washes the ink out.
+        if (x.l < 9)  return '#e9ebf0';                    // page canvas
+        if (x.l < 13) return '#f1f3f6';                    // table heads, inset strips
+        if (x.l < 18) return '#f9fafb';                    // cards
+        return '#e3e6ec';                                  // raised / hovered rows, chips
       }
       if (x.l < 30 && x.a >= 0.6) return hsl(x.h, Math.min(x.s, 70), 94, x.a); // deep tint → pale tint
       return null;                                         // vivid fills + soft rgba tints read fine
     }
     if (kind === 'border') {
-      if (neutral && x.l < 45) return x.a < 0.6 ? 'rgba(15,23,42,0.08)' : '#e4e7ef';
+      if (neutral && x.l < 45) return x.a < 0.6 ? 'rgba(15,23,42,0.12)' : '#d9dde5';
       return null;
     }
-    // text
+    // text — always solid ink: faded light text (rgba(255,255,255,.5)) turned into faded DARK
+    // text reads as pale grey on the light canvas, so fold the alpha into the lightness first.
+    var a = x.a;
+    if (a < 1 && x.l > 57) { x.l = Math.round(a * x.l + (1 - a) * 11); a = 1; }   // as seen on a dark card
     if (neutral) {
-      if (x.l <= 57) return null;                          // already dark enough
-      return hsl(x.h, Math.min(x.s, 25), Math.round(11 + (100 - x.l) * 0.9), x.a);
+      // Bright ink (primary text) → near-black; dimmer ink → a bit lighter, but never past 40%
+      // lightness (≈ 6:1 on the canvas), so muted labels and small numbers stay readable.
+      var nl = x.l > 57 ? Math.round(12 + (100 - x.l) * 0.55) : Math.min(x.l, 40);
+      if (nl === x.l && a === x.a) return null;            // already dark enough
+      return hsl(x.h, Math.min(x.s, 25), nl, a);
     }
-    // Accent ink: keep the hue, darken until it reads on the light canvas (≥ 4.5:1).
-    if (contrastOnCanvas(x.h, x.s, x.l) >= 4.5) return null;
+    // Accent ink: keep the hue, darken until it reads on the light canvas (≥ 5.5:1).
+    if (contrastOnCanvas(x.h, x.s, x.l) >= 5.5) return a === x.a ? null : hsl(x.h, x.s, x.l, a);
     var s = Math.min(x.s, 85);
     var h = x.h >= 40 && x.h <= 65 ? 32 : x.h;              // darkened yellow turns olive — use amber instead
     for (var l = Math.min(x.l, 50); l > 12; l -= 2) {
-      if (contrastOnCanvas(h, s, l) >= 4.5) return hsl(h, s, l, x.a);
+      if (contrastOnCanvas(h, s, l) >= 5.5) return hsl(h, s, l, a);
     }
-    return hsl(h, s, 12, x.a);
+    return hsl(h, s, 12, a);
   }
 
   function hslToRgb(h, s, l) {
@@ -109,7 +116,7 @@
     var c = rgb.map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
     return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
   }
-  var CANVAS_LUM = luminance([244, 245, 250]);            // #f4f5fa, the darkest light surface
+  var CANVAS_LUM = luminance([233, 235, 240]);            // #e9ebf0, the darkest light surface
   function contrastOnCanvas(h, s, l) {
     return (CANVAS_LUM + 0.05) / (luminance(hslToRgb(h, s, l)) + 0.05);
   }
@@ -346,13 +353,14 @@
     patchCanvasText(win);
     var Chart = win.Chart;
     if (!Chart) return;
+    var fresh = !Chart.__v5;                             // new defaults → every chart redraws once
     if (!Chart.__v5) {
       Chart.__v5 = true;
       try {
-        Chart.defaults.color = '#475569';
-        Chart.defaults.borderColor = '#e4e7ef';
+        Chart.defaults.color = '#334155';
+        Chart.defaults.borderColor = '#d9dde5';
         if (Chart.defaults.font) Chart.defaults.font.family = "'Inter', 'Segoe UI', system-ui, sans-serif";
-        if (Chart.defaults.scale && Chart.defaults.scale.grid) Chart.defaults.scale.grid.color = '#eef0f6';
+        if (Chart.defaults.scale && Chart.defaults.scale.grid) Chart.defaults.scale.grid.color = '#e3e6ec';
       } catch (e) {}
       // Charts built (or rebuilt by chart_switcher.js) after this point get themed too.
       try {
@@ -367,7 +375,9 @@
     var inst = Chart.instances || {};
     Object.keys(inst).forEach(function (id) {
       var ch = inst[id];
-      try { themeChart(ch); ch.update('none'); } catch (e) {}
+      // Redraw only when something was recoloured: the observer calls this on every style change
+      // (the page sidebar moves itself on each scroll), and redrawing every chart each time is slow.
+      try { if (themeChart(ch) || fresh) ch.update('none'); } catch (e) {}
     });
   }
 

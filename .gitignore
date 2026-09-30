@@ -23,3 +23,8 @@ desktop.ini
 *.key
 service_account*.json
 secrets*.json
+
+# month-end catch-up (streamlit_app.py)
+.month_end.lock
+month_end.log
+
