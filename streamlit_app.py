@@ -51,7 +51,7 @@ def _load_secrets_into_env():
     except Exception:
         secrets = {}
     for key in ("DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASSWORD",
-                "DATABASE_URL", "SUPABASE_DB_URL", "SERVICE_ACCOUNT_JSON"):
+                "DATABASE_URL", "SUPABASE_DB_URL", "SERVICE_ACCOUNT_JSON", "OWNER_KEY"):
         try:
             if key in secrets and secrets[key] not in (None, ""):
                 os.environ[key] = str(secrets[key])
@@ -115,6 +115,33 @@ import json as _json
 with open(os.path.join(BASE, "dashboard_pages.json"), encoding="utf-8") as _mf:
     MANIFEST = _json.load(_mf)
 OWNER = MANIFEST.get("owner", {})
+
+# ── Owner-only pages ("private": true in dashboard_pages.json) ──
+# Hidden from the tabs and from ?page= links for everyone else. Unlock once per browser by opening
+# the app with ?owner=<OWNER_KEY secret>; a cookie remembers it (?owner=off locks again).
+# Running locally (localhost) always counts as the owner.
+import hashlib as _hashlib
+_OWNER_KEY = os.environ.get("OWNER_KEY", "")
+_OWNER_TOKEN = _hashlib.sha256(("dw-owner:" + _OWNER_KEY).encode()).hexdigest() if _OWNER_KEY else ""
+_owner_cookie_js = ""
+try:
+    _host = (st.context.headers.get("Host") or "").split(":")[0]
+    _cookie = st.context.cookies.get("dw_owner", "")
+except Exception:
+    _host, _cookie = "", ""
+_qp_owner = st.query_params.get("owner")
+if _qp_owner is not None:
+    del st.query_params["owner"]          # never leave the key sitting in the address bar
+    if _qp_owner == "off":
+        _cookie = ""
+        _owner_cookie_js = "dw_owner=; path=/; max-age=0"
+    elif _OWNER_TOKEN and _qp_owner == _OWNER_KEY:
+        _cookie = _OWNER_TOKEN
+        _owner_cookie_js = "dw_owner=" + _OWNER_TOKEN + "; path=/; max-age=31536000; SameSite=Lax; Secure"
+IS_OWNER = _host in ("localhost", "127.0.0.1") or bool(_OWNER_TOKEN and _cookie == _OWNER_TOKEN)
+if not IS_OWNER:
+    MANIFEST["pages"] = [p for p in MANIFEST["pages"] if not p.get("private")]
+
 NAV = []
 for _p in sorted(MANIFEST["pages"], key=lambda p: p["order"]):
     if not NAV or NAV[-1][0] != _p["section"]:
@@ -252,6 +279,10 @@ st.markdown(f"""
   .st-key-rj_export_btn button p {{color: inherit !important;}}
 </style>
 """, unsafe_allow_html=True)
+
+if _owner_cookie_js:
+    components.html("<script>try{window.parent.document.cookie=" + _json.dumps(_owner_cookie_js) + ";}catch(e){}</script>",
+                    height=0)
 
 # ?page=<label> in the URL selects the page, so a reload / shared link opens the same page.
 _qp_page = st.query_params.get("page")

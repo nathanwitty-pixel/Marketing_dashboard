@@ -4,9 +4,9 @@
    "bag": "ANTITHEFT",
    "market": "kenya",
    "action": "RESTOCK",
-   "says": "Sells 37.75 a day and has 6.5 days of stock left (244 units). Pause its posts until stock lands.",
+   "says": "Sells 37.75 a day and has 6.8 days of stock left (255 units). Pause its posts until stock lands.",
    "perDayBefore": 37.75,
-   "stockBefore": 244,
+   "stockBefore": 255,
    "move": null
   },
   {
@@ -22,18 +22,18 @@
    "bag": "MINI MAYA",
    "market": "kenya",
    "action": "RESTOCK",
-   "says": "Sells 19.75 a day and has 4.6 days of stock left (90 units). Pause its posts until stock lands.",
+   "says": "Sells 19.75 a day and has 4.8 days of stock left (95 units). Pause its posts until stock lands.",
    "perDayBefore": 19.75,
-   "stockBefore": 90,
+   "stockBefore": 95,
    "move": null
   },
   {
    "bag": "SAFIRI TRAVEL",
    "market": "kenya",
    "action": "RESTOCK",
-   "says": "Sells 11.14 a day and has 6.2 days of stock left (69 units). Pause its posts until stock lands.",
+   "says": "Sells 11.14 a day and has 6.5 days of stock left (72 units). Pause its posts until stock lands.",
    "perDayBefore": 11.14,
-   "stockBefore": 69,
+   "stockBefore": 72,
    "move": null
   },
   {
@@ -58,9 +58,9 @@
    "bag": "FABELA",
    "market": "kenya",
    "action": "POST_MORE",
-   "says": "Posts turn into sales (100% of expected) but it was posted only 19 times (typical: 30.5). 28.8 days of stock — post it daily this week.",
+   "says": "Posts turn into sales (100% of expected) but it was posted only 19 times (typical: 30.5). 28.6 days of stock — post it daily this week.",
    "perDayBefore": 11.43,
-   "stockBefore": 329,
+   "stockBefore": 327,
    "move": null
   },
   {
@@ -78,7 +78,7 @@
    "action": "POST_MORE",
    "says": "Posts turn into sales (100% of expected) but it was posted only 22 times (typical: 30.5). 16.5 days of stock — post it daily this week.",
    "perDayBefore": 12.57,
-   "stockBefore": 208,
+   "stockBefore": 207,
    "move": null
   },
   {
@@ -120,9 +120,9 @@
    "bag": "MEGA",
    "market": "kenya",
    "action": "POST_MORE",
-   "says": "Posts turn into sales (100% of expected) but it was posted only 12 times (typical: 30.5). 28.5 days of stock — post it daily this week.",
+   "says": "Posts turn into sales (100% of expected) but it was posted only 12 times (typical: 30.5). 28.7 days of stock — post it daily this week.",
    "perDayBefore": 5.71,
-   "stockBefore": 163,
+   "stockBefore": 164,
    "move": null
   },
   {

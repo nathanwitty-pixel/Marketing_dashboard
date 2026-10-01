@@ -2,7 +2,7 @@
   "last_run": {
     "date": "2026-10-01",
     "week_start": "2026-09-27",
-    "weekly_sales_total": 1945
+    "weekly_sales_total": 1949
   },
   "carryover": {
     "month": "2026-10",
@@ -16,7 +16,7 @@
     "recorded_on": "2026-09-30"
   },
   "straddle_anchor": {
-    "week_total": 1945,
+    "week_total": 1949,
     "data_date": "2026-09-30",
     "prev_month_weekly": 1530
   }
