@@ -488,7 +488,7 @@
   function escAttr(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   fetch('dashboard_pages.json', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (m) {
     var nav = document.querySelector('.pillnav');
-    if (m && m.pages) m.pages = m.pages.filter(function (p) { return !p.private; });   // owner-only pages stay in Streamlit
+    if (m && m.pages) m.pages = m.pages.filter(function (p) { return !p.password_secret; });   // password pages live in Streamlit only
     if (!nav || !m || !m.pages || !m.pages.length) return;
     var icons = {}, generic = '';
     nav.querySelectorAll('.nav-item').forEach(function (b) {

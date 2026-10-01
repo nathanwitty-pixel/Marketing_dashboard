@@ -63,7 +63,7 @@ def _load_secrets_into_env():
     except Exception:
         secrets = {}
     for key in ("DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASSWORD",
-                "DATABASE_URL", "SUPABASE_DB_URL", "SERVICE_ACCOUNT_JSON", "OWNER_KEY"):
+                "DATABASE_URL", "SUPABASE_DB_URL", "SERVICE_ACCOUNT_JSON"):
         try:
             if key in secrets and secrets[key] not in (None, ""):
                 os.environ[key] = str(secrets[key])
@@ -128,31 +128,49 @@ with open(os.path.join(BASE, "dashboard_pages.json"), encoding="utf-8") as _mf:
     MANIFEST = _json.load(_mf)
 OWNER = MANIFEST.get("owner", {})
 
-# ── Owner-only pages ("private": true in dashboard_pages.json) ──
-# Hidden from the tabs and from ?page= links for everyone else. Unlock once per browser by opening
-# the app with ?owner=<OWNER_KEY secret>; a cookie remembers it (?owner=off locks again).
-# Running locally (localhost) always counts as the owner.
+# ── Password-locked pages ("password_secret": "<SECRET NAME>" in dashboard_pages.json) ──
+# Everyone sees the tab (with a lock); opening it asks for that page's own password, read from the
+# named Streamlit secret. A correct password is remembered in a cookie on that browser, so reloads
+# don't ask again — until the password is changed in Secrets. Running locally never asks.
 import hashlib as _hashlib
-_OWNER_KEY = os.environ.get("OWNER_KEY", "")
-_OWNER_TOKEN = _hashlib.sha256(("dw-owner:" + _OWNER_KEY).encode()).hexdigest() if _OWNER_KEY else ""
-_owner_cookie_js = ""
+
+
+def _secret(name):
+    """A Streamlit secret by name — top level, or pasted by mistake under a [table] (TOML puts it there)."""
+    try:
+        secrets = st.secrets
+        if name in secrets and str(secrets[name]).strip():
+            return str(secrets[name]).strip()
+        for _v in secrets.values():
+            if hasattr(_v, "get") and str(_v.get(name) or "").strip():
+                return str(_v[name]).strip()
+    except Exception:
+        pass
+    return os.environ.get(name, "").strip()
+
+
+def _pw_cookie_name(lbl):
+    return "dw_pw_" + re.sub(r"[^a-z0-9]+", "_", lbl.lower()).strip("_")
+
+
+def _pw_token(lbl, pw):
+    return _hashlib.sha256(("dw-page:" + lbl + ":" + pw).encode()).hexdigest()
+
+
 try:
     _host = (st.context.headers.get("Host") or "").split(":")[0]
-    _cookie = st.context.cookies.get("dw_owner", "")
+    _cookies = dict(st.context.cookies)
 except Exception:
-    _host, _cookie = "", ""
-_qp_owner = st.query_params.get("owner")
-if _qp_owner is not None:
-    del st.query_params["owner"]          # never leave the key sitting in the address bar
-    if _qp_owner == "off":
-        _cookie = ""
-        _owner_cookie_js = "dw_owner=; path=/; max-age=0"
-    elif _OWNER_TOKEN and _qp_owner == _OWNER_KEY:
-        _cookie = _OWNER_TOKEN
-        _owner_cookie_js = "dw_owner=" + _OWNER_TOKEN + "; path=/; max-age=31536000; SameSite=Lax; Secure"
-IS_OWNER = _host in ("localhost", "127.0.0.1") or bool(_OWNER_TOKEN and _cookie == _OWNER_TOKEN)
-if not IS_OWNER:
-    MANIFEST["pages"] = [p for p in MANIFEST["pages"] if not p.get("private")]
+    _host, _cookies = "", {}
+IS_LOCAL = _host in ("localhost", "127.0.0.1")
+PAGE_PASSWORD = {}   # label → password ("" = page locked but no password set up yet)
+LOCKED = set()       # labels this browser hasn't unlocked
+for _p in MANIFEST["pages"]:
+    if _p.get("password_secret"):
+        _pw = _secret(_p["password_secret"])
+        PAGE_PASSWORD[_p["label"]] = _pw
+        if not IS_LOCAL and not (_pw and _cookies.get(_pw_cookie_name(_p["label"])) == _pw_token(_p["label"], _pw)):
+            LOCKED.add(_p["label"])
 
 NAV = []
 for _p in sorted(MANIFEST["pages"], key=lambda p: p["order"]):
@@ -292,10 +310,6 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-if _owner_cookie_js:
-    components.html("<script>try{window.parent.document.cookie=" + _json.dumps(_owner_cookie_js) + ";}catch(e){}</script>",
-                    height=0)
-
 # ?page=<label> in the URL selects the page, so a reload / shared link opens the same page.
 _qp_page = st.query_params.get("page")
 if _qp_page and any(it[0] == _qp_page for it in ALL_ITEMS):
@@ -415,6 +429,8 @@ for _i, (_sec, _items) in enumerate(NAV):
         _tabs.append("<span class='tn-sep' aria-hidden='true'></span>")
     for _lbl, _f, _s, _ic in _items:
         _pm, _on = _pmeta.get(_lbl, {}), _lbl == label
+        if _lbl in LOCKED:
+            _ic = "lock"
         _tabs.append(f"<a class='tn-item{' on' if _on else ''}' href='?page={quote(_lbl)}&amp;theme={THEME}' target='_self'"
                      f"{' aria-current=\"page\"' if _on else ''} title='{_esc(_pm.get('purpose', ''), quote=True)}'>"
                      f"<span class='tn-ic' aria-hidden='true'>{_ic}</span>{_esc(_pm.get('short') or _lbl)}</a>")
@@ -453,6 +469,34 @@ except OSError:
     pass
 
 html_path = os.path.join(BASE, html_file)
+
+# ── Password gate for locked pages — nothing of the page is built or shown until it's unlocked ──
+if label in LOCKED:
+    st.markdown("<div class='v5-title'><h1>" + _esc(label) + "</h1>"
+                "<div class='pp'>" + _esc(PURPOSE.get(label, "")) + "</div></div>", unsafe_allow_html=True)
+    _pw_need = PAGE_PASSWORD.get(label, "")
+    _, _gate, _ = st.columns([1, 1.2, 1])
+    with _gate:
+        if not _pw_need:
+            st.warning("This page is locked and has no password set up yet. Add "
+                       f"`{_pmeta[label]['password_secret']}` in the app's Secrets.", icon=":material/lock:")
+        else:
+            with st.form("pw_gate_" + _pw_cookie_name(label), border=True):
+                st.markdown(f"**:material/lock: {_esc(label)} is password protected**")
+                _pw_try = st.text_input("Password", type="password", placeholder="Enter the password for this page")
+                _pw_ok = st.form_submit_button("Unlock", type="primary", icon=":material/lock_open:",
+                                               use_container_width=True)
+            if _pw_ok:
+                if _pw_try.strip() == _pw_need:
+                    # Remember on this browser (30 days), then reload the page unlocked.
+                    _ck = (_pw_cookie_name(label) + "=" + _pw_token(label, _pw_need)
+                           + "; path=/; max-age=2592000; SameSite=Lax; Secure")
+                    components.html("<script>try{var P=window.parent;P.document.cookie=" + _json.dumps(_ck)
+                                    + ";P.location.reload();}catch(e){}</script>", height=0)
+                    st.success("Unlocked — opening the page…", icon=":material/lock_open:")
+                else:
+                    st.error("Wrong password.", icon=":material/error:")
+    st.stop()
 
 
 # Per-generator subprocess budget. Odoo-heavy pages (e.g. timed_offers with many bags across

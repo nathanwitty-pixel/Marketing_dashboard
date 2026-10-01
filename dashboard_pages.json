@@ -90,7 +90,7 @@
       "icon": "local_offer",
       "purpose": "Which bags to put on offer next",
       "short": "Picking",
-      "private": true
+      "password_secret": "PICKING_PASSWORD"
     },
     {
       "order": 7,
@@ -144,7 +144,7 @@
       "icon": "trending_up",
       "purpose": "What to push this week, where, and why bags aren't moving — Kenya, Sinza, Uganda",
       "short": "Push Planner",
-      "private": true
+      "password_secret": "PUSH_PLANNER_PASSWORD"
     },
     {
       "order": 11,
