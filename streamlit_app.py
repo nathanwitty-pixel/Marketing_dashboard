@@ -17,10 +17,22 @@ import subprocess
 import datetime
 from urllib.parse import quote
 
-import streamlit as st
-import streamlit.components.v1 as components
+# ── Auto-launch (replaces run_dashboard.bat) ──────────────────
+# Run this file directly — `python streamlit_app.py`, VS Code's Run button or a double-click —
+# and it re-launches itself via `streamlit run`. If the Python that opened it has no Streamlit
+# (e.g. the Windows Store python), it hands over to the Anaconda Python the .bat used.
+_FALLBACK_PYTHON = r"C:\ProgramData\anaconda3\python.exe"
+try:
+    import streamlit as st
+    import streamlit.components.v1 as components
+except ImportError:
+    if os.path.exists(_FALLBACK_PYTHON) and os.path.normcase(sys.executable) != os.path.normcase(_FALLBACK_PYTHON):
+        sys.exit(subprocess.run([_FALLBACK_PYTHON, "-m", "streamlit", "run",
+                                 os.path.abspath(__file__), *sys.argv[1:]]).returncode)
+    print("Streamlit isn't installed for " + sys.executable + " — run: pip install -r requirements.txt")
+    input("Press Enter to close...")
+    sys.exit(1)
 
-# ── Auto-launch under Streamlit ───────────────────────────────
 # If this file is run with plain `python streamlit_app.py` (or double-clicked),
 # re-launch it properly via `streamlit run` instead of just printing the
 # "missing ScriptRunContext" warnings. Under `streamlit run` (and on Streamlit
