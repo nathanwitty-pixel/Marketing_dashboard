@@ -13762,25 +13762,6 @@
       "source_location": "L1"
     },
     {
-      "id": "claude_ralph_loop_local",
-      "label": "ralph-loop.local.md",
-      "_origin": "ast",
-      "community": 91,
-      "community_name": "ralph-loop.local.md",
-      "file_type": "document",
-      "frontmatter": {
-        "active": true,
-        "iteration": 12,
-        "max_iterations": 30,
-        "completion_promise": "PUSH PLANNER DONE",
-        "started_at": "2026-10-01T00:07:44Z"
-      },
-      "node_kind": "page",
-      "norm_label": "ralph-loop.local.md",
-      "source_file": ".claude/ralph-loop.local.md",
-      "source_location": "L1"
-    },
-    {
       "id": "build_all",
       "label": "build_all.py",
       "_origin": "ast",
@@ -19685,6 +19666,30 @@
       "type": "external"
     },
     {
+      "id": "math",
+      "label": "math",
+      "_origin": "semantic",
+      "community": 57,
+      "community_name": "laya.py",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "math",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "statistics",
+      "label": "statistics",
+      "_origin": "semantic",
+      "community": 60,
+      "community_name": "push_rules.py",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "statistics",
+      "source_file": "",
+      "type": "external"
+    },
+    {
       "id": "subprocess",
       "label": "subprocess",
       "_origin": "semantic",
@@ -19741,28 +19746,6 @@
       "external": true,
       "file_type": "concept",
       "norm_label": "os",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "math",
-      "label": "math",
-      "community": 57,
-      "community_name": "laya.py",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "math",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "statistics",
-      "label": "statistics",
-      "community": 60,
-      "community_name": "push_rules.py",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "statistics",
       "source_file": "",
       "type": "external"
     }
@@ -52108,5 +52091,5 @@
       "source_file": "docs/timed-offers.md"
     }
   ],
-  "built_at_commit": "d83ae725744d4573fa846b03506175e73c29863e"
+  "built_at_commit": "0fa48dfeba5d2b08411fe00bdf25e6f2a7f36e28"
 }

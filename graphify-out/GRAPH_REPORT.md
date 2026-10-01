@@ -1,17 +1,17 @@
 # Graph Report - Marketing_dashboard  (2026-10-01)
 
 ## Corpus Check
-- 133 files · ~678,929 words
+- 132 files · ~675,564 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 12 file(s) not represented in the graph (top: .csv 5, (none) 2, .bat 2)
+- Unclassified: 11 file(s) not represented in the graph (top: .csv 5, (none) 2, .toml 1)
 
 ## Summary
-- 1574 nodes · 2799 edges · 105 communities (97 shown, 8 thin omitted)
+- 1573 nodes · 2799 edges · 104 communities (97 shown, 7 thin omitted)
 - Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 109 edges (avg confidence: 0.86)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d83ae725`
+- Built from commit: `0fa48dfe`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -159,7 +159,7 @@
 - **Cross-report 'unmarketed stock / posting gap' finding echoed across Monthly Report, Insights, and Forward Projections** — report_2026_july_unmarketed_stock_finding, insights_unposted_stock_finding, report_2026_july_regional_unevenness_finding, insights_uganda_conversion_finding [INFERRED 0.85]
 - **Kitengela reject clearance tracked across pricing, timed-offer, and performance pages** — docs_timed_offers_kitengelarejectstracker, reject_sales_rejectsalepage, docs_current_performance_rejectsplitline, docs_reject_sales_rejectsaledoc, docs_timed_offers_rejectstockcsv [INFERRED 0.85]
 
-## Communities (105 total, 8 thin omitted)
+## Communities (104 total, 7 thin omitted)
 
 ### Community 0 - "fetch_posting_data"
 Cohesion: 0.20
@@ -550,30 +550,30 @@ Cohesion: 0.18
 Nodes (17): _bags_on_offer(), _block(), build_extras(), _deals(), _pick(), _posting(), _posting_block(), region() (+9 more)
 
 ## Ambiguous Edges - Review These
-- `Legacy dated report_YYYY_month.html archive pattern` → `August 2026 Monthly Report`  [AMBIGUOUS]
-  report_2026_august.html · relation: conceptually_related_to
 - `Reject Sale page (reject_sales.html)` → `Card entrance animation via CSS @keyframes + animation-fill-mode: both`  [AMBIGUOUS]
   .claude/skills/dashboard-design.md · relation: conceptually_related_to
+- `August 2026 Monthly Report` → `Legacy dated report_YYYY_month.html archive pattern`  [AMBIGUOUS]
+  report_2026_august.html · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **154 isolated node(s):** `PERF`, `graphify`, `Log`, `Period selector (Monthly / Weekly / Last week)`, `What the page shows (per period)` (+149 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 645 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **154 isolated node(s):** `graphify`, `Log`, `PERF`, `Laya model (`lib/laya.py`)`, `Regenerate` (+149 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 644 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **What is the exact relationship between `Legacy dated report_YYYY_month.html archive pattern` and `August 2026 Monthly Report`?**
-  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `Reject Sale page (reject_sales.html)` and `Card entrance animation via CSS @keyframes + animation-fill-mode: both`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
+- **What is the exact relationship between `August 2026 Monthly Report` and `Legacy dated report_YYYY_month.html archive pattern`?**
+  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **Why does `Current Performance (doc)` connect `os` to `current_performance.py`, `lib/__init__.py`, `forward_projections.py`, `datetime`, `Product / name matching (doc)`?**
-  _High betweenness centrality (0.078) - this node is a cross-community bridge._
+  _High betweenness centrality (0.106) - this node is a cross-community bridge._
 - **Why does `New Products Analytics (doc)` connect `Product / name matching (doc)` to `os`, `Dashboard Insights skill`?**
-  _High betweenness centrality (0.070) - this node is a cross-community bridge._
+  _High betweenness centrality (0.096) - this node is a cross-community bridge._
 - **Why does `get_gspread_client()` connect `os` to `fetch_posting_data`, `offer_picking.py`, `POSTING (SALES YIELDS FROM ACCURATE POSTING).py`, `new_products.py`, `shops_efficiency.py`, `current_performance.py`, `fetch_offer_data`, `self_made_combos_bundle/offer_data.py`, `timed_offers.py`, `odoo_tabs.py`, `forward_projections.py`, `datetime`, `self_made_combos.py`, `bags_on_offer.py`, `self_made_combos_bundle/self_made_combos.py`?**
-  _High betweenness centrality (0.053) - this node is a cross-community bridge._
-- **What connects `PERF`, `graphify`, `Log` to the rest of the system?**
+  _High betweenness centrality (0.066) - this node is a cross-community bridge._
+- **What connects `graphify`, `Log`, `PERF` to the rest of the system?**
   _154 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `offer_picking.py` be split into smaller, more focused modules?**
   _Cohesion score 0.05844155844155844 - nodes in this community are weakly interconnected._
