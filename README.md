@@ -12,7 +12,7 @@ injects it into HTML dashboards, and serves them through a unified shell.
 - **Insights** — auto-generated summary
 
 ## Which version is real
-The dashboard is the **Streamlit app**: double-click `run_dashboard.bat` locally; Streamlit
+The dashboard is the **Streamlit app**: run `streamlit_app.py` locally (VS Code ▶ or double-click — it starts `streamlit run` itself); Streamlit
 Cloud runs the same `streamlit_app.py` from GitHub `main`. To put local changes online,
 double-click `publish.bat` (checks → shows changes → asks → commits + pushes). Pages are listed
 once, in `dashboard_pages.json`. Details: [docs/README.md › Where changes go](docs/README.md#where-changes-go).

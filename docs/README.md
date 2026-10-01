@@ -89,8 +89,8 @@ Rules:
 
 ## Where changes go
 
-**One real version: the Streamlit app.** `run_dashboard.bat` (double-click) opens
-`streamlit_app.py` locally; Streamlit Cloud runs the same file from GitHub `main`.
+**One real version: the Streamlit app.** Run `streamlit_app.py` locally (VS Code ▶, `python streamlit_app.py`
+or double-click — it launches `streamlit run` itself); Streamlit Cloud runs the same file from GitHub `main`.
 `python main.py` → `shell.html` is only a local fallback.
 
 What each piece reads, so a change lands everywhere at once:
