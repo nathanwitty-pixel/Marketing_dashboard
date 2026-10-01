@@ -28,3 +28,6 @@ secrets*.json
 .month_end.lock
 month_end.log
 
+
+# Push Planner: Laya answer cache (local only; the model is on this PC)
+laya_cache.json

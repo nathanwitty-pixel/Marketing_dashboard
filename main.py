@@ -39,6 +39,8 @@ SCRIPTS = [
     # Live dispatch/receiving from Odoo — shops_efficiency.py reads its JSON.
     ("Shops Dispatch (Postgres)", "shops_dispatch.py"),
     ("Shops Efficiency",       "shops_efficiency.py"),
+    # Reads the Posting + Self-made combos pages built above (docs/push-planner.md).
+    ("Push Planner",           "push_planner.py"),
     # These read the data the scripts above injected — keep them LAST.
     ("Dashboard Insights",     "generate_insights.py"),
     ("Monthly Report",         "monthly_report.py"),
@@ -197,6 +199,7 @@ SCRIPT_MAP = {
     "POSTING (SALES YIELDS FROM ACCURATE POSTING).html":   ["POSTING (SALES YIELDS FROM ACCURATE POSTING).py"],
     "shops_efficiency.html":                                ["shops_dispatch.py",
                                                              "shops_efficiency.py"],
+    "push_planner.html":                                    ["push_planner.py"],
     "insights.html":                                        ["generate_insights.py"],
     "monthly_report.html":                                  ["monthly_report.py",
                                                              "push_to_supabase.py"],

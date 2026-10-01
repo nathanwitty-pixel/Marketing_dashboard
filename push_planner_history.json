@@ -1,0 +1,147 @@
+{
+ "2026-09-27": [
+  {
+   "bag": "ANTITHEFT",
+   "market": "kenya",
+   "action": "RESTOCK",
+   "says": "Sells 37.75 a day and has 6.5 days of stock left (244 units). Pause its posts until stock lands.",
+   "perDayBefore": 37.75,
+   "stockBefore": 244,
+   "move": null
+  },
+  {
+   "bag": "MAN BAG",
+   "market": "kenya",
+   "action": "RESTOCK",
+   "says": "Sells 32.5 a day and has 4.8 days of stock left (157 units). Pause its posts until stock lands.",
+   "perDayBefore": 32.5,
+   "stockBefore": 157,
+   "move": null
+  },
+  {
+   "bag": "MINI MAYA",
+   "market": "kenya",
+   "action": "RESTOCK",
+   "says": "Sells 19.75 a day and has 4.6 days of stock left (90 units). Pause its posts until stock lands.",
+   "perDayBefore": 19.75,
+   "stockBefore": 90,
+   "move": null
+  },
+  {
+   "bag": "SAFIRI TRAVEL",
+   "market": "kenya",
+   "action": "RESTOCK",
+   "says": "Sells 11.14 a day and has 6.2 days of stock left (69 units). Pause its posts until stock lands.",
+   "perDayBefore": 11.14,
+   "stockBefore": 69,
+   "move": null
+  },
+  {
+   "bag": "ZURI",
+   "market": "kenya",
+   "action": "PUT_ON_OFFER",
+   "says": "144 in stock, sold 25 in 28 days — 161.3 days of stock. Try it as a Deal of the Week.",
+   "perDayBefore": 0.89,
+   "stockBefore": 144,
+   "move": null
+  },
+  {
+   "bag": "DOUBLE PRESS",
+   "market": "kenya",
+   "action": "PUT_ON_OFFER",
+   "says": "220 in stock, sold 68 in 28 days — 90.6 days of stock. Try it as a Deal of the Week.",
+   "perDayBefore": 2.43,
+   "stockBefore": 220,
+   "move": null
+  },
+  {
+   "bag": "FABELA",
+   "market": "kenya",
+   "action": "POST_MORE",
+   "says": "Posts turn into sales (100% of expected) but it was posted only 19 times (typical: 30.5). 28.8 days of stock — post it daily this week.",
+   "perDayBefore": 11.43,
+   "stockBefore": 329,
+   "move": null
+  },
+  {
+   "bag": "NALA",
+   "market": "kenya",
+   "action": "PUT_ON_OFFER",
+   "says": "72 in stock, sold 17 in 28 days — 118.6 days of stock. Try it as a Deal of the Week.",
+   "perDayBefore": 0.61,
+   "stockBefore": 72,
+   "move": null
+  },
+  {
+   "bag": "BIG MAN BAG",
+   "market": "kenya",
+   "action": "POST_MORE",
+   "says": "Posts turn into sales (100% of expected) but it was posted only 22 times (typical: 30.5). 16.5 days of stock — post it daily this week.",
+   "perDayBefore": 12.57,
+   "stockBefore": 208,
+   "move": null
+  },
+  {
+   "bag": "KAI",
+   "market": "kenya",
+   "action": "POST_MORE",
+   "says": "Posts turn into sales (100% of expected) but it was posted only 20 times (typical: 30.5). 22.9 days of stock — post it daily this week.",
+   "perDayBefore": 8.75,
+   "stockBefore": 200,
+   "move": null
+  },
+  {
+   "bag": "REO TRAVEL",
+   "market": "kenya",
+   "action": "POST_MORE",
+   "says": "Posts turn into sales (100% of expected) but it was posted only 17 times (typical: 30.5). 14.5 days of stock — post it daily this week.",
+   "perDayBefore": 7.5,
+   "stockBefore": 109,
+   "move": null
+  },
+  {
+   "bag": "PRIME",
+   "market": "kenya",
+   "action": "MOVE_STOCK",
+   "says": "Move 24 from Meru (sold 0 in 14 days) to Hilton (sells 2.7 a day, 6 left).",
+   "perDayBefore": null,
+   "stockBefore": null,
+   "move": {
+    "bag": "PRIME",
+    "from": "MERU",
+    "to": "HILTON",
+    "qty": 24,
+    "toPerDay": 2.71,
+    "toStock": 6,
+    "says": "Move 24 from Meru (sold 0 in 14 days) to Hilton (sells 2.7 a day, 6 left)."
+   }
+  },
+  {
+   "bag": "MEGA",
+   "market": "kenya",
+   "action": "POST_MORE",
+   "says": "Posts turn into sales (100% of expected) but it was posted only 12 times (typical: 30.5). 28.5 days of stock — post it daily this week.",
+   "perDayBefore": 5.71,
+   "stockBefore": 163,
+   "move": null
+  },
+  {
+   "bag": "IMANI",
+   "market": "kenya",
+   "action": "PUT_ON_OFFER",
+   "says": "74 in stock, sold 15 in 28 days — 138.1 days of stock. Try it as a Deal of the Week.",
+   "perDayBefore": 0.54,
+   "stockBefore": 74,
+   "move": null
+  },
+  {
+   "bag": "CESS",
+   "market": "kenya",
+   "action": "PUT_ON_OFFER",
+   "says": "65 in stock, sold 22 in 28 days — 82.7 days of stock. Try it as a Deal of the Week.",
+   "perDayBefore": 0.79,
+   "stockBefore": 65,
+   "move": null
+  }
+ ]
+}
