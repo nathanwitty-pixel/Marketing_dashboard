@@ -130,8 +130,10 @@ OWNER = MANIFEST.get("owner", {})
 
 # ── Password-locked pages ("password_secret": "<SECRET NAME>" in dashboard_pages.json) ──
 # Everyone sees the tab (with a lock); opening it asks for that page's own password, read from the
-# named Streamlit secret. A correct password is remembered in a cookie on that browser, so reloads
-# don't ask again — until the password is changed in Secrets. Running locally never asks.
+# named Streamlit secret. A correct password opens the page at once and is remembered in the
+# browser's localStorage for 30 days: on a later visit the locked page hands the saved token back
+# once (?unlock=, removed straight away), so reloads and tab clicks don't ask again — until the
+# password is changed in Secrets. Running locally never asks.
 import hashlib as _hashlib
 
 
@@ -149,7 +151,7 @@ def _secret(name):
     return os.environ.get(name, "").strip()
 
 
-def _pw_cookie_name(lbl):
+def _pw_key(lbl):
     return "dw_pw_" + re.sub(r"[^a-z0-9]+", "_", lbl.lower()).strip("_")
 
 
@@ -159,18 +161,26 @@ def _pw_token(lbl, pw):
 
 try:
     _host = (st.context.headers.get("Host") or "").split(":")[0]
-    _cookies = dict(st.context.cookies)
 except Exception:
-    _host, _cookies = "", {}
+    _host = ""
 IS_LOCAL = _host in ("localhost", "127.0.0.1")
+_unlocked = st.session_state.setdefault("pw_unlocked", {})   # label → token unlocked in this session
+_qp_unlock = st.query_params.get("unlock")
+if _qp_unlock is not None:
+    del st.query_params["unlock"]        # don't leave the token in the address bar
+PW_TOKEN_TRIED = _qp_unlock is not None   # this load came from a saved token (no auto-retry → no loop)
 PAGE_PASSWORD = {}   # label → password ("" = page locked but no password set up yet)
 LOCKED = set()       # labels this browser hasn't unlocked
 for _p in MANIFEST["pages"]:
     if _p.get("password_secret"):
+        _lbl = _p["label"]
         _pw = _secret(_p["password_secret"])
-        PAGE_PASSWORD[_p["label"]] = _pw
-        if not IS_LOCAL and not (_pw and _cookies.get(_pw_cookie_name(_p["label"])) == _pw_token(_p["label"], _pw)):
-            LOCKED.add(_p["label"])
+        PAGE_PASSWORD[_lbl] = _pw
+        _tok = _pw_token(_lbl, _pw) if _pw else None
+        if _tok and _qp_unlock == _tok:
+            _unlocked[_lbl] = _tok
+        if not IS_LOCAL and not (_tok and _unlocked.get(_lbl) == _tok):
+            LOCKED.add(_lbl)
 
 NAV = []
 for _p in sorted(MANIFEST["pages"], key=lambda p: p["order"]):
@@ -470,30 +480,44 @@ except OSError:
 
 html_path = os.path.join(BASE, html_file)
 
+# Just unlocked: save the token in this browser so later visits open without asking.
+_pw_save = st.session_state.pop("pw_save", None)
+if _pw_save:
+    components.html("<script>try{window.parent.localStorage.setItem(" + _json.dumps(_pw_key(_pw_save[0])) + ","
+                    + _json.dumps(_json.dumps({"tok": _pw_save[1], "exp": int(time.time() + 30 * 86400) * 1000}))
+                    + ");}catch(e){}</script>", height=0)
+
 # ── Password gate for locked pages — nothing of the page is built or shown until it's unlocked ──
 if label in LOCKED:
+    _pw_need = PAGE_PASSWORD.get(label, "")
+    _k = _json.dumps(_pw_key(label))
+    if _pw_need and not PW_TOKEN_TRIED:
+        # A token saved on this browser? Hand it back once (the server checks it), else show the form.
+        components.html("<script>try{var P=window.parent,v=JSON.parse(P.localStorage.getItem(" + _k + ")||'null');"
+                        "if(v&&v.tok&&v.exp>Date.now()){var u=new URL(P.location.href);"
+                        "u.searchParams.set('page'," + _json.dumps(label) + ");u.searchParams.set('unlock',v.tok);"
+                        "P.location.replace(u.toString());}}catch(e){}</script>", height=0)
+    elif PW_TOKEN_TRIED:
+        # The saved token no longer matches (password changed) — forget it.
+        components.html("<script>try{window.parent.localStorage.removeItem(" + _k + ");}catch(e){}</script>", height=0)
     st.markdown("<div class='v5-title'><h1>" + _esc(label) + "</h1>"
                 "<div class='pp'>" + _esc(PURPOSE.get(label, "")) + "</div></div>", unsafe_allow_html=True)
-    _pw_need = PAGE_PASSWORD.get(label, "")
     _, _gate, _ = st.columns([1, 1.2, 1])
     with _gate:
         if not _pw_need:
             st.warning("This page is locked and has no password set up yet. Add "
                        f"`{_pmeta[label]['password_secret']}` in the app's Secrets.", icon=":material/lock:")
         else:
-            with st.form("pw_gate_" + _pw_cookie_name(label), border=True):
+            with st.form("pw_gate_" + _pw_key(label), border=True):
                 st.markdown(f"**:material/lock: {_esc(label)} is password protected**")
                 _pw_try = st.text_input("Password", type="password", placeholder="Enter the password for this page")
                 _pw_ok = st.form_submit_button("Unlock", type="primary", icon=":material/lock_open:",
                                                use_container_width=True)
             if _pw_ok:
                 if _pw_try.strip() == _pw_need:
-                    # Remember on this browser (30 days), then reload the page unlocked.
-                    _ck = (_pw_cookie_name(label) + "=" + _pw_token(label, _pw_need)
-                           + "; path=/; max-age=2592000; SameSite=Lax; Secure")
-                    components.html("<script>try{var P=window.parent;P.document.cookie=" + _json.dumps(_ck)
-                                    + ";P.location.reload();}catch(e){}</script>", height=0)
-                    st.success("Unlocked — opening the page…", icon=":material/lock_open:")
+                    _unlocked[label] = _pw_token(label, _pw_need)
+                    st.session_state.pw_save = (label, _unlocked[label])
+                    st.rerun()
                 else:
                     st.error("Wrong password.", icon=":material/error:")
     st.stop()
