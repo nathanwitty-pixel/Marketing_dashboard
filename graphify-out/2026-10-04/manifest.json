@@ -60,9 +60,9 @@
     "semantic_hash": ""
   },
   "combos_by_shop.json": {
-    "mtime": 1791123980.246537,
-    "seen": 1791124229.3730276,
-    "ast_hash": "852ec70ba4b8c67da6b4b864f028bab2",
+    "mtime": 1791127390.7483184,
+    "seen": 1791127528.9168563,
+    "ast_hash": "af08678aefec3b99c266ed8350166836",
     "semantic_hash": ""
   },
   "current_performance.py": {
@@ -312,9 +312,9 @@
     "semantic_hash": ""
   },
   "self_made_combos.py": {
-    "mtime": 1791123792.8374114,
-    "seen": 1791124229.373424,
-    "ast_hash": "d96f3acba812430b7b53c45c4cd54a09",
+    "mtime": 1791127318.7832057,
+    "seen": 1791127528.9173002,
+    "ast_hash": "7229846df10673ee2a688c36132f3fa9",
     "semantic_hash": ""
   },
   "shops_dispatch.py": {
@@ -600,9 +600,9 @@
     "semantic_hash": ""
   },
   "docs/self-made-combos.md": {
-    "mtime": 1791123741.0998762,
-    "seen": 1791124229.3739245,
-    "ast_hash": "bd35d2b4eaee7ad2ee7b8267fecc0e05",
+    "mtime": 1791126943.9710815,
+    "seen": 1791127528.9178438,
+    "ast_hash": "3fcf4c7a95ba18b041eb9b5a1693454a",
     "semantic_hash": ""
   },
   "docs/shop-regions.md": {
@@ -750,9 +750,9 @@
     "semantic_hash": ""
   },
   "self_made_combos.html": {
-    "mtime": 1791123980.2270632,
-    "seen": 1791124229.3741152,
-    "ast_hash": "1cde718d8a84b42db0f5f4d6004dae9c",
+    "mtime": 1791127390.7320864,
+    "seen": 1791127528.9180145,
+    "ast_hash": "8c27eca19bdd4f02e377e2080c62e80e",
     "semantic_hash": ""
   },
   "shops_efficiency.html": {
@@ -768,9 +768,9 @@
     "semantic_hash": ""
   },
   "bags_offer_source.json": {
-    "mtime": 1791123980.2564938,
-    "seen": 1791124229.3729827,
-    "ast_hash": "265c9b24b84ad699f069ac2e95c74938",
+    "mtime": 1791127390.755481,
+    "seen": 1791127528.9168043,
+    "ast_hash": "cdb40b8f632dc59e0aadfd5ee13e131d",
     "semantic_hash": ""
   },
   "bags_on_offer.py": {
@@ -1011,6 +1011,24 @@
     "mtime": 1791122443.2550886,
     "seen": 1791122977.340764,
     "ast_hash": "8761195f9cbdc9c25ca73798649a36ed",
+    "semantic_hash": ""
+  },
+  "lib/receipt_combos.py": {
+    "mtime": 1791126983.0787451,
+    "seen": 1791127528.917072,
+    "ast_hash": "62ff4cb3baa8ee5ebe132f7049bff0aa",
+    "semantic_hash": ""
+  },
+  "tests/test_receipt_combos.py": {
+    "mtime": 1791126984.196625,
+    "seen": 1791127528.9174588,
+    "ast_hash": "0dfe99ebbb1ad3bfd0656e0247717e84",
+    "semantic_hash": ""
+  },
+  "RALPH_OUTSIDE.md": {
+    "mtime": 1791126781.74798,
+    "seen": 1791127528.9176981,
+    "ast_hash": "cb939a5d97775618532158b9a3a1511f",
     "semantic_hash": ""
   }
 }
