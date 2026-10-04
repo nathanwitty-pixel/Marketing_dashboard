@@ -24,6 +24,7 @@ sys.path.insert(0, BASE)
 
 from lib import db, report_month                     # noqa: E402
 from lib import stock as lstock                       # noqa: E402
+from lib import shop_birthdays                        # noqa: E402  (🎂 docs/shop-birthdays.md)
 from lib.odoo_tabs import STOCK_CODE_TO_SHOP          # noqa: E402
 import self_made_combos as smc                        # noqa: E402  (shared bag SQL + bag_classifier)
 
@@ -340,6 +341,9 @@ def payload(data, pages, rows, mv, top, top_by, stuck, lay, wkly):
         "reasonCounts": {mk: {x["code"]: sum(1 for r in stuck if r["market"] == mk for y in r["reasons"] if y["code"] == x["code"])
                               for r in stuck if r["market"] == mk for x in r["reasons"]} for mk in MARKETS},
         "moves": mv[:30],
+        # 🎂 Shops within 30 days of their opening anniversary — plan a birthday push there.
+        "birthdays": shop_birthdays.upcoming(), "birthdaysNext": shop_birthdays.next_up(),
+        "birthdayMap": shop_birthdays.by_shop(),
         "weekly": wkly,
         "laya": {k: v for k, v in lay.items() if k != "label"},
         "counts": {"bags": len(rows), "actions": {a: sum(1 for r in rows if r.get("action") == a) for a in

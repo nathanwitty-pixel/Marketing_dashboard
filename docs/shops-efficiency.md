@@ -87,6 +87,11 @@ ELDORET, KISUMU, MERU, THIKA, HAZINA, KITENGELA, NANYUKI, KAKAMEGA, HILTON, KISI
 BUSIA, RONGAI. WEBSITE / SINZA / UGANDA are excluded on purpose. Each name is matched to
 its sheet column by header.
 
+
+## Shop birthdays
+
+Opening anniversaries from [shop-birthdays.md](shop-birthdays.md) (shown from 30 days before to 1 day after): a 🎂 badge beside the shop name in the shop performance table, the per-shop metric columns and the receiving table, plus a "Shop birthdays coming up" strip under the title (`SE.birthdays`).
+
 ## Regenerate
 
 ```

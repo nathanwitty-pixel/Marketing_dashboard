@@ -89,6 +89,7 @@ BUFFER_CLEARANCE_TARGET_PCT    = 70   # of buffer stock, % cleared w/o dispatch
 # Shared auth: service account (permanent) or self-healing OAuth — see google_auth.py
 from google_auth import get_gspread_client
 from lib import colours as _colours      # colour families (bag_names.csv)
+from lib import shop_birthdays          # 🎂 opening anniversaries (docs/shop-birthdays.md)
 
 
 # ══════════════════════════════════════════════════════════════
@@ -836,6 +837,7 @@ SE = {
     "history":      history,
     "dispatch":     dispatch,   # {computedOn, shops, weekly:{distributedIn,receiving}, monthly:{...}}
     "combos":       _load_combos_by_shop(),   # per-shop combos + power deals (from self_made_combos.py)
+    "birthdays":    shop_birthdays.by_shop(),  # shops within 30 days of their birthday (🎂 badges)
 }
 
 

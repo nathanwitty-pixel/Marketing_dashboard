@@ -21,8 +21,19 @@ Three areas, all scoped to the **current live month** (`report_month.live_month_
      slot-aware (`_matches_sheet` / `_build_sheet_slots`): each combo is split on `+` into
      slots, each slot on `/` (sheet) or `or` (Odoo) into options, options normalised
      (colours/category words dropped, promo aliases applied — Laptop Backpack→Code 3,
-     Standard Travel→Standard, Neo Man Bag→Neo Man). A combo matches if it has the same
-     slot count and every slot overlaps.
+     Standard Travel→Standard, Neo Man Bag→Neo Man; a **bare "Travel"** slot is the
+     Standard Travel bag → Standard). A combo matches if it has the same slot count and
+     every slot overlaps — **in any order** (the sheet's `Code 3+Travel` is rung in Odoo as
+     `Standard Travel Black + Code 3 Black Combo`).
+   - **Closest name in Odoo (fallback, Oct 2026).** When no sheet combo matches exactly, the
+     Odoo combo is matched to the sheet combo whose names are **closest**: per slot, an
+     option counts as the same bag if it is equal ignoring spaces (`Anti Theft` =
+     `Antitheft`), one is a word-prefix of the other (`Code` = `Code 3`), or the spelling is
+     ≥ 85 % similar. Same slot count, any order. Exact matches always win, so this only
+     catches short / misspelt Odoo names — `Reo Travel + Code 3` stays self-made.
+   - **The sheet's month drives the labels.** The Kenya section header (`OCTOBER COMBOS`,
+     `SEPT COMBOS`, …) names the month: the "<Mon> Combos" KPI card reads it
+     (`offerKpis.comboMonth`), and any `<MONTH> COMBOS` header row is skipped, whatever the month.
    - We classify on **composition alone** (not `include_all`, not `is_cbr`): a combo is
      JUMBO+JUMBO if *both* bags are Jumbo (any colours) — so the official `Jumbo + Jumbo`
      AND every CBR pairing like `Jumbo Grey + Jumbo Black Combo` all count as running. A
@@ -61,6 +72,11 @@ Three areas, all scoped to the **current live month** (`report_month.live_month_
    (never summed across bags).
 3. **Power Deals vs Deal of the Week** — the Kenya deals sheet, enriched with live Odoo
    sales, per-week series, stock, and a per-shop breakdown.
+   **New month, deals sheet not filled yet** (`_deals_from_offer_sheet`): if the deals sheet
+   has no rows for the live month, the page still moves to the new month — Power Deals come
+   from the COMBOS sheet's own **POWER DEALS** table (`TRAVEL` → Standard Travel; price from its
+   KES column where filled), `deals.source` says so, and there's no Deal of the Week until the
+   deals sheet gets the month's rows. Bags on vs off Offer then builds too (it needs ≥ 1 deal).
 
 ## Data sources
 
@@ -72,6 +88,23 @@ Three areas, all scoped to the **current live month** (`report_month.live_month_
   `ast.literal_eval` → the actual bag colour chosen → matched to a bag type. This is how
   a running card's component `sold` count is computed (what was *printed*, not the
   standalone sale of the same bag).
+- **Deals from the posters — `deals_kenya.csv` (from October 2026, wins over the sheet).** The
+  user now picks the deals from the **"Denri's Weekly Hot Picks" poster images**, transcribed into
+  `deals_kenya.csv`: the sheet's columns (Tier · Month · Product · Location · Type · Original ·
+  Current · Discount) plus `Poster name` (as printed) and `Poster`. `_read_deals(month)` uses the
+  CSV's rows for that month when it has any; otherwise the deals sheet below; otherwise (no rows
+  anywhere) the COMBOS sheet's Power Deals (`_deals_from_offer_sheet`). Transcription rules:
+  - **crossed-out price = Original** (full price), the price beside it = **Current**; Discount = the gap;
+  - **Location** = the shop after "Only available at …"; "Nairobi Town stores" = **Starmall, Hazina,
+    Hilton, KTDA** (one row each); "the Website" = `Website`;
+  - **Product = the Odoo root name**, so `_enrich_deals`' prefix match finds every colour:
+    Fayola messenger → `Fayola`, Briefcase → `Brief Case`, College handbag → `College HB`,
+    Doublepress backpack → `Double Press`, Neo man bag → `Neo Man`, Zane man bag → `Zane Man`,
+    Pioneer / Tyler / Kai / Remi / Mega backpack → the bag name alone, Lola / Aurora / Karina /
+    Amaya handbag → the name alone, Kate sling → `Kate`, Liam / Fabela travel → `Liam` / `Fabela`,
+    Power "Standard" → `Standard Travel`. Check each new name prefix-matches an active Odoo product;
+  - each poster = **Tier 1** (wk 1–2) or Tier 2 (wk 3+) as the user says; Power Deals = Tier "All",
+    Location "All".
 - **Deals sheet:** `DEALS_SHEET_ID` → worksheet **"Kenya"**. Columns: A Tier · B Month ·
   C Product · D Location · E Type · F Original · G Current · H Discount. Rows filtered to
   the current month name (`mon.lower() == "september"`). `Type` = "Power Deals"
@@ -389,6 +422,77 @@ is_on_offer)`, shared with the **Bags on vs not on offer** menu
 ([bags-on-offer.md](bags-on-offer.md)). `main()` also writes `bags_offer_source.json` —
 the Kenya on-offer set tagged by offer (`payload["onOfferSources"]`: Combo component /
 Deal of the Week / Power Deal) + `bagsNotOnOffer` — which `bags_on_offer.py` reads.
+
+## Out of stock — call back
+
+Who asked for each bag on WhatsApp while it was out of stock — per shop, per market.
+
+**Source** — the Odoo **WhatsApp Monitoring** module (`denri_monitor_*`), via `lib/oos_callbacks.py`
+(query: `sql/oos_callbacks.sql`). An **out-of-stock request** = a `denri_monitor_interaction` whose
+reason has `is_out_of_stock` ("Out Of Stock"); the bags asked for are its
+`denri_monitor_interaction_oos_product_rel` products plus `oos_product_id`, named by
+`product_template.name`. Shops = `denri_monitor_shop` (rows with no `code` — webi / webs / sina / rong — are junk and skipped).
+
+- **People, not requests.** One person = `phone_key`, else WhatsApp username, else the
+  interaction itself; every number is **distinct people** for that bag (a customer who asked
+  twice, or at two shops, counts once in the total and once per shop).
+- **Periods** — `lifetime` (all), `monthly` (live report month), `weekly` (this Sun–Sat week to
+  date), `lastweek` (previous complete Sun–Sat week), **`current` = still waiting** (any date,
+  `is_purchased` not set — the live call-back list).
+- **Bags are recorded from June 2026** — older OOS requests have no product, so Lifetime really
+  starts in June 2026 (the hover says so).
+- **Chip:** `📞 N asked` (`📞 N waiting` for Waiting now), hidden when 0. Hover **or tap** opens the
+  per-shop list, high → low (`Hilton 4 · Thika 2 · …`), then **each colour asked for** with its own
+  shops (`Black 63 — Ktda 23 · Eldoret 6`); an outside tap closes it.
+- **Stock beside every shop (live Odoo on-hand):** each shop count carries that shop's current
+  stock of the bag — at bag level in "By shop", and of **that colour** under "By colour"
+  (`Mombasa 2 · 0 in stock`, red at 0, green above). Same bag/colour matching as the counts;
+  stock is today's whatever the period. Website has no shelf (shows "online"); a shop with no
+  stock code shows nothing. Data: `lib/oos_callbacks.attach_stock` over `lib/stock.odoo_stock_by_shop_code`,
+  so `shops` / colour shops are `[shop, people, stock|null]`.
+- **Offline:** if Odoo can't be read (and there's no cached copy) the block is empty and no chips show;
+  the page still builds.
+
+**On this page:** `SMC.oos = {kenya|sinza|uganda: {period: {bag: {total, shops}}}}`. Each Odoo product
+is resolved to its catalogue bag with the page's `bag_classifier()` `infer` (longest prefix, promo
+aliases — so colour shades fold into the bag), and markets follow the till scopes: **Kenya** = every
+shop except Sinza / Uganda (Website included), **Sinza** = Sinza, **Uganda** = Uganda.
+`SMC.oosAlias` maps a displayed bag name to its catalogue key when they differ.
+Chips sit on every component bag of the running-combo cards (Kenya), the Sinza / Uganda guidance
+cards (their market), and every row of the three **Bags not on offer** lists. The page has no period
+dropdown, so a compact toggle — **Lifetime / Monthly / Last week / Waiting now** — sits by the combo
+cards (remembered in this browser).
+**Colours:** each bag entry carries `colours: [[colour, people, [[shop, people], …]], …]`, high → low;
+the colour is the colour **family** (`lib/colours.family` — Maroon → Red, Choco → Brown), like every other colour on this page. A request whose product has no colour shows as "No colour".
+
+## Sinza & Uganda — combos counted from receipts (Oct 2026)
+
+**Offers list:** `offers_outside.csv` — the month's Sinza (Tanzania) and Uganda singles + combos as the user
+sends them: `Month · Market · Type (Single/Combo) · Name (as given) · Bags · Was · Now · Disc · Currency ·
+Was KSH · Now KSH`. When it has rows for the live month they replace the COMBOS sheet's Sinza / Uganda
+combos + singles (specials still come from the sheet). Transcription:
+- Sinza singles: "PRICES BEFORE" KSH/TSH → Was, "OFFER PRICE" → Now (TSh). Sinza combos: the columns are
+  offer KSH · offer TSH · **S.P** (TSh it sells at = Now) · was KSH · was TSH (= Was) · DISC (= Was − S.P).
+  Uganda: was / now / disc in USh; the trailing number = the KSH equivalent of Now.
+- **Bags** = catalogue bag types (`bag_classifier` infer), `+` between slots, `/` between alternatives:
+  Bigman → BIG MAN BAG, Zane → ZANE MAN, Cairo → CAIRO BP, Mandy → MANDY HB, Standard → TRAVEL,
+  Safiri → SAFIRI TRAVEL/SAFIRI BP, Sky → SKYE HB, Mistque → MYSTIQUE, Luna manbag → LUNA (not Luna
+  Amapiano), Ari sling → ARIA SLING; `*SLEEVE` = any product with SLEEVE in its name.
+
+**Receipt rule (`lib/receipt_combos.py`).** Sinza (`sinza`, `dar-es-alam` tills) and Uganda (`uganda`) ring
+every bag as its own line — a combo is several bags on one receipt at **one shared unit price**. So per
+receipt (state paid/done/invoiced, lines with qty > 0, delivery / gift bags / non-bags ignored):
+- the bags are grouped by unit price; a group of **≥ 2 bags = one combo**, a bag alone at its price = a **single**
+  (a 4-bag receipt at two prices = two combos);
+- a combo whose bag types fill a listed combo's slots (same count, **any order**, alternatives allowed) is
+  **running**; otherwise it is **self-made** (labelled by its bags, sorted);
+- receipts with **≥ 7 bags** are **bulk** (wholesale) — reported apart, never counted as combos;
+- a single counts against a listed single when its bag type matches.
+Weeks are the month's Sun–Sat weeks (Wk 1 = the week holding day 1).
+
+**On the page** each Sinza / Uganda region view shows the listed combos and singles as cards with
+**POS-measured** weekly sold (not the sheet's), a **Self-made combos** list (combo · times · revenue),
+and the bulk receipts line. `SMC.regions[r].receipts = {running, selfMade, singles, bulk, receipts}`.
 
 ## Standalone SQL
 

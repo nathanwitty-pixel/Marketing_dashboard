@@ -25,7 +25,7 @@ BOO_DATA markers.
 
 import os, re, json, time, datetime, webbrowser, pathlib
 
-from lib import db, report_month
+from lib import db, report_month, oos_callbacks, colours, shop_birthdays
 import self_made_combos as smc
 import timed_offers as tof
 import offer_picking as opk
@@ -831,9 +831,23 @@ def fetch():
         for lst in (P["onBags"], P["offBags"]):
             for b in lst:
                 b["category"], b["tier"] = cat_tier(b["bag"])
+    # Out of stock — call back (WhatsApp Monitoring): distinct people per bag per shop, keyed by
+    # this page's own classification (base()), Kenya only like the rest of the page — Sinza and
+    # Uganda requests are left out; Website stays (it is a Kenya till).
+    def oos_key(name):
+        kind, bt = base(name)[:2]
+        return bt if kind == "bag" else None
+    oos = oos_callbacks.aggregate(oos_callbacks.load_rows(), key_fn=oos_key, colour_fn=colours.family,
+                                  shop_filter=lambda r: r["kind"] != "region" and r["shop"].upper() != "SINZA")
+    oos_callbacks.attach_stock(oos, oos_key, colours.family)          # each shop's live on-hand
+    shown = {b["bag"] for P in periods.values() for lst in (P["onBags"], P["offBags"]) for b in lst}
+    print(f"  OOS call-backs: {len(oos.get('lifetime', {}))} bags asked for (lifetime), "
+          f"{len(shown & set(oos.get('lifetime', {})))} of {len(shown)} table bags have asks")
     return {
         "month": month_label,
         "asOf": today.isoformat(),
+        "oos": oos,
+        "birthdays": shop_birthdays.by_shop(today),   # 🎂 shops within 30 days of their birthday
         "generated": datetime.datetime.now().strftime("%d %b %Y %H:%M"),
         "newProducts": new_names,
         "menu4NotOnOfferRevenue": nof.get("notOnOfferRevenue"),

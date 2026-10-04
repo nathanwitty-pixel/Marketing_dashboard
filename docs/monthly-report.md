@@ -65,6 +65,11 @@ runs **after** them:
 - `AVG_PRICE` (default 2500 KES/bag) — set to the real average selling price to quantify
   the revenue lines.
 
+
+## Shop birthdays
+
+Opening anniversaries from [shop-birthdays.md](shop-birthdays.md) (shown from 30 days before to 1 day after): a pink **🎂 Shop birthdays in <month>** strip above section 1 listing every shop whose opening anniversary falls in the report month (`shop_birthdays.in_month`), so a birthday offer can be tied to it.
+
 ## Regenerate
 
 ```

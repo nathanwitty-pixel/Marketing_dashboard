@@ -22,11 +22,11 @@ self_made_combos.html between the SMC_DATA markers.
 ─────────────────────────────────────────────────────────────────
 """
 
-import re, os, json, webbrowser, pathlib, datetime
+import re, os, json, webbrowser, pathlib, datetime, difflib, itertools
 
 import pandas as pd
 
-from lib import db, report_month
+from lib import db, report_month, oos_callbacks, colours
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 HTML = os.path.join(BASE, "self_made_combos.html")
@@ -341,6 +341,7 @@ def _read_offer_analysis():
         "monthName":       oa.get("monthName", ""),
         "comboCount":      oa.get("comboCount"),
         "powerDealCount":  oa.get("powerDealCount"),
+        "powerDeals":      oa.get("powerDeals", []),   # the COMBOS sheet's POWER DEALS list (fallback)
         "totalKenyaStock": oa.get("totalKenyaStock"),
         # Sinza & Uganda combos (from the COMBOS sheet) + their regional stock,
         # for the region-selector guidance cards on this page.
@@ -689,17 +690,40 @@ def _enrich_deals(deals, m_start, m_end, stock_map, combo_bags=None):
         p["dowConnCount"] = len(conns)
 
 
+DEALS_CSV = os.path.join(BASE, "deals_kenya.csv")
+
+
+def _local_deal_rows(month_name):
+    """Sheet-shaped rows ([header] + [Tier, Month, Product, Location, Type, Original, Current,
+    Discount]) from deals_kenya.csv for this month, or None when the CSV has none for it."""
+    try:
+        import csv
+        with open(DEALS_CSV, encoding="utf-8", newline="") as f:
+            rows = [r[:8] for r in csv.reader(f)]
+    except OSError:
+        return None
+    body = [r for r in rows[1:] if len(r) >= 8 and r[1].strip().lower() == month_name.lower()]
+    if not body:
+        return None
+    print(f"  Deals for {month_name}: deals_kenya.csv (from the posters) — {len(body)} rows")
+    return [rows[0]] + body
+
+
 def _read_deals(month_name):
     """Power Deals & Deal of the Week for the given month (Kenya sheet). Columns:
     A Tier · B Month · C Product · D Location · E Type · F Original · G Current · H Discount.
     Type = 'Power Deals' (Tier 'All', run all month) or 'Deal of the Week' (Tier 1/2, per
     location, phased). Deal-of-week rows are deduped by product across locations."""
-    try:
-        from google_auth import get_gspread_client
-        gc = get_gspread_client()
-        rows = gc.open_by_key(DEALS_SHEET_ID).worksheet("Kenya").get_all_values()
-    except Exception:                                            # noqa: BLE001
-        return None
+    # From Oct 2026 the deals come from the poster images, transcribed into deals_kenya.csv
+    # (docs/self-made-combos.md › Deals from the posters) — its rows for the month win over the sheet.
+    rows = _local_deal_rows(month_name)
+    if rows is None:
+        try:
+            from google_auth import get_gspread_client
+            gc = get_gspread_client()
+            rows = gc.open_by_key(DEALS_SHEET_ID).worksheet("Kenya").get_all_values()
+        except Exception:                                        # noqa: BLE001
+            return None
 
     def _pn(v):
         try:
@@ -775,7 +799,7 @@ def _read_deals(month_name):
 
 
 # ── Running-combo classification against the authoritative monthly sheet ──
-# The offer sheet's SEPT COMBOS list (oa["combos"]) is the source of truth for which
+# The offer sheet's monthly combos list (oa["combos"], e.g. OCTOBER COMBOS) is the source of truth for which
 # combos are "running" this month. We match each Odoo combo product to that list
 # slot-by-slot; a combo that matches AND is not a CBR is a running combo, everything
 # else (a CBR, or an Odoo combo not on the sheet) is self-made. This replaces the old
@@ -800,8 +824,11 @@ def _combo_norm_option(opt):
     for a, b in _COMBO_PHRASE_ALIAS.items():
         s = s.replace(" " + a + " ", " " + b + " ")
     words = [w for w in re.split(r"[^A-Z0-9]+", s) if w]
-    words = [w for w in words if w not in _COMBO_CATEGORY and w not in _COMBO_COLOURS]
-    return " ".join(words).strip()
+    kept = [w for w in words if w not in _COMBO_CATEGORY and w not in _COMBO_COLOURS]
+    # A bare "Travel" on the sheet is the Standard Travel bag (catalogue TRAVEL = Standard).
+    if not kept and "TRAVEL" in words:
+        return "STANDARD"
+    return " ".join(kept).strip()
 
 
 def _combo_sheet_slots(label):
@@ -821,19 +848,54 @@ def _build_sheet_slots(offer):
     out = []
     for row in (offer or {}).get("combos", []):
         label = str(row[0]).strip() if isinstance(row, (list, tuple)) else str(row).strip()
-        if not label or label.upper() in ("TOTAL", "SEPT COMBOS"):
+        if not label or label.upper() == "TOTAL" or re.fullmatch(r"[A-Z]+ COMBOS", label.upper()):
             continue
         out.append((label, _combo_sheet_slots(label)))
     return out
 
 
+_OPT_TOO_VAGUE = {"MINI", "BIG", "SMALL", "BABY", "NEO", "SAMPLE"}
+
+
+def _opt_close(a, b):
+    """Two normalised slot options name the same bag, loosely: equal ignoring spaces
+    ("ANTI THEFT" = "ANTITHEFT"), one a word-prefix of the other ("CODE" = "CODE 3"), or
+    ≥ 85 % similar spelling."""
+    if a == b:
+        return True
+    ca, cb = a.replace(" ", ""), b.replace(" ", "")
+    if ca == cb:
+        return True
+    # Word-prefix only when the short name is a bag of its own — a bare "MINI" could be Mini
+    # Umbra, Mini Maya or Mini Manbag, so it never stands in for one of them.
+    short, long_ = (a, b) if len(a) <= len(b) else (b, a)
+    if long_.startswith(short + " ") and short not in _OPT_TOO_VAGUE:
+        return True
+    return len(ca) >= 4 and len(cb) >= 4 and difflib.SequenceMatcher(None, ca, cb).ratio() >= 0.85
+
+
+def _slots_fit(o, s, close=False):
+    """Same slot count and every slot overlaps under SOME pairing (any order: the sheet's
+    "Code 3+Travel" is rung "Standard Travel + Code 3"). close=True compares options loosely."""
+    if len(o) != len(s):
+        return False
+    hit = (lambda x, y: any(_opt_close(a, b) for a in x for b in y)) if close else (lambda x, y: bool(x & y))
+    return any(all(hit(o[i], s[j]) for i, j in enumerate(perm)) for perm in itertools.permutations(range(len(s))))
+
+
 def _matches_sheet(name, sheet_slots):
-    """The sheet label this Odoo combo maps to (same slot count, every slot overlaps),
-    or None if it isn't on the sheet."""
+    """The sheet label this Odoo combo maps to, or None if it isn't on the sheet. Exact slot
+    overlap first (sheet order, then any order); failing that, the CLOSEST sheet combo by
+    name (_opt_close per slot) — so short or misspelt Odoo names ("Standard + Code Combo")
+    still find their running combo."""
     o = _combo_odoo_slots(name)
     for label, s in sheet_slots:
         if len(s) == len(o) and all((o[i] & s[i]) for i in range(len(s))):
             return label
+    for close in (False, True):
+        for label, s in sheet_slots:
+            if _slots_fit(o, s, close):
+                return label
     return None
 
 
@@ -1093,7 +1155,7 @@ def _combo_button_usage(m_start, m_end, offer, sheet_slots, running):
     component bags sold as singles at that shop."""
     if not sheet_slots:
         return []
-    # sheet's expected COMBO figure per label (col C of the SEPT COMBOS list)
+    # sheet's expected COMBO figure per label (col C of the month's COMBOS list)
     expected = {}
     for row in (offer or {}).get("combos", []):
         if isinstance(row, (list, tuple)) and len(row) >= 3:
@@ -1263,6 +1325,52 @@ def combos_by_shop(running_cards, deals):
                      "powerDeals": pd, "dow": dw,
                      "region": (combos[0]["region"] if combos else "")}
     return out
+
+
+def _apply_receipt_offers(regions, m_start, m_end, stocks):
+    """Sinza & Uganda: when offers_outside.csv lists the month's offers, the region cards come from
+    that list with sales counted from POS receipts (lib/receipt_combos — bags sharing one unit price
+    on a receipt = a combo; listed = running, else self-made). Adds regions[r]["receipts"] (self-made
+    list, bulk). Leaves the sheet's cards alone for a month the CSV doesn't cover or when offline."""
+    from lib import receipt_combos
+    infer, _ = bag_classifier(set())
+    anchor = m_start - datetime.timedelta(days=(m_start.weekday() + 1) % 7)
+    last_wk = (min(datetime.date.today(), m_end) - anchor).days // 7 + 1
+    labels = ["Wk %d" % w for w in range(1, last_wk + 1)]
+    for key, reg in regions.items():
+        summ = receipt_combos.market_summary(key, m_start, m_end, infer)
+        if not summ or not summ.get("offers"):
+            continue
+        stock = stocks.get(key, {})
+
+        def cards(offers, table):
+            out = []
+            for o in offers:
+                hit = table.get(o["name"], {})
+                weeks = [{"label": l, "sold": hit.get("weeks", {}).get(i + 1, 0)} for i, l in enumerate(labels)]
+                total = sum(w["sold"] for w in weeks)
+                bags = [{"name": b.lstrip("*"), "stock": int(stock.get(b, 0)), "star": len(slot) == 1}
+                        for slot in o["slots"] for b in sorted(slot)]
+                last = weeks[-1]["sold"] if weeks else 0
+                prev = weeks[-2]["sold"] if len(weeks) > 1 else last
+                out.append({"name": o["name"], "price": o["now"], "was": o["was"], "disc": o["disc"],
+                            "weeks": weeks, "total": total, "avg": round(total / len(weeks)) if weeks else 0,
+                            "bags": bags, "stock": int(sum(x["stock"] for x in bags)), "diff": last - prev,
+                            "lastLabel": labels[-1] if labels else "Wk 1", "revenue": hit.get("revenue", 0)})
+            return out
+        specials = [g for g in reg.get("groups", []) if g["key"] == "specials"]
+        reg["groups"] = [g for g in (
+            {"key": "combos", "label": "Combos", "cards": cards(summ["offers"]["combos"], summ["running"])},
+            {"key": "singles", "label": "Singles", "cards": cards(summ["offers"]["singles"], summ["singlesOffer"])},
+        ) if g["cards"]] + specials
+        sm = sorted(({"name": k, "count": v["count"], "revenue": v["revenue"]} for k, v in summ["selfMade"].items()),
+                    key=lambda x: (-x["count"], -x["revenue"], x["name"]))
+        reg["receipts"] = {"source": "POS receipts", "selfMade": sm,
+                           "selfMadeCount": sum(x["count"] for x in sm),
+                           "runningCount": sum(v["count"] for v in summ["running"].values()),
+                           "bulk": summ["bulk"], "receipts": summ["receipts"]}
+        print(f"  {reg['label']}: offers from offers_outside.csv — running {reg['receipts']['runningCount']}, "
+              f"self-made {reg['receipts']['selfMadeCount']}, bulk receipts {summ['bulk']['receipts']}")
 
 
 def build_payload(m_start, m_end):
@@ -1608,6 +1716,8 @@ def build_payload(m_start, m_end):
     _kenya_all_total = sum(_odoo_stock_for(_KENYA_SHOP_CODES).values())
     offer_kpis = {
         "combos": offer.get("comboCount"), "powerDeals": offer.get("powerDealCount"),
+        # The sheet's own month ("OCTOBER COMBOS" → "October"), else the live month — the card label.
+        "comboMonth": offer.get("monthName") or m_start.strftime("%B"),
         "kenyaStock": sum(stock_map.values()),
         "kenyaTotal": _kenya_all_total,   # live Odoo on-hand total (all Kenya-shop bags)
     }
@@ -1818,6 +1928,8 @@ def build_payload(m_start, m_end):
         },
     }
 
+    _apply_receipt_offers(regions, m_start, m_end, {"sinza": _sz_stock, "uganda": _ug_stock})
+
     # ── Monetary implication: the full-price value of the bags a combo contains vs the
     #    combo's actual revenue = the money given away by bundling. Split self-made vs
     #    running. Baseline prices from bag_original_prices.json. ──
@@ -1891,6 +2003,32 @@ def build_payload(m_start, m_end):
     }
 
 
+def _deals_from_offer_sheet(month_name):
+    """Power Deals for the month from the COMBOS sheet's POWER DEALS table — used only while the
+    deals sheet has no rows for the live month. Same shape as _read_deals(); prices come from the
+    sheet's KES price column where filled, otherwise 0 (sales are still enriched from Odoo)."""
+    rows = ((_read_offer_analysis() or {}).get("powerDeals") or [])
+    power = []
+    for r in rows:
+        name = str(r[0]).strip() if r else ""
+        if not name or name.upper() == "TOTAL":
+            continue
+        if name.upper() == "TRAVEL":                     # the sheet's TRAVEL = the Standard Travel bag
+            name = "Standard Travel"
+        now = 0
+        try:
+            now = int(round(float(str(r[1]).replace(",", "") or 0))) if len(r) > 1 else 0
+        except (ValueError, TypeError):
+            pass
+        power.append({"tier": "All", "product": name, "location": "All", "orig": 0, "now": now, "disc": 0})
+    if not power:
+        return None
+    print(f"  Deals sheet has no {month_name} rows yet — using the COMBOS sheet's {len(power)} Power Deals")
+    return {"month": month_name, "source": "COMBOS sheet (deals sheet has no " + month_name + " rows yet)",
+            "powerDeals": power, "dealOfWeek": [], "powerCount": len(power), "dowProducts": 0,
+            "dowRows": 0, "dowLocations": 0, "locations": [], "powerDisc": 0, "dowDisc": 0}
+
+
 def fetch():
     m_start, m_end = report_month.live_month_window()
     ok, _ = db.check_connection()
@@ -1899,6 +2037,10 @@ def fetch():
         return None
     payload = build_payload(m_start, m_end)
     deals = _read_deals(m_start.strftime("%B"))               # Power Deals / Deal of the Week
+    if not (deals or {}).get("powerDeals") and not (deals or {}).get("dealOfWeek"):
+        # New month, deals sheet not filled in yet → follow the month anyway with the COMBOS
+        # sheet's own POWER DEALS list (no Deal of the Week until the deals sheet has the month).
+        deals = _deals_from_offer_sheet(m_start.strftime("%B")) or deals
     if deals:
         # Reuse the sheet+Odoo-augmented Kenya stock built in build_payload, so deal
         # products the sheet had at 0 pick up live Odoo shop stock too.
@@ -1935,7 +2077,43 @@ def fetch():
     payload["bagsNotOnOfferUganda"] = _bags_not_on_offer(
         m_start, m_end, _region_on_offer_bags(payload, "uganda"), BAG_SALES_UGANDA_SQL, "USh",
         stock_map=_UG_STOCK, daily_sql=BAG_SALES_DAILY_UGANDA_SQL)
+    _add_oos(payload)
     return payload
+
+
+def _add_oos(payload):
+    """Out of stock — call back (WhatsApp Monitoring): distinct people who asked for each bag while
+    it was out of stock, per shop, per market — SMC.oos = {kenya|sinza|uganda: {period: {bag: …}}}.
+    Products resolve to catalogue bags with the same bag_classifier() infer as the not-on-offer
+    panels (colour shades fold into the bag). SMC.oosAlias maps a displayed bag name to its key."""
+    infer, _ = bag_classifier(set())
+    rows = oos_callbacks.load_rows()
+    markets = {"kenya": lambda r: r["kind"] != "region" and r["shop"].upper() != "SINZA",
+               "sinza": lambda r: r["shop"].upper() == "SINZA",
+               "uganda": lambda r: r["kind"] == "region" and r["shop"].upper() == "UGANDA"}
+    payload["oos"] = {m: oos_callbacks.aggregate(rows, key_fn=infer, shop_filter=f, colour_fn=colours.family)
+                      for m, f in markets.items()} if rows else {}
+    if rows:                                    # each shop's live on-hand beside its count (one stock read)
+        from lib import stock as _lstock
+        from lib.odoo_tabs import STOCK_CODE_TO_SHOP
+        _stk = _lstock.odoo_stock_by_shop_code(tuple(STOCK_CODE_TO_SHOP))
+        for blk in payload["oos"].values():
+            oos_callbacks.attach_stock(blk, infer, colours.family, stock_by_code=_stk)
+    shown = {b["name"] for rc in payload.get("runningCards", []) for b in rc.get("bags", [])}
+    for reg in (payload.get("regions") or {}).values():
+        for g in reg.get("groups", []):
+            shown |= {b["name"] for c in g.get("cards", []) for b in c.get("bags", [])}
+    for k in ("bagsNotOnOffer", "bagsNotOnOfferSinza", "bagsNotOnOfferUganda"):
+        shown |= {x["bag"] for x in (payload.get(k) or {}).get("notOnOffer", [])}
+    alias = {}
+    for n in shown:
+        key = infer(n)
+        if key and key != str(n).upper().strip():
+            alias[str(n).upper().strip()] = key
+    payload["oosAlias"] = alias
+    life = (payload["oos"].get("kenya") or {}).get("lifetime", {})
+    print(f"  OOS call-backs: Kenya {len(life)} bags asked for (lifetime), "
+          f"{sum(1 for n in shown if alias.get(str(n).upper().strip(), str(n).upper().strip()) in life)} of {len(shown)} shown bags have asks")
 
 
 def inject(payload):

@@ -140,6 +140,11 @@ most 80 new model calls (~1.8 s each here — the first run took ~2½ min, later
 `LAYA_DIR` overrides the folder; `--no-laya` skips it. Needs `onnxruntime` + `tokenizers` in the
 dashboard's Python; without them (or the model) the page builds without Laya and says why.
 
+
+## Shop birthdays
+
+Opening anniversaries from [shop-birthdays.md](shop-birthdays.md) (shown from 30 days before to 1 day after): a **Shop birthdays — plan a push** panel (after the top actions): shop · which birthday · date · what to do (book the offer + posts / birthday week / just passed); when none is within 30 days it names the next three. The stock-moves table badges the receiving shop (`PP.birthdays`, `PP.birthdaysNext`, `PP.birthdayMap`).
+
 ## Regenerate
 
 ```

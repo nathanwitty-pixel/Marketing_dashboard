@@ -3,13 +3,13 @@
   "monthLabel": "October 2026",
   "monthStart": "2026-10-01",
   "monthEnd": "2026-10-31",
-  "monthlyBags": 2028,
-  "monthlyValue": 3639226,
+  "monthlyBags": 2189,
+  "monthlyValue": 3936976,
   "rejectBags": 0,
-  "giftBags": 44,
+  "giftBags": 47,
   "samples": 1,
   "customBags": 0,
   "customFees": 0,
-  "lines": 2075,
+  "lines": 2238,
   "computedOn": "2026-10-04"
 }

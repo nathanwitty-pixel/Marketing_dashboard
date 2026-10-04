@@ -742,6 +742,26 @@ notoffer_block = (
 def _pp_txt(v):
     return f"{v:.1f}" if isinstance(v, (int, float)) else "—"
 
+# ── 🎂 Shop birthdays in the report month (docs/shop-birthdays.md) ──
+# Opening anniversaries are a sales hook — list the shops celebrating this month so the
+# report's reader can tie a birthday offer / posts to them.
+from lib import shop_birthdays
+try:
+    _bd_list = shop_birthdays.in_month(year, datetime.datetime.strptime(month, "%B").month)
+except ValueError:
+    _bd_list = []
+bday_section = ""
+if _bd_list:
+    _bd_items = "".join(
+        f'<span><b>{esc(b["shop"])}</b> {esc(b["what"])} &middot; {esc(b["dateLabel"])}</span>' for b in _bd_list)
+    bday_section = f"""
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem 1rem;margin:0 0 1.4rem;padding:0.6rem 0.85rem;border-radius:10px;background:rgba(236,72,153,0.08);border:1px solid rgba(236,72,153,0.28);font-size:0.82rem;color:#e2e8f0">
+    <span style="font-size:0.68rem;font-weight:700;color:#f9a8d4;text-transform:uppercase;letter-spacing:0.08em">🎂 Shop birthdays in {esc(month)}</span>
+    {_bd_items}
+    <span style="color:#94a3b8;font-size:0.74rem">— plan a birthday offer + posts for these shops</span>
+  </div>
+"""
+
 timed_offers_section = ""
 if timed_offers:
     _to_parts = []
@@ -1057,7 +1077,7 @@ body = f"""
     <div class="kpi"><div class="k-lbl">Posting Sales-Achieved</div><div class="k-val green">{pct(ke_mo_mkt)}</div><div class="k-sub">Kenya {pct(ke_mo_mkt)} &middot; Sinza {pct(sz_mo_mkt)} &middot; Uganda {pct(ug_mo_mkt)} (of expected)</div></div>
     <div class="kpi"><div class="k-lbl">Net Bags Sold &middot; Catalogue</div><div class="k-val cyan">{fmt(_master_bags) if _master_bags is not None else '&mdash;'}</div><div class="k-sub">net of refunds &middot; master-list products only</div></div>
   </div>
-
+{bday_section}
   <div class="sec">
     <div class="sec-head"><div class="sec-num" style="background:#facc15">1</div><h2>Current Performance</h2></div>
     <div class="chart-cap">Weekly performance — Week 1 to latest (each week's % of target)</div>

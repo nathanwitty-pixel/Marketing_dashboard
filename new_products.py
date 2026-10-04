@@ -33,6 +33,7 @@ SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 # Shared auth: service account (permanent) or self-healing OAuth — see google_auth.py
 from google_auth import get_gspread_client
 from lib import odoo_tabs   # MONTHLY_SALES / WEEKLY_SALES rebuilt from Odoo
+from lib import oos_callbacks   # WhatsApp "Out of stock — call back" demand per shop
 
 
 # ── HELPERS ───────────────────────────────────────────────────
@@ -845,6 +846,28 @@ pc_all_monthly_combined = _merge_rows_by_base_colour(all_monthly_combined, _MONT
 pc_all_weekly_combined  = _merge_rows_by_base_colour(all_weekly_combined,  _WEEKLY_NUMERIC_FIELDS)
 
 
+# ── OUT OF STOCK — CALL BACK (WhatsApp Monitoring) ────────────
+# Distinct people who asked for each new product while it was out of stock, per shop. Same
+# prefix rule as match_odoo_bags (shades stay under their product; "[S_0]" codes dropped);
+# longest product name wins so "LOOP BP" never steals a longer sibling's requests.
+_np_names = sorted({str(p["name"]).upper().strip() for p in product_targets}, key=len, reverse=True)
+
+
+def _np_oos_key(name):
+    n = re.sub(r"^\[[^\]]*\]\s*", "", str(name).upper().strip())
+    for b in _np_names:
+        if n == b or n.startswith(b + " ") or n.startswith(b + "-"):
+            return b
+    return None
+
+
+_np_oos_colour = lambda n: _odoo_colour(n, _np_oos_key(n) or "")      # exact colour, shades kept
+np_oos = oos_callbacks.aggregate(oos_callbacks.load_rows(), key_fn=_np_oos_key, colour_fn=_np_oos_colour)
+oos_callbacks.attach_stock(np_oos, _np_oos_key, _np_oos_colour)       # each shop's live on-hand
+print(f"  OOS call-backs        : {sum(v['total'] for v in np_oos.get('lifetime', {}).values())} people asked (lifetime) "
+      f"for {len(np_oos.get('lifetime', {}))} of {len(_np_names)} new products")
+
+
 # ── INJECT INTO HTML ──────────────────────────────────────────
 
 inline_script = (
@@ -890,7 +913,8 @@ inline_script = (
     f'  weeklyPostsHistory: {json.dumps(np_weekly_history, separators=(",", ":"))},\n'
     f'  npPrevWeekly: {json.dumps(np_prev_weekly, ensure_ascii=False, separators=(",", ":"))},\n'
     f'  npPrevLabel:  {json.dumps(np_prev_label, ensure_ascii=False)},\n'
-    f'  npCurLabel:   {json.dumps(np_cur_label, ensure_ascii=False)}\n'
+    f'  npCurLabel:   {json.dumps(np_cur_label, ensure_ascii=False)},\n'
+    f'  oos:          {json.dumps(np_oos, ensure_ascii=False, separators=(",", ":"))}\n'
     "};\n"
     "</script>\n"
     "<!-- NEW_PROD_DATA_END -->"

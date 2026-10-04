@@ -209,6 +209,50 @@ Columns (revenue / units / share toggle): **All**, **Top 5 categories**, **Other
 - **Amber** = behind target but at/above its benchmark; **green** = pace ≥ 100 %. No target row
   (Staff Pos, Jumia) → "no target", never red; tills not in shop-regions.md → **Other**.
 
+## Out of stock — call back
+
+Who asked for each bag on WhatsApp while it was out of stock — per shop.
+
+**Source** — the Odoo **WhatsApp Monitoring** module (`denri_monitor_*`), via `lib/oos_callbacks.py`
+(query: `sql/oos_callbacks.sql`). An **out-of-stock request** = a `denri_monitor_interaction` whose
+reason has `is_out_of_stock` ("Out Of Stock"); the bags asked for are its
+`denri_monitor_interaction_oos_product_rel` products plus `oos_product_id`, named by
+`product_template.name`. Shops = `denri_monitor_shop` (rows with no `code` — webi / webs / sina / rong — are junk and skipped).
+
+- **People, not requests.** One person = `phone_key`, else WhatsApp username, else the
+  interaction itself; every number is **distinct people** for that bag (a customer who asked
+  twice, or at two shops, counts once in the total and once per shop).
+- **Periods** — `lifetime` (all), `monthly` (live report month), `weekly` (this Sun–Sat week to
+  date), `lastweek` (previous complete Sun–Sat week), **`current` = still waiting** (any date,
+  `is_purchased` not set — the live call-back list).
+- **Bags are recorded from June 2026** — older OOS requests have no product, so Lifetime really
+  starts in June 2026 (the hover says so).
+- **Chip:** `📞 N asked` (`📞 N waiting` for Waiting now), hidden when 0. Hover **or tap** opens the
+  per-shop list, high → low (`Hilton 4 · Thika 2 · …`), then **each colour asked for** with its own
+  shops (`Black 63 — Ktda 23 · Eldoret 6`); an outside tap closes it.
+- **Stock beside every shop (live Odoo on-hand):** each shop count carries that shop's current
+  stock of the bag — at bag level in "By shop", and of **that colour** under "By colour"
+  (`Mombasa 2 · 0 in stock`, red at 0, green above). Same bag/colour matching as the counts;
+  stock is today's whatever the period. Website has no shelf (shows "online"); a shop with no
+  stock code shows nothing. Data: `lib/oos_callbacks.attach_stock` over `lib/stock.odoo_stock_by_shop_code`,
+  so `shops` / colour shops are `[shop, people, stock|null]`.
+- **Offline:** if Odoo can't be read (and there's no cached copy) the block is empty and no chips show;
+  the page still builds.
+
+**On this page:** `BOO.oos = {period: {bag: {total, shops}}}`, keyed exactly like the `onBags` /
+`offBags` rows — the page's own `base()` classification (`bag_classifier` infer, laptop sleeves,
+new products), so colour shades fold into the bag. **Kenya only**, like the page: Sinza and Uganda
+requests are left out (Website stays — it's a Kenya till). Both bag tables get a sortable
+**Call-backs** column (the chip). It follows the **Period** dropdown (Monthly / Weekly / Last week);
+a **Waiting now** toggle switches the column to `current`.
+**Colours:** each bag entry carries `colours: [[colour, people, [[shop, people], …]], …]`, high → low;
+the colour is the colour **family** (`lib/colours.family` — Maroon → Red, Choco → Brown). A request whose product has no colour shows as "No colour".
+
+
+## Shop birthdays
+
+Opening anniversaries from [shop-birthdays.md](shop-birthdays.md) (shown from 30 days before to 1 day after): a 🎂 badge beside the shop name in the shops table (`BOO.birthdays`).
+
 ## Regenerate
 
 ```
