@@ -78,6 +78,13 @@ Three areas, all scoped to the **current live month** (`report_month.live_month_
    KES column where filled), `deals.source` says so, and there's no Deal of the Week until the
    deals sheet gets the month's rows. Bags on vs off Offer then builds too (it needs ≥ 1 deal).
 
+> **Oct 2026 — no COMBOS / deals sheet any more.** The month's Kenya combo list (running vs self-made),
+> the Sinza / Uganda lists and the Power Deals / Deals of the Week come from `offers_monthly.csv` and
+> `deals_kenya.csv` (see README › Where the data comes from). The "Offer sales vs stock" weekly sales and
+> the combo-button **expected** figure are Odoo counts (`week_combos` by list label: every combo whose bags
+> match the list, however it was rung) — no hand-typed sheet columns. Bullets below that mention the COMBOS
+> tab or the deals sheet describe the old source.
+
 ## Data sources
 
 - **Odoo combos:** `COMBO_SQL` (name `LIKE '%+%'`, `is_cbr`, `include_all`,
@@ -364,6 +371,13 @@ rank value where higher = better; for `rem`, more-remaining ranks worse),
 `window.smcRankChipText(metric, isLow)` (the chip text), and
 `window.smcBottom3(list, valOf, keyOf)` (the 3 lowest keys). Applied in:
 
+- **Offer Sales vs Stock Guidance chart removed (Oct 2026).** Its **Sort** (`#smc-og-sort`) and **Stock**
+  (`#smc-og-stock`) dropdowns now sit in the **Running combos** panel header and drive the running cards only.
+- **Kenya till target (Oct 2026)** — at the top of the Running combos panel, the same two cards as Sinza /
+  Uganda: **last month** and **this month (so far)** — the Kenya tills' Odoo monthly POS targets summed
+  (`sales_pos_target`, scope `pos`, every till except DAR-ES-ALAM / UGANDA; corporate not included) vs the
+  bags sold in those tills (the dashboard's own count, `sql/bags_sold_total.sql` limited to Kenya tills) and
+  their KES revenue, as % of target; this month also shows the bags/day needed. `SMC.kenyaTillTarget = {prev, cur}`.
 - **Running combos** — `renderRunningCards(sortV)` (sortV from `#smc-og-sort`), ranked
   across all `SMC.runningCards`.
 - **Power deals** — `powerCards` (sortV from `#smc-pd-sort`), ranked across all
@@ -467,7 +481,7 @@ the colour is the colour **family** (`lib/colours.family` — Maroon → Red, Ch
 
 ## Sinza & Uganda — combos counted from receipts (Oct 2026)
 
-**Offers list:** `offers_outside.csv` — the month's Sinza (Tanzania) and Uganda singles + combos as the user
+**Offers list:** `offers_monthly.csv` — the month's Sinza (Tanzania) and Uganda singles + combos as the user
 sends them: `Month · Market · Type (Single/Combo) · Name (as given) · Bags · Was · Now · Disc · Currency ·
 Was KSH · Now KSH`. When it has rows for the live month they replace the COMBOS sheet's Sinza / Uganda
 combos + singles (specials still come from the sheet). Transcription:
@@ -479,20 +493,64 @@ combos + singles (specials still come from the sheet). Transcription:
   Safiri → SAFIRI TRAVEL/SAFIRI BP, Sky → SKYE HB, Mistque → MYSTIQUE, Luna manbag → LUNA (not Luna
   Amapiano), Ari sling → ARIA SLING; `*SLEEVE` = any product with SLEEVE in its name.
 
-**Receipt rule (`lib/receipt_combos.py`).** Sinza (`sinza`, `dar-es-alam` tills) and Uganda (`uganda`) ring
-every bag as its own line — a combo is several bags on one receipt at **one shared unit price**. So per
-receipt (state paid/done/invoiced, lines with qty > 0, delivery / gift bags / non-bags ignored):
-- the bags are grouped by unit price; a group of **≥ 2 bags = one combo**, a bag alone at its price = a **single**
-  (a 4-bag receipt at two prices = two combos);
-- a combo whose bag types fill a listed combo's slots (same count, **any order**, alternatives allowed) is
-  **running**; otherwise it is **self-made** (labelled by its bags, sorted);
-- receipts with **≥ 7 bags** are **bulk** (wholesale) — reported apart, never counted as combos;
-- a single counts against a listed single when its bag type matches.
+**Receipt rule (`lib/receipt_combos.py`, corrected 4 Oct 2026).** Sinza (`sinza`, `dar-es-alam` tills) and Uganda
+(`uganda`) ring every bag as its own line; a client printed out with more than one bag bought a combo. Per receipt
+(state paid/done/invoiced; delivery / gift bags / non-bags ignored):
+1. **Refunded receipts are dropped** (a `… REFUND` receipt cancels its original).
+2. **≥ 5 bags = bulk** (e.g. 6 Monah backpacks) — reported apart, never a combo.
+3. Bags at the **same unit price** (rounded to the nearest 10, so 40,000 / 40,001 match) = **one combo** per price
+   (a 4-bag receipt at two prices = two combos).
+4. The bags left over: **two or more = one combo** sold at different prices — Uganda splits a combo's price
+   unevenly (Jumbo 115,000 + Big Man Bag 70,000); **exactly one = a single**.
+A combo whose bag types fill a listed combo's slots (same count, **any order**, alternatives allowed) is
+**running**; otherwise **self-made** (labelled by its bags, sorted). A single counts against a listed single
+when its bag type matches. (Before the fix, unequal-price pairs were wrongly counted as two singles and
+refunds and 5–6-bag receipts were included — Uganda showed 3 self-made instead of 9 for 1–3 Oct.)
 Weeks are the month's Sun–Sat weeks (Wk 1 = the week holding day 1).
 
 **On the page** each Sinza / Uganda region view shows the listed combos and singles as cards with
 **POS-measured** weekly sold (not the sheet's), a **Self-made combos** list (combo · times · revenue),
 and the bulk receipts line. `SMC.regions[r].receipts = {running, selfMade, singles, bulk, receipts}`.
+
+### Sinza & Uganda — the Kenya-style view (Oct 2026)
+
+Each region view opens like Kenya's **Self-made vs running combos** panel, but measured from the till
+receipts (no Request Hub / CBR in those markets): two bars (combos sold, revenue — self-made vs running),
+and cards **Self-made** (combos sold · distinct pairings · revenue; hover the number for *Sold as self-made
+instead*), **Running** (same, plus *On the <month> list: N combos* and *Sold from the list: N units (x of N
+listed have sold)*) and **Self-made share** of all combos sold. No separate list-summary card row. Below the running cards: the **repeating self-made combos** list (each bag mix ×
+times, revenue) and **Bags clients keep pairing** — the bag types that recur most across that market's
+self-made combos, whether each is in one of its listed combos, and its stock there.
+Data: `SMC.regions[r].receipts` → `smTotals` / `runTotals` ({count, units, value}), `selfMade`, `topBags`.
+
+**What people chose instead (on each running card).** Like Kenya's "shares … self-made" chip: a running combo
+card lists, per bag of that combo, the **self-made combos that contained the bag** — e.g. SAFIRI + CODE 3 →
+*Safiri Travel: Jade + Safiri Travel ×1, Remi + Safiri Travel ×1* — with times and revenue (KSh in brackets),
+so you see what customers prefer to pair the bag with. Data: each Sinza / Uganda combo card's
+`connections: [{bag, selfMade:[{name, qty, value}], smUnits, smValue}]`, `connUnits`, `connValue`, `connCombos`.
+
+**Sale dates.** Every Sinza / Uganda self-made combo carries the days it was sold (`dates: [[YYYY-MM-DD, times], …]`,
+from the receipt date) — shown as `3 Oct, 4 Oct ×2` beside the combo in the self-made list and in the
+"What people chose instead" hover.
+
+### Sinza & Uganda — last month vs this month (Oct 2026)
+
+Like Kenya, each region view's offer panel has **no Sales vs Stock Guidance chart** — its **Sort** / **Stock**
+dropdowns sit in the panel header and drive the cards — and opens with a **target block**:
+- **Combos — target to beat last month:** last month's combos sold (running + self-made, from that month's
+  receipts, same receipt rule) vs this month so far, the weekly pace needed over the weeks left, and a weekly
+  line chart (this month solid vs last month dashed; hover a week for the combos that sold).
+- **Till target (Odoo `sales_pos_target`, monthly, `DAR-ES-ALAM` / `UGANDA`):** for last month and this month —
+  the target (KES and bags) vs what the till actually sold (bags; revenue converted to KSh with `FX_PER_KSH`),
+  as % of target; this month also shows the pace needed per day.
+Data: `SMC.regions[r].goal` (Kenya's `combosGoal` shape) and `SMC.regions[r].tillTarget = {prev, cur}`.
+
+### Kenya shillings beside TSh / USh
+
+Every money figure on the Sinza and Uganda views shows the local amount with Kenya shillings in brackets —
+`TSh 128,000 (KSh 5,120)`, `USh 172,500 (KSh 4,929)`. Rates = the user's own price lists
+(`SMC.fx`, `FX_PER_KSH` in self_made_combos.py): **25 TSh = 1 KSh** (TSh 42,500 ↔ KSh 1,700) and
+**35 USh = 1 KSh** (USh 76,500 ↔ KSh 2,186). Change the rate there when the lists change.
 
 ## Standalone SQL
 

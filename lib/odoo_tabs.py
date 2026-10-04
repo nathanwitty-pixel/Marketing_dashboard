@@ -382,16 +382,17 @@ SOURCE = {}   # tab → "odoo" | "sheet": where get_rows() last got it (callers 
 
 
 def get_rows(sh, tab, window=None):
-    """Drop-in for sh.worksheet(tab).get_all_values(): Odoo first, the sheet tab as fallback."""
+    """The tab's rows in the sheet's layout, built from Odoo. No sheet fallback (Oct 2026 — only
+    MONTHLY_TARGET and the two MARKETING_POST tabs are read from the sheet): Odoo down → [] rows."""
     try:
         rows = tab_rows(tab, sh=sh, window=window)
     except Exception as e:                                   # noqa: BLE001 — never fail a page on this
-        print(f"  {tab}: Odoo build failed ({e}) — using the sheet tab.")
+        print(f"  {tab}: Odoo build failed ({e}) — no rows.")
         rows = None
     if rows is None:
-        print(f"  {tab}: Odoo unreachable — using the sheet tab.")
-        SOURCE[tab] = "sheet"
-        return sh.worksheet(tab).get_all_values()
+        print(f"  {tab}: Odoo unreachable — no rows (the sheet tab is no longer read).")
+        SOURCE[tab] = "none"
+        return []
     SOURCE[tab] = "odoo"
     period = "" if tab == "STOCK_LEVELS" else " %s → %s" % (window or default_window(tab))
     print(f"  {tab}: from Odoo{period} ({len(rows) - 1} rows)")
@@ -406,32 +407,7 @@ def catalog_rows():
         [c["colour"], c["category"], c["name"], c["bag"]] for c in load_catalog()]
 
 
-def refresh_catalog(sh=None):
-    """Rewrite product_catalog.csv from the sheet's WEEKLY_SALES / MONTHLY_SALES product rows."""
-    if sh is None:
-        from google_auth import get_gspread_client
-        sh = get_gspread_client().open_by_key(SPREADSHEET_ID)
-    seen, out = set(), []
-    for tab, (ci, ki, ni, bi) in (("WEEKLY_SALES", (0, 1, 2, 3)), ("MONTHLY_SALES", (0, None, 1, 2))):
-        for r in sh.worksheet(tab).get_all_values()[1:]:
-            if len(r) <= max(ni, bi):
-                continue
-            name = r[ni].strip()
-            if not name or "TOTAL" in name.upper() or norm(name) in seen:
-                continue
-            seen.add(norm(name))
-            out.append([r[ci].strip(), (r[ki].strip() if ki is not None else ""), name, r[bi].strip()])
-    with open(CATALOG_FILE, "w", encoding="utf-8", newline="") as f:
-        w = csv.writer(f)
-        w.writerow(["COLOUR", "CATEGORY", "PRODUCT NAME", "BAG TYPE"])
-        w.writerows(out)
-    print(f"product_catalog.csv: {len(out)} products")
-
-
 if __name__ == "__main__":
     import sys
     sys.path.insert(0, BASE)
-    if "--refresh-catalog" in sys.argv:
-        refresh_catalog()
-    else:
-        print(__doc__)
+    print(__doc__)

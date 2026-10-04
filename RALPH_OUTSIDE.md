@@ -5,7 +5,7 @@ Log in `OOS_PROGRESS.md` › "Sinza & Uganda". Never commit / push / run publish
 
 ## Inputs (from the user, Oct 2026)
 - Sinza (Tanzania) singles + combos and Uganda singles + combos with prices — transcribed into
-  `offers_outside.csv` (Month, Market, Type, Name as given, Odoo name(s), Was, Now, Disc, currency, KSH).
+  `offers_monthly.csv` (Month, Market, Type, Name as given, Odoo name(s), Was, Now, Disc, currency, KSH).
   Sinza combos: the user's sheet columns are offer KSH · offer TSH · S.P (TSh selling price) · was KSH ·
   was TSH · DISC (= was TSH − S.P). Uganda: was / now / disc in USh; the last number = KSH equivalent.
 - POS rule (Sinza = tills `sinza`, `dar-es-alam`; Uganda = `uganda`): these tills ring every bag as its own

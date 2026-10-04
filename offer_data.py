@@ -1,7 +1,9 @@
 """
 offer_data.py
 ─────────────────────────────────────────────────────────────────
-Shared COMBOS-sheet reader (formerly offer_type_analysis.py). Builds the offer /
+Shared offer dataset (formerly the COMBOS-sheet reader, offer_type_analysis.py).
+Oct 2026: the offer lists come from the monthly uploads (offers_monthly.csv, deals_kenya.csv);
+only MONTHLY_TARGET is read from the sheet. Builds the offer /
 combo dataset (Kenya + Sinza + Uganda) once and hands it to the Self-Made-Combos
 page and the Monthly Report — call build() for the (dict, OFFER_DATA-block) pair.
 
@@ -65,192 +67,61 @@ def fmt_price(raw):
 
 # ── FETCH ─────────────────────────────────────────────────────
 
+def _offer_tables(month_name):
+    """The month's offer tables in the old COMBOS-sheet shape ([headers], [rows…, TOTAL]) from the
+    monthly uploads — offers_monthly.csv (Kenya / Sinza / Uganda combos + singles) and
+    deals_kenya.csv (Power Deals). No sheet is read (docs/README.md › Where the data comes from)."""
+    import csv, os
+    base = os.path.dirname(os.path.abspath(__file__))
+
+    def rows_of(fname):
+        try:
+            with open(os.path.join(base, fname), encoding="utf-8", newline="") as f:
+                return [r for r in csv.DictReader(f) if r.get("Month", "").strip().lower() == month_name.lower()]
+        except OSError:
+            return []
+    offers, deals = rows_of("offers_monthly.csv"), rows_of("deals_kenya.csv")
+
+    def table(title, picked, price_key):
+        if not picked:
+            return [], []
+        body = [[r[price_key[0]].strip(), r.get(price_key[1], "").strip()] for r in picked]
+        return [title, "PRICE"], body + [["TOTAL", ""]]
+    mon = month_name.upper()
+    pick = lambda m, t: [r for r in offers if r["Market"].strip().lower() == m and r["Type"].strip().lower() == t]
+    return {
+        "kenya":         table(f"{mon} COMBOS", pick("kenya", "combo"), ("Name", "Now")),
+        "power":         table("POWER DEALS", [r for r in deals if r["Type"].lower().startswith("power")], ("Product", "Current")),
+        "sinzaCombos":   table(f"{mon} COMBOS", pick("sinza", "combo"), ("Name", "Now")),
+        "sinzaSingles":  table("SINGLES", pick("sinza", "single"), ("Name", "Now")),
+        "ugCombos":      table(f"{mon} OFFERS", pick("uganda", "combo"), ("Name", "Now")),
+        "ugSingles":     table("SINGLES", pick("uganda", "single"), ("Name", "Now")),
+    }
+
+
 def fetch_offer_data():
     gc = get_gspread_client()
     sh = gc.open_by_key(SPREADSHEET_ID)
 
-    # ── COMBOS ────────────────────────────────────────────────
-    # The sheet layout shifts every month (JUNE COMBOS → JULY COMBOS, rows
-    # move around), so instead of fixed cell ranges we fetch the live area
-    # once and locate each section by its marker text, reading each table
-    # from its header row down to its TOTAL row.
-    # One batched read of every range this function needs — a single network
-    # round-trip instead of ~6 (a worksheet() metadata lookup + a values read per
-    # sheet), which dominated the Google-Sheets portion of a refresh. Open-ended row
-    # ranges (A:J, A:AB) return all populated rows, matching get_all_values().
-    _batched = sh.values_batch_get([
-        "COMBOS!A1:M150",           # cols A..M — June archive lives in N..P
-        "MONTHLY_TARGET!A:J",       # bag list + target/sales/deficit/offer flag
-    ])
-    _vr = _batched.get("valueRanges", [])
-    _rng = lambda i: ((_vr[i].get("values") if i < len(_vr) else None) or [])
-    grid    = _rng(0)   # COMBOS A1:M150
-    mt_rows = _rng(1)   # MONTHLY_TARGET
-    # STOCK_LEVELS: live Odoo on-hand in the sheet's layout (lib/odoo_tabs) — the sheet
-    # tab only if Postgres is down. Its ✅/x flags come from the MONTHLY_TARGET just read.
-    from lib import odoo_tabs
+    # Only MONTHLY_TARGET comes from the sheet; the offer lists come from the monthly uploads.
+    # Column C = the month's bag targets from Odoo (lib/product_targets — docs/product-targets.md).
+    from lib import product_targets
+    mt_rows = product_targets.monthly_target_rows(sh.worksheet("MONTHLY_TARGET").get_all_values())
+    # STOCK_LEVELS: live Odoo on-hand in the sheet's layout (lib/odoo_tabs; never the sheet).
+    # Its ✅/x flags come from the MONTHLY_TARGET just read.
+    from lib import odoo_tabs, report_month
     odoo_tabs.prime_offer_flags(mt_rows)
-    sl_rows = odoo_tabs.get_rows(sh, "STOCK_LEVELS")
+    sl_rows = odoo_tabs.get_rows(None, "STOCK_LEVELS")
 
-    def cell(r, c):
-        row = grid[r] if 0 <= r < len(grid) else []
-        return str(row[c]).strip() if c < len(row) else ''
+    month_name = report_month.live_month_window()[0].strftime("%B")
+    T = _offer_tables(month_name)
+    june_combo_headers, june_combos = T["kenya"]
+    power_deal_headers, power_deals = T["power"]
+    ug_title = (month_name + " Offers") if T["ugCombos"][1] else ""
 
-    def find_row(col_idx, needle, start=0, contains=False):
-        """0-based row index whose cell in col_idx matches needle."""
-        n = needle.upper()
-        for r in range(start, len(grid)):
-            v = cell(r, col_idx).upper()
-            if (contains and n in v) or v == n:
-                return r
-        return None
-
-    def find_row_any(needle, start=0, contains=False, max_col=13):
-        """Like find_row but scans every column — section titles move
-        around (e.g. POWER DEALS moved from col B to col D)."""
-        n = needle.upper()
-        for r in range(start, len(grid)):
-            for c in range(max_col):
-                v = cell(r, c).upper()
-                if (contains and n in v) or v == n:
-                    return r
-        return None
-
-    SECTION_KEYWORDS = ('COMBO', 'POWER', 'SINGLE', 'SALE', 'SPECIAL', 'OFFER')
-
-    def section_name_col(header_r):
-        """Column holding the section title / product names. Price columns
-        may now sit BEFORE it (B=PRICE, C=TSH, D=name)."""
-        if header_r is None:
-            return None
-        for c in range(1, 13):
-            v = cell(header_r, c).upper()
-            if v and any(k in v for k in SECTION_KEYWORDS):
-                return c
-        for c in range(1, 13):
-            v = cell(header_r, c).upper()
-            if v and v != 'PRICE':
-                return c
-        return None
-
-    def section_title(header_r):
-        c = section_name_col(header_r)
-        return cell(header_r, c) if c is not None else ''
-
-    def section_raw(header_r, first_col=1, last_col=12):
-        """Rows from the header row down to (and incl.) the TOTAL row.
-        Columns are reordered to: name, price column(s), then the week /
-        total columns — so tables render name-first even though the sheet
-        now puts PRICE in front (cols B/C)."""
-        if header_r is None:
-            return []
-        name_c = section_name_col(header_r)
-        if name_c is None:
-            return []
-        price_cols = list(range(first_col, name_c))
-        cols = [name_c] + price_cols + list(range(name_c + 1, last_col + 1))
-        out = []
-        for r in range(header_r, min(header_r + 40, len(grid))):
-            vals = [cell(r, c) for c in cols]
-            out.append(vals)
-            if r > header_r and vals and 'TOTAL' in vals[0].upper():
-                break
-        # Name blank price-column headers so process_table doesn't
-        # auto-label them as week columns
-        for i in range(1, 1 + len(price_cols)):
-            if i < len(out[0]) and not out[0][i]:
-                out[0][i] = 'PRICE (TSH)' if i > 1 else 'PRICE'
-        return out
-
-    def process_table(raw):
-        """Return (headers, rows).
-        Keeps every column; blank-header columns between name and price are
-        auto-named Wk 1, Wk 2, … so week data is never lost.
-        Drops columns (except col 0) with no data — hides future empty weeks."""
-        if not raw:
-            return [], []
-        all_headers = [str(c).strip() for c in raw[0]]
-        ncols = len(all_headers)
-
-        # Split data rows from the TOTAL row
-        data_raw  = []
-        total_raw = None
-        for row in raw[1:]:
-            padded = [str(row[i]).strip() if i < len(row) else '' for i in range(ncols)]
-            if any(padded):
-                if 'TOTAL' in padded[0].upper():
-                    total_raw = padded
-                else:
-                    data_raw.append(padded)
-
-        def col_has_data(col_idx):
-            for padded in data_raw:
-                val = padded[col_idx] if col_idx < len(padded) else ''
-                try:
-                    if float(str(val).replace(',', '')) != 0:
-                        return True
-                except (ValueError, TypeError):
-                    if val:
-                        return True
-            return False
-
-        # Always keep col 0 (name); drop any other column with no data
-        keep = [i for i in range(ncols) if i == 0 or col_has_data(i)]
-
-        # Build headers: blank cols get auto-names (Wk 1, Wk 2, …)
-        wk = 0
-        headers = []
-        for i in keep:
-            h = all_headers[i]
-            if not h:
-                if i == 0:
-                    h = "Name"
-                else:
-                    wk += 1
-                    h = f"Wk {wk}"
-            headers.append(h)
-
-        rows = []
-        for padded in data_raw:
-            filtered = [padded[i] if i < len(padded) else '' for i in keep]
-            if any(filtered):
-                rows.append(filtered)
-        if total_raw is not None:
-            rows.append([total_raw[i] if i < len(total_raw) else '' for i in keep])
-
-        return headers, rows
-
-    # ── Locate section markers (row positions shift every month) ──
-    def header_at_or_below(r, look=3):
-        """The market marker (KENYA / SINZA / UGANDA in col A) used to sit ON the section's
-        header row. The sheet now sometimes puts it on its own row ("KENYA | PRICE") with the
-        "SEPT COMBOS" header just below — so if row r carries no section title, use the first
-        of the next few rows that does. No-op when the marker row already has the title."""
-        if r is None:
-            return None
-        for rr in range(r, min(r + look + 1, len(grid))):
-            if any(k in cell(rr, c).upper() for c in range(1, 13) for k in SECTION_KEYWORDS):
-                return rr
-        return r
-
-    kenya_r  = header_at_or_below(find_row(0, "KENYA"))        # col A
-    pd_r     = find_row_any("POWER DEALS", contains=True)      # any col
-    sinza_r  = header_at_or_below(find_row(0, "SINZA"))        # col A
-    ug_r     = header_at_or_below(find_row(0, "UGANDA"))       # col A
-
-    # Month label comes from the sheet itself, e.g. "JULY COMBOS" → "July"
-    kenya_title = section_title(kenya_r)
-    month_name  = kenya_title.split()[0].capitalize() if kenya_title else ""
-
-    # Kenya Combos: header row + data until TOTAL
-    june_combo_headers, june_combos = process_table(section_raw(kenya_r))
-
-    # Power Deals: header row + data until TOTAL
-    power_deal_headers, power_deals = process_table(section_raw(pd_r))
-
-    print(f"  Month detected    : {month_name or '(not found)'}")
-    print(f"  {month_name} Combos found : {len(june_combos)}")
-    print(f"  Power Deals found : {len(power_deals)}")
+    print(f"  Month             : {month_name} (offers_monthly.csv / deals_kenya.csv)")
+    print(f"  {month_name} Combos found : {data_rows_count(june_combos)}")
+    print(f"  Power Deals found : {data_rows_count(power_deals)}")
 
     # ── MONTHLY_TARGET: col F offer flag ──────────────────────
     # col A (idx 0) = BAG TYPE
@@ -323,11 +194,8 @@ def fetch_offer_data():
     # ── UGANDA ────────────────────────────────────────────────
     # One live table now (e.g. "JULY SALE" at the UGANDA marker); the old
     # June combos/singles layout is archived in cols N..P which we ignore.
-    ug_title = section_title(ug_r).title()   # e.g. "July Sale"
-    ug_combo_headers, ug_combos = process_table(section_raw(ug_r))
-
-    # No separate Uganda singles table in the current layout
-    ug_singles_headers, ug_singles = [], []
+    ug_combo_headers, ug_combos = T["ugCombos"]
+    ug_singles_headers, ug_singles = T["ugSingles"]
 
     print(f"  Uganda '{ug_title}' rows : {len(ug_combos)}")
 
@@ -360,30 +228,9 @@ def fetch_offer_data():
     # ── SINZA ─────────────────────────────────────────────────
     # Combos at the SINZA marker; SINGLES and SPECIAL tables (if present)
     # are located below it by their own title cells (any column).
-    sinza_combo_headers, sinza_combos = process_table(section_raw(sinza_r))
-
-    # Sinza combo NAMES are maintained in a separate column (AK372:AK381);
-    # override the parsed names with those, matched positionally to the data rows.
-    try:
-        ak_vals  = sh.values_get("COMBOS!AK372:AK381").get("values", [])
-        ak_names = [str(row[0]).strip() if row else '' for row in ak_vals]
-        di = 0
-        for row in sinza_combos:
-            if row and str(row[0]).strip().upper().startswith("TOTAL"):
-                continue
-            if di < len(ak_names) and ak_names[di]:
-                row[0] = ak_names[di]
-            di += 1
-        print(f"  Sinza combo names from AK: {len([n for n in ak_names if n])}")
-    except Exception as e:
-        print(f"  (Sinza AK names skipped: {e})")
-
-    singles_r = find_row_any("SINGLES", start=(sinza_r or 0) + 1) if sinza_r is not None else None
-    sinza_singles_headers, sinza_singles = process_table(section_raw(singles_r))
-
-    specials_r = (find_row_any("SPECIAL", start=(sinza_r or 0) + 1, contains=True)
-                  if sinza_r is not None else None)
-    sinza_special_headers, sinza_specials = process_table(section_raw(specials_r))
+    sinza_combo_headers, sinza_combos = T["sinzaCombos"]
+    sinza_singles_headers, sinza_singles = T["sinzaSingles"]
+    sinza_special_headers, sinza_specials = [], []          # no specials list is uploaded
 
     print(f"  Sinza Combos found   : {len(sinza_combos)}")
     print(f"  Sinza Singles found  : {len(sinza_singles)}")

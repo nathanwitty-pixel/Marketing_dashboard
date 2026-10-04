@@ -40,6 +40,7 @@ def test_four_bags_at_two_prices_are_two_combos():
     out = rc.classify([L(2, "Gym Bag Grey", 42500), L(2, "Zelus Black", 42500),
                        L(2, "Elyse Black", 65000), L(2, "Bonita Black", 65000), L(2, "Gift Bag A3", 5000)], OFFERS, infer, M)
     assert set(out["selfMade"]) == {"GYM BAG + ZELUS", "BONITA + ELYSE"}
+    assert out["selfMade"]["BONITA + ELYSE"]["days"] == {"2026-10-04": 1}
     assert out["comboReceipts"] == 1
 
 
@@ -70,3 +71,36 @@ def test_offers_csv_loads_october():
     ug = rc.load_offers("October", "uganda")
     assert len(ug["combos"]) == 5 and ug["combos"][2]["slots"][1] == {"BELT BAG", "NIZANA"}
     assert rc.load_offers("March", "uganda") is None
+
+
+def test_uneven_prices_on_one_receipt_are_one_combo():
+    # Uganda splits a combo's price unevenly: Jumbo 115,000 + Big Man Bag 70,000 = one combo, not 2 singles.
+    out = rc.classify([L(10, "Jumbo Grey", 115000), L(10, "Big Man Bag Grey", 70000)], OFFERS,
+                      lambda n: n.upper().rsplit(" ", 1)[0], M)
+    assert out["selfMade"] == {"BIG MAN BAG + JUMBO": {"count": 1, "revenue": 185000, "weeks": {2: 1},
+                                                        "days": {"2026-10-04": 1}, "bags": ["BIG MAN BAG", "JUMBO"]}}
+    assert not out["singles"]
+
+
+def test_shilling_rounding_still_one_price():
+    out = rc.classify([L(11, "Gym Bag Black", 40000), L(11, "Aria Sling Black", 40001)], OFFERS, infer, M)
+    assert out["running"]["GYMBAG + ARI SLING"]["count"] == 1
+
+
+def test_refunded_receipt_is_dropped():
+    lines = [dict(L(12, "Bonita Black", 85000), ref="UGANDA/0784"),
+             dict(L(13, "Bonita Black", -85000, qty=-1), ref="UGANDA/0784 REFUND"),
+             dict(L(14, "Bonita Black", 85000), ref="UGANDA/0785")]
+    out = rc.classify(lines, OFFERS, infer, M)
+    assert out["singles"]["BONITA"]["count"] == 1 and out["refunded"] == 1
+
+
+def test_pair_plus_one_at_other_price_is_combo_plus_single():
+    out = rc.classify([L(15, "Elyse Black", 75000), L(15, "Elyse Grey", 75001), L(15, "Bonita Black", 110000)],
+                      OFFERS, infer, M)
+    assert out["selfMade"]["ELYSE + ELYSE"]["count"] == 1 and out["singles"]["BONITA"]["count"] == 1
+
+
+def test_six_identical_bags_are_bulk():
+    out = rc.classify([L(16, "Remi Black", 65000)] * 6, OFFERS, infer, M)
+    assert out["bulk"]["receipts"] == 1 and not out["selfMade"]

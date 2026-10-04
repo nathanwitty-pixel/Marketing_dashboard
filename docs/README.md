@@ -4,6 +4,21 @@ One file per menu in the Denri / Bagware Marketing Dashboard. **These are the sp
 When a page needs changing, correct the relevant `.md` here first, then make the code
 match it.
 
+## Where the data comes from (Oct 2026)
+
+**Google Sheets — only three tabs** of the main spreadsheet (`1Zb8Ly6v…`):
+`MONTHLY_TARGET` (targets, New-products col I, on-offer ✅ col F), `MONTHLY_MARKETING_POST` and
+`WEEKLY_MARKETING_POST` (posts). Nothing else is read from any sheet — `tests/test_sheet_reads.py` fails if
+code reads another tab or another spreadsheet.
+
+**Monthly uploads (the user sends them, Claude transcribes):**
+- `offers_monthly.csv` — Kenya / Sinza / Uganda combos and singles with prices (the old COMBOS tab).
+- `deals_kenya.csv` — Kenya Power Deals + Deals of the Week from the poster images (the old deals sheet).
+
+**Odoo** — sales, stock, dispatch, combos rung, WhatsApp call-backs. If Odoo is down, those figures are
+empty (no sheet fallback any more). **Local files** — `bom_costs.json` and `offers_prices.json` (Offer
+Picking costs / prices), `product_catalog.csv`, `bag_original_prices.json`, `bag_names.csv`.
+
 ## Refresh performance
 
 Each `/api/refresh` (the "Refreshing data…" spinner) runs a generator as a fresh

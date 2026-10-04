@@ -1,18 +1,6 @@
 {
   "weeks": [
     {
-      "label": "Wk 5",
-      "month": "Jul",
-      "kenya": 67.0,
-      "sinza": 40.5,
-      "uganda": 9.9,
-      "_sig": [
-        201,
-        80,
-        78
-      ]
-    },
-    {
       "label": "Wk 1",
       "month": "Aug",
       "kenya": 67.0,
@@ -142,6 +130,18 @@
         307,
         36,
         57
+      ]
+    },
+    {
+      "label": "Wk 2",
+      "month": "Oct",
+      "kenya": 45.6,
+      "sinza": 0.0,
+      "uganda": 0.0,
+      "_sig": [
+        47,
+        0,
+        0
       ]
     }
   ]

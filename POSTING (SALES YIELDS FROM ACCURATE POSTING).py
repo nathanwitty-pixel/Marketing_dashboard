@@ -2047,7 +2047,9 @@ def fetch_posting_data():
 
     print("  Reading sheets (one connection)...")
     mmp_rows = sh.worksheet("MONTHLY_MARKETING_POST").get_all_values()
-    mt_rows  = sh.worksheet("MONTHLY_TARGET").get_all_values()
+    # Column C = the month's bag targets from Odoo (lib/product_targets — docs/product-targets.md).
+    from lib import product_targets
+    mt_rows  = product_targets.monthly_target_rows(sh.worksheet("MONTHLY_TARGET").get_all_values())
     # MONTHLY_SALES (reporting month) and STOCK_LEVELS (live on-hand) are rebuilt from Odoo
     # in the sheet's exact layout (lib/odoo_tabs); ✅/x flags = MONTHLY_TARGET cols F/G/H.
     # The sheet tabs are only read if Postgres is down.

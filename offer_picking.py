@@ -35,9 +35,7 @@ HTML = os.path.join(BASE, "offer_picking.html")
 OFFERS_CACHE = os.path.join(BASE, "offers_prices.json")
 
 # Google Sheets: production BOM (accessible) + offers (pending share)
-BOM_SHEET_ID = "1GjurDUQOtdsdmS8sn9h4amMmLXYSKNxt63WhdODum8I"
 BOM_GID = 678614335
-OFFERS_SHEET_ID = "1I68VLBA1UaEcVklTT09chGXXXotVj0Ha4t7vr5NOTtg"
 
 # category/colour words dropped when matching a combo alternative to a BOM bag type
 _STOP = {"HANDBAG", "BAG", "TRAVEL", "BACKPACK", "SLING", "SLINGBAG", "COMBO", "OR", "THE",
@@ -134,18 +132,13 @@ MONTHLY_COMBOS_2025 = {
 
 
 def _read_bom_costs():
-    """{BAG TYPE (upper): production cost} from the BOM sheet, col A vs col G."""
-    from google_auth import get_gspread_client
-    gc = get_gspread_client()
-    ws = gc.open_by_key(BOM_SHEET_ID).get_worksheet_by_id(BOM_GID)
-    out = {}
-    for r in ws.get_all_values()[1:]:
-        if len(r) > 6 and str(r[0]).strip():
-            try:
-                out[str(r[0]).strip().upper()] = float(str(r[6]).replace(",", "").strip() or 0)
-            except ValueError:
-                pass
-    return out
+    """{BAG TYPE (upper): production cost} from bom_costs.json — the local copy of the BOM
+    costs (edit it by hand; no sheet is read any more — docs/offer-picking.md)."""
+    try:
+        raw = json.load(open(os.path.join(BASE, "bom_costs.json"), encoding="utf-8"))
+        return {str(k).strip().upper(): float(v) for k, v in raw.get("costs", {}).items()}
+    except Exception:                                        # noqa: BLE001
+        return {}
 
 
 def _read_bag_prices():
@@ -186,7 +179,7 @@ def _write_offers_cache(offers):
                   "unreachable. Set \"_lock\": true to use THIS file as the source of truth — "
                   "your hand edits then win and are never overwritten by the sheet."),
         "_updated": _dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "_source": "offers sheet %s (worksheet 0)" % OFFERS_SHEET_ID,
+        "_source": "local copy (the offers sheet is no longer read)",
         "_lock": prev_lock,                                  # preserve, never force back to False
         "offers": offers,
     }
@@ -236,49 +229,13 @@ def _read_offers_cache():
 
 
 def _read_offers():
-    """{BAG (upper): {category, price(full, col D), offer(col F)}} → (offers, source).
-
-    The offers sheet is the source of truth; a local downloaded copy (OFFERS_CACHE) is
-    refreshed on every successful read and used as a fallback when the sheet is unreachable.
-    If the local copy sets "_lock": true it wins outright — a hand-edited override the sheet
-    never clobbers. Category drives handbag detection; offer price is what handbags value at."""
-    from google_auth import get_gspread_client
-
-    def _num(x):
-        try:
-            return float(str(x).replace(",", "").strip() or 0)
-        except (ValueError, TypeError):
-            return 0.0
-
-    cached, locked = _read_offers_cache()
-    if locked and cached:
-        return cached, "downloaded copy offers_prices.json (locked — hand-edited override)"
-    try:
-        gc = get_gspread_client()
-        rows = gc.open_by_key(OFFERS_SHEET_ID).get_worksheet(0).get_all_values()
-    except Exception:                                        # noqa: BLE001
-        if cached:
-            return cached, "downloaded copy offers_prices.json (sheet unreachable)"
-        return {}, "unavailable (sheet unreachable, no downloaded copy yet)"
-    out = {}
-    for r in rows[1:]:
-        bag = (r[1] if len(r) > 1 else "").strip().upper()
-        if not bag or bag == "BAG TYPE":
-            continue
-        out[bag] = {"category": (r[2] if len(r) > 2 else "").strip().upper(),
-                    "price": _num(r[3] if len(r) > 3 else 0),
-                    "offer": _num(r[5] if len(r) > 5 else 0)}
-        # The sheet has no alternates column, so carry the hand-entered ones across from the
-        # downloaded copy — a live read must not silently drop them.
-        _alts = (cached.get(bag) or {}).get("offerAlts")
-        if isinstance(_alts, list) and len(_alts) > 1:
-            out[bag]["offerAlts"] = _alts
-    if out:
-        _write_offers_cache(out)                             # keep the downloaded copy fresh
-        return out, "offers sheet (live — downloaded copy refreshed)"
+    """{BAG (upper): {category, price, offer}} → (offers, source), from offers_prices.json — the
+    local copy of the old offers sheet (edit it by hand; no sheet is read any more). Category drives
+    handbag detection; offer price is what handbags value at."""
+    cached, _locked = _read_offers_cache()
     if cached:
-        return cached, "downloaded copy offers_prices.json (sheet returned no rows)"
-    return {}, "offers sheet (empty)"
+        return cached, "offers_prices.json (local copy)"
+    return {}, "unavailable (offers_prices.json missing)"
 
 
 def _read_smc_payload():

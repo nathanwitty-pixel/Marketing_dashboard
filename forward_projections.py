@@ -103,10 +103,11 @@ def fetch_sheet_data():
     # Wait — actual header: BAG TYPE | CATEGORY | TARGET(C) | SALES(D) | DEFICIT(E)
     # col C = TARGET, col D = SALES  (rows 2 onwards, skip header row 1)
 
-    mt = sh.worksheet("MONTHLY_TARGET")
-
-    col_c_raw = mt.col_values(3)   # column C — TARGET
-    col_d_raw = mt.col_values(4)   # column D — SALES
+    # Column C = the month's bag targets from Odoo (lib/product_targets — docs/product-targets.md).
+    from lib import product_targets
+    mt_rows = product_targets.monthly_target_rows(sh.worksheet("MONTHLY_TARGET").get_all_values())
+    col_c_raw = [r[2] if len(r) > 2 else "" for r in mt_rows]   # column C — TARGET
+    col_d_raw = [r[3] if len(r) > 3 else "" for r in mt_rows]   # column D — SALES
 
     # Skip header (row 1); sum all numeric values
     def safe_sum(values):
@@ -468,7 +469,7 @@ if not os.environ.get("DENRI_LAUNCHER"):
 print("forward_projections data injected; dashboard updated.")
 print(f"  Data through          : {yesterday.strftime('%d %b %Y')}  (day {current_day} of {days_in_month})")
 print(f"  Velocity factor       : {velocity_factor:.2f}x")
-print(f"  Total Target (sheet)  : {fmt_int(total_target)}")
+print(f"  Total Target (bags)   : {fmt_int(total_target)}")
 print(f"  Total Sales  ({'Odoo' if sales_is_live else 'sheet'})  : {fmt_int(total_sales)}")
 print(f"  Standard Proj.        : {fmt_pct(standard_projection_pct)}")
 print(f"  Forecasted Proj.      : {fmt_pct(forecasted_projection_pct)}  (incl. {fmt_int(corporate_bags)} corporate)")

@@ -22,16 +22,11 @@ def test_october_comes_from_the_csv():
     assert d["dowLocations"] == 17
 
 
-def test_month_not_in_csv_uses_the_sheet_path(monkeypatch):
-    called = {}
-
-    class Boom(Exception):
-        pass
-
-    def fake_client():
-        called["sheet"] = True
-        raise Boom()
+def test_month_not_in_csv_has_no_deals_and_no_sheet_read(monkeypatch):
     import google_auth
-    monkeypatch.setattr(google_auth, "get_gspread_client", fake_client)
+
+    def boom():
+        raise AssertionError("the deals sheet must not be read")
+    monkeypatch.setattr(google_auth, "get_gspread_client", boom)
     assert smc._local_deal_rows("March") is None
-    assert smc._read_deals("March") is None and called.get("sheet")
+    assert smc._read_deals("March") is None

@@ -65,3 +65,17 @@ tables this month (no sales): CLEO, ELLA SLING, MAYA, MONTANA, TWAIN TRAVEL. New
 | 3 | Code | done | lib/receipt_combos.py; tests/test_receipt_combos.py 6 passed |
 | 4 | Page | done | region cards from the CSV + till-counted weeks; Self-made panel renders (Sinza: 8 running, 15 self-made) |
 | 5 | Finish | done | pytest all; AppTest; graphify update |
+
+## Sheets cut to three tabs (RALPH_SHEETS.md) — 2026-10-04
+
+| # | Step | Status | Verified |
+|---|---|---|---|
+| 1 | CSV | done | offers_monthly.csv (renamed) + Kenya's 10 October combos |
+| 2 | Docs | done | README › Where the data comes from; combos, offer-picking, timed-offers |
+| 3 | offer_data | done | COMBOS tab no longer read; only MONTHLY_TARGET |
+| 4 | Combos | done | deals CSV only; chart + till-check "expected" from Odoo week_combos |
+| 5 | Other readers | done | get_rows no sheet fallback; timed_offers; offer_picking + reject_sales local JSON |
+| 6 | Guard | done | tests/test_sheet_reads.py |
+| 7 | Rebuild | done | build_all 11 OK + 4 slow pages run singly, all exit 0 |
+| 8 | Sinza/Uganda Kenya-style view | done | split panel, cards, repeating self-made list, top bags (receipts, no CBR) |
+| 9 | KSh in brackets | done | SMC.fx TSh 25 / USh 35 per KSh; 30 KSh figures on the Sinza view |

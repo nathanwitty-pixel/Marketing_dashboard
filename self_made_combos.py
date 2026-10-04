@@ -364,7 +364,6 @@ def _read_offer_analysis():
     }
 
 
-DEALS_SHEET_ID = "1TAGv9bGnE88nEjn2d0QvBkRhKiK3E42VI2GfU-MmJEY"
 
 # Manual Power-Deal supplements, per month — bags that DO run as a Power Deal but aren't in the
 # deals sheet for that month yet. The reporting service account is read-only, so these can't be
@@ -718,12 +717,8 @@ def _read_deals(month_name):
     # (docs/self-made-combos.md › Deals from the posters) — its rows for the month win over the sheet.
     rows = _local_deal_rows(month_name)
     if rows is None:
-        try:
-            from google_auth import get_gspread_client
-            gc = get_gspread_client()
-            rows = gc.open_by_key(DEALS_SHEET_ID).worksheet("Kenya").get_all_values()
-        except Exception:                                        # noqa: BLE001
-            return None
+        print(f"  No {month_name} rows in deals_kenya.csv — send the month's posters (no deals sheet any more).")
+        return None
 
     def _pn(v):
         try:
@@ -1149,21 +1144,15 @@ SELECT COALESCE(SUM(jumbos / 2), 0)::int AS pairs FROM jj WHERE jumbos >= 2
 _LAST_SHOP_TOK = {}   # shop -> {token: units}; set by _combo_button_usage, read by combos_by_shop()
 
 
-def _combo_button_usage(m_start, m_end, offer, sheet_slots, running):
+def _combo_button_usage(m_start, m_end, offer, sheet_slots, running, week_totals=None):
     """Per running combo: units rung through the combo button (Odoo) vs the sheet's
     expected figure, with a per-shop breakdown of combos rung and the combo's
     component bags sold as singles at that shop."""
     if not sheet_slots:
         return []
-    # sheet's expected COMBO figure per label (col C of the month's COMBOS list)
-    expected = {}
-    for row in (offer or {}).get("combos", []):
-        if isinstance(row, (list, tuple)) and len(row) >= 3:
-            lbl = str(row[0]).strip()
-            try:
-                expected[lbl] = int(str(row[2]).replace(",", "").strip() or 0)
-            except ValueError:
-                expected[lbl] = 0
+    # Expected = every combo sold this month whose bags match the list label, however it was rung
+    # (Odoo, week_totals) — the figure the button rings are measured against. No sheet column.
+    expected = dict(week_totals or {})
     # Each combo's slots as token-sets, with how many times an identical slot repeats
     # (Jumbo+Jumbo = the {JUMBO} slot twice → a pair needs 2 Jumbos).
     slot_sets = {}   # lbl -> list of (frozenset(tokens), multiplicity)
@@ -1327,8 +1316,145 @@ def combos_by_shop(running_cards, deals):
     return out
 
 
+# Local currency per Kenya shilling, from the user's own price lists (TSh 42,500 = KSh 1,700;
+# USh 76,500 = KSh 2,186) — the Sinza / Uganda views show KSh in brackets with these.
+FX_PER_KSH = {"TSh": 25, "USh": 35}
+
+
+def _region_goal(key, summ, m_start, m_end, infer, anchor, last_wk):
+    """Kenya's combosGoal for a Sinza / Uganda market, from receipts: last month's combos (running +
+    self-made) as the target to beat, this month so far, weekly pace needed, week-by-week detail."""
+    from lib import receipt_combos
+    prev_end = m_start - datetime.timedelta(days=1)
+    prev_start = prev_end.replace(day=1)
+    prev = receipt_combos.market_summary(key, prev_start, prev_end, infer, month_name=m_start.strftime("%B")) or {}
+
+    def weekly(sm, n_weeks=None):
+        w = {}
+        for t in ("running", "selfMade"):
+            for v in (sm.get(t) or {}).values():
+                for wk, n in v["weeks"].items():
+                    w[wk] = w.get(wk, 0) + n
+        top = max(w) if w else 0
+        return [w.get(i, 0) for i in range(1, (n_weeks or top) + 1)]
+    prev_w, cur_w = weekly(prev), weekly(summ, last_wk)
+    prev_total, cur_total = sum(prev_w), sum(cur_w)
+    days_left = (m_end - datetime.date.today()).days + 1
+    weeks_left = max(1, -(-days_left // 7)) if days_left > 0 else 0
+    remaining = max(prev_total - cur_total, 0)
+    cur_lbl = {}
+    for t in ("running", "selfMade"):
+        for name, v in (summ.get(t) or {}).items():
+            for wk, n in v["weeks"].items():
+                cur_lbl.setdefault(wk, {})[name] = cur_lbl.setdefault(wk, {}).get(name, 0) + n
+    span = max(len(prev_w), last_wk)
+    return {"augLabel": prev_start.strftime("%B"), "septLabel": m_start.strftime("%B"),
+            "augTotal": prev_total, "augWeekly": prev_w, "augAvg": round(prev_total / max(len(prev_w), 1)),
+            "septSoFar": cur_total, "weeksLeft": weeks_left,
+            "weeklyToBeat": -(-remaining // weeks_left) if weeks_left else remaining,
+            "beaten": cur_total > prev_total, "curWeek": last_wk,
+            "weeklyDetail": [{"wk": i, "cur": (cur_w[i - 1] if i <= last_wk else None),
+                              "prev": (prev_w[i - 1] if i - 1 < len(prev_w) else 0),
+                              "combos": [{"name": n, "units": u} for n, u in
+                                         sorted(cur_lbl.get(i, {}).items(), key=lambda kv: -kv[1])[:8]]}
+                             for i in range(1, span + 1)],
+            "prevBags": prev.get("bags", 0), "prevRevenue": prev.get("revenue", 0)}
+
+
+_TILL_OF = {"sinza": "DAR-ES-ALAM", "uganda": "UGANDA"}
+
+
+def _kenya_till_targets(m_start, m_end):
+    """{prev, cur} for Kenya: the Kenya tills' Odoo monthly POS targets (every till but DAR-ES-ALAM /
+    UGANDA; no corporate) vs bags sold in those tills (sql/bags_sold_total.sql rules) and KES revenue."""
+    from lib import queries
+    prev_end = m_start - datetime.timedelta(days=1)
+    prev_start = prev_end.replace(day=1)
+    df = db.run_query("""
+        SELECT t.start_date, SUM(t.target_amount) AS amt, SUM(t.target_qty) AS qty FROM sales_pos_target t
+        JOIN pos_config pc ON pc.id = t.config_id
+        WHERE t.period = 'month' AND t.target_scope = 'pos' AND upper(pc."name") NOT IN ('DAR-ES-ALAM', 'UGANDA')
+          AND t.start_date IN (:p, :c)
+        GROUP BY t.start_date""", {"p": prev_start.isoformat(), "c": m_start.isoformat()})
+    tg = {} if df is None else {str(r.start_date)[:10]: (float(r.amt or 0), float(r.qty or 0)) for r in df.itertuples()}
+    kenya_sql = queries.BAGS_SOLD_TOTAL.replace(
+        "AND lower(COALESCE(pt.\"name\", '')) <> ALL(:excluded)",
+        "AND lower(COALESCE(pt.\"name\", '')) <> ALL(:excluded)\n"
+        "  AND lower(COALESCE(pc.\"name\", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')")
+    assert kenya_sql != queries.BAGS_SOLD_TOTAL, "bags_sold_total.sql changed — Kenya filter not applied"
+    today = min(datetime.date.today(), m_end)
+    out = {}
+    for k, start, end in (("prev", prev_start, prev_end), ("cur", m_start, m_end)):
+        amt, qty = tg.get(start.isoformat(), (0, 0))
+        if not amt and not qty:
+            out[k] = None
+            continue
+        sold = db.run_query(kenya_sql, {"start_date": start.isoformat(), "end_date": min(end, today).isoformat(),
+                                        "excluded": queries.excluded_products()})
+        bags = int(sold.bags[0]) if sold is not None and len(sold) else 0
+        # Revenue incl. the combo products (bags_sold_total's value drops the '+' wrapper lines,
+        # which carry the combo money); delivery / gift bags / discounts left out.
+        rv = db.run_query("""
+            SELECT COALESCE(SUM(pl.price_subtotal_incl), 0) AS rev
+            FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+            JOIN pos_session ps ON ps.id = p.session_id JOIN pos_config pc ON pc.id = ps.config_id
+            JOIN product_product pp ON pp.id = pl.product_id JOIN product_template pt ON pt.id = pp.product_tmpl_id
+            WHERE p.state IN ('done', 'invoiced', 'paid') AND p.date_order::date BETWEEN :s AND :e
+              AND lower(pc."name") NOT IN ('sinza', 'dar-es-alam', 'uganda')
+              AND NOT COALESCE(pl.sub_product_line, false)
+              AND pt."name" NOT ILIKE '%%delivery%%' AND pt."name" NOT ILIKE '%%gift bag%%'
+              AND pt."name" NOT ILIKE '%%discount%%'""",
+            {"s": start.isoformat(), "e": min(end, today).isoformat()})
+        rev = int(rv.rev[0]) if rv is not None and len(rv) else 0
+        e = {"label": start.strftime("%B"), "targetKes": round(amt), "targetBags": round(qty), "bags": bags,
+             "revenueKsh": rev, "pctBags": round(bags / qty * 100, 1) if qty else None,
+             "pctKes": round(rev / amt * 100, 1) if amt else None}
+        if k == "cur":
+            days_left = (end - today).days + 1
+            e["daysLeft"] = days_left
+            e["bagsPerDay"] = round(max(qty - bags, 0) / days_left, 1) if days_left > 0 else None
+        out[k] = e
+    return out
+
+
+def _till_targets(key, m_start, m_end, summ, currency):
+    """{prev, cur}: the till's Odoo monthly target (KES + bags) vs what it sold (bags; revenue in
+    KSh via FX_PER_KSH) — last month and this month to date. None for a month with no target."""
+    from lib import receipt_combos
+    infer, _ = bag_classifier(set())
+    prev_end = m_start - datetime.timedelta(days=1)
+    prev_start = prev_end.replace(day=1)
+    df = db.run_query("""
+        SELECT t.start_date, t.target_amount, t.target_qty FROM sales_pos_target t
+        JOIN pos_config pc ON pc.id = t.config_id
+        WHERE t.period = 'month' AND upper(pc."name") = :till AND t.start_date IN (:p, :c)""",
+        {"till": _TILL_OF[key], "p": prev_start.isoformat(), "c": m_start.isoformat()})
+    tg = {} if df is None else {str(r.start_date)[:10]: (float(r.target_amount or 0), float(r.target_qty or 0))
+                                  for r in df.itertuples()}
+    rate = FX_PER_KSH.get(currency) or 1
+    prev = receipt_combos.market_summary(key, prev_start, prev_end, infer, month_name=m_start.strftime("%B")) or {}
+    today = min(datetime.date.today(), m_end)
+    out = {}
+    for k, start, end, sm in (("prev", prev_start, prev_end, prev), ("cur", m_start, m_end, summ)):
+        amt, qty = tg.get(start.isoformat(), (0, 0))
+        if not amt and not qty:
+            out[k] = None
+            continue
+        bags, rev_ksh = sm.get("bags", 0), round((sm.get("revenue", 0) or 0) / rate)
+        e = {"label": start.strftime("%B"), "targetKes": round(amt), "targetBags": round(qty),
+             "bags": bags, "revenueKsh": rev_ksh,
+             "pctBags": round(bags / qty * 100, 1) if qty else None,
+             "pctKes": round(rev_ksh / amt * 100, 1) if amt else None}
+        if k == "cur":
+            days_left = (end - today).days + 1
+            e["daysLeft"] = days_left
+            e["bagsPerDay"] = round(max(qty - bags, 0) / days_left, 1) if days_left > 0 else None
+        out[k] = e
+    return out
+
+
 def _apply_receipt_offers(regions, m_start, m_end, stocks):
-    """Sinza & Uganda: when offers_outside.csv lists the month's offers, the region cards come from
+    """Sinza & Uganda: when offers_monthly.csv lists the month's offers, the region cards come from
     that list with sales counted from POS receipts (lib/receipt_combos — bags sharing one unit price
     on a receipt = a combo; listed = running, else self-made). Adds regions[r]["receipts"] (self-made
     list, bulk). Leaves the sheet's cards alone for a month the CSV doesn't cover or when offline."""
@@ -1353,23 +1479,53 @@ def _apply_receipt_offers(regions, m_start, m_end, stocks):
                         for slot in o["slots"] for b in sorted(slot)]
                 last = weeks[-1]["sold"] if weeks else 0
                 prev = weeks[-2]["sold"] if len(weeks) > 1 else last
+                # What people chose instead: per bag of this offer, the self-made combos that held it.
+                conns, seen = [], {}
+                for b in sorted({x for slot in o["slots"] for x in slot}):
+                    sm_b = sorted(({"name": k, "qty": v["count"], "value": v["revenue"],
+                                    "dates": sorted(v.get("days", {}).items())}
+                                   for k, v in summ["selfMade"].items() if b in (v.get("bags") or [])),
+                                  key=lambda x: (-x["qty"], -x["value"], x["name"]))
+                    if sm_b:
+                        conns.append({"bag": b.lstrip("*"), "selfMade": sm_b,
+                                      "smUnits": sum(x["qty"] for x in sm_b), "smValue": sum(x["value"] for x in sm_b)})
+                        seen.update({x["name"]: x for x in sm_b})
                 out.append({"name": o["name"], "price": o["now"], "was": o["was"], "disc": o["disc"],
                             "weeks": weeks, "total": total, "avg": round(total / len(weeks)) if weeks else 0,
                             "bags": bags, "stock": int(sum(x["stock"] for x in bags)), "diff": last - prev,
-                            "lastLabel": labels[-1] if labels else "Wk 1", "revenue": hit.get("revenue", 0)})
+                            "lastLabel": labels[-1] if labels else "Wk 1", "revenue": hit.get("revenue", 0),
+                            "connections": conns, "connCombos": len(seen),
+                            "connUnits": sum(x["qty"] for x in seen.values()),
+                            "connValue": sum(x["value"] for x in seen.values())})
             return out
         specials = [g for g in reg.get("groups", []) if g["key"] == "specials"]
         reg["groups"] = [g for g in (
             {"key": "combos", "label": "Combos", "cards": cards(summ["offers"]["combos"], summ["running"])},
             {"key": "singles", "label": "Singles", "cards": cards(summ["offers"]["singles"], summ["singlesOffer"])},
         ) if g["cards"]] + specials
-        sm = sorted(({"name": k, "count": v["count"], "revenue": v["revenue"]} for k, v in summ["selfMade"].items()),
+        sm = sorted(({"name": k, "count": v["count"], "revenue": v["revenue"], "dates": sorted(v.get("days", {}).items())}
+                     for k, v in summ["selfMade"].items()),
                     key=lambda x: (-x["count"], -x["revenue"], x["name"]))
+        # Kenya-style split (combos sold, distinct pairings, revenue) + the bags clients keep pairing.
+        tot = lambda t: {"count": len(t), "units": sum(v["count"] for v in t.values()),
+                         "value": sum(v["revenue"] for v in t.values())}
+        listed = {b for o in summ["offers"]["combos"] for slot in o["slots"] for b in slot}
+        freq, inn = {}, {}
+        for k, v in summ["selfMade"].items():
+            for b in set(v.get("bags") or []):
+                freq[b] = freq.get(b, 0) + v["count"]
+                inn[b] = inn.get(b, 0) + 1
+        top = sorted(freq, key=lambda b: (-freq[b], b))[:6]
+        top_bags = [{"bag": b.lstrip("*"), "times": freq[b], "combos": inn[b], "inOfficial": b in listed,
+                     "stock": int(stock.get(b, 0))} for b in top]
         reg["receipts"] = {"source": "POS receipts", "selfMade": sm,
+                           "smTotals": tot(summ["selfMade"]), "runTotals": tot(summ["running"]), "topBags": top_bags,
                            "selfMadeCount": sum(x["count"] for x in sm),
                            "runningCount": sum(v["count"] for v in summ["running"].values()),
                            "bulk": summ["bulk"], "receipts": summ["receipts"]}
-        print(f"  {reg['label']}: offers from offers_outside.csv — running {reg['receipts']['runningCount']}, "
+        reg["goal"] = _region_goal(key, summ, m_start, m_end, infer, anchor, last_wk)
+        reg["tillTarget"] = _till_targets(key, m_start, m_end, summ, reg.get("currency", ""))
+        print(f"  {reg['label']}: offers from offers_monthly.csv — running {reg['receipts']['runningCount']}, "
               f"self-made {reg['receipts']['selfMadeCount']}, bulk receipts {summ['bulk']['receipts']}")
 
 
@@ -1667,24 +1823,17 @@ def build_payload(m_start, m_end):
             return 0.0
 
     def _offer_trend():
+        # Weekly sales are Odoo's: every combo whose bags match this list label, however it
+        # was rung (week_combos) — no hand-typed sheet columns (docs/self-made-combos.md).
         combos = offer.get("combos", [])
-        headers = offer.get("comboHeaders", [])
-        norm = [str(h).upper().replace(" ", "") for h in headers]
-        price_i, weeks_i = 1, []
-        for i, h in enumerate(norm):
-            if h == "PRICE" and price_i == 1:
-                price_i = i
-            mm = re.match(r"^WK(\d+)$", h)
-            if mm:
-                weeks_i.append(i)
-        if not weeks_i:
-            weeks_i = [2, 3]
+        price_i = 1
+        _wks = sorted(week_combos) or [1]
         out = []
         for r in combos:
             name = str(r[0]).strip()
             if not name or "TOTAL" in name.upper():
                 continue
-            wk_vals = [_num2(r[i]) if i < len(r) else 0 for i in weeks_i]
+            wk_vals = [float(week_combos.get(w, {}).get(name, 0)) for w in range(1, max(_wks) + 1)]
             sales = int(sum(wk_vals))                       # total sales across the weekly columns
             gain = int(wk_vals[-1] - wk_vals[-2]) if len(wk_vals) > 1 else 0
             all_b, picks = _combo_bags(name)
@@ -1791,7 +1940,11 @@ def build_payload(m_start, m_end):
 
     # Combo-button usage per combo (rung vs sheet-expected + per-shop split), attached
     # to each running card so it renders inside the card rather than a separate panel.
-    combo_usage = _combo_button_usage(m_start, m_end, offer, sheet_slots, running_products)
+    _wk_totals = {}
+    for _wc in week_combos.values():
+        for _lbl, _u in _wc.items():
+            _wk_totals[_lbl] = _wk_totals.get(_lbl, 0) + _u
+    combo_usage = _combo_button_usage(m_start, m_end, offer, sheet_slots, running_products, _wk_totals)
     usage_by_label = {u["combo"]: u for u in combo_usage}
 
     running_cards = []
@@ -2000,33 +2153,9 @@ def build_payload(m_start, m_end):
         # Component bags across the running combos — deal bags matching these are excluded
         # from the "Deal units sold" headline (already counted under the combos).
         "comboBags": sorted({str(b["name"]).upper() for rc in running_cards for b in rc.get("bags", [])}),
+        "fx": FX_PER_KSH,   # local currency per KSh — Sinza / Uganda show KSh in brackets
+        "kenyaTillTarget": _kenya_till_targets(m_start, m_end),   # Kenya tills: Odoo target vs actual
     }
-
-
-def _deals_from_offer_sheet(month_name):
-    """Power Deals for the month from the COMBOS sheet's POWER DEALS table — used only while the
-    deals sheet has no rows for the live month. Same shape as _read_deals(); prices come from the
-    sheet's KES price column where filled, otherwise 0 (sales are still enriched from Odoo)."""
-    rows = ((_read_offer_analysis() or {}).get("powerDeals") or [])
-    power = []
-    for r in rows:
-        name = str(r[0]).strip() if r else ""
-        if not name or name.upper() == "TOTAL":
-            continue
-        if name.upper() == "TRAVEL":                     # the sheet's TRAVEL = the Standard Travel bag
-            name = "Standard Travel"
-        now = 0
-        try:
-            now = int(round(float(str(r[1]).replace(",", "") or 0))) if len(r) > 1 else 0
-        except (ValueError, TypeError):
-            pass
-        power.append({"tier": "All", "product": name, "location": "All", "orig": 0, "now": now, "disc": 0})
-    if not power:
-        return None
-    print(f"  Deals sheet has no {month_name} rows yet — using the COMBOS sheet's {len(power)} Power Deals")
-    return {"month": month_name, "source": "COMBOS sheet (deals sheet has no " + month_name + " rows yet)",
-            "powerDeals": power, "dealOfWeek": [], "powerCount": len(power), "dowProducts": 0,
-            "dowRows": 0, "dowLocations": 0, "locations": [], "powerDisc": 0, "dowDisc": 0}
 
 
 def fetch():
@@ -2037,10 +2166,6 @@ def fetch():
         return None
     payload = build_payload(m_start, m_end)
     deals = _read_deals(m_start.strftime("%B"))               # Power Deals / Deal of the Week
-    if not (deals or {}).get("powerDeals") and not (deals or {}).get("dealOfWeek"):
-        # New month, deals sheet not filled in yet → follow the month anyway with the COMBOS
-        # sheet's own POWER DEALS list (no Deal of the Week until the deals sheet has the month).
-        deals = _deals_from_offer_sheet(m_start.strftime("%B")) or deals
     if deals:
         # Reuse the sheet+Odoo-augmented Kenya stock built in build_payload, so deal
         # products the sheet had at 0 pick up live Odoo shop stock too.

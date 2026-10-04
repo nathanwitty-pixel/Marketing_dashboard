@@ -310,7 +310,9 @@ def fetch_new_products_data():
     # col I (idx 8) = NEW PRODUCTS flag
 
     mt      = sh.worksheet("MONTHLY_TARGET")
-    mt_rows = mt.get_all_values()
+    # Column C = the month's bag targets from Odoo (lib/product_targets — docs/product-targets.md).
+    from lib import product_targets
+    mt_rows = product_targets.monthly_target_rows(mt.get_all_values())
 
     new_product_names = []
     total_target      = 0

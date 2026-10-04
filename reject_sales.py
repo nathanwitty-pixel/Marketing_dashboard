@@ -45,28 +45,9 @@ EXPORT_CSV = os.path.join(BASE, "reject_sales_export.csv")
 
 
 def _bom_costs():
-    """{BAG (upper): cost} from the BOM sheet, mirrored to bom_costs.json. Falls back to the
-    downloaded copy when the sheet is unreachable. Returns (costs, source)."""
-    try:
-        costs = _op._read_bom_costs()
-    except Exception:                                        # noqa: BLE001
-        costs = {}
-    if costs:
-        try:
-            json.dump({"_note": "Local copy of BOM production costs, refreshed on every "
-                                "successful run; used when the sheet is unreachable.",
-                       "_updated": _dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                       "costs": costs},
-                      open(BOM_CACHE, "w", encoding="utf-8"), ensure_ascii=False, indent=2, sort_keys=True)
-        except Exception:                                    # noqa: BLE001
-            pass
-        return costs, "BOM sheet (live — downloaded copy refreshed)"
-    try:
-        raw = json.load(open(BOM_CACHE, encoding="utf-8"))
-        return {str(k).upper(): float(v) for k, v in raw.get("costs", {}).items()}, \
-            "downloaded copy bom_costs.json (sheet unreachable)"
-    except Exception:                                        # noqa: BLE001
-        return {}, "unavailable (no BOM sheet, no downloaded copy)"
+    """{BAG (upper): cost} from bom_costs.json (via offer_picking._read_bom_costs). Returns (costs, source)."""
+    costs = _op._read_bom_costs()
+    return costs, ("bom_costs.json (local copy)" if costs else "unavailable (bom_costs.json missing)")
 
 
 # Category (col C of the offers sheet) — normalise a few synonyms; fallback keywords for

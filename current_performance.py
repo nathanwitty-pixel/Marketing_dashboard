@@ -197,11 +197,13 @@ def fetch_monthly_target():
     sh = gc.open_by_key(SPREADSHEET_ID)
 
     # ── MONTHLY_TARGET ────────────────────────────────────────
-    mt = sh.worksheet("MONTHLY_TARGET")
-
-    col_c_raw = mt.col_values(3)   # column C — TARGET
-    col_d_raw = mt.col_values(4)   # column D — SALES
-    col_e_raw = mt.col_values(5)   # column E — DEFICIT
+    # Column C = the month's bag targets from Odoo (lib/product_targets — docs/product-targets.md),
+    # not the sheet's hand-set column C; E recomputed as target − sales.
+    from lib import product_targets
+    mt_rows = product_targets.monthly_target_rows(sh.worksheet("MONTHLY_TARGET").get_all_values())
+    col_c_raw = [r[2] if len(r) > 2 else "" for r in mt_rows]   # column C — TARGET
+    col_d_raw = [r[3] if len(r) > 3 else "" for r in mt_rows]   # column D — SALES
+    col_e_raw = [r[4] if len(r) > 4 else "" for r in mt_rows]   # column E — DEFICIT
 
     def safe_sum(values):
         total = 0
@@ -542,7 +544,7 @@ with open(html_path, "w", encoding="utf-8") as f:
 
 save_snapshot(weekly_sales_total, previous_sales_bags)
 print("current_performance.html updated.")
-print(f"  Total Target (sheet) : {fmt_int(total_target)}")
+print(f"  Total Target (bags)  : {fmt_int(total_target)}")
 print(f"  POS Sales    (Odoo)  : {fmt_int(sales_pos)}")
 print(f"  Corporate    (invoices): {fmt_int(corporate_bags)}")
 print(f"  Sales (POS+corp)     : {fmt_int(total_sales)}")

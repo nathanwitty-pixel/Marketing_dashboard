@@ -373,8 +373,6 @@ def _sheet_category_by_bag(bags):
     from lib import odoo_tabs
     out = {}
     rows = odoo_tabs.catalog_rows()
-    if len(rows) <= 1:   # catalogue missing → the old sheet read
-        rows = get_gspread_client().open_by_key(SPREADSHEET_ID).worksheet("STOCK_LEVELS").get_all_values()
     for row in rows[1:]:
         if len(row) < 4:
             continue

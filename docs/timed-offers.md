@@ -7,6 +7,8 @@
   `const TO = TO_LIST[0]` (back-compat).
 - **Config:** `timed_offers_config.json`
 
+> **Oct 2026:** bag categories come from `product_catalog.csv` only (no STOCK_LEVELS sheet fallback).
+
 ## What the page shows
 
 **Sidebar** ([page sidebar](README.md#page-sidebar)) — each offer numbered (named "KES 300 Off (CBD)" style so same-titled offers stay distinct), its panels as sub-items that fold away while another offer is on screen.

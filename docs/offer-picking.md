@@ -75,6 +75,8 @@ A planning menu for **which offers/combos to run**. The page **leads with the Fo
 
 **Sidebar** ([page sidebar](README.md#page-sidebar)) — one entry per card (Forecast, Baseline forecast, Next month's combos to run, Power deal choosing, Seasonality).
 
+> **Oct 2026:** no sheets — production costs from `bom_costs.json` and full / offer prices from `offers_prices.json` (local copies; edit them by hand).
+
 ## Pricing — WAS vs NOW, from the offers sheet
 
 The **offers sheet** (`_read_offers`, `OFFERS_SHEET_ID`) gives every bag two prices:
