@@ -22,5 +22,8 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "ralph-loop@anthropic-plugin-directory": true
   }
 }

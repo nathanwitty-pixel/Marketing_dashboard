@@ -24,7 +24,6 @@ from urllib.parse import quote
 _FALLBACK_PYTHON = r"C:\ProgramData\anaconda3\python.exe"
 try:
     import streamlit as st
-    import streamlit.components.v1 as components
 except ImportError:
     if os.path.exists(_FALLBACK_PYTHON) and os.path.normcase(sys.executable) != os.path.normcase(_FALLBACK_PYTHON):
         sys.exit(subprocess.run([_FALLBACK_PYTHON, "-m", "streamlit", "run",
@@ -411,19 +410,23 @@ st.markdown(_look_css, unsafe_allow_html=True)
 # resolve the selected page
 label, html_file, scripts, icon = next(it for it in ALL_ITEMS if it[0] == st.session_state.page)
 
+def _run_js(html):
+    """Run script-only HTML in an invisible frame (same origin, so it can reach window.parent).
+    st.iframe has no height=0, so the frame is 1px and hides its own holder as soon as it loads."""
+    st.iframe("<script>try{var c=window.frameElement.closest('[data-testid=\"stElementContainer\"],.element-container');"
+              "if(c){c.style.display='none';}}catch(e){}</script>" + html, height=1)
+
+
 # ── Welcome / loading card + Dark Reader lock (welcome_screen.js) ──
-# A zero-height component: the script draws into the Streamlit page itself (same origin). It locks
+# An invisible frame: the script draws into the Streamlit page itself (same origin). It locks
 # out the Dark Reader extension every run and shows the welcome card once per browser session.
 try:
     with open(os.path.join(BASE, "welcome_screen.js"), encoding="utf-8") as _fh:
         _welcome_js = _fh.read().replace("</script", "<\\/script")
     _dw_cfg = {"theme": THEME, "page": label, "owner": OWNER,
                "jumps": [l for l in ("Insights", "Monthly Report", "History") if any(it[0] == l for it in ALL_ITEMS)]}
-    st.markdown("<style>[data-testid='stElementContainer']:has(iframe[height='0']),"
-                ".element-container:has(iframe[height='0']) {display:none !important;}</style>",
-                unsafe_allow_html=True)
-    components.html("<script>window.DW_CONFIG = " + _json.dumps(_dw_cfg).replace("</", "<\\/") + ";</script>"
-                    "<script>" + _welcome_js + "</script>", height=0)
+    _run_js("<script>window.DW_CONFIG = " + _json.dumps(_dw_cfg).replace("</", "<\\/") + ";</script>"
+            "<script>" + _welcome_js + "</script>")
 except OSError:
     pass
 
@@ -468,13 +471,13 @@ st.markdown(
 try:
     with open(os.path.join(BASE, "top_nav.js"), encoding="utf-8") as _fh:
         _topnav_js = _fh.read()
-    components.html(
+    _run_js(
         "<script>(function(){var P=window.parent,D;try{D=P.document;}catch(e){return;}"
         "if(!P.TopNav){var s=D.createElement('script');s.textContent=" + _json.dumps(_topnav_js).replace("</", "<\\/") +
         ";D.head.appendChild(s);}"
         "if(P.TopNav&&P.TopNav.injectCss){P.TopNav.injectCss(D);}"
         "var n=0;(function go(){var t=D.querySelector('.tn-track');"
-        "if(t&&P.TopNav){P.TopNav.attach(t);}else if(n++<100){setTimeout(go,100);}})();})();</script>", height=0)
+        "if(t&&P.TopNav){P.TopNav.attach(t);}else if(n++<100){setTimeout(go,100);}})();})();</script>")
 except OSError:
     pass
 
@@ -483,9 +486,9 @@ html_path = os.path.join(BASE, html_file)
 # Just unlocked: save the token in this browser so later visits open without asking.
 _pw_save = st.session_state.pop("pw_save", None)
 if _pw_save:
-    components.html("<script>try{window.parent.localStorage.setItem(" + _json.dumps(_pw_key(_pw_save[0])) + ","
-                    + _json.dumps(_json.dumps({"tok": _pw_save[1], "exp": int(time.time() + 30 * 86400) * 1000}))
-                    + ");}catch(e){}</script>", height=0)
+    _run_js("<script>try{window.parent.localStorage.setItem(" + _json.dumps(_pw_key(_pw_save[0])) + ","
+            + _json.dumps(_json.dumps({"tok": _pw_save[1], "exp": int(time.time() + 30 * 86400) * 1000}))
+            + ");}catch(e){}</script>")
 
 # ── Password gate for locked pages — nothing of the page is built or shown until it's unlocked ──
 if label in LOCKED:
@@ -493,13 +496,13 @@ if label in LOCKED:
     _k = _json.dumps(_pw_key(label))
     if _pw_need and not PW_TOKEN_TRIED:
         # A token saved on this browser? Hand it back once (the server checks it), else show the form.
-        components.html("<script>try{var P=window.parent,v=JSON.parse(P.localStorage.getItem(" + _k + ")||'null');"
-                        "if(v&&v.tok&&v.exp>Date.now()){var u=new URL(P.location.href);"
-                        "u.searchParams.set('page'," + _json.dumps(label) + ");u.searchParams.set('unlock',v.tok);"
-                        "P.location.replace(u.toString());}}catch(e){}</script>", height=0)
+        _run_js("<script>try{var P=window.parent,v=JSON.parse(P.localStorage.getItem(" + _k + ")||'null');"
+                "if(v&&v.tok&&v.exp>Date.now()){var u=new URL(P.location.href);"
+                "u.searchParams.set('page'," + _json.dumps(label) + ");u.searchParams.set('unlock',v.tok);"
+                "P.location.replace(u.toString());}}catch(e){}</script>")
     elif PW_TOKEN_TRIED:
         # The saved token no longer matches (password changed) — forget it.
-        components.html("<script>try{window.parent.localStorage.removeItem(" + _k + ");}catch(e){}</script>", height=0)
+        _run_js("<script>try{window.parent.localStorage.removeItem(" + _k + ");}catch(e){}</script>")
     st.markdown("<div class='v5-title'><h1>" + _esc(label) + "</h1>"
                 "<div class='pp'>" + _esc(PURPOSE.get(label, "")) + "</div></div>", unsafe_allow_html=True)
     _, _gate, _ = st.columns([1, 1.2, 1])
@@ -730,7 +733,7 @@ else:
 with _tt:
     st.markdown(_title_html, unsafe_allow_html=True)
 with _ck:
-    components.html(CLOCK_HTML, height=44)
+    st.iframe(CLOCK_HTML, height=44)
 with _rc:
     _do_refresh = st.button("Refresh", icon=":material/refresh:", use_container_width=True,
                             type="primary", key="refresh_btn")
@@ -847,7 +850,7 @@ if os.path.exists(html_path):
         html = html.replace("</body>", _v5_block + EMBED_FIX + "</body>", 1)
     else:
         html += _v5_block + EMBED_FIX
-    # components.html() renders the page in a frame with no URL, so a LOCAL
+    # st.iframe() renders the page in a frame with no URL, so a LOCAL
     # <script src="chart_switcher.js"> has nothing to resolve against (Streamlit answers
     # it with its own index page). Inline every local script file instead.
     _inlined_mtimes = []
@@ -879,6 +882,6 @@ if os.path.exists(html_path):
     html += "\n<!-- v:" + str(_ver) + " theme:" + THEME + " -->"   # switching theme rebuilds the frame
     # Initial height is a fallback only; the script sizes the frame to the EXACT content
     # height so the scroll ends at the last info, with no endless empty space.
-    components.html(html, height=700, scrolling=True)
+    st.iframe(html, height=700)
 else:
     st.warning(f"“{html_file}” hasn't been generated yet. Click **Refresh this page** to build it.")

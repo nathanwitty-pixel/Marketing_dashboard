@@ -111,11 +111,11 @@
     {
       "weekStart": "2026-09-27",
       "label": "Partial",
-      "month": "Sep",
-      "weeklyTotal": 54,
-      "kenyaPosts": 0,
-      "outsidePosts": 0,
-      "pct": 30.0
+      "month": "Oct",
+      "weeklyTotal": 116,
+      "kenyaPosts": 120,
+      "outsidePosts": 2,
+      "pct": 64.44
     }
   ]
 }
