@@ -149,8 +149,8 @@
    "bag": "ANTITHEFT",
    "market": "kenya",
    "action": "RESTOCK",
-   "says": "Sells 35.96 a day and has 6.9 days of stock left (249 units). Pause its posts until stock lands.",
-   "perDayBefore": 35.96,
+   "says": "Sells 36.04 a day and has 6.9 days of stock left (249 units).",
+   "perDayBefore": 36.04,
    "stockBefore": 249,
    "move": null
   },
@@ -158,8 +158,8 @@
    "bag": "MAN BAG",
    "market": "kenya",
    "action": "RESTOCK",
-   "says": "Sells 29.89 a day and has 4.6 days of stock left (137 units). Pause its posts until stock lands.",
-   "perDayBefore": 29.89,
+   "says": "Sells 29.71 a day and has 4.6 days of stock left (137 units). Pause its posts until stock lands.",
+   "perDayBefore": 29.71,
    "stockBefore": 137,
    "move": null
   },
@@ -167,8 +167,8 @@
    "bag": "FEROZ",
    "market": "kenya",
    "action": "PUT_ON_OFFER",
-   "says": "295 in stock, sold 41 in 28 days — 201.5 days of stock. Try it as a Deal of the Week.",
-   "perDayBefore": 1.46,
+   "says": "295 in stock, sold 42 in 28 days — 196.7 days of stock. Try it as a Deal of the Week.",
+   "perDayBefore": 1.5,
    "stockBefore": 295,
    "move": null
   },
@@ -176,8 +176,8 @@
    "bag": "MINI MAYA",
    "market": "kenya",
    "action": "RESTOCK",
-   "says": "Sells 18.46 a day and has 5.7 days of stock left (105 units). Pause its posts until stock lands.",
-   "perDayBefore": 18.46,
+   "says": "Sells 18.39 a day and has 5.7 days of stock left (105 units). Pause its posts until stock lands.",
+   "perDayBefore": 18.39,
    "stockBefore": 105,
    "move": null
   },
@@ -194,8 +194,8 @@
    "bag": "FABELA",
    "market": "kenya",
    "action": "POST_MORE",
-   "says": "Posts turn into sales (76.6% of expected) but it was posted only 19 times (typical: 30.5). 30.9 days of stock — post it daily this week.",
-   "perDayBefore": 11.89,
+   "says": "Posts turn into sales (89.7% of expected) but it was posted only 14 times (typical: 35). 30.9 days of stock — post it daily this week.",
+   "perDayBefore": 11.93,
    "stockBefore": 368,
    "move": null
   },
@@ -203,8 +203,8 @@
    "bag": "BIG MAN BAG",
    "market": "kenya",
    "action": "POST_MORE",
-   "says": "Posts turn into sales (70.7% of expected) but it was posted only 22 times (typical: 30.5). 14.5 days of stock — post it daily this week.",
-   "perDayBefore": 12.71,
+   "says": "Posts turn into sales (70.7% of expected) but it was posted only 22 times (typical: 35). 14.4 days of stock — post it daily this week.",
+   "perDayBefore": 12.75,
    "stockBefore": 184,
    "move": null
   },
@@ -212,8 +212,8 @@
    "bag": "BABY BAG",
    "market": "kenya",
    "action": "PUT_ON_OFFER",
-   "says": "80 in stock, sold 30 in 28 days — 74.7 days of stock. Try it as a Deal of the Week.",
-   "perDayBefore": 1.07,
+   "says": "80 in stock, sold 33 in 28 days — 67.9 days of stock. Try it as a Deal of the Week.",
+   "perDayBefore": 1.18,
    "stockBefore": 80,
    "move": null
   },
@@ -239,8 +239,8 @@
    "bag": "MEGA",
    "market": "kenya",
    "action": "POST_MORE",
-   "says": "Posts turn into sales (59.3% of expected) but it was posted only 12 times (typical: 30.5). 25 days of stock — post it daily this week.",
-   "perDayBefore": 6.0,
+   "says": "Posts turn into sales (86.9% of expected) but it was posted only 22 times (typical: 35). 25.1 days of stock — post it daily this week.",
+   "perDayBefore": 5.96,
    "stockBefore": 150,
    "move": null
   },
@@ -265,7 +265,7 @@
    "bag": "CODE 3",
    "market": "kenya",
    "action": "MOVE_STOCK",
-   "says": "Move 17 from Busia (sold 0 in 14 days) to Ktda (sells 3.8 a day, 1 left).",
+   "says": "Move 17 from Busia (sold 0 in 14 days) to Ktda (sells 3.9 a day, 1 left).",
    "perDayBefore": null,
    "stockBefore": null,
    "move": {
@@ -273,16 +273,16 @@
     "from": "BUSIA",
     "to": "KTDA",
     "qty": 17,
-    "toPerDay": 3.79,
+    "toPerDay": 3.93,
     "toStock": 1,
-    "says": "Move 17 from Busia (sold 0 in 14 days) to Ktda (sells 3.8 a day, 1 left)."
+    "says": "Move 17 from Busia (sold 0 in 14 days) to Ktda (sells 3.9 a day, 1 left)."
    }
   },
   {
    "bag": "ANTITHEFT",
    "market": "sinza",
    "action": "RESTOCK",
-   "says": "Sells 2.04 a day and has 0 days of stock left (0 units). Pause its posts until stock lands.",
+   "says": "Sells 2.04 a day and has 0 days of stock left (0 units).",
    "perDayBefore": 2.04,
    "stockBefore": 0,
    "move": null

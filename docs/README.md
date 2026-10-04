@@ -175,7 +175,7 @@ Reject Sale); this table is the per-menu spec index.
 | 6 | Posting – Sales Yields from Accurate Posting | [posting-yields.md](posting-yields.md) | `POSTING (SALES YIELDS FROM ACCURATE POSTING).py` | `POSTING (SALES YIELDS FROM ACCURATE POSTING).html` |
 | 7 | Shops Efficiency Tracking | [shops-efficiency.md](shops-efficiency.md) | `shops_dispatch.py` → `shops_efficiency.py` | `shops_efficiency.html` |
 | 7b | Push Planner (what to push, where, why bags aren't moving · Laya second opinion) | [push-planner.md](push-planner.md) | `push_planner.py` | `push_planner.html` |
-| 8 | Dashboard Insights | [dashboard-insights.md](dashboard-insights.md) | `generate_insights.py` | `insights.html` |
+| — | ~~Dashboard Insights~~ (menu removed Oct 2026; `generate_insights.py` kept, not run) | [dashboard-insights.md](dashboard-insights.md) | `generate_insights.py` | `insights.html` |
 | 9 | Monthly Report | [monthly-report.md](monthly-report.md) | `monthly_report.py` | `monthly_report.html` |
 | 10 | Reporting History (Supabase) | [reporting-history.md](reporting-history.md) | `push_to_supabase.py` → `history.py` | `history.html` |
 
@@ -198,7 +198,7 @@ Report, History) **must run last**. The ordered list:
 5. `self_made_combos.py` → `bags_on_offer.py`
 6. `POSTING (SALES YIELDS FROM ACCURATE POSTING).py`
 7. `shops_dispatch.py` → `shops_efficiency.py`
-8. `generate_insights.py` (reads the pages above)
+8. ~~`generate_insights.py`~~ — not run any more (Insights menu removed Oct 2026)
 9. `monthly_report.py` (reads the pages above)
 10. `push_to_supabase.py` → `history.py`
 

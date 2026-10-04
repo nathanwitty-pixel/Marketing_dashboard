@@ -148,16 +148,17 @@
     },
     {
       "order": 11,
-      "section": "Intelligence",
-      "label": "Insights",
-      "html": "insights.html",
-      "title": "Dashboard Insights",
+      "section": "Marketing",
+      "label": "Bag Signals",
+      "html": "bag_signals.html",
+      "title": "Bag Signals",
       "scripts": [
-        "generate_insights.py"
+        "bag_signals.py"
       ],
-      "icon": "lightbulb",
-      "purpose": "Automated read-outs across the dashboards",
-      "short": "Insights"
+      "icon": "insights",
+      "purpose": "Per bag: real trend vs luck, sales swing, reliability, busy-day beta, run-out risk and what to post or restock",
+      "short": "Bag Signals",
+      "password_secret": "BAG_SIGNALS_PASSWORD"
     },
     {
       "order": 12,

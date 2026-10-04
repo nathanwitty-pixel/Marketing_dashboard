@@ -41,8 +41,10 @@ SCRIPTS = [
     ("Shops Efficiency",       "shops_efficiency.py"),
     # Reads the Posting + Self-made combos pages built above (docs/push-planner.md).
     ("Push Planner",           "push_planner.py"),
+    # Quant signals per bag (docs/bag-signals.md) — Odoo + the two MARKETING_POST tabs.
+    ("Bag Signals",            "bag_signals.py"),
     # These read the data the scripts above injected — keep them LAST.
-    ("Dashboard Insights",     "generate_insights.py"),
+    # ("Dashboard Insights", "generate_insights.py") — Insights menu removed (Oct 2026); script kept.
     ("Monthly Report",         "monthly_report.py"),
     # Always back the freshly-written snapshot up to Supabase, then read it back
     # for History — so History is never behind the local data. Both no-op safely
