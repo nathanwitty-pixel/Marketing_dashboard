@@ -240,9 +240,9 @@
     "semantic_hash": ""
   },
   "new_products_weekly_history.json": {
-    "mtime": 1791185095.9818082,
-    "seen": 1791193369.9953885,
-    "ast_hash": "b58b1bee829c2d4417436f31b21ff1c0",
+    "mtime": 1791193578.0182104,
+    "seen": 1791193760.1718006,
+    "ast_hash": "af23b697b46a40b5a9d2563542b830d9",
     "semantic_hash": ""
   },
   "offer_data.py": {
@@ -270,15 +270,15 @@
     "semantic_hash": "5c3f9b8042887b7f40113f1f3e6309fd"
   },
   "posting_mkt_history.json": {
-    "mtime": 1791182951.1155937,
-    "seen": 1791193369.9954379,
+    "mtime": 1791193632.439014,
+    "seen": 1791193760.1718366,
     "ast_hash": "b3366527bb689b8f9fff1b0b97e9cde5",
     "semantic_hash": ""
   },
   "posting_stock_history.json": {
-    "mtime": 1791182951.1265059,
-    "seen": 1791193369.9954433,
-    "ast_hash": "f60b10cb0a55281564f3e30c6205ae08",
+    "mtime": 1791193632.4515626,
+    "seen": 1791193760.1718414,
+    "ast_hash": "ac86d8dfe6cee77374191c96c7b5c6cf",
     "semantic_hash": ""
   },
   "previous_snapshot.json": {
@@ -726,9 +726,9 @@
     "semantic_hash": ""
   },
   "POSTING (SALES YIELDS FROM ACCURATE POSTING).html": {
-    "mtime": 1791182951.171154,
-    "seen": 1791193369.9957933,
-    "ast_hash": "6aff75a6f01e297145ce3307596d5c72",
+    "mtime": 1791193632.576415,
+    "seen": 1791193760.1721692,
+    "ast_hash": "f03121686842f61f61052638918c5154",
     "semantic_hash": ""
   },
   "export/self_made_combos_bundle/self_made_combos.html": {
@@ -744,9 +744,9 @@
     "semantic_hash": ""
   },
   "new_products.html": {
-    "mtime": 1791185103.0090952,
-    "seen": 1791193369.996181,
-    "ast_hash": "8b8e954b58b1ee94cdfc7117561947fb",
+    "mtime": 1791193585.8130639,
+    "seen": 1791193760.1724308,
+    "ast_hash": "11c4a76928126ad62b09c4c55b21c379",
     "semantic_hash": ""
   },
   "self_made_combos.html": {
