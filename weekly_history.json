@@ -15,12 +15,12 @@
       "weekStart": "2026-10-04",
       "label": "Wk 2",
       "month": "Oct",
-      "salesPct": 8.15,
-      "salesBags": 2282,
+      "salesPct": 8.2,
+      "salesBags": 2297,
       "prevSalesPct": 7.24,
       "prevSalesBags": 2027,
-      "weeklySales": 255,
-      "declinedBy": -6748
+      "weeklySales": 270,
+      "declinedBy": -6733
     }
   ]
 }
