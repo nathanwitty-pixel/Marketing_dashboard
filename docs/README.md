@@ -125,7 +125,7 @@ What each piece reads, so a change lands everywhere at once:
 1. **Your local files** — what you edit, and what the generators rewrite on every refresh.
 2. **GitHub `main`** — only what was committed *and pushed*. Uncommitted work never leaves this PC.
 3. **Streamlit Cloud's runtime** — starts from GitHub `main`, then **regenerates each page from
-   Odoo** when it is older than `AUTO_REFRESH_MIN` (30 min) and someone opens it. So its numbers
+   Odoo** when it is older than `AUTO_REFRESH_MIN` (60 min) and someone opens it. So its numbers
    are newer than GitHub's, and its code is only as new as the last push.
 
 **Publishing (local → GitHub → Streamlit Cloud):** double-click `publish.bat` (or

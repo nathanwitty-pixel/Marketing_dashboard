@@ -60,9 +60,9 @@
     "semantic_hash": ""
   },
   "combos_by_shop.json": {
-    "mtime": 1791182326.3880615,
-    "seen": 1791182375.3041189,
-    "ast_hash": "bba1483bdda77388831c7f5855407982",
+    "mtime": 1791192676.3508463,
+    "seen": 1791193369.9950125,
+    "ast_hash": "18bac9364c383924bfe07185649dd17d",
     "semantic_hash": ""
   },
   "current_performance.py": {
@@ -138,8 +138,8 @@
     "semantic_hash": ""
   },
   "growth_history.json": {
-    "mtime": 1791181571.6352327,
-    "seen": 1791182375.3041549,
+    "mtime": 1791193146.9877412,
+    "seen": 1791193369.995132,
     "ast_hash": "24e633a98590862887afbc1ecc22e2cf",
     "semantic_hash": ""
   },
@@ -198,8 +198,8 @@
     "semantic_hash": ""
   },
   "month_boundary.json": {
-    "mtime": 1791181571.6299891,
-    "seen": 1791182375.304211,
+    "mtime": 1791193146.982211,
+    "seen": 1791193369.9953296,
     "ast_hash": "62354f735b65fe7f6af37f2aa914b98f",
     "semantic_hash": ""
   },
@@ -240,9 +240,9 @@
     "semantic_hash": ""
   },
   "new_products_weekly_history.json": {
-    "mtime": 1791167734.737279,
-    "seen": 1791167777.4028828,
-    "ast_hash": "4f629d336334ea69a674e87c281a6832",
+    "mtime": 1791185095.9818082,
+    "seen": 1791193369.9953885,
+    "ast_hash": "b58b1bee829c2d4417436f31b21ff1c0",
     "semantic_hash": ""
   },
   "offer_data.py": {
@@ -270,20 +270,20 @@
     "semantic_hash": "5c3f9b8042887b7f40113f1f3e6309fd"
   },
   "posting_mkt_history.json": {
-    "mtime": 1791169034.9296658,
-    "seen": 1791169173.1514297,
-    "ast_hash": "53828cef54053a875b4b8bf8232c71b4",
+    "mtime": 1791182951.1155937,
+    "seen": 1791193369.9954379,
+    "ast_hash": "b3366527bb689b8f9fff1b0b97e9cde5",
     "semantic_hash": ""
   },
   "posting_stock_history.json": {
-    "mtime": 1791169034.9353826,
-    "seen": 1791169173.1514356,
-    "ast_hash": "37846721a7d9f8ea0f5d07b99ddf5adc",
+    "mtime": 1791182951.1265059,
+    "seen": 1791193369.9954433,
+    "ast_hash": "f60b10cb0a55281564f3e30c6205ae08",
     "semantic_hash": ""
   },
   "previous_snapshot.json": {
-    "mtime": 1791181571.6459718,
-    "seen": 1791182375.3042536,
+    "mtime": 1791193147.141129,
+    "seen": 1791193369.9954493,
     "ast_hash": "b9721a9ce9668568ccf10cbfa153bb44",
     "semantic_hash": ""
   },
@@ -390,9 +390,9 @@
     "semantic_hash": ""
   },
   "streamlit_app.py": {
-    "mtime": 1791170379.900972,
-    "seen": 1791170826.8366535,
-    "ast_hash": "6e83f91407360bc9331c479f4bc4950d",
+    "mtime": 1791193344.1139696,
+    "seen": 1791193369.995607,
+    "ast_hash": "cab2e2af6c51a0c8abf4dd5f0e84ed5b",
     "semantic_hash": ""
   },
   "supabase_migration.py": {
@@ -432,9 +432,9 @@
     "semantic_hash": "3e2c4daf13b562d0d2f3c54594ced240"
   },
   "weekly_history.json": {
-    "mtime": 1791181600.7047243,
-    "seen": 1791182375.3043623,
-    "ast_hash": "e8ccc70250c6a2dece8a4574ae2bfd3d",
+    "mtime": 1791193133.2580478,
+    "seen": 1791193369.9956956,
+    "ast_hash": "40bc4c30963e4afe92c0298d6eb3c956",
     "semantic_hash": ""
   },
   "weekly_sales.py": {
@@ -528,9 +528,9 @@
     "semantic_hash": ""
   },
   "current_performance.html": {
-    "mtime": 1791181600.70943,
-    "seen": 1791182375.304443,
-    "ast_hash": "fe5b955d6d53b0ebf5541bc8788bc563",
+    "mtime": 1791193147.141129,
+    "seen": 1791193369.9959133,
+    "ast_hash": "436dc51e46e40699b1993a8175283435",
     "semantic_hash": ""
   },
   "dead_stock_thresholds.txt": {
@@ -540,9 +540,9 @@
     "semantic_hash": ""
   },
   "docs/README.md": {
-    "mtime": 1791149018.1047966,
-    "seen": 1791149079.041215,
-    "ast_hash": "decb16a3e447a12fa0a99bd67d70f9f3",
+    "mtime": 1791193343.9693234,
+    "seen": 1791193369.995928,
+    "ast_hash": "532b28dc01d86c42e1bd5fb6ab2d05f5",
     "semantic_hash": ""
   },
   "docs/current-performance.md": {
@@ -648,9 +648,9 @@
     "semantic_hash": ""
   },
   "forward_projections.html": {
-    "mtime": 1791181600.7067277,
-    "seen": 1791182375.3045135,
-    "ast_hash": "70432e883dbc756798de7f6c6c710a2b",
+    "mtime": 1791193133.259713,
+    "seen": 1791193369.9961214,
+    "ast_hash": "f763ddca32a675af7007f5f1c441fa06",
     "semantic_hash": ""
   },
   "graphify-out/converted/reject_sales_export_ad2875e5.md": {
@@ -726,9 +726,9 @@
     "semantic_hash": ""
   },
   "POSTING (SALES YIELDS FROM ACCURATE POSTING).html": {
-    "mtime": 1791169034.9790933,
-    "seen": 1791169173.1518438,
-    "ast_hash": "5bd90a19d4e2f685f99541519af1a4ba",
+    "mtime": 1791182951.171154,
+    "seen": 1791193369.9957933,
+    "ast_hash": "6aff75a6f01e297145ce3307596d5c72",
     "semantic_hash": ""
   },
   "export/self_made_combos_bundle/self_made_combos.html": {
@@ -744,15 +744,15 @@
     "semantic_hash": ""
   },
   "new_products.html": {
-    "mtime": 1791168031.0359628,
-    "seen": 1791169173.1521769,
-    "ast_hash": "c8796fb89a92c9ec6482b2af8866404c",
+    "mtime": 1791185103.0090952,
+    "seen": 1791193369.996181,
+    "ast_hash": "8b8e954b58b1ee94cdfc7117561947fb",
     "semantic_hash": ""
   },
   "self_made_combos.html": {
-    "mtime": 1791182326.3778412,
-    "seen": 1791182375.3045535,
-    "ast_hash": "68796a68ac0ed05d76706e77507bd8d3",
+    "mtime": 1791192676.3380888,
+    "seen": 1791193369.9962611,
+    "ast_hash": "d1a47d156211b4c54281d42111d397be",
     "semantic_hash": ""
   },
   "shops_efficiency.html": {
@@ -768,9 +768,9 @@
     "semantic_hash": ""
   },
   "bags_offer_source.json": {
-    "mtime": 1791182326.3951504,
-    "seen": 1791182375.3040924,
-    "ast_hash": "c66d7e5761d57476f15fb2efed08e2f8",
+    "mtime": 1791192676.3568885,
+    "seen": 1791193369.9949417,
+    "ast_hash": "8af88165bea0b3fad8608f9f9477e6c5",
     "semantic_hash": ""
   },
   "bags_on_offer.py": {
@@ -1200,9 +1200,9 @@
     "semantic_hash": ""
   },
   "bags_offer_source_2026-10.json": {
-    "mtime": 1791182326.3988254,
-    "seen": 1791182375.3040988,
-    "ast_hash": "c66d7e5761d57476f15fb2efed08e2f8",
+    "mtime": 1791192676.3599412,
+    "seen": 1791193369.994957,
+    "ast_hash": "8af88165bea0b3fad8608f9f9477e6c5",
     "semantic_hash": ""
   },
   "boo_custom_range.json": {

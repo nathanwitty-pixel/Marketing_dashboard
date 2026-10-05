@@ -558,7 +558,7 @@ def run_scripts(script_list, force_fresh=False):
 # cache. A per-session guard makes each session attempt at most once per interval
 # (so a failed build doesn't loop), and a JS timer in the header reloads an idle
 # tab so the check keeps firing even with no clicks.
-AUTO_REFRESH_MIN = 30
+AUTO_REFRESH_MIN = 60
 _AUTO_SECS = AUTO_REFRESH_MIN * 60
 # DASH_NO_AUTOREFRESH=1 (testing / previews): never rebuild pages from Odoo on a page view and
 # never reload idle tabs. The manual "Refresh this page" button still works.
