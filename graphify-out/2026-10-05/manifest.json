@@ -390,9 +390,9 @@
     "semantic_hash": ""
   },
   "streamlit_app.py": {
-    "mtime": 1791098116.7072108,
-    "seen": 1791098175.6227214,
-    "ast_hash": "2eaf81dd9db15f97664950c49eb43bc5",
+    "mtime": 1791170379.900972,
+    "seen": 1791170826.8366535,
+    "ast_hash": "6e83f91407360bc9331c479f4bc4950d",
     "semantic_hash": ""
   },
   "supabase_migration.py": {
@@ -768,27 +768,27 @@
     "semantic_hash": ""
   },
   "bags_offer_source.json": {
-    "mtime": 1791169043.6299458,
-    "seen": 1791169173.1510448,
+    "mtime": 1791170447.5202494,
+    "seen": 1791170826.8364258,
     "ast_hash": "cdb40b8f632dc59e0aadfd5ee13e131d",
     "semantic_hash": ""
   },
   "bags_on_offer.py": {
-    "mtime": 1791169061.0063488,
-    "seen": 1791169173.1510658,
-    "ast_hash": "00fe1a910996f2725621228db9e767fd",
+    "mtime": 1791170352.2130783,
+    "seen": 1791170826.8364348,
+    "ast_hash": "4bdf056831feeb86d3ad83ca6252560c",
     "semantic_hash": ""
   },
   "bags_on_offer.html": {
-    "mtime": 1791169089.1738727,
-    "seen": 1791169173.1519487,
-    "ast_hash": "cc88381de17c718fe7f4b6619f46747a",
+    "mtime": 1791170454.2479658,
+    "seen": 1791170826.8367767,
+    "ast_hash": "737ffe56086c5f5f063d14a6208a6703",
     "semantic_hash": ""
   },
   "docs/bags-on-offer.md": {
-    "mtime": 1791169041.8243656,
-    "seen": 1791169173.1519804,
-    "ast_hash": "9cafa1a5c3c2a6932a9e92273445efd3",
+    "mtime": 1791170328.9294095,
+    "seen": 1791170826.8367887,
+    "ast_hash": "f9a7ed73e6816e0e5958a9d83aa286d5",
     "semantic_hash": ""
   },
   "lib/new_products_list.py": {
@@ -1200,9 +1200,15 @@
     "semantic_hash": ""
   },
   "bags_offer_source_2026-10.json": {
-    "mtime": 1791169072.775236,
-    "seen": 1791169173.1510596,
+    "mtime": 1791170447.522248,
+    "seen": 1791170826.8364322,
     "ast_hash": "cdb40b8f632dc59e0aadfd5ee13e131d",
+    "semantic_hash": ""
+  },
+  "boo_custom_range.json": {
+    "mtime": 1791170392.6899538,
+    "seen": 1791170826.836444,
+    "ast_hash": "6038b18d65067c3e45258b026f9ddb5e",
     "semantic_hash": ""
   }
 }
