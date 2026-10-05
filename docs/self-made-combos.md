@@ -373,11 +373,8 @@ rank value where higher = better; for `rem`, more-remaining ranks worse),
 
 - **Offer Sales vs Stock Guidance chart removed (Oct 2026).** Its **Sort** (`#smc-og-sort`) and **Stock**
   (`#smc-og-stock`) dropdowns now sit in the **Running combos** panel header and drive the running cards only.
-- **Kenya till target (Oct 2026)** — at the top of the Running combos panel, the same two cards as Sinza /
-  Uganda: **last month** and **this month (so far)** — the Kenya tills' Odoo monthly POS targets summed
-  (`sales_pos_target`, scope `pos`, every till except DAR-ES-ALAM / UGANDA; corporate not included) vs the
-  bags sold in those tills (the dashboard's own count, `sql/bags_sold_total.sql` limited to Kenya tills) and
-  their KES revenue, as % of target; this month also shows the bags/day needed. `SMC.kenyaTillTarget = {prev, cur}`.
+- **Kenya till target cards removed (5 Oct 2026).** The last-month / this-month till target cards are
+  no longer shown on the Kenya side (Sinza / Uganda keep theirs).
 - **Running combos** — `renderRunningCards(sortV)` (sortV from `#smc-og-sort`), ranked
   across all `SMC.runningCards`.
 - **Power deals** — `powerCards` (sortV from `#smc-pd-sort`), ranked across all

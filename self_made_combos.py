@@ -1364,59 +1364,6 @@ def _region_goal(key, summ, m_start, m_end, infer, anchor, last_wk):
 _TILL_OF = {"sinza": "DAR-ES-ALAM", "uganda": "UGANDA"}
 
 
-def _kenya_till_targets(m_start, m_end):
-    """{prev, cur} for Kenya: the Kenya tills' Odoo monthly POS targets (every till but DAR-ES-ALAM /
-    UGANDA; no corporate) vs bags sold in those tills (sql/bags_sold_total.sql rules) and KES revenue."""
-    from lib import queries
-    prev_end = m_start - datetime.timedelta(days=1)
-    prev_start = prev_end.replace(day=1)
-    df = db.run_query("""
-        SELECT t.start_date, SUM(t.target_amount) AS amt, SUM(t.target_qty) AS qty FROM sales_pos_target t
-        JOIN pos_config pc ON pc.id = t.config_id
-        WHERE t.period = 'month' AND t.target_scope = 'pos' AND upper(pc."name") NOT IN ('DAR-ES-ALAM', 'UGANDA')
-          AND t.start_date IN (:p, :c)
-        GROUP BY t.start_date""", {"p": prev_start.isoformat(), "c": m_start.isoformat()})
-    tg = {} if df is None else {str(r.start_date)[:10]: (float(r.amt or 0), float(r.qty or 0)) for r in df.itertuples()}
-    kenya_sql = queries.BAGS_SOLD_TOTAL.replace(
-        "AND lower(COALESCE(pt.\"name\", '')) <> ALL(:excluded)",
-        "AND lower(COALESCE(pt.\"name\", '')) <> ALL(:excluded)\n"
-        "  AND lower(COALESCE(pc.\"name\", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')")
-    assert kenya_sql != queries.BAGS_SOLD_TOTAL, "bags_sold_total.sql changed — Kenya filter not applied"
-    today = min(datetime.date.today(), m_end)
-    out = {}
-    for k, start, end in (("prev", prev_start, prev_end), ("cur", m_start, m_end)):
-        amt, qty = tg.get(start.isoformat(), (0, 0))
-        if not amt and not qty:
-            out[k] = None
-            continue
-        sold = db.run_query(kenya_sql, {"start_date": start.isoformat(), "end_date": min(end, today).isoformat(),
-                                        "excluded": queries.excluded_products()})
-        bags = int(sold.bags[0]) if sold is not None and len(sold) else 0
-        # Revenue incl. the combo products (bags_sold_total's value drops the '+' wrapper lines,
-        # which carry the combo money); delivery / gift bags / discounts left out.
-        rv = db.run_query("""
-            SELECT COALESCE(SUM(pl.price_subtotal_incl), 0) AS rev
-            FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
-            JOIN pos_session ps ON ps.id = p.session_id JOIN pos_config pc ON pc.id = ps.config_id
-            JOIN product_product pp ON pp.id = pl.product_id JOIN product_template pt ON pt.id = pp.product_tmpl_id
-            WHERE p.state IN ('done', 'invoiced', 'paid') AND p.date_order::date BETWEEN :s AND :e
-              AND lower(pc."name") NOT IN ('sinza', 'dar-es-alam', 'uganda')
-              AND NOT COALESCE(pl.sub_product_line, false)
-              AND pt."name" NOT ILIKE '%%delivery%%' AND pt."name" NOT ILIKE '%%gift bag%%'
-              AND pt."name" NOT ILIKE '%%discount%%'""",
-            {"s": start.isoformat(), "e": min(end, today).isoformat()})
-        rev = int(rv.rev[0]) if rv is not None and len(rv) else 0
-        e = {"label": start.strftime("%B"), "targetKes": round(amt), "targetBags": round(qty), "bags": bags,
-             "revenueKsh": rev, "pctBags": round(bags / qty * 100, 1) if qty else None,
-             "pctKes": round(rev / amt * 100, 1) if amt else None}
-        if k == "cur":
-            days_left = (end - today).days + 1
-            e["daysLeft"] = days_left
-            e["bagsPerDay"] = round(max(qty - bags, 0) / days_left, 1) if days_left > 0 else None
-        out[k] = e
-    return out
-
-
 def _till_targets(key, m_start, m_end, summ, currency):
     """{prev, cur}: the till's Odoo monthly target (KES + bags) vs what it sold (bags; revenue in
     KSh via FX_PER_KSH) — last month and this month to date. None for a month with no target."""
@@ -2154,7 +2101,6 @@ def build_payload(m_start, m_end):
         # from the "Deal units sold" headline (already counted under the combos).
         "comboBags": sorted({str(b["name"]).upper() for rc in running_cards for b in rc.get("bags", [])}),
         "fx": FX_PER_KSH,   # local currency per KSh — Sinza / Uganda show KSh in brackets
-        "kenyaTillTarget": _kenya_till_targets(m_start, m_end),   # Kenya tills: Odoo target vs actual
     }
 
 
