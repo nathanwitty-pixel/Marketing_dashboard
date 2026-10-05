@@ -870,6 +870,75 @@ print(f"  OOS call-backs        : {sum(v['total'] for v in np_oos.get('lifetime'
       f"for {len(np_oos.get('lifetime', {}))} of {len(_np_names)} new products")
 
 
+# ── SALES BY SHOP (new product × shop table — docs/new-products.md › Sales by Shop) ──
+SHOP_CODES = [("STR", "starmall"), ("MSA", "mombasa"), ("NAK", "nakuru"), ("ELD", "eldoret"), ("KSM", "kisumu"),
+              ("MER", "meru"), ("THK", "thika"), ("HAZ", "hazina"), ("KIT", "kitengela"), ("WEB", "website sales"),
+              ("NAN", "nanyuki"), ("KAK", "kakamega"), ("HTN", "hilton"), ("SNZ", "sinza"), ("UGD", "uganda"),
+              ("KSII", "kisii"), ("KTD", "ktda shop"), ("BSA", "busia"), ("RGI", "rongai")]
+_TILL_CODE = {t: c for c, t in SHOP_CODES}
+_TILL_CODE.update({"dar-es-alam": "SNZ", "ktda": "KTD", "website": "WEB"})
+SHOP_SALES_SQL = """
+SELECT pt."name" AS product, lower(COALESCE(pc."name", '')) AS till, SUM(pl.qty) AS q
+FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+LEFT JOIN pos_session ps ON p.session_id = ps.id LEFT JOIN pos_config pc ON ps.config_id = pc.id
+JOIN product_product pp ON pp.id = pl.product_id JOIN product_template pt ON pt.id = pp.product_tmpl_id
+LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
+WHERE p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0 AND p.date_order::date BETWEEN :s AND :e
+  AND pt."name" NOT LIKE '%+%' AND COALESCE(pcat."name", '') NOT ILIKE '%Pos%'
+  AND lower(COALESCE(pc."name", '')) <> 'staff pos'
+GROUP BY 1, 2
+"""
+# Corporate sells by invoice, not on a till: posted customer invoices, paid (or ≤ 25 % unpaid) — the same
+# rule as the dashboard's corporate figures (bags_on_offer.CORPORATE_SQL), per product.
+CORPORATE_SALES_SQL = """
+WITH qinv AS (
+  SELECT am.id FROM account_move am
+  WHERE am.move_type = 'out_invoice' AND am.state = 'posted' AND am.invoice_date BETWEEN :s AND :e
+    AND (am.payment_state IN ('paid', 'in_payment') OR (am.amount_total > 0 AND am.amount_residual / am.amount_total <= 0.25)))
+SELECT pt."name" AS product, 'corporate' AS till, SUM(aml.quantity) AS q
+FROM account_move_line aml JOIN qinv ON qinv.id = aml.move_id
+JOIN product_product pp ON pp.id = aml.product_id JOIN product_template pt ON pt.id = pp.product_tmpl_id
+WHERE aml.display_type IS NULL AND aml.product_id IS NOT NULL
+GROUP BY 1
+"""
+
+
+def shop_sales(names, start, end):
+    """{PRODUCT: {SHOP CODE: units}} for the new products over [start, end] — every till but Staff POS,
+    plus Corporate invoices as CORP."""
+    from lib import db
+    order = sorted(names, key=len, reverse=True)
+    out = {n: {} for n in names}
+    params = {"s": start.isoformat(), "e": end.isoformat()}
+    for sql in (SHOP_SALES_SQL, CORPORATE_SALES_SQL):
+        df = db.run_query(sql, params)
+        for r in (df.itertuples() if df is not None else []):
+            u = re.sub(r"^\[[^\]]*\]\s*", "", str(r.product).upper().strip())
+            n = next((x for x in order if u == x or u.startswith(x + " ") or u.startswith(x + "-")), None)
+            if not n:
+                continue
+            code = "CORP" if r.till == "corporate" else _TILL_CODE.get(str(r.till), "OTH")
+            out[n][code] = out[n].get(code, 0) + int(round(float(r.q)))
+    return out
+
+
+try:
+    _np_shop_names = [str(p["name"]).upper().strip() for p in product_targets]
+    _today = date.today()
+    _win = oos_callbacks.windows(_today)
+    shop_sales_data = {}
+    for _per, (_s, _e) in (("weekly", _win["weekly"]), ("lastweek", _win["lastweek"]), ("monthly", _win["monthly"])):
+        _e = min(_e, _today)
+        shop_sales_data[_per] = {"shops": [c for c, _ in SHOP_CODES] + ["CORP"],
+                                 "window": f"{_s.strftime('%d %b')} – {_e.strftime('%d %b')}",
+                                 "rows": shop_sales(_np_shop_names, _s, _e)}
+    _lw = shop_sales_data["lastweek"]["rows"]
+    print(f"  Sales by shop (last week): {sum(sum(v.values()) for v in _lw.values())} bags across {len(_lw)} new products")
+except Exception as _err:                                     # noqa: BLE001 — the table just hides
+    print(f"  Sales by shop unavailable ({_err})")
+    shop_sales_data = {}
+
+
 # ── INJECT INTO HTML ──────────────────────────────────────────
 
 inline_script = (
@@ -916,7 +985,8 @@ inline_script = (
     f'  npPrevWeekly: {json.dumps(np_prev_weekly, ensure_ascii=False, separators=(",", ":"))},\n'
     f'  npPrevLabel:  {json.dumps(np_prev_label, ensure_ascii=False)},\n'
     f'  npCurLabel:   {json.dumps(np_cur_label, ensure_ascii=False)},\n'
-    f'  oos:          {json.dumps(np_oos, ensure_ascii=False, separators=(",", ":"))}\n'
+    f'  oos:          {json.dumps(np_oos, ensure_ascii=False, separators=(",", ":"))},\n'
+    f'  shopSales:    {json.dumps(shop_sales_data, ensure_ascii=False, separators=(",", ":"))}\n'
     "};\n"
     "</script>\n"
     "<!-- NEW_PROD_DATA_END -->"

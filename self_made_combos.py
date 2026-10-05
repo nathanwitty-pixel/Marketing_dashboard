@@ -1469,7 +1469,7 @@ def _apply_receipt_offers(regions, m_start, m_end, stocks):
             continue
         stock = stocks.get(key, {})
 
-        def cards(offers, table):
+        def cards(offers, table, connections=True):
             out = []
             for o in offers:
                 hit = table.get(o["name"], {})
@@ -1481,7 +1481,7 @@ def _apply_receipt_offers(regions, m_start, m_end, stocks):
                 prev = weeks[-2]["sold"] if len(weeks) > 1 else last
                 # What people chose instead: per bag of this offer, the self-made combos that held it.
                 conns, seen = [], {}
-                for b in sorted({x for slot in o["slots"] for x in slot}):
+                for b in (sorted({x for slot in o["slots"] for x in slot}) if connections else []):   # combos only
                     sm_b = sorted(({"name": k, "qty": v["count"], "value": v["revenue"],
                                     "dates": sorted(v.get("days", {}).items())}
                                    for k, v in summ["selfMade"].items() if b in (v.get("bags") or [])),
@@ -1501,7 +1501,7 @@ def _apply_receipt_offers(regions, m_start, m_end, stocks):
         specials = [g for g in reg.get("groups", []) if g["key"] == "specials"]
         reg["groups"] = [g for g in (
             {"key": "combos", "label": "Combos", "cards": cards(summ["offers"]["combos"], summ["running"])},
-            {"key": "singles", "label": "Singles", "cards": cards(summ["offers"]["singles"], summ["singlesOffer"])},
+            {"key": "singles", "label": "Singles", "cards": cards(summ["offers"]["singles"], summ["singlesOffer"], connections=False)},
         ) if g["cards"]] + specials
         sm = sorted(({"name": k, "count": v["count"], "revenue": v["revenue"], "dates": sorted(v.get("days", {}).items())}
                      for k, v in summ["selfMade"].items()),
@@ -2264,22 +2264,29 @@ def inject(payload):
 def write_bags_offer_source(payload):
     """Kenya on-offer bag set (tagged by offer) + the not-on-offer list, for bags_on_offer.py."""
     try:
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "bags_offer_source.json"),
-                  "w", encoding="utf-8") as f:
-            deals = payload.get("deals") or {}
-            json.dump({"month": payload.get("month", ""),
-                       "onOffer": payload.get("onOfferSources", {}),
-                       # Where / when each Deal of the Week runs — a single sale is a DoW sale
-                       # only at these shops in these Sun-Sat weeks.
-                       "dowRuns": [{"product": d.get("product", ""), "tier": d.get("tier"),
-                                    "weeks": dow_tier_weeks(d.get("tier"), deals.get("curWeek", 1) or 1),
-                                    "locations": d.get("locations") or []}
-                                   for d in deals.get("dealOfWeek", [])],
-                       "bagsNotOnOffer": payload.get("bagsNotOnOffer", {}),
-                       # Kenya stock per bag type (sheet + Odoo live fallback) — so every bag on
-                       # the Bags on/off offer page gets stock + days of cover.
-                       "stockMap": {str(k).strip().upper(): int(v or 0)
-                                    for k, v in (_AUGMENTED_STOCK or {}).items()}}, f, ensure_ascii=False)
+        deals = payload.get("deals") or {}
+        doc = {"month": payload.get("month", ""),
+               "onOffer": payload.get("onOfferSources", {}),
+               # Where / when each Deal of the Week runs — a single sale is a DoW sale
+               # only at these shops in these Sun-Sat weeks.
+               "dowRuns": [{"product": d.get("product", ""), "tier": d.get("tier"),
+                            "weeks": dow_tier_weeks(d.get("tier"), deals.get("curWeek", 1) or 1),
+                            "locations": d.get("locations") or []}
+                           for d in deals.get("dealOfWeek", [])],
+               "bagsNotOnOffer": payload.get("bagsNotOnOffer", {}),
+               # Kenya stock per bag type (sheet + Odoo live fallback) — so every bag on
+               # the Bags on/off offer page gets stock + days of cover.
+               "stockMap": {str(k).strip().upper(): int(v or 0)
+                            for k, v in (_AUGMENTED_STOCK or {}).items()}}
+        here = os.path.dirname(os.path.abspath(__file__))
+        names = ["bags_offer_source.json"]
+        try:   # plus a per-month archive, so a window straddling two months uses each month's list
+            names.append(f"bags_offer_source_{datetime.datetime.strptime(doc['month'], '%B %Y'):%Y-%m}.json")
+        except ValueError:
+            pass
+        for nm in names:
+            with open(os.path.join(here, nm), "w", encoding="utf-8") as f:
+                json.dump(doc, f, ensure_ascii=False)
     except OSError:
         pass
 

@@ -23,7 +23,7 @@ BOO_DATA markers.
 ─────────────────────────────────────────────────────────────────
 """
 
-import os, re, json, time, datetime, webbrowser, pathlib
+import os, re, sys, json, time, datetime, webbrowser, pathlib
 
 from lib import db, report_month, oos_callbacks, colours, shop_birthdays
 import self_made_combos as smc
@@ -172,8 +172,14 @@ CATEGORIES = ["BABY BAG", "BACKPACK", "BRIEFCASE", "CHEST BAG", "GIFT BAG", "HAN
 TIERS = ["Premium", "Core", "Entry"]
 
 
+def _price_tier(price):
+    """Tier of a bag from its price (KES): <= 2,000 Entry, 2,001-3,000 Core, > 3,000 Premium."""
+    return "Entry" if price <= 2000 else ("Core" if price <= 3000 else "Premium")
+
+
 def _bag_tiers():
-    """{BAG: (category, tier)} from bag_tiers.csv (editable; '#' lines are comments)."""
+    """{BAG: (category, tier)} from bag_tiers.csv (editable; '#' lines are comments). The tier
+    follows PRICE when it is set, else the TIER column."""
     out = {}
     try:
         with open(TIERS_CSV, encoding="utf-8") as f:
@@ -184,6 +190,10 @@ def _bag_tiers():
             if not bag:
                 continue
             tier = str(r.get("TIER") or "").strip().capitalize()
+            try:   # the price decides: <= 2,000 Entry, 2,001-3,000 Core, > 3,000 Premium
+                tier = _price_tier(float(str(r.get("PRICE") or "").replace(",", "")))
+            except ValueError:
+                pass
             out[bag] = (str(r.get("CATEGORY") or "").strip().upper(), tier if tier in TIERS else "")
     except OSError:
         print("  Tiers            : bag_tiers.csv not found — every bag Unassigned")
@@ -236,6 +246,17 @@ def _load_source(month_label):
         return None
 
 
+def _archived_source(month_start):
+    """bags_offer_source_<YYYY-MM>.json — that month's archived on-offer list, or None."""
+    fp = os.path.join(BASE, f"bags_offer_source_{month_start:%Y-%m}.json")
+    try:
+        with open(fp, encoding="utf-8") as f:
+            d = json.load(f)
+        return d if d.get("onOffer") else None
+    except (OSError, ValueError):
+        return None
+
+
 def _previous_payload():
     try:
         with open(HTML, encoding="utf-8") as f:
@@ -278,9 +299,51 @@ def _region_of(label):
     return smc._SHOP_REGION.get(label.upper(), "Other")
 
 
+CUSTOM_JSON = os.path.join(BASE, "boo_custom_range.json")
+CUSTOM_MAX_DAYS = 366
+
+
+def _custom_range():
+    """(from, to) dates from boo_custom_range.json — the Custom period — or None."""
+    try:
+        with open(CUSTOM_JSON, encoding="utf-8") as f:
+            c = json.load(f)
+        a, b = datetime.date.fromisoformat(c["from"]), datetime.date.fromisoformat(c["to"])
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+    if a > b:
+        a, b = b, a
+    return (max(a, b - datetime.timedelta(days=CUSTOM_MAX_DAYS - 1)), b)
+
+
+def save_custom_range(a, b):
+    """Write (or with a=None, delete) the Custom period's dates."""
+    if a is None:
+        try:
+            os.remove(CUSTOM_JSON)
+        except OSError:
+            pass
+        return
+    with open(CUSTOM_JSON, "w", encoding="utf-8") as f:
+        json.dump({"from": a.isoformat(), "to": b.isoformat()}, f)
+
+
 def _windows(today, m_start, m_end):
     ws = today - datetime.timedelta(days=(today.weekday() + 1) % 7)       # Sunday of this week
     d = datetime.timedelta
+    out = _base_windows(today, m_start, m_end, ws, d)
+    c = _custom_range()
+    if c:
+        a, b = c
+        days = (b - a).days + 1
+        out["custom"] = {"label": f"Custom ({a:%d %b} – {b:%d %b})", "start": a, "end": b,
+                         "upto": min(b, today), "period": "custom", "days": days,
+                         "trend": "day" if days <= 31 else "week",
+                         "anchor": a - d(days=(a.weekday() + 1) % 7)}       # Sunday on/before day 1
+    return out
+
+
+def _base_windows(today, m_start, m_end, ws, d):
     return {
         "monthly":  {"label": "Monthly", "start": m_start, "end": m_end, "upto": min(m_end, today),
                      "period": "month", "days": (m_end - m_start).days + 1, "trend": "week"},
@@ -292,7 +355,19 @@ def _windows(today, m_start, m_end):
 
 
 def _pick_target(rows, shop, period, start, end):
-    """Latest target row for `shop` with this period that overlaps [start, end]."""
+    """Latest target row for `shop` with this period that overlaps [start, end]. A custom range
+    sums each overlapping month target × the share of that month's days inside the range."""
+    if period == "custom":
+        months, tot = {}, 0.0
+        for r in rows:
+            if r["shop"] == shop and r["period"] == "month" and r["start_date"] <= end and r["end_date"] >= start:
+                months.setdefault(r["start_date"], []).append(r)
+        for ms, lst in months.items():
+            r = max(lst, key=lambda x: str(x["write_date"] or ""))
+            span = (r["end_date"] - r["start_date"]).days + 1
+            inside = (min(end, r["end_date"]) - max(start, r["start_date"])).days + 1
+            tot += (r["target"] or 0) * inside / span
+        return tot or None
     best = None
     for r in rows:
         if r["shop"] != shop or r["period"] != period:
@@ -583,18 +658,6 @@ def fetch():
         return None
     new_names = sorted(set(_new_products()), key=len, reverse=True)
 
-    on_offer = src.get("onOffer", {})
-    infer, is_on_offer = smc.bag_classifier(set(on_offer))
-    # Per on-offer name: its own matcher, so a sold bag picks up the right source tags.
-    per_name = [(smc.bag_classifier({n})[1], srcs) for n, srcs in on_offer.items()]
-
-    def sources_of(bt):
-        tags = []
-        for match, srcs in per_name:
-            if match(bt):
-                tags += [x for x in srcs if x not in tags]
-        return sorted(tags, key=lambda x: _SOURCE_ORDER.index(x) if x in _SOURCE_ORDER else 99)
-
     def new_of(name):
         n = re.sub(r"^\[[^\]]*\]\s*", "", name).strip()          # Odoo "[S_0] LAMORA …" codes
         for np in new_names:
@@ -602,62 +665,98 @@ def fetch():
                 return np
         return None
 
-    cache = {}
     timed_bags = set()                  # bags listed on a timed offer that sold inside it
 
-    # Where / when each Deal of the Week runs: (matcher, weeks, shop labels).
-    dow_runs = [(smc.bag_classifier({r["product"]})[1], set(r.get("weeks") or []), set(r.get("locations") or []))
-                for r in src.get("dowRuns", []) if r.get("product")]
+    def make_classifier(src_m, anchor_m):
+        """(infer, base, classify) for one month's offer list — a sale is judged by the offers of
+        its own month (docs/bags-on-offer.md › Period selector)."""
+        on_offer = src_m.get("onOffer", {})
+        infer, is_on_offer = smc.bag_classifier(set(on_offer))
+        # Per on-offer name: its own matcher, so a sold bag picks up the right source tags.
+        per_name = [(smc.bag_classifier({n})[1], srcs) for n, srcs in on_offer.items()]
 
-    def base(name):
-        """Name-only part of the classification (cached): gift bag / combo / unresolved, or a bag
-        with its all-month offers (Power Deal, combo component) and its Deal-of-the-Week runs."""
-        if name in cache:
-            return cache[name]
-        other = _other_group(name)
-        if other:
-            res = ("oth", other, [], False, [])
-        elif "+" in name:
-            res = ("combo", name, [], False, [])
-        else:
-            npn = new_of(name)
-            bt = ("LAPTOP SLEEVE" if "LAPTOP SLEEVE" in name.upper() else None) or infer(name) or npn
-            if not bt:
-                res = ("unc", name, [], False, [])
+        def sources_of(bt):
+            tags = []
+            for match, srcs in per_name:
+                if match(bt):
+                    tags += [x for x in srcs if x not in tags]
+            return sorted(tags, key=lambda x: _SOURCE_ORDER.index(x) if x in _SOURCE_ORDER else 99)
+
+        cache = {}
+
+        # Where / when each Deal of the Week runs: (matcher, weeks, shop labels).
+        dow_runs = [(smc.bag_classifier({r["product"]})[1], set(r.get("weeks") or []), set(r.get("locations") or []))
+                    for r in src_m.get("dowRuns", []) if r.get("product")]
+
+        def base(name):
+            """Name-only part of the classification (cached): gift bag / combo / unresolved, or a bag
+            with its all-month offers (Power Deal, combo component) and its Deal-of-the-Week runs."""
+            if name in cache:
+                return cache[name]
+            other = _other_group(name)
+            if other:
+                res = ("oth", other, [], False, [])
+            elif "+" in name:
+                res = ("combo", name, [], False, [])
             else:
-                static = [x for x in sources_of(bt) if x != "Deal of the Week"] if is_on_offer(bt) else []
-                runs = [(wk, locs) for match, wk, locs in dow_runs if match(bt)]
-                res = ("bag", bt, static, bool(npn) or (bt in new_names), runs)
-        cache[name] = res
-        return res
+                npn = new_of(name)
+                bt = ("LAPTOP SLEEVE" if "LAPTOP SLEEVE" in name.upper() else None) or infer(name) or npn
+                if not bt:
+                    res = ("unc", name, [], False, [])
+                else:
+                    static = [x for x in sources_of(bt) if x != "Deal of the Week"] if is_on_offer(bt) else []
+                    runs = [(wk, locs) for match, wk, locs in dow_runs if match(bt)]
+                    res = ("bag", bt, static, bool(npn) or (bt in new_names), runs)
+            cache[name] = res
+            return res
+
+        def classify(name, shop=None, d=None, timed=None):
+            """(side, bag, sources, isNew, allOffers) — side is on / off / oth / unc. A single sale is
+            a Deal-of-the-Week sale only at a shop running that deal, in its tier's weeks (shop/d
+            None = "anywhere", used for bags seen only inside combos). `timed` = the line was sold
+            inside a timed-offer campaign. Sources are in counting order: Timed offer → Power Deal
+            → Deal of the Week → Combo component."""
+            kind, bt, static, is_new, runs = base(name)
+            if kind == "oth":
+                return ("oth", bt, [bt], False, [])
+            if kind == "combo":
+                return ("on", bt, ["Combo sale"], False, [])
+            if kind == "unc":
+                return ("unc", bt, [], False, [])
+            if shop is None:
+                dow_ok = bool(runs)
+            else:
+                wk, loc = (d - anchor_m).days // 7 + 1, _shop_label(shop)
+                dow_ok = any(wk in weeks and loc in locs for weeks, locs in runs)
+            srcs = ["Timed offer"] if timed else []
+            srcs += [x for x in ("Power Deal",) if x in static]
+            if dow_ok:
+                srcs.append("Deal of the Week")
+            srcs += [x for x in ("Combo component",) if x in static]
+            all_offers = sorted(set(static) | ({"Deal of the Week"} if runs else set())
+                                | ({"Timed offer"} if timed or bt in timed_bags else set()),
+                                key=lambda x: _SOURCE_ORDER.index(x) if x in _SOURCE_ORDER else 99)
+            return ("on" if srcs else "off", bt, srcs, is_new, all_offers)
+        return infer, base, classify
+
+    infer, base, classify_cur = make_classifier(src, month_anchor)
+    # A window can reach into earlier months (Last week, Custom): their days use that month's
+    # archived offer list (docs/bags-on-offer.md › Period selector), else this month's.
+    by_month = {m_start: classify_cur}
+
+    def classify_for(d):
+        ms = d.replace(day=1)
+        if ms not in by_month:
+            src_m = _archived_source(ms) if ms < m_start else None
+            by_month[ms] = (make_classifier(src_m, ms - datetime.timedelta(days=(ms.weekday() + 1) % 7))[2]
+                            if src_m else classify_cur)
+            print(f"  {ms:%B %Y} days   : " + ("its archived offer list" if src_m else "no archive — this month's list"))
+        return by_month[ms]
 
     def classify(name, shop=None, d=None, timed=None):
-        """(side, bag, sources, isNew, allOffers) — side is on / off / oth / unc. A single sale is
-        a Deal-of-the-Week sale only at a shop running that deal, in its tier's weeks (shop/d
-        None = "anywhere", used for bags seen only inside combos). `timed` = the line was sold
-        inside a timed-offer campaign. Sources are in counting order: Timed offer → Power Deal
-        → Deal of the Week → Combo component."""
-        kind, bt, static, is_new, runs = base(name)
-        if kind == "oth":
-            return ("oth", bt, [bt], False, [])
-        if kind == "combo":
-            return ("on", bt, ["Combo sale"], False, [])
-        if kind == "unc":
-            return ("unc", bt, [], False, [])
-        if shop is None:
-            dow_ok = bool(runs)
-        else:
-            wk, loc = (d - month_anchor).days // 7 + 1, _shop_label(shop)
-            dow_ok = any(wk in weeks and loc in locs for weeks, locs in runs)
-        srcs = ["Timed offer"] if timed else []
-        srcs += [x for x in ("Power Deal",) if x in static]
-        if dow_ok:
-            srcs.append("Deal of the Week")
-        srcs += [x for x in ("Combo component",) if x in static]
-        all_offers = sorted(set(static) | ({"Deal of the Week"} if runs else set())
-                            | ({"Timed offer"} if timed or bt in timed_bags else set()),
-                            key=lambda x: _SOURCE_ORDER.index(x) if x in _SOURCE_ORDER else 99)
-        return ("on" if srcs else "off", bt, srcs, is_new, all_offers)
+        if d is not None and d < m_start:
+            return classify_for(d)(name, shop, d, timed)
+        return classify_cur(name, shop, d, timed)
 
     params = {"s": lo.isoformat(), "e": hi.isoformat()}
 
@@ -824,7 +923,8 @@ def fetch():
         cover[bt] = {"stock": stk, "avgPerDay": round(avg, 1),
                      "daysCover": int(round(stk / avg)) if avg > 0 else None}
 
-    periods = {k: _build_period(w, lines, till, corp, targets, classify, extra_off, month_anchor, prints, cover, seg_of)
+    periods = {k: _build_period(w, lines, till, corp, targets, classify, extra_off, w.get("anchor", month_anchor),
+                                prints, cover, seg_of)
                for k, w in wins.items()}
     # Tier + category on every bag row, for the bag tables' Tier tags / filter.
     for P in periods.values():
@@ -872,6 +972,12 @@ def fmt(n):
 
 
 def main():
+    # python bags_on_offer.py 2026-09-15 2026-10-03  → set the Custom period; "clear" removes it.
+    args = sys.argv[1:]
+    if args and args[0].lower() == "clear":
+        save_custom_range(None, None)
+    elif len(args) >= 2:
+        save_custom_range(datetime.date.fromisoformat(args[0]), datetime.date.fromisoformat(args[1]))
     payload = fetch()
     if payload is None:
         return

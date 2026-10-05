@@ -7,7 +7,7 @@
 
 ## What the page shows
 
-**Sidebar** ([page sidebar](README.md#page-sidebar)) — one entry per block — Overview, Weekly Sales vs Marketing Posts, Weekly Performance, Sold vs Remaining to Target, Top 10, Colour Movement & Stock Guidance, Sales vs Posts (per Colour).
+**Sidebar** ([page sidebar](README.md#page-sidebar)) — one entry per block — Overview, Weekly Sales vs Marketing Posts, Weekly Performance, Sales by Shop, Sold vs Remaining to Target, Top 10, Colour Movement & Stock Guidance.
 
 Per new-product KPIs (target vs sold vs deficit), monthly and weekly sales split
 Kenya vs Outside, marketing posts, stock levels, a weekly-sales-vs-posts chart, and a
@@ -169,6 +169,23 @@ follows the **Period** dropdown (Weekly → `weekly`, Last week → `lastweek`, 
 Lifetime → `lifetime`); a **Waiting now** toggle switches every chip to `current`.
 **Colours:** each bag entry carries `colours: [[colour, people, [[shop, people], …]], …]`, high → low;
 the colour is the **exact colour** as the product is named (`_odoo_colour`, e.g. `CN Black`) — New Products never folds shades. A request whose product has no colour shows as "No colour".
+
+## Sales by Shop (replaced "Sales vs Posts (per Colour)", Oct 2026)
+
+A **new product × shop** table, placed **before** Sold vs Remaining to Target: one row per new product (`productTargets` order by total, high → low), one
+column per shop — **STR MSA NAK ELD KSM MER THK HAZ KIT WEB NAN KAK HTN SNZ UGD KSII KTD BSA RGI** — a
+**TOTAL** column and a **TOTAL** row, plus a **Posts** column (Kenya + outside posts for the period: Monthly =
+MONTHLY_MARKETING_POST, Last week = WEEKLY_MARKETING_POST, Weekly = 0 — posts are a week in arrears).
+- **Sales** = Odoo POS bags per till for the period, the dashboard's bag rules: combo contents counted per bag
+  (the `+` wrapper isn't), refunds netted, POS-category lines out. **Staff POS is left out**; Sinza and
+  Dar-es-Salaam = **SNZ**; Uganda = **UGD**; any other till goes to **OTH** (shown only when non-zero).
+  **CORP** = corporate invoices (posted, paid / in payment / ≤ 25 % unpaid — the dashboard's corporate rule),
+  after the shop columns.
+  Product names match by the page's prefix rule (`match_odoo_bags`), all colours together.
+- **Period** dropdown: Weekly (this Sun–Sat to date) · Last week (previous Sun–Sat) · Monthly (live month).
+- Zero cells show "0" dimmed; the busiest cell per row is highlighted. Data: `NP.shopSales = {period: {shops:
+  [codes], rows: {PRODUCT: {CODE: units}}, window}}`.
+- Checked 4 Oct 2026 against the hand-made Last-week table (27 Sep – 3 Oct): identical, 115 bags.
 
 ## Regenerate
 

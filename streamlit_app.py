@@ -769,6 +769,48 @@ if _rm:
         _how = "Auto-refreshed" if _rm.get("auto") else "Refreshed"
         st.success(f"✓ {_how} from Odoo at {_rm['when']}")
 
+# ── Bags On vs Off Offer: Custom period (docs/bags-on-offer.md › Period selector) ──
+# The dates go to boo_custom_range.json and bags_on_offer.py rebuilds the page with a "custom"
+# period, which the page's Period dropdown then opens on.
+if html_file == "bags_on_offer.html":
+    _boo_cr = os.path.join(BASE, "boo_custom_range.json")
+    try:
+        with open(_boo_cr, encoding="utf-8") as _fh:
+            _c = _json.load(_fh)
+        _cur = (datetime.date.fromisoformat(_c["from"]), datetime.date.fromisoformat(_c["to"]))
+    except (OSError, ValueError, KeyError, TypeError):
+        _cur = None
+    _today = datetime.date.today()
+    _d, _ap, _cl = st.columns([0.6, 0.2, 0.2], vertical_alignment="bottom")
+    with _d:
+        _rng = st.date_input("Custom range", value=_cur or (_today.replace(day=1), _today),
+                             max_value=_today, format="DD/MM/YYYY", key="boo_custom_dates")
+    with _ap:
+        _go = st.button("Apply", icon=":material/date_range:", use_container_width=True, key="boo_custom_apply")
+    with _cl:
+        _clr = st.button("Clear", icon=":material/close:", use_container_width=True, key="boo_custom_clear",
+                         disabled=_cur is None)
+    if _go:
+        if not (isinstance(_rng, (tuple, list)) and len(_rng) == 2):
+            st.warning("Pick both a From and a To date.")
+        else:
+            with open(_boo_cr, "w", encoding="utf-8") as _fh:
+                _json.dump({"from": _rng[0].isoformat(), "to": _rng[1].isoformat()}, _fh)
+            with st.spinner(f"Building {_rng[0]:%d %b} – {_rng[1]:%d %b} from Odoo…"):
+                _logs = run_scripts(["bags_on_offer.py"])
+            st.session_state.refresh_msg = {
+                "when": datetime.datetime.now().strftime("%H:%M:%S"),
+                "fails": [(s, out) for s, rc, out in _logs if rc != 0], "unreachable": False}
+            st.rerun()
+    if _clr:
+        try:
+            os.remove(_boo_cr)
+        except OSError:
+            pass
+        with st.spinner("Removing the custom period…"):
+            run_scripts(["bags_on_offer.py"])
+        st.rerun()
+
 # ── Render the selected page ──
 # Injected into each embedded page so it (a) doesn't force a full-viewport black
 # body inside the iframe, and (b) auto-sizes the iframe to its real content height

@@ -9,7 +9,7 @@
 A new metric **next to** Menu 4 — it does **not** replace anything there. The Self made combos
 page keeps its Combos / Power Deals views and its own "Bags not on offer" panel unchanged.
 
-## Period selector (Monthly / Weekly / Last week)
+## Period selector (Monthly / Weekly / Last week / Custom)
 
 A **Period** dropdown (top right, same wording as New Products) switches the whole page. All three
 are pre-computed by the generator into `BOO.periods.{monthly, weekly, lastweek}`:
@@ -19,6 +19,24 @@ are pre-computed by the generator into `BOO.periods.{monthly, weekly, lastweek}`
 | **Monthly** | the live report month (`report_month.live_month_window()`), to date | revenue per Sun–Sat week | `period = 'month'` |
 | **Weekly** | the current Sun–Sat week, to date | revenue per day | `period = 'week'` |
 | **Last week** | the previous complete Sun–Sat week (may straddle the month boundary) | revenue per day | `period = 'week'` |
+| **Custom** | any From – To dates you pick (up to 366 days; both days included) | revenue per day (≤ 31 days) or per Sun–Sat week | each overlapping `period = 'month'` target × the share of its days inside the range |
+
+**Custom range.** On the Streamlit page, a **Custom range** date picker + **Apply** sits under the
+title of Bags on Offer. Apply saves the dates to `boo_custom_range.json` (`{"from", "to"}`) and
+rebuilds the page from Odoo; the dropdown then shows **Custom (dd Mon – dd Mon)** and selects it.
+The range stays (auto-refresh keeps rebuilding it) until a new one is applied or **Clear** is
+pressed (deletes the file). Locally: `python bags_on_offer.py 2026-09-15 2026-10-03` (or
+`python bags_on_offer.py clear`). Days of any month whose offer list is archived
+(`bags_offer_source_<YYYY-MM>.json`) use that month's list; other months fall back to the
+current month's list (the build log says which). The Offer type › weekly split stays Monthly-only.
+
+**Each sale is judged by the offers of its own month.** A window that straddles the month boundary
+(Last week = 27 Sep – 3 Oct) classifies the September days with September's offer list (Power
+Deals, Deal of the Week runs + weeks, combo components) and the October days with October's. Every
+month's list is archived as `bags_offer_source_<YYYY-MM>.json` (written by self_made_combos.py
+alongside `bags_offer_source.json`); if the previous month's archive is missing, those days fall
+back to the current month's list. Deal-of-the-Week week numbers count from each month's own
+Sunday anchor.
 
 The chosen period is remembered per viewer (browser storage). Stock / days-of-cover on the
 not-on-offer table are point-in-time (today's stock, this month's selling pace) in every period.
@@ -150,12 +168,17 @@ Columns (revenue / units / share toggle): **All**, **Top 5 categories**, **Other
   THIGH BAG, TRAVEL, WAIST BAG, WASHBAG.
 - **Top 5** = the 5 categories with the most revenue **in the selected period**; **Other 13** = the
   rest of the 18. Hovering a header lists its categories.
-- **Tier** of a bag: `bag_tiers.csv` (`TIER` = Premium / Core / Entry), editable. Seeded from the
-  tier pivot (27 Sep 2026) where a category sits in only one tier — Premium: WASHBAG, BABY BAG;
-  Entry: WAIST BAG, THIGH BAG, LUNCH BAG, GIFT BAG, SPORT (Zipped lunchset, Arm band); Core: HOOD,
-  SPORT (Spark, Gym bag). Categories found in several tiers (Backpack, Handbag, Sling, Travel,
-  Man bag, Make up, Briefcase, Messenger, School bag, Chest bag) need each bag's tier filled in;
-  until then those bags are **Unassigned**.
+- **Tier** of a bag comes from its **price** (`bag_tiers.csv` › `PRICE`, KES; price list of 5 Oct 2026),
+  the same rule as the sheet formula `=IFS(B3<=2000,"Entry",AND(B3>=2001,B3<=3000),"Core",B3>3000,"Premium")`:
+  | Price (KES) | Tier |
+  |---|---|
+  | ≤ 2,000 | **Entry** |
+  | 2,001 – 3,000 | **Core** |
+  | > 3,000 | **Premium** |
+
+  Change a bag's tier by editing its PRICE; the `TIER` column is written alongside for reading and
+  is used only for a bag with no price (LILY, STANDARD — Unassigned until priced). CODE 3 BP takes
+  CODE 3's price, LAPTOP SLEEVE takes SLEEVE 1's. GIFT BAG (KES 250) is Entry.
 - **Three tabs** (27 Sep 2026). A shared Revenue / Units / Mix % toggle and an **Offer types**
   filter (chips — show / hide any offer type; totals and Mix % recompute over the ones shown)
   drive all of them; tab, filters and toggle are remembered in the browser.

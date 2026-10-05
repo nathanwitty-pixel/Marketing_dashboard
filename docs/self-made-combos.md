@@ -526,7 +526,7 @@ Data: `SMC.regions[r].receipts` → `smTotals` / `runTotals` ({count, units, val
 **What people chose instead (on each running card).** Like Kenya's "shares … self-made" chip: a running combo
 card lists, per bag of that combo, the **self-made combos that contained the bag** — e.g. SAFIRI + CODE 3 →
 *Safiri Travel: Jade + Safiri Travel ×1, Remi + Safiri Travel ×1* — with times and revenue (KSh in brackets),
-so you see what customers prefer to pair the bag with. Data: each Sinza / Uganda combo card's
+so you see what customers prefer to pair the bag with. **Combo cards only** — singles don't get the chip. Data: each Sinza / Uganda combo card's
 `connections: [{bag, selfMade:[{name, qty, value}], smUnits, smValue}]`, `connUnits`, `connValue`, `connCombos`.
 
 **Sale dates.** Every Sinza / Uganda self-made combo carries the days it was sold (`dates: [[YYYY-MM-DD, times], …]`,
