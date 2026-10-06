@@ -449,6 +449,8 @@ Deal of the Week / Power Deal) + `bagsNotOnOffer` — which `bags_on_offer.py` r
 > Data per bag: `online`, `walkin`, `shopCh {shop: [online, walkin]}`, and a 4th item on each colour
 > `{shop: [online, walkin]}` (`lib/oos_callbacks.py`, `oos_chip.js`). Mis-picked lead products (e.g. "Ajab
 > Homebaking Flour", "Drawer Repair") never match a bag, so they drop out.
+> **Long popovers scroll:** the pointer can move from the chip onto the popover (220 ms grace) and it stays open
+> while hovered, scrolled or clicked inside; scrolling the page or moving away closes it.
 
 Who asked for each bag on WhatsApp while it was out of stock — per shop, per market.
 

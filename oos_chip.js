@@ -36,7 +36,7 @@
     '.oos-pop .row{display:flex;justify-content:space-between;gap:1rem}' +
     '.oos-pop .row b{font-variant-numeric:tabular-nums;color:#fcd34d}' +
     '.oos-pop .n{margin-top:0.35rem;color:#64748b;font-size:0.66rem}' +
-    '.oos-pop{max-height:min(420px,calc(100vh - 24px));overflow:auto}' +
+    '.oos-pop{max-height:min(420px,calc(100vh - 24px));overflow:auto;overscroll-behavior:contain}' +
     '.oos-pop .sec{margin-top:0.45rem;padding-top:0.4rem;border-top:1px solid #2d3148;color:#94a3b8;font-size:0.64rem;text-transform:uppercase;letter-spacing:0.06em}' +
     '.oos-pop .col{margin-top:0.3rem}' +
     '.oos-pop .col .row span{font-weight:600}' +
@@ -105,7 +105,14 @@
     if (!it) return;
     if (openFor === el) return;
     close();
-    if (!pop) { pop = document.createElement('div'); pop.className = 'oos-pop'; pop.setAttribute('role', 'tooltip'); document.body.appendChild(pop); }
+    if (!pop) {
+      pop = document.createElement('div'); pop.className = 'oos-pop'; pop.setAttribute('role', 'tooltip'); document.body.appendChild(pop);
+      // The pointer can move onto the popover (to scroll its list) without it closing.
+      pop.addEventListener('mouseenter', keep);
+      pop.addEventListener('mouseleave', function (ev) {
+        if (openFor && !openFor.__tapped && !(ev.relatedTarget && openFor.contains(ev.relatedTarget))) later();
+      });
+    }
     pop.innerHTML = '<div class="h">' + (it.b ? '<span class="bg">' + esc(it.b) + '</span> — ' : '') +
       it.e.total + (it.w ? ' still waiting' : ' asked') + ' while out of stock</div>' +
       (it.e.online != null || it.e.walkin != null
@@ -130,12 +137,18 @@
   }
 
   function chipOf(t) { return t && t.closest ? t.closest('.oos-chip') : null; }
-  document.addEventListener('mouseover', function (ev) { var c = chipOf(ev.target); if (c) open(c); });
+  function inPop(t) { return !!(pop && t && (t === pop || pop.contains(t))); }
+  // Leaving the chip closes after a short grace, so the pointer can cross the gap onto the popover.
+  var hideT = null;
+  function keep() { clearTimeout(hideT); }
+  function later() { clearTimeout(hideT); hideT = setTimeout(function () { if (openFor && !openFor.__tapped) close(); }, 220); }
+  document.addEventListener('mouseover', function (ev) { var c = chipOf(ev.target); if (c) { keep(); open(c); } });
   document.addEventListener('mouseout', function (ev) {
     var c = chipOf(ev.target);
-    if (c && c === openFor && !(ev.relatedTarget && c.contains(ev.relatedTarget)) && !c.__tapped) close();
+    if (c && c === openFor && !c.__tapped && !(ev.relatedTarget && (c.contains(ev.relatedTarget) || inPop(ev.relatedTarget)))) later();
   });
   document.addEventListener('click', function (ev) {
+    if (inPop(ev.target)) return;                 // clicks inside the popover (e.g. on its scrollbar) keep it open
     var c = chipOf(ev.target);
     if (c) {
       ev.stopPropagation();
@@ -150,7 +163,8 @@
     if (ev.key === 'Escape') close();
     else if (c && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); openFor === c ? close() : open(c); }
   });
-  window.addEventListener('scroll', close, true);
+  // Scrolling the page closes it; scrolling the popover's own list does not.
+  window.addEventListener('scroll', function (ev) { if (!inPop(ev.target)) close(); }, true);
   window.addEventListener('resize', close);
 
   // Segmented toggle. opts = [[value, label], …]
