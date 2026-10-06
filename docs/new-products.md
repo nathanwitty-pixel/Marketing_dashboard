@@ -64,6 +64,19 @@ The target the bars are measured against matches the **Period** selector:
 | Last week | previous complete week's sold | **weekly** target, as above |
 | Lifetime | all-time sold | monthly target (reference only) |
 
+**% sold** (Oct 2026) = sold ÷ that period's target, rounded. It sits after the target at the end of each
+bar (`262 · 5%` — green ≥ 100 %, amber ≥ 50 %, red below), in the hover footer, and as **% sold** in the
+totals row (total sold ÷ total target). The **Sort by** dropdown has **Highest % sold**. Lifetime % is
+against the monthly target, so it is reference only.
+
+**Tiles view** (Oct 2026, the default **View**; Bars and Trend line still there): one KPI tile per product
+in the **Sort by** order — **% of target sold** (big, coloured like the bar label), `sold of target`, a
+progress bar, still needed, posts (— for Weekly / Lifetime), KE stock, Sinza+UG stock, and a **rank badge
+by % of target sold**. Hover / tap a tile: sold · target · still needed · % sold, posts, stock (Kenya shops,
+Sinza+Uganda), people who asked while out of stock (`NP.oos`, same period) and **what to do** (target
+reached → keep it moving; no stock → restock first; stock below still needed → restock while pushing;
+else push it, and post it more when < 3 posts).
+
 (Before 25 Sep 2026 the Weekly / Last-week views compared one week's sales with the whole
 **monthly** target — e.g. Loop BP "32 sold · 190 still needed of 222" for last week, which
 read as far behind when 32 vs a weekly share of ~55 was the real picture.)
@@ -170,6 +183,38 @@ Lifetime → `lifetime`); a **Waiting now** toggle switches every chip to `curre
 **Colours:** each bag entry carries `colours: [[colour, people, [[shop, people], …]], …]`, high → low;
 the colour is the **exact colour** as the product is named (`_odoo_colour`, e.g. `CN Black`) — New Products never folds shades. A request whose product has no colour shows as "No colour".
 
+## Top 10 Products — Tiles view (Oct 2026)
+
+Top 10 colour-level products (`NP.monthlyCombined` / `NP.weeklyCombined`) by sold for the **Period**
+(Monthly / Weekly / Last week). **View** = **Tiles** (default) · Bars · Trend line. Each tile: rank (#1…,
+top edge in the rank colour), product name, sold this period, KE / Out posts, KE stock, Sinza+UG stock,
+% of the top-10 total and a **Push / Restock / Out of stock** pill. **Hover or tap a tile** (Enter on
+keyboard; tap outside / Esc closes) for: bag + category, share of the top 10, sold **Kenya vs outside**
+(Weekly shows one total — the week has no split), Kenya / outside posts, stock Kenya shops · Sinza+Uganda ·
+Restock (CBD/Stock), and **what to do** — stock: 0 → restock urgently; stock ≥ max(sold, 10) → push more;
+else restock soon — and posts: < 3 → post it more (Weekly: posts are a week in arrears). Totals row and the
+runway guidance below are unchanged.
+
+**Rank badges (all three tile sections — Sold vs Target, Top 10, Colour Movement):** every tile carries
+its rank for the period — Top 10 and Colour Movement by **bags sold**, Sold vs Target by **% of target
+sold**. Colours make the number readable at a glance: **★ 1 gold**, **#2 silver**, **#3 bronze**, then
+solid **green → amber → red** from #4 down to the last place. Ties share a rank (1, 1, 3, 4…).
+
+## Colour Movement & Stock Guidance — one KPI tile per bag (Oct 2026)
+
+Period (Monthly / Weekly / Last week) and Product dropdowns, the colour trend line, then **one KPI tile per
+new product** (high → low by bags sold): bags sold this period, KE / Out posts, KE stock, Sinza+UG stock,
+its top colour and `N best · M slow` chips. **Hover or tap a tile** (Enter on keyboard; tap outside / Esc
+closes) for that bag's guidance — the content of the old long list, now per bag:
+- **Best-moving** = the bag's top 3 colours by bags sold (sold > 0), each with sold · posts · stock and
+  advice (out of stock → restock urgently; stock ≥ max(sold, 10) → push more; else restock soon).
+- **Least-moving** = colours **below the bag's own average** (or unsold) that still hold stock, not already
+  best; advice: < 3 posts → post it more, else keep posting.
+- Posts follow the page rules (Weekly = 0, Last week = WEEKLY_MARKETING_POST, Monthly = monthly posts).
+  Colours are exact (no family fold). Data: `NP.monthlyCombined` / `NP.weeklyCombined` (colour rows).
+  Before Oct 2026 this was one list across all bags, with the average taken over every colour.
+- Tiles carry the same **★ 1 … last** rank badge as Top 10 (by bags sold).
+
 ## Sales by Shop (replaced "Sales vs Posts (per Colour)", Oct 2026)
 
 A **new product × shop** table, placed **before** Sold vs Remaining to Target: one row per new product (`productTargets` order by total, high → low), one
@@ -182,7 +227,8 @@ MONTHLY_MARKETING_POST, Last week = WEEKLY_MARKETING_POST, Weekly = 0 — posts 
   **CORP** = corporate invoices (posted, paid / in payment / ≤ 25 % unpaid — the dashboard's corporate rule),
   after the shop columns.
   Product names match by the page's prefix rule (`match_odoo_bags`), all colours together.
-- **Period** dropdown: Weekly (this Sun–Sat to date) · Last week (previous Sun–Sat) · Monthly (live month).
+- **Period** dropdown: Weekly (this Sun–Sat to date) · Last week (previous Sun–Sat) · Monthly (live month) ·
+  **Lifetime** (all-time, `2000-01-01 … today`; Posts shows "—" — no single all-time post count).
 - Zero cells show "0" dimmed; the busiest cell per row is highlighted. Data: `NP.shopSales = {period: {shops:
   [codes], rows: {PRODUCT: {CODE: units}}, window}}`.
 - Checked 4 Oct 2026 against the hand-made Last-week table (27 Sep – 3 Oct): identical, 115 bags.

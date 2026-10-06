@@ -927,10 +927,12 @@ try:
     _today = date.today()
     _win = oos_callbacks.windows(_today)
     shop_sales_data = {}
-    for _per, (_s, _e) in (("weekly", _win["weekly"]), ("lastweek", _win["lastweek"]), ("monthly", _win["monthly"])):
+    for _per, (_s, _e) in (("weekly", _win["weekly"]), ("lastweek", _win["lastweek"]), ("monthly", _win["monthly"]),
+                           ("lifetime", (date(2000, 1, 1), _today))):
         _e = min(_e, _today)
         shop_sales_data[_per] = {"shops": [c for c, _ in SHOP_CODES] + ["CORP"],
-                                 "window": f"{_s.strftime('%d %b')} – {_e.strftime('%d %b')}",
+                                 "window": ("All time" if _per == "lifetime"
+                                            else f"{_s.strftime('%d %b')} – {_e.strftime('%d %b')}"),
                                  "rows": shop_sales(_np_shop_names, _s, _e)}
     _lw = shop_sales_data["lastweek"]["rows"]
     print(f"  Sales by shop (last week): {sum(sum(v.values()) for v in _lw.values())} bags across {len(_lw)} new products")
