@@ -296,6 +296,15 @@ def odoo_stock_kenya_outside():
             _stock.odoo_stock_by_product("outside"))
 
 
+# ── CUSTOM RANGE (docs/new-products.md › Custom range) ───────
+# `python new_products.py 2026-09-01 2026-09-30` sets it, `python new_products.py clear` drops it;
+# the Streamlit page's Custom-range picker writes the same np_custom_range.json.
+from lib import custom_range as _custom_range
+_custom_range.from_argv("new_products")
+NP_CUSTOM = _custom_range.load("new_products")              # (from, to) or None
+NP_CUSTOM_BLOCK = _custom_range.block("new_products")
+
+
 # ── FETCH ─────────────────────────────────────────────────────
 
 def fetch_new_products_data():
@@ -583,6 +592,16 @@ def fetch_new_products_data():
             r["lastWeekOutside"] = (s["outside"] if s else 0)
         print("  Last-week sales source: Odoo (previous Sun-Sat week)")
 
+    # Custom range (when one is set) — same per-colour rules, any From – To window.
+    _odoo_c = odoo_sales_window(*NP_CUSTOM) if NP_CUSTOM else None
+    if _odoo_c is not None:
+        _cn = _keyed(_odoo_c, _add_units)
+        for r in weekly_combined:
+            s = _cn.get(_key(r["productName"]))
+            r["customKenya"]   = (s["kenya"] if s else 0)
+            r["customOutside"] = (s["outside"] if s else 0)
+        print(f"  Custom-range sales    : Odoo ({NP_CUSTOM_BLOCK['label']})")
+
     # ── Capture EVERY Odoo colour variant of the new products ────────────────────────────
     # The sheet only lists the colours someone typed; Odoo is the source of truth for what
     # actually sold. Any Odoo variant of a tracked new product that has NO matching sheet row
@@ -599,7 +618,7 @@ def fetch_new_products_data():
         _have = {_key(r["productName"]) for r in ms_base}
         _have |= {_key(r["productName"]) for r in weekly_combined}
         _names = set()
-        for _src in ((_odoo_m or {}), (_odoo_w or {}), (_odoo_lw or {}), _sk_odoo, _so_odoo):
+        for _src in ((_odoo_m or {}), (_odoo_w or {}), (_odoo_lw or {}), (_odoo_c or {}), _sk_odoo, _so_odoo):
             _names |= set(_src.keys())
         # …plus every ACTIVE sellable Odoo colour, even with no sale or shop stock yet (a colour
         # sitting only in the warehouse — e.g. Amora Orange — is still one of its colours).
@@ -616,6 +635,7 @@ def fetch_new_products_data():
         _mn_  = _keyed(_odoo_m,  _add_units)
         _wn_  = _keyed(_odoo_w,  _add_units)
         _lwn_ = _keyed(_odoo_lw, _add_units)
+        _cn_  = _keyed(_odoo_c,  _add_units) if _odoo_c is not None else {}
         def _bt_of(u):
             for _bt in _bts:
                 if u == _bt or u.startswith(_bt + " "):
@@ -635,6 +655,7 @@ def fetch_new_products_data():
             _m  = _mn_.get(_k) or {}
             _w  = _wn_.get(_k) or {}
             _lw = _lwn_.get(_k) or {}
+            _c  = _cn_.get(_k) or {}
             _sk = int(_skn.get(_k, 0))
             _so = int(_son.get(_k, 0))
             _sr = int(_srn.get(_k, 0))
@@ -644,7 +665,9 @@ def fetch_new_products_data():
             weekly_combined.append({"colour": _colour, "category": _cat, "productName": str(_nm).title(),
                             "bagType": _btd, "weeklySales": _w.get("kenya", 0) + _w.get("outside", 0), "wpostKenya": 0, "wpostOutside": 0,
                             "sKenya": _sk, "sOutside": _so, "sRestock": _sr,
-                            "lastWeekKenya": _lw.get("kenya", 0), "lastWeekOutside": _lw.get("outside", 0)})
+                            "lastWeekKenya": _lw.get("kenya", 0), "lastWeekOutside": _lw.get("outside", 0),
+                            **({"customKenya": _c.get("kenya", 0), "customOutside": _c.get("outside", 0)}
+                               if _odoo_c is not None else {})})
             _have.add(_k)
             _added += 1
         if _added:
@@ -841,7 +864,7 @@ _MONTHLY_NUMERIC_FIELDS = ["kenyaSales", "outsideKenya", "mpostKenya", "mpostOut
                            "sKenya", "sOutside", "sRestock"]
 _WEEKLY_NUMERIC_FIELDS  = ["weeklySales", "wpostKenya", "wpostOutside",
                            "sKenya", "sOutside", "sRestock",
-                           "lastWeekKenya", "lastWeekOutside"]
+                           "lastWeekKenya", "lastWeekOutside"] + (["customKenya", "customOutside"] if NP_CUSTOM else [])
 pc_monthly_combined     = _merge_rows_by_base_colour(monthly_combined,     _MONTHLY_NUMERIC_FIELDS)
 pc_weekly_combined      = _merge_rows_by_base_colour(weekly_combined,      _WEEKLY_NUMERIC_FIELDS)
 pc_all_monthly_combined = _merge_rows_by_base_colour(all_monthly_combined, _MONTHLY_NUMERIC_FIELDS)
@@ -864,7 +887,8 @@ def _np_oos_key(name):
 
 
 _np_oos_colour = lambda n: _odoo_colour(n, _np_oos_key(n) or "")      # exact colour, shades kept
-np_oos = oos_callbacks.aggregate(oos_callbacks.load_rows(), key_fn=_np_oos_key, colour_fn=_np_oos_colour)
+np_oos = oos_callbacks.aggregate(oos_callbacks.load_rows(), key_fn=_np_oos_key, colour_fn=_np_oos_colour,
+                                 custom=NP_CUSTOM)
 oos_callbacks.attach_stock(np_oos, _np_oos_key, _np_oos_colour)       # each shop's live on-hand
 print(f"  OOS call-backs        : {sum(v['total'] for v in np_oos.get('lifetime', {}).values())} people asked (lifetime) "
       f"for {len(np_oos.get('lifetime', {}))} of {len(_np_names)} new products")
@@ -904,11 +928,13 @@ GROUP BY 1
 
 
 def shop_sales(names, start, end):
-    """{PRODUCT: {SHOP CODE: units}} for the new products over [start, end] — every till but Staff POS,
-    plus Corporate invoices as CORP."""
+    """({PRODUCT: {SHOP CODE: units}}, {PRODUCT: {SHOP CODE: [[colour, units], …]}}) for the new
+    products over [start, end] — every till but Staff POS, plus Corporate invoices as CORP. The
+    colour list (high → low, exact colour as named — no family fold) feeds the cell hover."""
     from lib import db
     order = sorted(names, key=len, reverse=True)
     out = {n: {} for n in names}
+    cols = {n: {} for n in names}
     params = {"s": start.isoformat(), "e": end.isoformat()}
     for sql in (SHOP_SALES_SQL, CORPORATE_SALES_SQL):
         df = db.run_query(sql, params)
@@ -918,8 +944,14 @@ def shop_sales(names, start, end):
             if not n:
                 continue
             code = "CORP" if r.till == "corporate" else _TILL_CODE.get(str(r.till), "OTH")
-            out[n][code] = out[n].get(code, 0) + int(round(float(r.q)))
-    return out
+            q = int(round(float(r.q)))
+            out[n][code] = out[n].get(code, 0) + q
+            c = _odoo_colour(u, n, "No colour") or "No colour"
+            cc = cols[n].setdefault(code, {})
+            cc[c] = cc.get(c, 0) + q
+    colours = {n: {code: sorted(([c, q] for c, q in cc.items() if q), key=lambda x: (-x[1], x[0]))
+                   for code, cc in by.items()} for n, by in cols.items()}
+    return out, colours
 
 
 try:
@@ -928,12 +960,14 @@ try:
     _win = oos_callbacks.windows(_today)
     shop_sales_data = {}
     for _per, (_s, _e) in (("weekly", _win["weekly"]), ("lastweek", _win["lastweek"]), ("monthly", _win["monthly"]),
-                           ("lifetime", (date(2000, 1, 1), _today))):
+                           ("lifetime", (date(2000, 1, 1), _today))) + ((("custom", NP_CUSTOM),) if NP_CUSTOM else ()):
         _e = min(_e, _today)
         shop_sales_data[_per] = {"shops": [c for c, _ in SHOP_CODES] + ["CORP"],
                                  "window": ("All time" if _per == "lifetime"
+                                            else NP_CUSTOM_BLOCK["label"] if _per == "custom"
                                             else f"{_s.strftime('%d %b')} – {_e.strftime('%d %b')}"),
-                                 "rows": shop_sales(_np_shop_names, _s, _e)}
+                                 }
+        shop_sales_data[_per]["rows"], shop_sales_data[_per]["colours"] = shop_sales(_np_shop_names, _s, _e)
     _lw = shop_sales_data["lastweek"]["rows"]
     print(f"  Sales by shop (last week): {sum(sum(v.values()) for v in _lw.values())} bags across {len(_lw)} new products")
 except Exception as _err:                                     # noqa: BLE001 — the table just hides
@@ -988,7 +1022,8 @@ inline_script = (
     f'  npPrevLabel:  {json.dumps(np_prev_label, ensure_ascii=False)},\n'
     f'  npCurLabel:   {json.dumps(np_cur_label, ensure_ascii=False)},\n'
     f'  oos:          {json.dumps(np_oos, ensure_ascii=False, separators=(",", ":"))},\n'
-    f'  shopSales:    {json.dumps(shop_sales_data, ensure_ascii=False, separators=(",", ":"))}\n'
+    f'  shopSales:    {json.dumps(shop_sales_data, ensure_ascii=False, separators=(",", ":"))},\n'
+    f'  custom:       {json.dumps(NP_CUSTOM_BLOCK, ensure_ascii=False)}\n'
     "};\n"
     "</script>\n"
     "<!-- NEW_PROD_DATA_END -->"

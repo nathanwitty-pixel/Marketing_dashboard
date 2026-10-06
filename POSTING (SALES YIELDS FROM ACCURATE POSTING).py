@@ -30,6 +30,13 @@ import re, webbrowser, os, pathlib, json, datetime
 from lib import report_month   # which month these figures belong to
 from lib import odoo_tabs      # WEEKLY_SALES / MONTHLY_SALES / STOCK_LEVELS rebuilt from Odoo
 from lib import colours as _colours   # colour families (bag_names.csv)
+from lib import custom_range as _custom_range   # the page's Custom period (docs/posting-yields.md › Custom range)
+
+# `python "POSTING (…).py" 2026-09-01 2026-09-30` sets the Custom range, `… clear` drops it; the
+# Streamlit page's Custom-range picker writes the same py_custom_range.json.
+_custom_range.from_argv("posting_yields")
+PY_CUSTOM = _custom_range.load("posting_yields")             # (from, to) or None
+PY_CUSTOM_BLOCK = _custom_range.block("posting_yields")
 
 SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 
@@ -594,7 +601,7 @@ def _alignment_region(sales_rows, post_rows, sl_rows, offer_bagtypes,
 
 
 def _post_yield(post_rows, post_col, sales_rows, sales_name_col, sales_col, sl_rows, stock_col, spp,
-                offer_set=None):
+                offer_set=None, sales_only=False):
     """Marketing & Sales Alignment — posting yield, measured the way marketing measures it.
 
     For ONE region and ONE period (the posting sheet's own period: MONTHLY_MARKETING_POST =
@@ -606,7 +613,10 @@ def _post_yield(post_rows, post_col, sales_rows, sales_name_col, sales_col, sl_r
     Stock = live Odoo on-hand at the region's shops (received by the shops; not warehouse or
     in-transit). Each bag is tagged onOffer (its bag type is in the region's live offers —
     `_bt_on_offer` against the Self-Made-Combos offer set) and the same totals are also given for
-    the on-offer and not-on-offer bags (`on` / `off`), measured exactly the same way."""
+    the on-offer and not-on-offer bags (`on` / `off`), measured exactly the same way.
+
+    sales_only=True (the Custom range — no post count exists for an arbitrary window): the bags are
+    every bag SOLD in the window, with posts / expected / credited left at 0 (the page shows "—")."""
     def _k(s):
         return re.sub(r"\s+", " ", str(s).lower()).strip()
     posts = {}
@@ -638,7 +648,7 @@ def _post_yield(post_rows, post_col, sales_rows, sales_name_col, sales_col, sl_r
         if len(row) > 3 and str(row[3]).strip():
             btype.setdefault(k, str(row[3]).strip())
     bags = []
-    for k, n in posts.items():
+    for k, n in (((k, 0) for k, v in sold.items() if v > 0) if sales_only else posts.items()):
         exp = n * spp
         s = max(sold.get(k, 0), 0)
         cred = min(s, exp)
@@ -649,7 +659,7 @@ def _post_yield(post_rows, post_col, sales_rows, sales_name_col, sales_col, sl_r
                      "bagType": btype.get(k, ""),
                      "family": _colours.family(label.get(k, k), ""),     # bag_names.csv colour family
                      "onOffer": _bt_on_offer(btype.get(k, ""), offer_set or set())})
-    bags.sort(key=lambda b: (-b["expected"], b["productName"]))
+    bags.sort(key=lambda b: (-b["expected"], -b["sold"], b["productName"]))
     t_posts = sum(b["posts"] for b in bags)
     t_exp   = sum(b["expected"] for b in bags)
     t_cred  = sum(b["credited"] for b in bags)
@@ -2507,6 +2517,30 @@ def fetch_posting_data():
                   + " · ".join(f"{k} {_sg[k]['clearPct']}% ({_sg[k]['bags']} bags, {_sg[k]['deadBags']} dead)"
                                for k in ("posted_on", "posted_off", "notposted_on", "notposted_off")))
 
+    # ── Custom range (when set): sales & stock only — no post count exists for any From – To ──
+    # Posting yield lists every bag sold in the range (posts / expected / achieved shown "—");
+    # Dead Stock Clearance keeps cleared % by on / not on offer (no posted split).
+    if PY_CUSTOM:
+        _cs, _ce = PY_CUSTOM
+        cs_rows = odoo_tabs.get_rows(sh, "MONTHLY_SALES", window=(_cs, _ce))
+        _no_posts = [["", "", ""]]
+        _clbl = PY_CUSTOM_BLOCK["label"] + " (custom range — sales & stock only, no post count)"
+        for _r, post_col, mo_col, stock_col, spp, codes, rk in (
+                (kenya, 4, 23, 24, KENYA_SPP, _stk.KENYA_SHOP_CODES, "kenya"),
+                (sinza, 5, 24, 17, SINZA_SPP, _stk.SINZA_CODES, "sinza"),
+                (uganda, 6, 25, 18, UGANDA_SPP, _stk.UGANDA_CODES, "uganda")):
+            ob = _off_by_region.get(rk) or _offer_bt
+            cy = _post_yield(_no_posts, post_col, cs_rows, 1, mo_col, sl_rows, stock_col, spp, ob, sales_only=True)
+            cy.update({"window": _clbl, "noPosts": True})
+            _r['postYield']["custom"] = cy
+            _after = _ce + datetime.timedelta(days=1)
+            cd = _dead_clear(_no_posts, post_col, cs_rows, 1, mo_col, sl_rows, stock_col,
+                             _region_net_moves(codes, _after) if _after <= _today else {}, ob)
+            cd.update({"window": _clbl, "noPosts": True})
+            _r['deadClear']["custom"] = cd
+            print(f"  Custom {rk:<6} {PY_CUSTOM_BLOCK['label']}: {cy['soldPosted']:,} sold over {cy['bagsPosted']} bags · "
+                  f"dead-stock cleared {cd['seg']['all']['clearPct']}% ({cd['seg']['all']['deadBags']} dead)")
+
     # The headline "sales achieved from posting" % now IS this yield (was: per-bag sold ÷ posts,
     # averaged — it divided by posts, not by posts × spp).
     wk_mkt_pct = kenya['postYield']['weekly']['achievedPct']
@@ -2771,6 +2805,7 @@ inline_script = (
     f'  alignment:        {json.dumps(kenya["alignment"])},\n'
     f'  postYield:        {json.dumps(kenya.get("postYield", {}))},\n'
     f'  deadClear:        {json.dumps(kenya.get("deadClear", {}))},\n'
+    f'  custom:           {json.dumps(PY_CUSTOM_BLOCK, ensure_ascii=False)},\n'
     f'  postRelevance:    {json.dumps(kenya["postRelevance"])},\n'
     f'  salesFromPosting: {json.dumps(kenya["salesFromPosting"], ensure_ascii=False, separators=(",", ":"))},\n'
     f'  salesNoPost:      {json.dumps(kenya["salesNoPost"],      ensure_ascii=False)},\n'

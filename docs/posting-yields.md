@@ -57,6 +57,24 @@ Sinza / Uganda), with a weekly/monthly toggle.
 5. Header `<th title=…>` tooltips explain Alignment, Dead-stock effort, Sold · no
    marketing, Not sold · untouched.
 
+## Custom range (Oct 2026)
+
+The **Posting yield** and **Dead Stock Clearance** Period dropdowns (all three regions) get **Custom
+(dd Mon – dd Mon)** when a range is set — picker and rules in
+[README › Custom range](README.md#custom-range-oct-2026); range file `py_custom_range.json`, data
+`PA.custom`. **Sales & stock only** — the posting sheets only hold monthly / weekly post totals, so a
+custom range has no post count:
+- **Posting yield** (`postYield.custom`, `_post_yield(..., sales_only=True)`): every bag **sold** in the
+  range (Odoo `MONTHLY_SALES` layout built for the window), with sold, on-offer flag and shop stock;
+  Posts / Expected / Credited / Achieved show "—". The on / not-on-offer tiles show bags sold, units sold
+  and shop stock. Sorting by expected or % falls back to sold.
+- **Dead Stock Clearance** (`deadClear.custom`): same clearance maths (available = stock at the range end
+  + sold in it; stock rolled back with `_region_net_moves` when the range ends before today) — one row,
+  **On offer vs Not on offer**, and "All bags N% cleared"; the posted split isn't shown.
+- **Dead Stock Accountability** (Monthly / Weekly) has **no** Custom: its coverage and conversion are
+  built on post counts, so a range would read as 0 % posted.
+- Checked 6 Oct 2026 with 01–30 Sep: Kenya 15,450 sold over 593 bags, dead stock 59.4 % cleared.
+
 ## "On offer" definition (per region)
 
 A bag is **on offer** if it appears in that region's active promos — read live from the

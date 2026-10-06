@@ -206,6 +206,40 @@ Regenerate everything headlessly: `python build_all.py`
 Regenerate one page: `python <generator>.py` (set `DENRI_LAUNCHER=1` to suppress the
 browser tab).
 
+## Custom range (Oct 2026)
+
+Pages whose **Period** dropdowns can take any From – To window get a **Custom** period. Each page keeps
+**its own** range (picking one on New Products doesn't change Posting Yields):
+
+| Page | Range file | Custom covers |
+|---|---|---|
+| Bags On vs Off Offer | `boo_custom_range.json` | the whole page ([bags-on-offer.md](bags-on-offer.md#period-selector-monthly--weekly--last-week--custom)) |
+| New Products | `np_custom_range.json` | Sales by Shop, Sold vs Target, Top 10, Colour Movement ([new-products.md](new-products.md#custom-range-oct-2026)) |
+| Posting Yields | `py_custom_range.json` | Posting yield + Dead Stock Clearance, **sales & stock only** ([posting-yields.md](posting-yields.md#custom-range-oct-2026)) |
+
+- **Sidebar panel:** a **Custom range** panel sits right under the page sidebar's **↑ Back to top**
+  (`custom_range.js` mounts it into `page_sidebar.js`'s aside) on every page with a Custom period — always
+  visible on wide screens, showing **In use: dd Mon – dd Mon** (or "Not set"), From / To, quick picks and
+  **Apply / Clear**. Hidden on phones (≤ 980 px, where the sidebar is a top strip) — use the dropdown there.
+- **Also in the page's own Period dropdown** (`custom_range.js`, Oct 2026 — the separate date bar above
+  the page is gone): every Period dropdown has **Custom range…** (**Change range…** once one is set). It
+  opens a From / To picker with quick picks (last 7 / 30 days, last month, this month) and **Apply / Clear /
+  Cancel**. Apply reloads the app with `?page=<label>&crange=<key>:<from>:<to>` (Clear: `<key>:clear`;
+  keys `boo` / `np` / `py`); `streamlit_app.py` (`CUSTOM_RANGE_KEYS`) writes the page's range file, rebuilds
+  the page from Odoo behind the loading screen, drops `crange` from the URL and opens the page — its
+  dropdowns then show **Custom (dd Mon – dd Mon)**. The range stays (auto-refresh keeps rebuilding it) until
+  **Clear**. The page frame's sandbox can't navigate the app itself, so the picker schedules the navigation
+  on the (same-origin) app window. Opened as a plain file, the picker shows the command to run instead.
+  Tested end to end 6 Oct 2026 (Apply 08–14 Sep and Clear on New Products in a local app).
+- **Locally:** `python new_products.py 2026-09-01 2026-09-30` sets it, `python new_products.py clear`
+  drops it (same for the Posting Yields script). Helper: `lib/custom_range.py` (`load / save / block`,
+  up to 366 days, a future To date is pulled back to today).
+- **Posts:** marketing posts exist only as monthly / weekly sheet totals, so a custom range never has a
+  post count — posts, expected sales and yields show "—".
+- **Targets** for a range = the monthly target × the months the range covers (each day = 1 ÷ days in
+  its month: 01–30 Sep = 1.0, 01–15 Sep = 0.5) — `custom.months` in the page data.
+- Out-of-stock call-backs take the same window (`oos_callbacks.aggregate(..., custom=(from, to))`).
+
 ## Shared conventions
 
 - **Month scope:** the live month comes from `lib/report_month.py`

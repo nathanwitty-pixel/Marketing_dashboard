@@ -436,6 +436,20 @@ Deal of the Week / Power Deal) + `bagsNotOnOffer` — which `bags_on_offer.py` r
 
 ## Out of stock — call back
 
+> **Online + walk-in (Oct 2026).** The demand now comes from **two** Odoo modules, split everywhere:
+> **Online** = WhatsApp Monitoring (below; bag recorded from Jun 2026) and **Walk-in** = the **leads module**
+> (`denri_lead`, `sql/oos_walkin.sql`): leads whose status **is or ever was "Awaiting stock"** (the status history
+> is read from the chatter, `mail_tracking_value` — 431 leads moved Awaiting stock → Purchased by Oct 2026), from
+> Jan 2026. Lead branches map onto the WhatsApp shop names (KTDA SHOP → Ktda, DAR-ES-ALAM → Sinza, WEBSITE SALES /
+> JUMIA → Website, Flash Sale tills → their shop; Marketing / Shoot / Staff POS / Rejects dropped); a lead's person
+> = last 9 phone digits (same key as WhatsApp, so someone who asked in both counts once in the total), else
+> name@shop, else the lead. "Still waiting" for a walk-in = status still Awaiting stock. A free-text lead bag takes its
+> colour when one is given ("MINI MAYA" + Black). The chip reads **📞 24 asked · 7 online · 17 walk-in**; the
+> popover adds Online / Walk-in totals and tags every shop and colour (`Hilton 6 · 1 online · 5 walk-in · 42 stk`).
+> Data per bag: `online`, `walkin`, `shopCh {shop: [online, walkin]}`, and a 4th item on each colour
+> `{shop: [online, walkin]}` (`lib/oos_callbacks.py`, `oos_chip.js`). Mis-picked lead products (e.g. "Ajab
+> Homebaking Flour", "Drawer Repair") never match a bag, so they drop out.
+
 Who asked for each bag on WhatsApp while it was out of stock — per shop, per market.
 
 **Source** — the Odoo **WhatsApp Monitoring** module (`denri_monitor_*`), via `lib/oos_callbacks.py`
@@ -519,6 +533,12 @@ listed have sold)*) and **Self-made share** of all combos sold. No separate list
 times, revenue) and **Bags clients keep pairing** — the bag types that recur most across that market's
 self-made combos, whether each is in one of its listed combos, and its stock there.
 Data: `SMC.regions[r].receipts` → `smTotals` / `runTotals` ({count, units, value}), `selfMade`, `topBags`.
+
+**Kenya "shares … self-made" chip — sale dates (Oct 2026).** The hover on a Kenya running card ("Shared with
+self-made combos") now shows **when** each self-made combo on the shared bag sold, under its units · KES:
+`📅 05 Oct · 01 Oct ×2` (newest first, `×n` when more than one sold that day, up to 6 days then "+N more days").
+Source `COMBO_DATES_SQL` in `self_made_combos.py` — the same filters as `COMBO_SQL`, grouped by
+`date_order::date`; each `connections[].selfMade[]` entry carries `dates: [[YYYY-MM-DD, units], …]`.
 
 **What people chose instead (on each running card).** Like Kenya's "shares … self-made" chip: a running combo
 card lists, per bag of that combo, the **self-made combos that contained the bag** — e.g. SAFIRI + CODE 3 →

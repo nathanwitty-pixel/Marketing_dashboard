@@ -146,6 +146,20 @@ footer (`lastWeekPct`). Before this the history was Kenya-only and frozen when t
 
 ## Out of stock — call back
 
+> **Online + walk-in (Oct 2026).** The demand now comes from **two** Odoo modules, split everywhere:
+> **Online** = WhatsApp Monitoring (below; bag recorded from Jun 2026) and **Walk-in** = the **leads module**
+> (`denri_lead`, `sql/oos_walkin.sql`): leads whose status **is or ever was "Awaiting stock"** (the status history
+> is read from the chatter, `mail_tracking_value` — 431 leads moved Awaiting stock → Purchased by Oct 2026), from
+> Jan 2026. Lead branches map onto the WhatsApp shop names (KTDA SHOP → Ktda, DAR-ES-ALAM → Sinza, WEBSITE SALES /
+> JUMIA → Website, Flash Sale tills → their shop; Marketing / Shoot / Staff POS / Rejects dropped); a lead's person
+> = last 9 phone digits (same key as WhatsApp, so someone who asked in both counts once in the total), else
+> name@shop, else the lead. "Still waiting" for a walk-in = status still Awaiting stock. A free-text lead bag takes its
+> colour when one is given ("MINI MAYA" + Black). The chip reads **📞 24 asked · 7 online · 17 walk-in**; the
+> popover adds Online / Walk-in totals and tags every shop and colour (`Hilton 6 · 1 online · 5 walk-in · 42 stk`).
+> Data per bag: `online`, `walkin`, `shopCh {shop: [online, walkin]}`, and a 4th item on each colour
+> `{shop: [online, walkin]}` (`lib/oos_callbacks.py`, `oos_chip.js`). Mis-picked lead products (e.g. "Ajab
+> Homebaking Flour", "Drawer Repair") never match a bag, so they drop out.
+
 Who asked for each new product on WhatsApp while it was out of stock — per shop.
 
 **Source** — the Odoo **WhatsApp Monitoring** module (`denri_monitor_*`), via `lib/oos_callbacks.py`
@@ -229,9 +243,39 @@ MONTHLY_MARKETING_POST, Last week = WEEKLY_MARKETING_POST, Weekly = 0 — posts 
   Product names match by the page's prefix rule (`match_odoo_bags`), all colours together.
 - **Period** dropdown: Weekly (this Sun–Sat to date) · Last week (previous Sun–Sat) · Monthly (live month) ·
   **Lifetime** (all-time, `2000-01-01 … today`; Posts shows "—" — no single all-time post count).
-- Zero cells show "0" dimmed; the busiest cell per row is highlighted. Data: `NP.shopSales = {period: {shops:
+- Zero cells show "0" dimmed. **Top 6 shops per row are colour-ranked** (Oct 2026): 1st gold · 2nd silver · 3rd
+  bronze · 4th green · 5th cyan · 6th violet (rank = 1 + shops that sold more, ties share a place); the **TOTAL** row
+  ranks the shops across all new bags. CORP and OTH are counted but never ranked (not shops). Each ranked cell's
+  tooltip says `#n shop for <bag>`.
+- **"How to read this table"** guide under it (for presenting): the colour key, what rows / columns / CORP / OTH /
+  SNZ / Posts mean, the hover tip, and live **highlights** for the period — new bags sold, top 3 shops, the best
+  shop for the top 4 bags, and shops with no new-bag sales (`#pc-highlights`). Data: `NP.shopSales = {period: {shops:
   [codes], rows: {PRODUCT: {CODE: units}}, window}}`.
 - Checked 4 Oct 2026 against the hand-made Last-week table (27 Sep – 3 Oct): identical, 115 bags.
+
+## Custom range (Oct 2026)
+
+Every Period dropdown on the page (Sales by Shop, Sold vs Target, Top 10, Colour Movement) gets
+**Custom (dd Mon – dd Mon)** when a range is set — see [README › Custom range](README.md#custom-range-oct-2026)
+for the picker. Range file `np_custom_range.json`; data `NP.custom = {from, to, label, days, months}` (null
+when none).
+- **Sales:** `odoo_sales_window(from, to)` per colour → `customKenya / customOutside` on
+  `NP.weeklyCombined` rows (same rules as every other period: combo contents counted, invoiced orders,
+  Nairobi dates). Product totals = the sum of their colours.
+- **Sales by Shop:** `NP.shopSales.custom` (same table rules, CORP included, Staff POS out).
+- **Sold vs Target:** target = monthly target × `NP.custom.months` (pro-rated); the popover says so.
+- **Posts:** none for a range — shown "—" everywhere (tiles, popovers, the Posts column).
+- **OOS chips:** `NP.oos.custom`, same window.
+- Checked 6 Oct 2026 with 01–30 Sep: colour rows and the shop table agree per bag (the shop table leaves
+  out Staff POS — Loop BP 147 vs 145, Taji 63 vs 62).
+
+## Sales by Shop — colour hover (Oct 2026)
+
+**Hover or tap any number** in the Sales by Shop table (a product × shop cell, or the row's **Total**) for the
+colours behind it: that shop's colours for the bag, high → low, with a bar each (`LOOP BP — Hilton · 28 sold:
+CN Black 16 · CN Grey 11 · Maroon 1`); the Total cell sums the colours across all shops. Colours are exact as
+named (`_odoo_colour`, no family fold; rejects show as their own colour, e.g. `CN Grey [Reject]`). Follows the
+Period dropdown. Data: `NP.shopSales[period].colours = {PRODUCT: {CODE: [[colour, units], …]}}`.
 
 ## Regenerate
 

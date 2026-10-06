@@ -1,5 +1,8 @@
 /* oos_chip.js — "Out of stock — call back" chips, shared by New Products, Self-made vs Running
    Combos and Bags on vs off Offer (spec: docs/*.md "Out of stock — call back").
+   Two channels (lib/oos_callbacks.py): ONLINE = WhatsApp Monitoring, WALK-IN = shop leads that are / were
+   "Awaiting stock". Entries carry online / walkin people, shopCh {shop: [online, walkin]} and, on each
+   colour, a 4th item {shop: [online, walkin]} — the chip and popover show the split everywhere.
 
    Data per bag (from lib/oos_callbacks.py): { total: distinct people, shops: [[shop, people], …],
    colours: [[colour, people, [[shop, people], …]], …] } — the popover lists shops, then each colour.
@@ -10,7 +13,7 @@
 (function () {
   if (window.OOS) return;
   var reg = [], pop = null, openFor = null;
-  var NOTE = 'Bag recorded from June 2026';
+  var NOTE = 'Online = WhatsApp (bag recorded from Jun 2026) · Walk-in = shop leads awaiting stock (from Jan 2026)';
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -47,7 +50,17 @@
     '.oos-seg{display:inline-flex;flex-wrap:wrap;gap:0.2rem;padding:0.15rem;border-radius:8px;background:#161824;border:1px solid #2d3148}' +
     '.oos-seg button{all:unset;cursor:pointer;padding:0.18rem 0.55rem;border-radius:6px;font-size:0.7rem;color:#94a3b8;white-space:nowrap}' +
     '.oos-seg button.on{background:#252840;color:#e2e8f0;font-weight:600}' +
-    '.oos-seg button:focus-visible{outline:1px solid #f59e0b}';
+    '.oos-seg button:focus-visible{outline:1px solid #f59e0b}' +
+    /* online / walk-in split */
+    '.oos-chip .sp{font-weight:500;font-size:0.62rem;opacity:0.9;margin-left:0.15rem}' +
+    '.oos-chip .sp b{font-weight:700}.oos-chip .sp .o{color:#67e8f9}.oos-chip .sp .w{color:#c4b5fd}' +
+    '.oos-pop .chs{display:flex;gap:0.4rem;margin:0.3rem 0 0.1rem;flex-wrap:wrap}' +
+    '.oos-pop .chs span{flex:1;min-width:110px;padding:0.3rem 0.5rem;border-radius:8px;font-size:0.68rem;color:#cbd5e1}' +
+    '.oos-pop .chs b{display:block;font-size:1rem;font-variant-numeric:tabular-nums}' +
+    '.oos-pop .chs .o{background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.35)}.oos-pop .chs .o b{color:#67e8f9}' +
+    '.oos-pop .chs .w{background:rgba(139,92,246,0.14);border:1px solid rgba(139,92,246,0.4)}.oos-pop .chs .w b{color:#c4b5fd}' +
+    '.oos-pop .ch{font-style:normal;font-size:0.6rem;font-weight:700;padding:0 0.28rem;border-radius:4px;margin-left:0.1rem}' +
+    '.oos-pop .ch.o{color:#67e8f9;background:rgba(6,182,212,0.14)}.oos-pop .ch.w{color:#c4b5fd;background:rgba(139,92,246,0.16)}';
   (document.head || document.documentElement).appendChild(css);
 
   // bag = the bag's name, shown in the popover header and read out by screen readers.
@@ -56,7 +69,21 @@
     var id = reg.push({ e: entry, w: !!waiting, b: bag || '' }) - 1;
     return '<span class="oos-chip' + (waiting ? ' wait' : '') + '" tabindex="0" role="button" data-oos="' + id + '"' +
       ' aria-label="' + esc(bag ? bag + ': ' : '') + entry.total + (waiting ? ' people waiting' : ' people asked') + ' while out of stock — show shops">' +
-      '📞 ' + entry.total + (waiting ? ' waiting' : ' asked') + '</span>';
+      '📞 ' + entry.total + (waiting ? ' waiting' : ' asked') + split(entry) + '</span>';
+  }
+
+  // " · 7 online · 17 walk-in" (only the channels with people; nothing for an old entry without the split)
+  function split(e) {
+    if (e.online == null && e.walkin == null) return '';
+    var p = [];
+    if (e.online) p.push('<b class="o">' + e.online + '</b> online');
+    if (e.walkin) p.push('<b class="w">' + e.walkin + '</b> walk-in');
+    return p.length ? '<span class="sp">· ' + p.join(' · ') + '</span>' : '';
+  }
+  // the per-shop channel tags: "1 online" "5 walk-in"
+  function chTags(ch) {
+    if (!ch) return '';
+    return (ch[0] ? ' <i class="ch o">' + ch[0] + ' online</i>' : '') + (ch[1] ? ' <i class="ch w">' + ch[1] + ' walk-in</i>' : '');
   }
 
   function close() {
@@ -66,11 +93,11 @@
   }
 
   // "Mombasa 2 · 0 stk" — [shop, people, stock]; stock null = no shelf (Website → online).
-  function shopItem(s) {
+  function shopItem(s, chMap) {
     var st = s.length > 2 ? s[2] : undefined, tag = '';
-    if (st === null) tag = /^website$/i.test(s[0]) ? ' <i class="stk on">online</i>' : '';
+    if (st === null) tag = /^website$/i.test(s[0]) ? ' <i class="stk on">no shelf</i>' : '';
     else if (st !== undefined) tag = ' <i class="stk ' + (st > 0 ? 'ok' : 'z') + '">' + st + ' stk</i>';
-    return '<span class="si">' + esc(s[0]) + ' <b>' + s[1] + '</b>' + tag + '</span>';
+    return '<span class="si">' + esc(s[0]) + ' <b>' + s[1] + '</b>' + chTags(chMap && chMap[s[0]]) + tag + '</span>';
   }
 
   function open(el) {
@@ -81,11 +108,14 @@
     if (!pop) { pop = document.createElement('div'); pop.className = 'oos-pop'; pop.setAttribute('role', 'tooltip'); document.body.appendChild(pop); }
     pop.innerHTML = '<div class="h">' + (it.b ? '<span class="bg">' + esc(it.b) + '</span> — ' : '') +
       it.e.total + (it.w ? ' still waiting' : ' asked') + ' while out of stock</div>' +
-      '<div class="sec">By shop · in stock now</div><div class="sh">' + (it.e.shops || []).map(shopItem).join(' · ') + '</div>' +
+      (it.e.online != null || it.e.walkin != null
+        ? '<div class="chs"><span class="o"><b>' + (it.e.online || 0) + '</b>Online · WhatsApp</span>'
+          + '<span class="w"><b>' + (it.e.walkin || 0) + '</b>Walk-in · shop leads</span></div>' : '') +
+      '<div class="sec">By shop · in stock now</div><div class="sh">' + (it.e.shops || []).map(function (s) { return shopItem(s, it.e.shopCh); }).join(' · ') + '</div>' +
       // Colours asked for, each with its own shops ("Black 63 — Ktda 23 · Eldoret 6").
       ((it.e.colours || []).length ? '<div class="sec">By colour</div>' + it.e.colours.map(function (c) {
         return '<div class="col"><div class="row"><span>' + esc(c[0]) + '</span><b>' + c[1] + '</b></div>' +
-          '<div class="sh">' + (c[2] || []).map(shopItem).join(' · ') + '</div></div>';
+          '<div class="sh">' + (c[2] || []).map(function (s) { return shopItem(s, c[3]); }).join(' · ') + '</div></div>';
       }).join('') : '') +
       '<div class="n">People, not requests · ' + NOTE + '</div>';
     pop.style.display = 'block';

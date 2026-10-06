@@ -81,6 +81,27 @@ GROUP BY pt."name", pt.id
 ORDER BY qty DESC, value DESC
 """
 
+# Units per combo per DAY — the same rows as COMBO_SQL (same filters), split by date, so the
+# running-combo cross-sell hover can say WHEN each self-made combo sold ("03 Oct ×1 · 05 Oct ×2").
+COMBO_DATES_SQL = """
+SELECT pt."name" AS product, p.date_order::date AS d, SUM(pl.qty)::int AS qty
+FROM pos_order p
+JOIN pos_order_line pl ON pl.order_id = p.id
+LEFT JOIN pos_session ps ON p.session_id = ps.id
+LEFT JOIN pos_config pc ON ps.config_id = pc.id
+LEFT JOIN product_product pp ON pl.product_id = pp.id
+LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
+WHERE p.date_order::date BETWEEN :start_date AND :end_date
+  AND p.state IN ('done', 'invoiced', 'paid')
+  AND pl.qty <> 0
+  AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
+  AND pt."name" LIKE '%+%'
+  AND pt."name" NOT ILIKE '%delivery%'
+  AND pt."name" NOT ILIKE '%customi%'
+GROUP BY pt."name", p.date_order::date
+HAVING SUM(pl.qty) <> 0
+"""
+
 # Per combo SALE, the bags actually printed — Odoo stores the chosen components in
 # pos_order_line.combo_product_attribute_values (e.g. "Mini Umbra Grey", "Mega Black").
 # This lets us attribute a combo like "Mega + Man Bag or Mini Umbra or Neo Man Bag"
@@ -1848,12 +1869,23 @@ def build_payload(m_start, m_end):
         })
     top6_set = {tb["bag"] for tb in top_bags}
     # bag → the self-made combos built on it (for the running-combo cross-sell hover)
+    # Each self-made combo carries its sale dates: [[YYYY-MM-DD, units], …] oldest → newest.
+    sm_dates = {}
+    try:
+        _dd = db.run_query(COMBO_DATES_SQL, {"start_date": m_start.isoformat(), "end_date": m_end.isoformat()})
+        for _, _x in (_dd.iterrows() if _dd is not None else []):
+            sm_dates.setdefault(str(_x["product"]).strip(), []).append([str(_x["d"])[:10], int(_x["qty"] or 0)])
+        for _v in sm_dates.values():
+            _v.sort()
+    except Exception as _e:                                  # noqa: BLE001 — the hover just shows no dates
+        print(f"  Self-made combo dates unavailable ({_e})")
     sm_by_bag = {}
     for _r in self_made:
         _bags, _ = _combo_bags(_r["name"])
         for _b in set(_bags):
             sm_by_bag.setdefault(_b, []).append(
-                {"name": _r["name"], "qty": _r["qty"], "value": _r["value"]})
+                {"name": _r["name"], "qty": _r["qty"], "value": _r["value"],
+                 "dates": sm_dates.get(_r["name"], [])})
 
     # Actual bags PRINTED inside each combo sale (per template) — Odoo records the
     # chosen components in combo_product_attribute_values, so a bundle like

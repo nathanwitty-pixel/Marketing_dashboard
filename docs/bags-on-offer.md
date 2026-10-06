@@ -21,9 +21,11 @@ are pre-computed by the generator into `BOO.periods.{monthly, weekly, lastweek}`
 | **Last week** | the previous complete Sun–Sat week (may straddle the month boundary) | revenue per day | `period = 'week'` |
 | **Custom** | any From – To dates you pick (up to 366 days; both days included) | revenue per day (≤ 31 days) or per Sun–Sat week | each overlapping `period = 'month'` target × the share of its days inside the range |
 
-**Custom range.** On the Streamlit page, a **Custom range** date picker + **Apply** sits under the
-title of Bags on Offer. Apply saves the dates to `boo_custom_range.json` (`{"from", "to"}`) and
-rebuilds the page from Odoo; the dropdown then shows **Custom (dd Mon – dd Mon)** and selects it.
+**Custom range.** Pick it in the **Period** dropdown itself: **Custom range…** (or **Change range…**) opens a
+From / To picker (quick picks: last 7 / 30 days, last month, this month). Apply saves the dates to
+`boo_custom_range.json` (`{"from", "to"}`) and rebuilds the page from Odoo; the dropdown then shows
+**Custom (dd Mon – dd Mon)** and selects it. (The separate date bar above the page was removed Oct 2026 —
+[README › Custom range](README.md#custom-range-oct-2026).)
 The range stays (auto-refresh keeps rebuilding it) until a new one is applied or **Clear** is
 pressed (deletes the file). Locally: `python bags_on_offer.py 2026-09-15 2026-10-03` (or
 `python bags_on_offer.py clear`). Days of any month whose offer list is archived
@@ -233,6 +235,20 @@ Columns (revenue / units / share toggle): **All**, **Top 5 categories**, **Other
   (Staff Pos, Jumia) → "no target", never red; tills not in shop-regions.md → **Other**.
 
 ## Out of stock — call back
+
+> **Online + walk-in (Oct 2026).** The demand now comes from **two** Odoo modules, split everywhere:
+> **Online** = WhatsApp Monitoring (below; bag recorded from Jun 2026) and **Walk-in** = the **leads module**
+> (`denri_lead`, `sql/oos_walkin.sql`): leads whose status **is or ever was "Awaiting stock"** (the status history
+> is read from the chatter, `mail_tracking_value` — 431 leads moved Awaiting stock → Purchased by Oct 2026), from
+> Jan 2026. Lead branches map onto the WhatsApp shop names (KTDA SHOP → Ktda, DAR-ES-ALAM → Sinza, WEBSITE SALES /
+> JUMIA → Website, Flash Sale tills → their shop; Marketing / Shoot / Staff POS / Rejects dropped); a lead's person
+> = last 9 phone digits (same key as WhatsApp, so someone who asked in both counts once in the total), else
+> name@shop, else the lead. "Still waiting" for a walk-in = status still Awaiting stock. A free-text lead bag takes its
+> colour when one is given ("MINI MAYA" + Black). The chip reads **📞 24 asked · 7 online · 17 walk-in**; the
+> popover adds Online / Walk-in totals and tags every shop and colour (`Hilton 6 · 1 online · 5 walk-in · 42 stk`).
+> Data per bag: `online`, `walkin`, `shopCh {shop: [online, walkin]}`, and a 4th item on each colour
+> `{shop: [online, walkin]}` (`lib/oos_callbacks.py`, `oos_chip.js`). Mis-picked lead products (e.g. "Ajab
+> Homebaking Flour", "Drawer Repair") never match a bag, so they drop out.
 
 Who asked for each bag on WhatsApp while it was out of stock — per shop.
 

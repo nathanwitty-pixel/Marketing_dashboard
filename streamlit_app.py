@@ -821,46 +821,43 @@ if _rm:
         _how = "Auto-refreshed" if _rm.get("auto") else "Refreshed"
         st.success(f"✓ {_how} from Odoo at {_rm['when']}")
 
-# ── Bags On vs Off Offer: Custom period (docs/bags-on-offer.md › Period selector) ──
-# The dates go to boo_custom_range.json and bags_on_offer.py rebuilds the page with a "custom"
-# period, which the page's Period dropdown then opens on.
-if html_file == "bags_on_offer.html":
-    _boo_cr = os.path.join(BASE, "boo_custom_range.json")
-    try:
-        with open(_boo_cr, encoding="utf-8") as _fh:
-            _c = _json.load(_fh)
-        _cur = (datetime.date.fromisoformat(_c["from"]), datetime.date.fromisoformat(_c["to"]))
-    except (OSError, ValueError, KeyError, TypeError):
-        _cur = None
-    _today = datetime.date.today()
-    _d, _ap, _cl = st.columns([0.6, 0.2, 0.2], vertical_alignment="bottom")
-    with _d:
-        _rng = st.date_input("Custom range", value=_cur or (_today.replace(day=1), _today),
-                             max_value=_today, format="DD/MM/YYYY", key="boo_custom_dates")
-    with _ap:
-        _go = st.button("Apply", icon=":material/date_range:", use_container_width=True, key="boo_custom_apply")
-    with _cl:
-        _clr = st.button("Clear", icon=":material/close:", use_container_width=True, key="boo_custom_clear",
-                         disabled=_cur is None)
-    if _go:
-        if not (isinstance(_rng, (tuple, list)) and len(_rng) == 2):
-            st.warning("Pick both a From and a To date.")
-        else:
-            with open(_boo_cr, "w", encoding="utf-8") as _fh:
-                _json.dump({"from": _rng[0].isoformat(), "to": _rng[1].isoformat()}, _fh)
-            with game_loading(f"{_rng[0]:%d %b} – {_rng[1]:%d %b}", "BUILDING CUSTOM LEVEL"):
-                _logs = run_scripts(["bags_on_offer.py"])
-            st.session_state.refresh_msg = {
-                "when": datetime.datetime.now().strftime("%H:%M:%S"),
-                "fails": [(s, out) for s, rc, out in _logs if rc != 0], "unreachable": False}
-            st.rerun()
-    if _clr:
+# ── Custom period (per page), picked in the page's own Period dropdown ──
+# "Custom range…" in a Period dropdown (custom_range.js) reloads the app with ?page=<label>&crange=<key>:<from>:<to>
+# (or <key>:clear). Here the dates go to that page's range file and the page is rebuilt from Odoo for them; its
+# dropdowns then show "Custom (dd Mon – dd Mon)". Specs: docs/README.md › Custom range.
+CUSTOM_RANGE_KEYS = {
+    "boo": ("boo_custom_range.json", ["bags_on_offer.py"]),
+    "np":  ("np_custom_range.json", ["new_products.py"]),
+    "py":  ("py_custom_range.json", ["POSTING (SALES YIELDS FROM ACCURATE POSTING).py"]),
+}
+_qp_cr = st.query_params.get("crange")
+if _qp_cr:
+    del st.query_params["crange"]                       # one-shot: a reload must not rebuild again
+    _parts = str(_qp_cr).split(":")
+    _cfg = CUSTOM_RANGE_KEYS.get(_parts[0])
+    _cr_ok = None
+    if _cfg and len(_parts) == 3:
         try:
-            os.remove(_boo_cr)
+            _a, _b = sorted((datetime.date.fromisoformat(_parts[1]), datetime.date.fromisoformat(_parts[2])))
+            _cr_ok = (_a, min(_b, datetime.date.today()))
+        except ValueError:
+            _cr_ok = None
+    if _cfg and _cr_ok:
+        with open(os.path.join(BASE, _cfg[0]), "w", encoding="utf-8") as _fh:
+            _json.dump({"from": _cr_ok[0].isoformat(), "to": _cr_ok[1].isoformat()}, _fh)
+        with game_loading(f"{_cr_ok[0]:%d %b} – {_cr_ok[1]:%d %b}", "BUILDING CUSTOM LEVEL"):
+            _logs = run_scripts(_cfg[1])
+        st.session_state.refresh_msg = {
+            "when": datetime.datetime.now().strftime("%H:%M:%S"),
+            "fails": [(s, out) for s, rc, out in _logs if rc != 0], "unreachable": False}
+        st.rerun()
+    elif _cfg and _parts[1:] == ["clear"]:
+        try:
+            os.remove(os.path.join(BASE, _cfg[0]))
         except OSError:
             pass
         with game_loading("Back to the default period", "CLEARING LEVEL"):
-            run_scripts(["bags_on_offer.py"])
+            run_scripts(_cfg[1])
         st.rerun()
 
 # ── Render the selected page ──

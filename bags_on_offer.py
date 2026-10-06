@@ -591,6 +591,7 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
     return {
         "label": w["label"],
         "range": f"{s.strftime('%d %b')} – {e.strftime('%d %b %Y')}",
+        "from": s.isoformat(), "to": e.isoformat(),
         "daysElapsed": elapsed, "daysInPeriod": w["days"],
         "complete": elapsed >= w["days"],
         "trendBy": w["trend"],
