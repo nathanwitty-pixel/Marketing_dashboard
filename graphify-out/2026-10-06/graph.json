@@ -5265,7 +5265,7 @@
       "file_type": "code",
       "norm_label": "chipof()",
       "source_file": "oos_chip.js",
-      "source_location": "L139"
+      "source_location": "L141"
     },
     {
       "id": "oos_chip_chtags",
@@ -5313,7 +5313,7 @@
       "file_type": "code",
       "norm_label": "inpop()",
       "source_file": "oos_chip.js",
-      "source_location": "L140"
+      "source_location": "L142"
     },
     {
       "id": "oos_chip_keep",
@@ -5325,7 +5325,7 @@
       "file_type": "code",
       "norm_label": "keep()",
       "source_file": "oos_chip.js",
-      "source_location": "L143"
+      "source_location": "L145"
     },
     {
       "id": "oos_chip_later",
@@ -5337,7 +5337,7 @@
       "file_type": "code",
       "norm_label": "later()",
       "source_file": "oos_chip.js",
-      "source_location": "L144"
+      "source_location": "L146"
     },
     {
       "id": "oos_chip_onseg",
@@ -5349,7 +5349,7 @@
       "file_type": "code",
       "norm_label": "onseg()",
       "source_file": "oos_chip.js",
-      "source_location": "L178"
+      "source_location": "L180"
     },
     {
       "id": "oos_chip_open",
@@ -5373,7 +5373,7 @@
       "file_type": "code",
       "norm_label": "remember()",
       "source_file": "oos_chip.js",
-      "source_location": "L189"
+      "source_location": "L191"
     },
     {
       "id": "oos_chip_seg",
@@ -5385,7 +5385,7 @@
       "file_type": "code",
       "norm_label": "seg()",
       "source_file": "oos_chip.js",
-      "source_location": "L171"
+      "source_location": "L173"
     },
     {
       "id": "oos_chip_shopitem",
@@ -6153,7 +6153,7 @@
       "file_type": "code",
       "norm_label": "_date()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L44"
+      "source_location": "L49"
     },
     {
       "id": "lib_report_month_anchor",
@@ -8337,7 +8337,7 @@
       "file_type": "code",
       "norm_label": "aggregate()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L166"
+      "source_location": "L171"
     },
     {
       "id": "lib_oos_callbacks_aggregate_flat",
@@ -8349,7 +8349,7 @@
       "file_type": "code",
       "norm_label": "flat()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L177"
+      "source_location": "L185"
     },
     {
       "id": "lib_oos_callbacks_aggregate_split",
@@ -8361,7 +8361,7 @@
       "file_type": "code",
       "norm_label": "split()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L184"
+      "source_location": "L192"
     },
     {
       "id": "lib_oos_callbacks_attach_stock",
@@ -8373,7 +8373,7 @@
       "file_type": "code",
       "norm_label": "attach_stock()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L226"
+      "source_location": "L237"
     },
     {
       "id": "lib_oos_callbacks_attach_stock_stk",
@@ -8385,7 +8385,7 @@
       "file_type": "code",
       "norm_label": "stk()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L256"
+      "source_location": "L267"
     },
     {
       "id": "lib_oos_callbacks_collect",
@@ -8397,7 +8397,7 @@
       "file_type": "code",
       "norm_label": "collect()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L133"
+      "source_location": "L138"
     },
     {
       "id": "lib_oos_callbacks_in",
@@ -8409,7 +8409,7 @@
       "file_type": "code",
       "norm_label": "_in()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L117"
+      "source_location": "L122"
     },
     {
       "id": "lib_oos_callbacks_load_rows",
@@ -8421,7 +8421,7 @@
       "file_type": "code",
       "norm_label": "load_rows()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L92"
+      "source_location": "L97"
     },
     {
       "id": "lib_oos_callbacks_online_rows",
@@ -8433,7 +8433,7 @@
       "file_type": "code",
       "norm_label": "_online_rows()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L55"
+      "source_location": "L60"
     },
     {
       "id": "lib_oos_callbacks_oos_by_bag_shop",
@@ -8445,7 +8445,7 @@
       "file_type": "code",
       "norm_label": "oos_by_bag_shop()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L217"
+      "source_location": "L228"
     },
     {
       "id": "lib_oos_callbacks_safe",
@@ -8457,7 +8457,7 @@
       "file_type": "code",
       "norm_label": "_safe()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L126"
+      "source_location": "L131"
     },
     {
       "id": "lib_oos_callbacks_shops",
@@ -8469,7 +8469,7 @@
       "file_type": "code",
       "norm_label": "_shops()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L160"
+      "source_location": "L165"
     },
     {
       "id": "lib_oos_callbacks_totals",
@@ -8481,7 +8481,7 @@
       "file_type": "code",
       "norm_label": "totals()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L212"
+      "source_location": "L223"
     },
     {
       "id": "lib_oos_callbacks_txt",
@@ -8493,7 +8493,7 @@
       "file_type": "code",
       "norm_label": "_txt()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L48"
+      "source_location": "L53"
     },
     {
       "id": "lib_oos_callbacks_walkin_rows",
@@ -8505,7 +8505,7 @@
       "file_type": "code",
       "norm_label": "_walkin_rows()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L65"
+      "source_location": "L70"
     },
     {
       "id": "lib_oos_callbacks_windows",
@@ -8517,7 +8517,7 @@
       "file_type": "code",
       "norm_label": "windows()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L104"
+      "source_location": "L109"
     },
     {
       "id": "new_products_match_odoo_bags",
@@ -14709,7 +14709,7 @@
       "node_kind": "heading",
       "norm_label": "layout (laptop / tablet / phone)",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L306"
+      "source_location": "L311"
     },
     {
       "id": "docs_bags_on_offer_period_selector_monthly_weekly_last_week_custom",
@@ -14733,7 +14733,7 @@
       "node_kind": "heading",
       "norm_label": "regenerate",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L297"
+      "source_location": "L302"
     },
     {
       "id": "docs_bags_on_offer_shop_birthdays",
@@ -14745,7 +14745,7 @@
       "node_kind": "heading",
       "norm_label": "shop birthdays",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L293"
+      "source_location": "L298"
     },
     {
       "id": "docs_bags_on_offer_shop_metrics_vs_the_odoo_revenue_target",
@@ -16710,7 +16710,7 @@
       "source_location": "L1"
     },
     {
-      "id": "lib_oos_callbacks_rationale_105",
+      "id": "lib_oos_callbacks_rationale_110",
       "label": "{period: (start, end)} for the dated periods (lifetime / current are undated).\u2026",
       "_origin": "ast",
       "community": 62,
@@ -16718,10 +16718,10 @@
       "file_type": "rationale",
       "norm_label": "{period: (start, end)} for the dated periods (lifetime / current are undated)....",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L105"
+      "source_location": "L110"
     },
     {
-      "id": "lib_oos_callbacks_rationale_134",
+      "id": "lib_oos_callbacks_rationale_139",
       "label": "{period: {key: {shop: set(person)}}}. key_fn(product) \u2192 the page's bag key, or\u2026",
       "_origin": "ast",
       "community": 62,
@@ -16729,10 +16729,10 @@
       "file_type": "rationale",
       "norm_label": "{period: {key: {shop: set(person)}}}. key_fn(product) \u2192 the page's bag key, or...",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L134"
+      "source_location": "L139"
     },
     {
-      "id": "lib_oos_callbacks_rationale_161",
+      "id": "lib_oos_callbacks_rationale_166",
       "label": "{shop: set(person)} \u2192 (distinct people, [[shop, people], \u2026] high \u2192 low).",
       "_origin": "ast",
       "community": 62,
@@ -16740,10 +16740,10 @@
       "file_type": "rationale",
       "norm_label": "{shop: set(person)} \u2192 (distinct people, [[shop, people], ...] high \u2192 low).",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L161"
+      "source_location": "L166"
     },
     {
-      "id": "lib_oos_callbacks_rationale_167",
+      "id": "lib_oos_callbacks_rationale_172",
       "label": "The page block: {period: {key: {\"total\": people, \"shops\": [[shop, people],\u2026",
       "_origin": "ast",
       "community": 62,
@@ -16751,10 +16751,10 @@
       "file_type": "rationale",
       "norm_label": "the page block: {period: {key: {\"total\": people, \"shops\": [[shop, people],...",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L167"
+      "source_location": "L172"
     },
     {
-      "id": "lib_oos_callbacks_rationale_213",
+      "id": "lib_oos_callbacks_rationale_224",
       "label": "{period: {key: people}} from an aggregate() block.",
       "_origin": "ast",
       "community": 62,
@@ -16762,10 +16762,10 @@
       "file_type": "rationale",
       "norm_label": "{period: {key: people}} from an aggregate() block.",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L213"
+      "source_location": "L224"
     },
     {
-      "id": "lib_oos_callbacks_rationale_218",
+      "id": "lib_oos_callbacks_rationale_229",
       "label": "{period: {product name: {shop: people}}} straight from Odoo names, or {} if\u2026",
       "_origin": "ast",
       "community": 62,
@@ -16773,10 +16773,10 @@
       "file_type": "rationale",
       "norm_label": "{period: {product name: {shop: people}}} straight from odoo names, or {} if...",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L218"
+      "source_location": "L229"
     },
     {
-      "id": "lib_oos_callbacks_rationale_227",
+      "id": "lib_oos_callbacks_rationale_238",
       "label": "Add each shop's live on-hand to an aggregate() block, in place: every [shop,\u2026",
       "_origin": "ast",
       "community": 62,
@@ -16784,10 +16784,10 @@
       "file_type": "rationale",
       "norm_label": "add each shop's live on-hand to an aggregate() block, in place: every [shop,...",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L227"
+      "source_location": "L238"
     },
     {
-      "id": "lib_oos_callbacks_rationale_49",
+      "id": "lib_oos_callbacks_rationale_54",
       "label": "Odoo translatable names can come back as {'en_US': \u2026}.",
       "_origin": "ast",
       "community": 62,
@@ -16795,10 +16795,10 @@
       "file_type": "rationale",
       "norm_label": "odoo translatable names can come back as {'en_us': ...}.",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L49"
+      "source_location": "L54"
     },
     {
-      "id": "lib_oos_callbacks_rationale_93",
+      "id": "lib_oos_callbacks_rationale_98",
       "label": "[{date, shop, kind, person, purchased, product, channel}] \u2014 one per OOS request\u2026",
       "_origin": "ast",
       "community": 62,
@@ -16806,7 +16806,7 @@
       "file_type": "rationale",
       "norm_label": "[{date, shop, kind, person, purchased, product, channel}] \u2014 one per oos request...",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L93"
+      "source_location": "L98"
     },
     {
       "id": "new_products_rationale_235",
@@ -29572,7 +29572,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L172",
+      "source_location": "L178",
       "weight": 1.0
     },
     {
@@ -29584,7 +29584,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L200",
+      "source_location": "L208",
       "weight": 1.0
     },
     {
@@ -29596,7 +29596,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L189",
+      "source_location": "L197",
       "weight": 1.0
     },
     {
@@ -29608,7 +29608,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L237",
+      "source_location": "L248",
       "weight": 1.0
     },
     {
@@ -29620,7 +29620,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L248",
+      "source_location": "L259",
       "weight": 1.0
     },
     {
@@ -29632,7 +29632,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L137",
+      "source_location": "L142",
       "weight": 1.0
     },
     {
@@ -29644,7 +29644,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L145",
+      "source_location": "L150",
       "weight": 1.0
     },
     {
@@ -29656,7 +29656,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L152",
+      "source_location": "L157",
       "weight": 1.0
     },
     {
@@ -29668,7 +29668,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L57",
+      "source_location": "L62",
       "weight": 1.0
     },
     {
@@ -29680,7 +29680,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L60",
+      "source_location": "L65",
       "weight": 1.0
     },
     {
@@ -29692,7 +29692,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L61",
+      "source_location": "L66",
       "weight": 1.0
     },
     {
@@ -29704,7 +29704,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L219",
+      "source_location": "L230",
       "weight": 1.0
     },
     {
@@ -29716,7 +29716,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L219",
+      "source_location": "L230",
       "weight": 1.0
     },
     {
@@ -29728,7 +29728,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L67",
+      "source_location": "L72",
       "weight": 1.0
     },
     {
@@ -29740,7 +29740,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L72",
+      "source_location": "L77",
       "weight": 1.0
     },
     {
@@ -29752,7 +29752,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L86",
+      "source_location": "L91",
       "weight": 1.0
     },
     {
@@ -29764,7 +29764,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L108",
+      "source_location": "L113",
       "weight": 1.0
     },
     {
@@ -32284,7 +32284,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "oos_chip.js",
-      "source_location": "L144",
+      "source_location": "L146",
       "weight": 1.0
     },
     {
@@ -32332,7 +32332,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "oos_chip.js",
-      "source_location": "L121",
+      "source_location": "L123",
       "weight": 1.0
     },
     {
@@ -32344,7 +32344,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "oos_chip.js",
-      "source_location": "L172",
+      "source_location": "L174",
       "weight": 1.0
     },
     {
@@ -39484,7 +39484,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L177",
+      "source_location": "L185",
       "weight": 1.0
     },
     {
@@ -39496,7 +39496,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L184",
+      "source_location": "L192",
       "weight": 1.0
     },
     {
@@ -39508,7 +39508,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L256",
+      "source_location": "L267",
       "weight": 1.0
     },
     {
@@ -39724,7 +39724,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "oos_chip.js",
-      "source_location": "L139",
+      "source_location": "L141",
       "weight": 1.0
     },
     {
@@ -39736,7 +39736,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "oos_chip.js",
-      "source_location": "L140",
+      "source_location": "L142",
       "weight": 1.0
     },
     {
@@ -39748,7 +39748,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "oos_chip.js",
-      "source_location": "L143",
+      "source_location": "L145",
       "weight": 1.0
     },
     {
@@ -39760,7 +39760,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "oos_chip.js",
-      "source_location": "L144",
+      "source_location": "L146",
       "weight": 1.0
     },
     {
@@ -42316,7 +42316,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L24",
+      "source_location": "L29",
       "weight": 1.0
     },
     {
@@ -42328,7 +42328,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L25",
+      "source_location": "L30",
       "weight": 1.0
     },
     {
@@ -42340,7 +42340,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L26",
+      "source_location": "L31",
       "weight": 1.0
     },
     {
@@ -44584,7 +44584,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L28",
+      "source_location": "L33",
       "weight": 1.0
     },
     {
@@ -45712,7 +45712,7 @@
       "confidence_score": 1.0,
       "context": "submodule_import",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L234",
+      "source_location": "L245",
       "weight": 1.0
     },
     {
@@ -45724,7 +45724,7 @@
       "confidence_score": 1.0,
       "context": "submodule_import",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L28",
+      "source_location": "L33",
       "weight": 1.0
     },
     {
@@ -45736,7 +45736,7 @@
       "confidence_score": 1.0,
       "context": "submodule_import",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L28",
+      "source_location": "L33",
       "weight": 1.0
     },
     {
@@ -48358,7 +48358,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L293",
+      "source_location": "L298",
       "weight": 1.0
     },
     {
@@ -48369,7 +48369,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L297",
+      "source_location": "L302",
       "weight": 1.0
     },
     {
@@ -48380,7 +48380,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L306",
+      "source_location": "L311",
       "weight": 1.0
     },
     {
@@ -50426,7 +50426,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L104",
+      "source_location": "L109",
       "weight": 1.0
     },
     {
@@ -50437,7 +50437,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L117",
+      "source_location": "L122",
       "weight": 1.0
     },
     {
@@ -50448,7 +50448,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L126",
+      "source_location": "L131",
       "weight": 1.0
     },
     {
@@ -50459,7 +50459,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L133",
+      "source_location": "L138",
       "weight": 1.0
     },
     {
@@ -50470,7 +50470,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L160",
+      "source_location": "L165",
       "weight": 1.0
     },
     {
@@ -50481,7 +50481,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L166",
+      "source_location": "L171",
       "weight": 1.0
     },
     {
@@ -50492,7 +50492,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L212",
+      "source_location": "L223",
       "weight": 1.0
     },
     {
@@ -50503,7 +50503,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L217",
+      "source_location": "L228",
       "weight": 1.0
     },
     {
@@ -50514,7 +50514,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L226",
+      "source_location": "L237",
       "weight": 1.0
     },
     {
@@ -50525,7 +50525,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L44",
+      "source_location": "L49",
       "weight": 1.0
     },
     {
@@ -50536,7 +50536,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L48",
+      "source_location": "L53",
       "weight": 1.0
     },
     {
@@ -50547,7 +50547,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L55",
+      "source_location": "L60",
       "weight": 1.0
     },
     {
@@ -50558,7 +50558,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L65",
+      "source_location": "L70",
       "weight": 1.0
     },
     {
@@ -50569,7 +50569,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L92",
+      "source_location": "L97",
       "weight": 1.0
     },
     {
@@ -58119,102 +58119,102 @@
       "weight": 1.0
     },
     {
-      "source": "lib_oos_callbacks_rationale_105",
+      "source": "lib_oos_callbacks_rationale_110",
       "target": "lib_oos_callbacks_windows",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L105",
+      "source_location": "L110",
       "weight": 1.0
     },
     {
-      "source": "lib_oos_callbacks_rationale_134",
+      "source": "lib_oos_callbacks_rationale_139",
       "target": "lib_oos_callbacks_collect",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L134",
+      "source_location": "L139",
       "weight": 1.0
     },
     {
-      "source": "lib_oos_callbacks_rationale_161",
+      "source": "lib_oos_callbacks_rationale_166",
       "target": "lib_oos_callbacks_shops",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L161",
+      "source_location": "L166",
       "weight": 1.0
     },
     {
-      "source": "lib_oos_callbacks_rationale_167",
+      "source": "lib_oos_callbacks_rationale_172",
       "target": "lib_oos_callbacks_aggregate",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L167",
+      "source_location": "L172",
       "weight": 1.0
     },
     {
-      "source": "lib_oos_callbacks_rationale_213",
+      "source": "lib_oos_callbacks_rationale_224",
       "target": "lib_oos_callbacks_totals",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L213",
+      "source_location": "L224",
       "weight": 1.0
     },
     {
-      "source": "lib_oos_callbacks_rationale_218",
+      "source": "lib_oos_callbacks_rationale_229",
       "target": "lib_oos_callbacks_oos_by_bag_shop",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L218",
+      "source_location": "L229",
       "weight": 1.0
     },
     {
-      "source": "lib_oos_callbacks_rationale_227",
+      "source": "lib_oos_callbacks_rationale_238",
       "target": "lib_oos_callbacks_attach_stock",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L227",
+      "source_location": "L238",
       "weight": 1.0
     },
     {
-      "source": "lib_oos_callbacks_rationale_49",
+      "source": "lib_oos_callbacks_rationale_54",
       "target": "lib_oos_callbacks_txt",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L49",
+      "source_location": "L54",
       "weight": 1.0
     },
     {
-      "source": "lib_oos_callbacks_rationale_93",
+      "source": "lib_oos_callbacks_rationale_98",
       "target": "lib_oos_callbacks_load_rows",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L93",
+      "source_location": "L98",
       "weight": 1.0
     },
     {
@@ -61151,7 +61151,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L295",
+      "source_location": "L300",
       "weight": 1.0
     },
     {
@@ -61580,7 +61580,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "oos_chip.js",
-      "source_location": "L168",
+      "source_location": "L170",
       "weight": 1.0
     },
     {
@@ -62012,7 +62012,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L96",
+      "source_location": "L101",
       "weight": 1.0
     },
     {
@@ -62024,7 +62024,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L96",
+      "source_location": "L101",
       "weight": 1.0
     },
     {
@@ -62036,7 +62036,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "oos_chip.js",
-      "source_location": "L194",
+      "source_location": "L196",
       "weight": 1.0
     },
     {
@@ -62048,7 +62048,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "oos_chip.js",
-      "source_location": "L194",
+      "source_location": "L196",
       "weight": 1.0
     },
     {
@@ -62060,7 +62060,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "oos_chip.js",
-      "source_location": "L194",
+      "source_location": "L196",
       "weight": 1.0
     },
     {
@@ -62072,7 +62072,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "oos_chip.js",
-      "source_location": "L194",
+      "source_location": "L196",
       "weight": 1.0
     },
     {
@@ -62372,7 +62372,7 @@
       "confidence_score": 0.95,
       "context": "bag_classifier",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L284",
+      "source_location": "L289",
       "weight": 1.0
     },
     {
@@ -62408,7 +62408,7 @@
       "confidence_score": 0.95,
       "context": "base()",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L284",
+      "source_location": "L289",
       "weight": 1.0
     },
     {

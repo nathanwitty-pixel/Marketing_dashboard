@@ -1,7 +1,7 @@
 # Graph Report - Marketing_dashboard  (2026-10-06)
 
 ## Corpus Check
-- 180 files · ~731,797 words
+- 180 files · ~733,290 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 15 file(s) not represented in the graph (top: .csv 8, (none) 2, .toml 1)
 
@@ -644,11 +644,11 @@ _Questions this graph is uniquely positioned to answer:_
 - **What is the exact relationship between `Reject Sale page (reject_sales.html)` and `Card entrance animation via CSS @keyframes + animation-fill-mode: both`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **Why does `Current Performance (doc)` connect `monthly_sales.py` to `forward_projections.py`, `current_performance.py`, `weekly_sales.py`, `Product / name matching (doc)`?**
-  _High betweenness centrality (0.061) - this node is a cross-community bridge._
+  _High betweenness centrality (0.054) - this node is a cross-community bridge._
 - **Why does `New Products Analytics (doc)` connect `Product / name matching (doc)` to `monthly_sales.py`, `Dashboard Insights skill`?**
-  _High betweenness centrality (0.058) - this node is a cross-community bridge._
-- **Why does `Denri Africa Dashboard Design System (skill)` connect `Denri Africa Dashboard Design System (skill)` to `generate_insights.py`, `Kitengela Rejects tracker (timed offer)`?**
-  _High betweenness centrality (0.033) - this node is a cross-community bridge._
+  _High betweenness centrality (0.051) - this node is a cross-community bridge._
+- **Why does `Sidebar Navigation (icon rail / expanded drawer)` connect `Sidebar Navigation (icon rail / expanded drawer)` to `August 2026 Monthly Report`, `Denri Africa Dashboard Design System (skill)`, `current_performance.html`, `Kitengela Rejects tracker (timed offer)`?**
+  _High betweenness centrality (0.030) - this node is a cross-community bridge._
 - **Are the 3 inferred relationships involving `fetch()` (e.g. with `classify()` and `oos_key()`) actually correct?**
   _`fetch()` has 3 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `PERF`, `graphify`, `Blocker counter` to the rest of the system?**
