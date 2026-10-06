@@ -13,7 +13,7 @@
 (function () {
   if (window.OOS) return;
   var reg = [], pop = null, openFor = null;
-  var NOTE = 'Online = WhatsApp (bag recorded from Jun 2026) · Walk-in = shop leads awaiting stock (from Jan 2026)';
+  var NOTE = 'Net: people who bought since drop out · Online = WhatsApp (bag recorded from Jun 2026) · Walk-in = shop leads awaiting stock (from Jan 2026)';
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -68,8 +68,8 @@
     if (!entry || !entry.total) return '';
     var id = reg.push({ e: entry, w: !!waiting, b: bag || '' }) - 1;
     return '<span class="oos-chip' + (waiting ? ' wait' : '') + '" tabindex="0" role="button" data-oos="' + id + '"' +
-      ' aria-label="' + esc(bag ? bag + ': ' : '') + entry.total + (waiting ? ' people waiting' : ' people asked') + ' while out of stock — show shops">' +
-      '📞 ' + entry.total + (waiting ? ' waiting' : ' asked') + split(entry) + '</span>';
+      ' aria-label="' + esc(bag ? bag + ': ' : '') + entry.total + ' people still waiting for it — show shops">' +
+      '📞 ' + entry.total + ' waiting' + split(entry) + '</span>';
   }
 
   // " · 7 online · 17 walk-in" (only the channels with people; nothing for an old entry without the split)
@@ -114,7 +114,9 @@
       });
     }
     pop.innerHTML = '<div class="h">' + (it.b ? '<span class="bg">' + esc(it.b) + '</span> — ' : '') +
-      it.e.total + (it.w ? ' still waiting' : ' asked') + ' while out of stock</div>' +
+      it.e.total + ' still waiting</div>' +
+      '<div style="color:#94a3b8;font-size:0.7rem">asked while it was out of stock and not bought since' +
+      ((it.e.asked || 0) > it.e.total ? ' &middot; ' + it.e.asked + ' asked, ' + (it.e.asked - it.e.total) + ' already bought' : '') + '</div>' +
       (it.e.online != null || it.e.walkin != null
         ? '<div class="chs"><span class="o"><b>' + (it.e.online || 0) + '</b>Online · WhatsApp</span>'
           + '<span class="w"><b>' + (it.e.walkin || 0) + '</b>Walk-in · shop leads</span></div>' : '') +

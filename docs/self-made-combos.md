@@ -394,6 +394,27 @@ Date().getDay() >= 4`. **Keep it defined above `DOMContentLoaded`** — it's cal
 `draw()`; defining it later throws `smcWeekTrend is not a function` and aborts the rest of
 the script (this once broke the Power-Deals toggle).
 
+## Self-made combos by shop (`#smc-smshop-panel`, `SMC.selfMadeByShop`) — Oct 2026
+
+Just before Monetary implication: **which shop leads with self-made (CBR) combos** this month (Kenya tills).
+`SM_BY_SHOP_SQL` = `COMBO_SQL`'s rows split by till (KTDA SHOP → KTDA, Website Sales → Website), with each
+product's CBR flag; a combo is self-made / running exactly as the tables classify it — **by its bags**, so a combo
+rung through a combo request whose bags match an offer-sheet combo (Standard Travel + Code 3, Jumbo + Jumbo) is
+**running**. `CBR_REQUESTS_BY_SHOP_SQL` = combo requests raised per till in the month.
+
+Columns: Rank (★ 1 / #2 / #3 badges) · Shop · **Self-made units** (bar) · Revenue · **Combos** = how many *different*
+self-made combos the shop sold · **Running units** = official running combos it sold · **Self-made share** = self-made ÷
+(self-made + running) units · **Combo requests** = approved / raised. Header tooltips and a note under the table explain
+each. (Full price / Discount / Disc % / Top combo were removed 6 Oct 2026 — short combo names like "Cess + Moon Combo"
+only resolve one bag, which made the full price wrong for 14 of 38 self-made combos.) KPIs: **Leading shop** (+ runner-up),
+**Shops selling self-made** (n of all, + requests raised), **Leans most on self-made** (highest share, tills with ≥ 5 combo units).
+
+**Hover or tap a shop** → every self-made combo it sold (× units · KES), its requests (approved of raised), and
+**requested combos counted as running**. Checked 6 Oct 2026: Eldoret raised 2 approved requests and sold both
+(Standard Travel + Code 3 Brown / Black) — counted as running, so it shows 0 self-made; Busia and Meru only rang
+Jumbo + Jumbo through a CBR product (running); Nanyuki made none. Data per shop: `combos [[name, units, KES]]`,
+`cbrAsRunning [[name, units]]`, `requests`, `approved`.
+
 ## Monetary implication (`#smc-mi-panel`, `SMC.monetaryImplication`)
 
 The money given away by bundling. Per combo, **Expected** = the combo's bags valued at
@@ -405,6 +426,25 @@ combo units. Shown as two tables (running / self-made) + KPI cards comparing the
 per row (ⓘ) and understate that combo's Expected.
 
 ## Bags not on offer — per market (Kenya / Sinza / Uganda)
+
+**Posts + "Asked" sort (Oct 2026).** Every bag also shows its **marketing posts this month**
+(`MONTHLY_MARKETING_POST`; Kenya / Sinza / Uganda = cols E / F / G, product name col C resolved to the bag with
+the list's own classifier) — `12 posts`, or red **not posted**; the hover adds last week's posts
+(`WEEKLY_MARKETING_POST`). Data: `notOnOffer[].posts / postsLastWeek`, `postsKnown` (`_add_noffer_posts`). The
+**Sort** opens on **Marketing guide — not posted: asked vs stock** (for the marketing team): only the bags with
+**no posts this month**, summed up top ("49 of 61 bags have no posts — 📞 289 asked, 1,972 units in stock"), then two
+lists side by side — **Most asked 📞** (people who wanted it while out of stock, for the call-back period at the top of
+the page; ties by stock) vs **Most stock** (units sitting; ties by asks), top 10 each — and above them **★ Post first**:
+the bags in **both** top-10s (asked for AND stock on hand AND not posted — e.g. Cosmo 📞 19 · 85 stk, Washbag, Jade on
+6 Oct 2026), with a nudge to call the askers back and post them. ★ marks them in the lists too. Each column carries its
+action (6 Oct 2026): **Most asked** lists only asked-for bags **in stock** → *remind the clients the bag is back*; each row
+has **📲 N to remind** = people still waiting (asked, not bought since — `SMC.oos[market].current`, `smcOosWaiting`), the
+header sums them (130 on 6 Oct), and asked-for bags with **no stock** are listed under it as *restock first*. **Most stock**
+→ *find out why it is not being posted*; each row has clue tags — days of cover (red "slow" when > 90 d), "posted last wk"
+when it was on last week's sheet, "nobody asking" when no asks — plus an "Ask marketing" checklist (content? current
+design or old stock? posted before without selling? combo / Deal of the Week?). The sort also has **Asked 📞 (high→low)** — people who asked for the bag while it was out of stock, online +
+walk-in, for the call-back period picked at the top of the page (re-sorts when that period changes; ties by
+units sold) — and **Posts (high→low / low→high)**.
 
 Bags **selling this month but on no offer**, computed for **each market** by
 `_bags_not_on_offer(m_start, m_end, on_offer_raw, sql, currency)`. It sums standalone bag
@@ -449,6 +489,11 @@ Deal of the Week / Power Deal) + `bagsNotOnOffer` — which `bags_on_offer.py` r
 > Data per bag: `online`, `walkin`, `shopCh {shop: [online, walkin]}`, and a 4th item on each colour
 > `{shop: [online, walkin]}` (`lib/oos_callbacks.py`, `oos_chip.js`). Mis-picked lead products (e.g. "Ajab
 > Homebaking Flour", "Drawer Repair") never match a bag, so they drop out.
+> **Net counts (Oct 2026):** every 📞 number is **people still waiting** — asked in the period and **not bought
+> since** (WhatsApp `is_purchased` unset / lead still "Awaiting stock"); people who bought drop out. Chip:
+> `📞 12 waiting · 2 online · 10 walk-in`; popover header: `12 still waiting · 15 asked, 3 already bought` (entry
+> `asked` = gross). The separate **"Waiting now"** toggles were removed (redundant). On Combos the Marketing guide's
+> 📞 and "remind all N" are the same number.
 > **Long popovers scroll:** the pointer can move from the chip onto the popover (220 ms grace) and it stays open
 > while hovered, scrolled or clicked inside; scrolling the page or moving away closes it.
 

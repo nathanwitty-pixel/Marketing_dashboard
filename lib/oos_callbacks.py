@@ -13,7 +13,12 @@ unions the person sets — counts are never added, so a customer who asked for t
 same bag still counts once.
 
 Periods: lifetime / monthly (live report month) / weekly (this Sun–Sat week to date) /
-lastweek (previous complete Sun–Sat week) / current (still waiting = not purchased since).
+lastweek (previous complete Sun–Sat week) / current (still waiting, any date — same as lifetime now).
+
+NET (Oct 2026): every count is people who asked in the period AND are still waiting — a request that was
+bought since (WhatsApp is_purchased, or a lead no longer "Awaiting stock") drops out, so the chip, the
+"to remind" figure and every list agree. Each entry also carries "asked" = gross people who asked in the
+period, so the popover can say "12 still waiting · 15 asked, 3 already bought".
 WhatsApp records the bag from June 2026; walk-in leads go back to January 2026.
 Each bag's entry also carries the split: "online" / "walkin" (distinct people per channel — a
 person who asked in both counts once in "total"), "shopCh" {shop: [online, walkin]} and, on each
@@ -169,6 +174,9 @@ def aggregate(rows, key_fn=None, shop_filter=None, today=None, colour_fn=None, c
     With colour_fn, each entry also carries "colours": [[colour, people, [[shop, people], …]], …]."""
     if not rows:
         return {}
+    # Gross (everyone who asked) only for the "N asked, M already bought" line; every shown count is NET.
+    gross = collect(rows, key_fn, shop_filter, today, colour_fn, custom)
+    rows = [r for r in rows if not r["purchased"]]
     sets = collect(rows, key_fn, shop_filter, today, colour_fn, custom)
     # The same, per channel — for the online / walk-in split on every bag, shop and colour.
     by_ch = {ch: collect([r for r in rows if r.get("channel", "online") == ch], key_fn, shop_filter, today, colour_fn, custom)
@@ -205,6 +213,9 @@ def aggregate(rows, key_fn=None, shop_filter=None, today=None, colour_fn=None, c
                 total, shop_list = _shops(node)
                 e = {"total": total, "shops": shop_list}
             e["shopCh"], e["online"], e["walkin"] = split(p, k)
+            g = gross.get(p, {}).get(k, {})
+            g = flat(g) if colour_fn else g
+            e["asked"] = len(set().union(*g.values())) if g else total
             out[p][k] = e
     return out
 

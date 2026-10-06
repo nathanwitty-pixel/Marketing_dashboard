@@ -249,6 +249,11 @@ Columns (revenue / units / share toggle): **All**, **Top 5 categories**, **Other
 > Data per bag: `online`, `walkin`, `shopCh {shop: [online, walkin]}`, and a 4th item on each colour
 > `{shop: [online, walkin]}` (`lib/oos_callbacks.py`, `oos_chip.js`). Mis-picked lead products (e.g. "Ajab
 > Homebaking Flour", "Drawer Repair") never match a bag, so they drop out.
+> **Net counts (Oct 2026):** every 📞 number is **people still waiting** — asked in the period and **not bought
+> since** (WhatsApp `is_purchased` unset / lead still "Awaiting stock"); people who bought drop out. Chip:
+> `📞 12 waiting · 2 online · 10 walk-in`; popover header: `12 still waiting · 15 asked, 3 already bought` (entry
+> `asked` = gross). The separate **"Waiting now"** toggles were removed (redundant). On Combos the Marketing guide's
+> 📞 and "remind all N" are the same number.
 > **Long popovers scroll:** the pointer can move from the chip onto the popover (220 ms grace) and it stays open
 > while hovered, scrolled or clicked inside; scrolling the page or moving away closes it.
 

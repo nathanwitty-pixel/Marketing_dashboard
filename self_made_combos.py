@@ -81,6 +81,38 @@ GROUP BY pt."name", pt.id
 ORDER BY qty DESC, value DESC
 """
 
+# Combo units / revenue per SHOP (till) — the same rows as COMBO_SQL (same filters), split by till,
+# for "Self-made combos by shop" (which shop leads with self-made combos).
+SM_BY_SHOP_SQL = """
+SELECT pt."name" AS product, COALESCE(pc."name", '(no till)') AS till,
+       SUM(pl.qty)::int AS qty, ROUND(SUM(pl.price_subtotal_incl))::numeric AS value,
+       (pt.id IN (SELECT DISTINCT combo_product_id FROM pos_combo_request WHERE combo_product_id IS NOT NULL)) AS is_cbr
+FROM pos_order p
+JOIN pos_order_line pl ON pl.order_id = p.id
+LEFT JOIN pos_session ps ON p.session_id = ps.id
+LEFT JOIN pos_config pc ON ps.config_id = pc.id
+LEFT JOIN product_product pp ON pl.product_id = pp.id
+LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
+WHERE p.date_order::date BETWEEN :start_date AND :end_date
+  AND p.state IN ('done', 'invoiced', 'paid')
+  AND pl.qty <> 0
+  AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
+  AND pt."name" LIKE '%+%'
+  AND pt."name" NOT ILIKE '%delivery%'
+  AND pt."name" NOT ILIKE '%customi%'
+GROUP BY pt."name", COALESCE(pc."name", '(no till)'), pt.id
+"""
+# Combo requests (CBR) raised per till in the month — "did this shop ask for any self-made combos?".
+CBR_REQUESTS_BY_SHOP_SQL = """
+SELECT COALESCE(pc."name", '(no till)') AS till, COUNT(*) AS requests,
+       SUM(CASE WHEN r.state = 'approved' THEN 1 ELSE 0 END) AS approved
+FROM pos_combo_request r LEFT JOIN pos_config pc ON pc.id = r.config_id
+WHERE r.create_date::date BETWEEN :start_date AND :end_date
+  AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
+GROUP BY 1
+"""
+_TILL_LABEL = {"ktda shop": "KTDA", "ktda": "KTDA", "website sales": "Website", "website": "Website", "staff pos": "Staff POS"}
+
 # Units per combo per DAY — the same rows as COMBO_SQL (same filters), split by date, so the
 # running-combo cross-sell hover can say WHEN each self-made combo sold ("03 Oct ×1 · 05 Oct ×2").
 COMBO_DATES_SQL = """
@@ -2103,6 +2135,62 @@ def build_payload(m_start, m_end):
         "runTotals": _mi_tot(mi_running), "smTotals": _mi_tot(mi_self),
     }
 
+    # ── Self-made combos by shop: which till leads with self-made (CBR) combos ──
+    # Same combo rows as the tables (SM_BY_SHOP_SQL), split by till; a combo is self-made or running
+    # exactly as above (by its bags — a CBR-rung combo whose bags match an offer-sheet combo is RUNNING).
+    # smShare = self-made units ÷ all combo units at that shop. Per shop also: every self-made combo
+    # (for the hover), the combo requests raised this month, and CBR-rung combos counted as running.
+    sm_by_shop = None
+    try:
+        _sm_names = {r["name"] for r in self_made}
+        _run_names = {r["name"] for r in running}
+        _sdf = db.run_query(SM_BY_SHOP_SQL, {"start_date": m_start.isoformat(), "end_date": m_end.isoformat()})
+        _rq = db.run_query(CBR_REQUESTS_BY_SHOP_SQL, {"start_date": m_start.isoformat(), "end_date": m_end.isoformat()})
+        _label = lambda t: _TILL_LABEL.get(str(t).strip().lower(), str(t).strip().title())
+        _shops = {}
+
+        def _shop(lbl):
+            return _shops.setdefault(lbl, {"shop": lbl, "smUnits": 0, "smValue": 0.0, "runUnits": 0,
+                                           "combos": {}, "cbrRun": {}, "requests": 0, "approved": 0})
+        for _, _x in (_sdf.iterrows() if _sdf is not None else []):
+            _nm, _q, _v = str(_x["product"]).strip(), int(_x["qty"] or 0), float(_x["value"] or 0)
+            _s = _shop(_label(_x["till"]))
+            if _nm in _sm_names:
+                _s["smUnits"] += _q; _s["smValue"] += _v
+                _c = _s["combos"].setdefault(_nm, [0, 0.0]); _c[0] += _q; _c[1] += _v
+            elif _nm in _run_names:
+                _s["runUnits"] += _q
+                if bool(_x["is_cbr"]):
+                    _s["cbrRun"][_nm] = _s["cbrRun"].get(_nm, 0) + _q
+        for _, _x in (_rq.iterrows() if _rq is not None else []):
+            _s = _shop(_label(_x["till"]))
+            _s["requests"] += int(_x["requests"] or 0); _s["approved"] += int(_x["approved"] or 0)
+        _sm_all = sum(s["smUnits"] for s in _shops.values())
+        rows = []
+        for s in _shops.values():
+            if s["smUnits"] <= 0 and s["runUnits"] <= 0 and s["requests"] <= 0:
+                continue
+            rows.append({
+                "shop": s["shop"], "smUnits": s["smUnits"], "smValue": int(round(s["smValue"])),
+                "smCombos": len(s["combos"]), "runUnits": s["runUnits"],
+                "smShare": round(s["smUnits"] / (s["smUnits"] + s["runUnits"]) * 100, 1) if (s["smUnits"] + s["runUnits"]) else 0.0,
+                "ofAllSm": round(s["smUnits"] / _sm_all * 100, 1) if _sm_all else 0.0,
+                "requests": s["requests"], "approved": s["approved"],
+                # every self-made combo the shop sold: [name, units, revenue], most units first
+                "combos": [[n, c[0], int(round(c[1]))] for n, c in sorted(s["combos"].items(), key=lambda kv: (-kv[1][0], kv[0]))],
+                # rung through a combo request but its bags match an offer-sheet combo → counted as running
+                "cbrAsRunning": [[n, q] for n, q in sorted(s["cbrRun"].items(), key=lambda kv: (-kv[1], kv[0]))],
+            })
+        rows.sort(key=lambda r: (-r["smUnits"], -r["smValue"], r["shop"]))
+        sm_by_shop = {"shops": rows, "smUnits": _sm_all, "smValue": sum(r["smValue"] for r in rows),
+                      "requests": sum(r["requests"] for r in rows)}
+        if rows:
+            print(f"  Self-made by shop     : {rows[0]['shop']} leads with {rows[0]['smUnits']} of {_sm_all} self-made units "
+                  f"({rows[0]['ofAllSm']}%) · {sum(1 for r in rows if r['smUnits'])} shops sold self-made · "
+                  f"{sm_by_shop['requests']} combo requests")
+    except Exception as _e:                                  # noqa: BLE001 — the panel just hides
+        print(f"  Self-made by shop unavailable ({_e})")
+
     # Credit the week-1 "sold as singles" Jumbo+Jumbo pairs to the JUMBO+JUMBO card's
     # week-1 sold + unit total. Done AFTER monetary_implication so revenue/discount stay
     # on the actual button-rung combos (the pairs' money is already counted as singles).
@@ -2121,6 +2209,7 @@ def build_payload(m_start, m_end):
         "monthStart": m_start.isoformat(), "monthEnd": m_end.isoformat(),
         "selfMade": self_made, "running": running,
         "monetaryImplication": monetary_implication,
+        "selfMadeByShop": sm_by_shop,
         "smTotals": agg(self_made), "runTotals": agg(running),
         "requests": requests, "reqCounts": st_counts,
         "reqTotal": len(requests),
@@ -2180,8 +2269,57 @@ def fetch():
     payload["bagsNotOnOfferUganda"] = _bags_not_on_offer(
         m_start, m_end, _region_on_offer_bags(payload, "uganda"), BAG_SALES_UGANDA_SQL, "USh",
         stock_map=_UG_STOCK, daily_sql=BAG_SALES_DAILY_UGANDA_SQL)
+    _add_noffer_posts(payload)
     _add_oos(payload)
     return payload
+
+
+def _add_noffer_posts(payload):
+    """Marketing posts on every "Bags not on offer" bag (docs/self-made-combos.md › Bags not on offer):
+    `posts` = this month's posts (MONTHLY_MARKETING_POST), `postsLastWeek` = last week's (WEEKLY_MARKETING_POST,
+    posted a week in arrears). Each sheet row's product name (col C) resolves to its catalogue bag with the
+    same classifier as the list; Kenya / Sinza / Uganda posts = cols E / F / G (as on Posting Yields).
+    Sheet unreachable → the lists just carry no posts (postsKnown stays unset)."""
+    try:
+        import offer_data
+        from google_auth import get_gspread_client
+        sh = get_gspread_client().open_by_key(offer_data.SPREADSHEET_ID)
+        mmp = sh.worksheet("MONTHLY_MARKETING_POST").get_all_values()
+        wmp = sh.worksheet("WEEKLY_MARKETING_POST").get_all_values()
+    except Exception as e:                                   # noqa: BLE001 — the list still renders
+        print(f"  Not-on-offer posts unavailable ({e})")
+        return
+    infer, _ = bag_classifier(set())
+
+    def per_bag(rows, col):
+        out = {}
+        for r in rows[1:]:
+            name = str(r[2]).strip() if len(r) > 2 else ""
+            if not name or "total" in name.lower() or len(r) <= col:
+                continue
+            try:
+                n = int(float(str(r[col]).replace(",", "") or 0))
+            except ValueError:
+                continue
+            if n <= 0:
+                continue
+            bt = infer(name)
+            if bt:
+                out[bt] = out.get(bt, 0) + n
+        return out
+
+    for key, col in (("bagsNotOnOffer", 4), ("bagsNotOnOfferSinza", 5), ("bagsNotOnOfferUganda", 6)):
+        blk = payload.get(key) or {}
+        if not blk.get("notOnOffer") and "notOnOffer" not in blk:
+            continue
+        mo, wk = per_bag(mmp, col), per_bag(wmp, col)
+        for x in blk.get("notOnOffer", []):
+            x["posts"] = mo.get(x["bag"], 0)
+            x["postsLastWeek"] = wk.get(x["bag"], 0)
+        blk["postsKnown"] = True
+        lst = blk.get("notOnOffer", [])
+        print(f"  Not-on-offer posts {key[len('bagsNotOnOffer'):] or 'Kenya':<7}: "
+              f"{sum(1 for x in lst if x['posts'])} of {len(lst)} bags posted this month ({sum(x['posts'] for x in lst)} posts)")
 
 
 def _add_oos(payload):
