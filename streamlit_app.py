@@ -16,6 +16,7 @@ import time
 import subprocess
 import datetime
 from urllib.parse import quote
+from contextlib import contextmanager
 
 # ── Auto-launch ───────────────────────────────────────────────
 # Run this file directly — `python streamlit_app.py`, VS Code's Run button or a double-click —
@@ -551,6 +552,57 @@ def run_scripts(script_list, force_fresh=False):
     return logs
 
 
+# ── Arcade "loading level" card — shown instead of st.spinner while Odoo rebuilds a page ──
+# Pure CSS (Pac-Man eating dots, a segmented power bar, rotating tips), so it keeps animating
+# while the Python side is blocked in run_scripts. Colours ride the --v5-* theme tokens.
+_GAME_CSS = """<style>
+.gl-card{margin:0.6rem 0 1rem;padding:1rem 1.2rem;border-radius:14px;background:var(--v5-raised);
+  border:2px solid var(--v5-indigo);box-shadow:0 0 0 3px rgba(79,70,229,0.15),0 8px 24px rgba(79,70,229,0.18);
+  font-family:ui-monospace,'Cascadia Mono',Consolas,monospace;color:var(--v5-hi);}
+.gl-top{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.gl-tag{font-size:0.7rem;font-weight:800;letter-spacing:0.18em;color:#facc15;animation:gl-blink 1s steps(2) infinite;}
+.gl-lvl{font-size:1.05rem;font-weight:800;margin-top:0.15rem;}
+.gl-p1{font-size:0.7rem;color:var(--v5-lo);letter-spacing:0.12em;}
+.gl-track{position:relative;height:26px;margin:0.9rem 0 0.7rem;overflow:hidden;}
+.gl-pac{position:absolute;top:1px;left:0;width:24px;height:24px;border-radius:50%;background:#facc15;
+  animation:gl-chomp 0.3s linear infinite alternate,gl-run 4s linear infinite;z-index:2;}
+.gl-dots{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-around;padding-left:30px;}
+.gl-dots i{width:7px;height:7px;border-radius:2px;background:var(--v5-mid);}
+.gl-bar{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;}
+.gl-bar i{height:10px;border-radius:2px;background:var(--v5-track);animation:gl-seg 2.4s linear infinite;}
+.gl-tips{position:relative;height:1.2rem;margin-top:0.7rem;font-size:0.78rem;color:var(--v5-mid);}
+.gl-tips span{position:absolute;left:0;opacity:0;animation:gl-tip 12s linear infinite;}
+@keyframes gl-blink{50%{opacity:0.25}}
+@keyframes gl-chomp{from{clip-path:polygon(100% 0,50% 50%,100% 100%,0 100%,0 0)}
+  to{clip-path:polygon(100% 50%,50% 50%,100% 50%,0 100%,0 0)}}
+@keyframes gl-run{from{left:-24px}to{left:100%}}
+@keyframes gl-seg{0%,100%{background:var(--v5-track)}8%,40%{background:linear-gradient(90deg,#4f46e5,#22d3ee);box-shadow:0 0 6px rgba(34,211,238,0.6)}}
+@keyframes gl-tip{0%{opacity:0;transform:translateY(4px)}3%,22%{opacity:1;transform:none}25%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.gl-card *{animation:none !important}.gl-tips span:first-child{opacity:1}}
+</style>"""
+_GAME_TIPS = ("▶ Respawning sales from Odoo…", "★ Collecting combo XP…",
+              "⚔ Syncing every shop on the map…", "💾 Saving your progress…")
+
+
+@contextmanager
+def game_loading(title, tag="LOADING LEVEL"):
+    """Show the arcade loading card while the with-block runs, then clear it."""
+    tips = "".join(f"<span style='animation-delay:{i * 3}s'>{_esc(t)}</span>" for i, t in enumerate(_GAME_TIPS))
+    segs = "".join(f"<i style='animation-delay:{i * 0.2:.1f}s'></i>" for i in range(12))
+    slot = st.empty()
+    slot.markdown(
+        _GAME_CSS + "<div class='gl-card' role='status' aria-live='polite'>"
+        "<div class='gl-top'><div><div class='gl-tag'>" + _esc(tag) + "</div>"
+        "<div class='gl-lvl'>" + _esc(title) + "</div></div><div class='gl-p1'>PLAYER 1 · READY</div></div>"
+        "<div class='gl-track'><div class='gl-pac'></div><div class='gl-dots'>" + "<i></i>" * 14 + "</div></div>"
+        "<div class='gl-bar'>" + segs + "</div><div class='gl-tips'>" + tips + "</div></div>",
+        unsafe_allow_html=True)
+    try:
+        yield
+    finally:
+        slot.empty()
+
+
 # ── Auto-refresh every AUTO_REFRESH_MIN minutes ──────────────────────────────
 # The current page regenerates itself from Odoo once its data goes stale. The
 # generated HTML's mtime is the shared freshness clock (every viewer sees it), so
@@ -577,7 +629,7 @@ if (not NO_AUTOREFRESH
         and (time.time() - st.session_state.get("auto_last_check", 0)) >= _AUTO_SECS
         and _page_age_secs(html_path) >= _AUTO_SECS):
     st.session_state.auto_last_check = time.time()
-    with st.spinner(f"Auto-refreshing {label} from Odoo…"):
+    with game_loading(label):
         _logs = run_scripts(scripts)
     st.session_state.refresh_msg = {
         "when": datetime.datetime.now().strftime("%H:%M:%S"),
@@ -738,7 +790,7 @@ with _rc:
     _do_refresh = st.button("Refresh", icon=":material/refresh:", use_container_width=True,
                             type="primary", key="refresh_btn")
 if _do_refresh:
-    with st.spinner(f"Refreshing {label} from Odoo…"):
+    with game_loading(label, "RELOADING LEVEL"):
         logs = run_scripts(scripts, force_fresh=True)   # manual: bypass cache, pull fresh + repopulate
     fails = [(s, out) for s, rc, out in logs if rc != 0]
     unreachable = any(("not reachable" in (out or "").lower())
@@ -796,7 +848,7 @@ if html_file == "bags_on_offer.html":
         else:
             with open(_boo_cr, "w", encoding="utf-8") as _fh:
                 _json.dump({"from": _rng[0].isoformat(), "to": _rng[1].isoformat()}, _fh)
-            with st.spinner(f"Building {_rng[0]:%d %b} – {_rng[1]:%d %b} from Odoo…"):
+            with game_loading(f"{_rng[0]:%d %b} – {_rng[1]:%d %b}", "BUILDING CUSTOM LEVEL"):
                 _logs = run_scripts(["bags_on_offer.py"])
             st.session_state.refresh_msg = {
                 "when": datetime.datetime.now().strftime("%H:%M:%S"),
@@ -807,7 +859,7 @@ if html_file == "bags_on_offer.html":
             os.remove(_boo_cr)
         except OSError:
             pass
-        with st.spinner("Removing the custom period…"):
+        with game_loading("Back to the default period", "CLEARING LEVEL"):
             run_scripts(["bags_on_offer.py"])
         st.rerun()
 
