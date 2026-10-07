@@ -4,9 +4,12 @@
 -- rows group on the company name with case, punctuation and Ltd / Limited ignored, so
 -- "Safarilink" and "safarilink", or "Page Capital" and "Page Capital Ltd", are one client.
 --   quoted     bags on quotations dated in the period (declined / cancelled left out)
---   invoiced   bags on invoices dated in the period (draft / cancelled left out)
+--   invoiced   bags on invoices dated in the period, plus older invoices that received money
+--              in the period (draft / cancelled left out)
 --   agreed     value of those invoices less WHT (KES)
---   paid       paid on those invoices so far (any date)
+--   paid       paid on those invoices up to the period end
+--   earlier    month(s) those older invoices were raised, e.g. 'Sep' (NULL when none)
+--   earlier_paid_on  latest date in the period money came in on those older invoices, e.g. '1 Oct'
 --   sold       bags counted as sold in the period = bags × (paid in the period ÷ agreed),
 --              over ANY of the client's invoices (a balance cleared this month for last
 --              month's invoice lands here) — this is what goes into Sales
@@ -20,26 +23,35 @@ WITH inv AS (
     FROM denri_corporate_invoice i
     WHERE i.status NOT IN ('draft', 'cancelled')
 ),
-inv_rows AS (
-    SELECT inv.company, inv.date_invoice AS dated,
-           0::numeric AS quoted,
-           CASE WHEN inv.date_invoice BETWEEN :start_date AND :end_date THEN inv.bags ELSE 0 END AS invoiced,
-           CASE WHEN inv.date_invoice BETWEEN :start_date AND :end_date THEN inv.agreed ELSE 0 END AS agreed,
-           CASE WHEN inv.date_invoice BETWEEN :start_date AND :end_date
-                THEN (SELECT COALESCE(SUM(p.amount), 0) FROM denri_corporate_payment p WHERE p.invoice_id = inv.id)
-                ELSE 0 END AS paid,
-           inv.bags * LEAST((SELECT COALESCE(SUM(p.amount), 0) FROM denri_corporate_payment p
-                              WHERE p.invoice_id = inv.id
-                                AND GREATEST(p.date, inv.date_invoice) BETWEEN :start_date AND :end_date)
-                            / NULLIF(inv.agreed, 0), 1) AS sold
+inv_pay AS (
+    SELECT inv.*,
+           (SELECT COALESCE(SUM(p.amount), 0) FROM denri_corporate_payment p
+             WHERE p.invoice_id = inv.id AND p.date <= :end_date) AS paid_to_date,
+           (SELECT COALESCE(SUM(p.amount), 0) FROM denri_corporate_payment p
+             WHERE p.invoice_id = inv.id
+               AND GREATEST(p.date, inv.date_invoice) BETWEEN :start_date AND :end_date) AS paid_in_period,
+           (SELECT MAX(GREATEST(p.date, inv.date_invoice)) FROM denri_corporate_payment p
+             WHERE p.invoice_id = inv.id
+               AND GREATEST(p.date, inv.date_invoice) BETWEEN :start_date AND :end_date) AS last_paid_in_period
     FROM inv
+),
+inv_rows AS (       -- invoices raised in the period, plus earlier invoices that got paid in it
+    SELECT company, date_invoice AS dated,
+           0::numeric AS quoted,
+           bags AS invoiced, agreed, paid_to_date AS paid,
+           bags * LEAST(paid_in_period / NULLIF(agreed, 0), 1) AS sold,
+           CASE WHEN date_invoice < :start_date THEN date_invoice END AS earlier_on,
+           CASE WHEN date_invoice < :start_date THEN last_paid_in_period END AS earlier_paid
+    FROM inv_pay
+    WHERE date_invoice BETWEEN :start_date AND :end_date OR paid_in_period > 0
 ),
 quote_rows AS (
     SELECT q.company, q.date_quote AS dated,
            (SELECT COALESCE(SUM(l.qty), 0) FROM denri_corporate_quote_line l
              WHERE l.quote_id = q.id
                AND COALESCE(l.product, '') !~* '(fee|sponsor|origination|sample)') AS quoted,
-           0::numeric AS invoiced, 0::numeric AS agreed, 0::numeric AS paid, 0::numeric AS sold
+           0::numeric AS invoiced, 0::numeric AS agreed, 0::numeric AS paid, 0::numeric AS sold,
+           NULL::date AS earlier_on, NULL::date AS earlier_paid
     FROM denri_corporate_quote q
     WHERE q.status NOT IN ('declined', 'cancelled')
       AND q.date_quote BETWEEN :start_date AND :end_date
@@ -55,7 +67,9 @@ SELECT (ARRAY_AGG(company ORDER BY dated DESC))[1] AS client,    -- latest spell
        SUM(invoiced)::int               AS invoiced,
        ROUND(SUM(agreed))::bigint       AS agreed_kes,
        ROUND(SUM(paid))::bigint         AS paid_kes,
-       ROUND(SUM(sold)::numeric, 1)     AS sold
+       ROUND(SUM(sold)::numeric, 1)     AS sold,
+       STRING_AGG(DISTINCT TO_CHAR(earlier_on, 'Mon'), ', ') AS earlier,  -- months of older invoices paid in the period
+       TO_CHAR(MAX(earlier_paid), 'FMDD Mon')                AS earlier_paid_on   -- when that money came in
 FROM rows
 GROUP BY client_key
 HAVING SUM(quoted) > 0 OR SUM(invoiced) > 0 OR SUM(sold) > 0

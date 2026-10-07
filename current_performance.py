@@ -4,11 +4,11 @@ current_performance.py
 Run:
     python current_performance.py
 
-Reads live from Google Sheets:
-
-  MONTHLY_TARGET sheet
+Target — the month's Odoo targets (every shop till + Corporate), split per bag by
+lib/product_targets from the last three months' sales and the days each bag had shop
+stock (docs/product-targets.md). Laid over the MONTHLY_TARGET tab's rows as column C:
     col C (TARGET)  → sum all rows below header  →  total_target
-    col D (SALES)   → sum all rows below header  →  total_sales
+    col D (SALES)   → sum all rows below header  →  total_sales (replaced by live Odoo below)
     col E (DEFICIT) → sum all rows below header  →  total_deficit
 ─────────────────────────────────────────────────────────────────
 """
@@ -237,7 +237,7 @@ def fetch_monthly_target():
     return target_total, sales_total, deficit_total, weekly_total
 
 
-print("Fetching data from Google Sheets...")
+print("Fetching target (Odoo) and weekly rows...")
 print(f"  Previous snapshot    : {previous_sales_bags:,} bags")
 total_target, total_sales, total_deficit, weekly_sales_total = fetch_monthly_target()
 # Real current-week bags from Postgres when available (see weekly_sales.py);
@@ -286,7 +286,9 @@ def corporate_clients_from_db():
         if df is not None and not df.empty:
             return [{"client": str(r["client"]), "quoted": int(r["quoted"] or 0),
                      "invoiced": int(r["invoiced"] or 0), "agreedKes": int(r["agreed_kes"] or 0),
-                     "paidKes": int(r["paid_kes"] or 0), "sold": round(float(r["sold"] or 0))}
+                     "paidKes": int(r["paid_kes"] or 0), "sold": round(float(r["sold"] or 0)),
+                     "earlier": str(r["earlier"] or ""),
+                     "earlierPaidOn": str(r["earlier_paid_on"] or "")}
                     for _, r in df.iterrows()]
     except Exception:
         pass
@@ -402,8 +404,9 @@ if straddling and prev_month_rec and prev_month_rec.get("recorded_on"):
 
 # 1. Remaining Target
 #    The number of bags still needed to reach the full target.
-#    Target comes from the sheet (col C); sales is the Odoo month total, so
-#    remaining = sheet target − Odoo sales (floored at 0). This replaces the
+#    Target is the month's Odoo target split per bag (lib/product_targets — past
+#    sales + stock days); sales is the Odoo month total, so
+#    remaining = target − Odoo sales (floored at 0). This replaces the
 #    sheet's col-E deficit, which was computed off the sheet's own sales and
 #    would ignore the Postgres figure.
 remaining_target = max(total_target - total_sales, 0)

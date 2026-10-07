@@ -250,6 +250,17 @@
     }
     /* When shown, allow the mouse into the popover to read chart tooltips */
     .sales-popover.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+    /* Sales popover: target donut on the left, "Corporate by client" beside it on the right */
+    #sales-popover .sp-wrap { display: flex; gap: 1.2rem; align-items: stretch; }
+    #sales-popover .sp-main { flex: 0 0 300px; min-width: 0; }
+    #sales-popover.has-corp { width: 780px; }
+    #sales-popover #corp-clients { flex: 1 1 auto; min-width: 0; border-left: 1px solid #2d3148; padding-left: 1.2rem; }
+    @media (max-width: 840px) {
+      #sales-popover .sp-wrap { flex-direction: column; gap: 0; }
+      #sales-popover .sp-main { flex-basis: auto; }
+      #sales-popover.has-corp { width: 380px; }
+      #sales-popover #corp-clients { border-left: 0; padding-left: 0; border-top: 1px solid #2d3148; margin-top: 0.6rem; padding-top: 0.6rem; }
+    }
 
     /* ── Section divider ──────────────────────────────────── */
     .section-divider {
@@ -329,22 +340,7 @@
       <div class="card-label">Sales <span style="font-size:0.58rem;font-weight:800;letter-spacing:0.05em;color:#22d3ee;border:1px solid rgba(34,211,238,0.4);border-radius:5px;padding:0.06rem 0.36rem;margin-left:0.35rem;vertical-align:middle">ODOO · THIS MONTH</span></div>
       <div class="card-value" id="kpi-sales"></div>
       <div id="sales-breakdown" style="font-size:0.72rem;color:#94a3b8;margin-top:-0.15rem;margin-bottom:0.2rem"></div>
-      <details id="corp-clients" hidden style="font-size:0.72rem;color:#94a3b8;margin:0.1rem 0 0.35rem">
-        <summary style="cursor:pointer;color:#cbd5e1;font-weight:600"></summary>
-        <div style="overflow-x:auto;margin-top:0.35rem">
-          <table style="width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums">
-            <thead><tr style="color:#64748b;text-align:right">
-              <th style="text-align:left;font-weight:600;padding:0.15rem 0.3rem 0.15rem 0">Client</th>
-              <th style="font-weight:600;padding:0.15rem 0.3rem" title="Bags on open quotations (draft / sent) this month">Quoted</th>
-              <th style="font-weight:600;padding:0.15rem 0.3rem" title="Bags on invoices raised this month">Invoiced</th>
-              <th style="font-weight:600;padding:0.15rem 0.3rem" title="Share of this month's invoices paid so far">Paid</th>
-              <th style="font-weight:600;padding:0.15rem 0 0.15rem 0.3rem" title="Bags × share of the money received this month — what goes into Sales">Sold</th>
-            </tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </details>
-      <div class="card-interpretation">Total bags this month: Odoo POS (tills) <strong>plus</strong> corporate bags. Corporate counts by money received: an invoice's bags × the share paid this month, so a part-paid order counts only its paid % and the balance counts in the month it's paid. Corporate comes from the Denri Corporate app (quotes &amp; invoices); WHT is taken off the agreed amount. Refunds are netted; straps, delivery and customisation aren't counted. Target comes from the sheet, so Remaining = target − these sales. Weekly Sales stays POS-only.</div>
+      <div class="card-interpretation">Shop tills (POS) + corporate bags paid for this month. Refunds netted; straps, delivery and customisation not counted. Remaining = Odoo target − these sales. Hover for the target and corporate by client.</div>
     </div>
 
     <div class="card blue" id="weekly-card">
@@ -400,6 +396,8 @@
 
   <!-- Sales vs Monthly Target — pops up when hovering the Sales card -->
   <div class="sales-popover" id="sales-popover">
+   <div class="sp-wrap">
+    <div class="sp-main">
     <div class="card-label">Sales vs Monthly Target</div>
     <div style="position:relative;height:200px"><canvas id="chart-progress-donut"></canvas></div>
     <div style="border-top:1px solid #2d3148;margin-top:0.6rem;padding-top:0.6rem;display:flex;justify-content:space-between;align-items:center">
@@ -410,6 +408,31 @@
       <span style="font-size:0.72rem;color:#94a3b8">Previous sales % achieved</span>
       <strong id="sales-pop-prev" style="font-size:0.95rem;color:#facc15;font-variant-numeric:tabular-nums"></strong>
     </div>
+    </div>
+    <div id="corp-clients" hidden style="font-size:0.72rem;color:#94a3b8">
+      <div class="corp-head card-label" style="margin-bottom:0.45rem"></div>
+      <div style="max-height:250px;overflow:auto">
+        <table style="width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums">
+          <thead><tr style="color:#64748b;text-align:right">
+            <th style="text-align:left;font-weight:600;padding:0.15rem 0.3rem 0.15rem 0">Client</th>
+            <th style="font-weight:600;padding:0.15rem 0.3rem" title="Bags on quotations dated this month">Quoted</th>
+            <th style="font-weight:600;padding:0.15rem 0.3rem" title="Bags on invoices raised this month, plus older invoices paid this month">Invoiced</th>
+            <th style="font-weight:600;padding:0.15rem 0.3rem" title="Paid so far ÷ agreed amount (after WHT)">Paid</th>
+            <th style="font-weight:600;padding:0.15rem 0 0.15rem 0.3rem" title="Bags × share of the money received this month — what goes into Sales">Sold</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="corp-why" hidden style="margin-top:0.55rem;padding:0.45rem 0.55rem;border-radius:8px;background:rgba(100,116,139,0.10);border:1px solid #2d3148;font-size:0.68rem;line-height:1.5;color:#94a3b8"></div>
+      <div style="margin-top:0.45rem;font-size:0.66rem;line-height:1.45;color:#64748b">
+        <b style="color:#94a3b8">Sold</b> = bags × share of the money received this month.
+        <b style="color:#94a3b8">Invoiced</b> covers invoices raised this month plus older ones paid this month;
+        a month tag (e.g. <span style="border:1px solid #334155;border-radius:4px;padding:0 0.2rem">Sep</span>) means the invoice
+        was raised then and only the money came in now. <b style="color:#94a3b8">Paid</b> = paid so far ÷ agreed amount (after WHT).
+        <b style="color:#94a3b8">–</b> = none yet, e.g. a quotation not invoiced.
+      </div>
+    </div>
+   </div>
   </div>
 
   <!-- Week-over-week — pops up when hovering the Weekly Sales card -->
@@ -477,7 +500,7 @@ const PERF = {
   sales:              "3,969",
   salesPos:           "3,657",
   corporateBags:      "312",
-  corporateClients:   [{"client": "CIArb KENYA", "quoted": 0, "invoiced": 0, "agreedKes": 0, "paidKes": 0, "sold": 188}, {"client": "safarilink", "quoted": 100, "invoiced": 0, "agreedKes": 0, "paidKes": 0, "sold": 100}, {"client": "Greenlight Planet Kenya Ltd", "quoted": 0, "invoiced": 0, "agreedKes": 0, "paidKes": 0, "sold": 13}, {"client": "Zakale", "quoted": 10, "invoiced": 10, "agreedKes": 37000, "paidKes": 37000, "sold": 10}, {"client": "Mirror Arts Designs Limited", "quoted": 2, "invoiced": 2, "agreedKes": 5900, "paidKes": 5900, "sold": 2}],
+  corporateClients:   [{"client": "CIArb KENYA", "quoted": 0, "invoiced": 250, "agreedKes": 301000, "paidKes": 225750, "sold": 188, "earlier": "Sep", "earlierPaidOn": "1 Oct"}, {"client": "safarilink", "quoted": 100, "invoiced": 100, "agreedKes": 399000, "paidKes": 399000, "sold": 100, "earlier": "Aug", "earlierPaidOn": "5 Oct"}, {"client": "Greenlight Planet Kenya Ltd", "quoted": 0, "invoiced": 13, "agreedKes": 69996, "paidKes": 69996, "sold": 13, "earlier": "Sep", "earlierPaidOn": "2 Oct"}, {"client": "Zakale", "quoted": 10, "invoiced": 10, "agreedKes": 37000, "paidKes": 37000, "sold": 10, "earlier": "", "earlierPaidOn": ""}, {"client": "Mirror Arts Designs Limited", "quoted": 2, "invoiced": 2, "agreedKes": 5900, "paidKes": 5900, "sold": 2, "earlier": "", "earlierPaidOn": ""}],
   rejectBags:        "0",
   rejectPct:          "0.00%",
   giftBags:           "71",
@@ -600,14 +623,41 @@ const PROJ = {
       var pctCol = pct === null ? '#475569' : (pct >= 100 ? '#34d399' : (pct > 0 ? '#fbbf24' : '#f87171'));
       return '<tr><td style="' + td + ';text-align:left;padding-left:0">' + esc(r.client) + '</td>'
         + '<td style="' + td + '">' + n(r.quoted) + '</td>'
-        + '<td style="' + td + '">' + n(r.invoiced) + '</td>'
+        + '<td style="' + td + '">' + n(r.invoiced)
+        + (r.earlier ? ' <span style="font-size:0.62rem;color:#94a3b8;border:1px solid #334155;border-radius:4px;padding:0 0.2rem"'
+          + ' title="Invoice raised in ' + esc(r.earlier) + ' — the money came in this month">' + esc(r.earlier) + '</span>' : '')
+        + '</td>'
         + '<td style="' + td + ';color:' + pctCol + '">' + (pct === null ? '–' : pct + '%') + '</td>'
         + '<td style="' + td + ';padding-right:0;color:#e2e8f0;font-weight:600">' + n(r.sold) + '</td></tr>';
     }).join('');
     var quoted = rows.reduce(function (a, r) { return a + (r.quoted || 0); }, 0);
-    box.querySelector('summary').textContent = 'Corporate by client (' + rows.length + ')'
+    box.querySelector('.corp-head').textContent = 'Corporate by client (' + rows.length + ')'
       + (quoted ? ' · ' + quoted.toLocaleString() + ' bags quoted' : '');
     box.hidden = false;
+    // Why older months (Aug / Sep) show up: the invoice is old, the money is this month's.
+    var month = String(PERF.cpCurLabel || '').split(' ')[0] || 'this month';
+    var olds = rows.filter(function (r) { return r.earlier; });
+    var why = box.querySelector('.corp-why');
+    if (why && olds.length) {
+      why.innerHTML = '<b style="color:#cbd5e1">Why ' + olds.map(function (r) { return esc(r.earlier); })
+          .filter(function (m, i, a) { return a.indexOf(m) === i; }).join(' / ') + ' invoices are here:</b> '
+        + 'bags count in the month the client <b>pays</b>, not the month the invoice was raised. '
+        + 'These were invoiced earlier and paid in ' + esc(month) + ', so their bags are ' + esc(month) + ' sales:'
+        + '<ul style="margin:0.25rem 0 0;padding-left:1rem">'
+        + olds.map(function (r) {
+            var pct = r.agreedKes ? Math.round(r.paidKes / r.agreedKes * 100) : 0;
+            var left = Math.max((r.invoiced || 0) - (r.sold || 0), 0);
+            return '<li><b style="color:#e2e8f0">' + esc(r.client) + '</b> — ' + esc(r.earlier) + ' invoice'
+              + (r.earlierPaidOn ? ', paid ' + esc(r.earlierPaidOn) : '') + ' → '
+              + (pct >= 100 ? 'fully paid, all ' + Number(r.sold).toLocaleString() + ' bags'
+                 : pct + '% paid, so ' + Number(r.sold).toLocaleString() + ' of ' + Number(r.invoiced).toLocaleString()
+                   + ' bags; the other ' + left.toLocaleString() + ' count when the balance is paid')
+              + '</li>';
+          }).join('') + '</ul>';
+      why.hidden = false;
+    }
+    var pop = document.getElementById('sales-popover');
+    if (pop) pop.classList.add('has-corp');   // widen so the list sits beside the donut
   })();
   setText('kpi-weekly-sales', PERF.weeklySalesTotal);
   // Shown in the Sales hover popover

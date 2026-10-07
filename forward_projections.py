@@ -146,7 +146,7 @@ total_target, total_sales, weekly_sales_total = fetch_sheet_data()
 
 
 # ── Prefer LIVE Odoo figures over the sheet (same as current_performance.py) ──
-# Target stays from the sheet (planning number). Sales & weekly come from
+# Target is the Odoo target (lib/product_targets — past sales + stock days). Sales & weekly come from
 # Postgres when available, so the projections match the Current Performance
 # cards instead of the sheet's SALES / WEEKLY_SALES columns.
 def _live_bags(filename, key_field, key_value, bags_field):

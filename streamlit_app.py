@@ -985,6 +985,13 @@ if os.path.exists(html_path):
                      'window.addEventListener("load",go);})();</script>')
     except OSError:
         pass
+    # Drag-to-reorder for every KPI, chart and panel (kpi_drag.js), on every page.
+    try:
+        with open(os.path.join(BASE, "kpi_drag.js"), encoding="utf-8") as _fh:
+            _v5_block += '<script>/* kpi_drag.js */\n' + _fh.read().replace("</script", "<\\/script") + '\n</script>'
+        _v5_mtimes.append(int(os.path.getmtime(os.path.join(BASE, "kpi_drag.js"))))
+    except OSError:
+        pass
     if "</body>" in html:
         html = html.replace("</body>", _v5_block + EMBED_FIX + "</body>", 1)
     else:
