@@ -14,6 +14,7 @@ import re
 import sys
 import time
 import subprocess
+import threading
 import datetime
 from urllib.parse import quote
 from contextlib import contextmanager
@@ -54,6 +55,12 @@ if not _under_streamlit():
     sys.exit(0)
 
 BASE = os.path.dirname(os.path.abspath(__file__))
+
+# Older Streamlit (< st.iframe, e.g. the local Anaconda 1.51) — fall back to components.html,
+# which renders an HTML string in a same-origin srcdoc frame just the same.
+if not hasattr(st, "iframe"):
+    import streamlit.components.v1 as _components
+    st.iframe = lambda html, height=None: _components.html(html, height=height)
 
 
 # ── Secrets → environment, so lib/db.py and google_auth.py work unchanged ──
@@ -605,11 +612,12 @@ def game_loading(title, tag="LOADING LEVEL"):
 
 # ── Auto-refresh every AUTO_REFRESH_MIN minutes ──────────────────────────────
 # The current page regenerates itself from Odoo once its data goes stale. The
-# generated HTML's mtime is the shared freshness clock (every viewer sees it), so
-# the first session to notice a stale page rebuilds it and the rest get the fresh
-# cache. A per-session guard makes each session attempt at most once per interval
-# (so a failed build doesn't loop), and a JS timer in the header reloads an idle
-# tab so the check keeps firing even with no clicks.
+# generated HTML's mtime is the shared freshness clock (every viewer sees it). The
+# rebuild runs in a background thread so the last-built page shows straight away;
+# a small watcher reruns the app when the rebuild ends, which swaps the new page in.
+# One job per page across all sessions, at most one attempt per interval (so a
+# failed build doesn't loop), and a JS timer in the header reloads an idle tab so
+# the check keeps firing even with no clicks.
 AUTO_REFRESH_MIN = 60
 _AUTO_SECS = AUTO_REFRESH_MIN * 60
 # DASH_NO_AUTOREFRESH=1 (testing / previews): never rebuild pages from Odoo on a page view and
@@ -624,22 +632,38 @@ def _page_age_secs(path):
         return float("inf")
 
 
-if (not NO_AUTOREFRESH
-        and os.path.exists(html_path)
-        and (time.time() - st.session_state.get("auto_last_check", 0)) >= _AUTO_SECS
-        and _page_age_secs(html_path) >= _AUTO_SECS):
-    st.session_state.auto_last_check = time.time()
-    with game_loading(label):
-        _logs = run_scripts(scripts)
-    st.session_state.refresh_msg = {
-        "when": datetime.datetime.now().strftime("%H:%M:%S"),
-        "fails": [(s, out) for s, rc, out in _logs if rc != 0],
-        "unreachable": any(("not reachable" in (out or "").lower())
-                           or ("unreachable" in (out or "").lower())
-                           for _, _, out in _logs),
-        "auto": True,
-    }
-    st.rerun()
+@st.cache_resource
+def _bg_jobs():
+    """Background rebuilds shared by every session: label → {started, ended, logs}."""
+    return {"lock": threading.Lock(), "jobs": {}}
+
+
+def _bg_rebuild(lbl, script_list):
+    """Start a background rebuild of `lbl` unless one is running or was tried this interval.
+    Returns the job's start time when one is running (new or existing), else None."""
+    reg = _bg_jobs()
+    with reg["lock"]:
+        job = reg["jobs"].get(lbl)
+        if job and job["ended"] is None:
+            return job["started"]
+        if job and time.time() - job["started"] < _AUTO_SECS:
+            return None
+        job = {"started": time.time(), "ended": None, "logs": []}
+        reg["jobs"][lbl] = job
+
+    def work():
+        try:
+            job["logs"] = run_scripts(script_list)
+        finally:
+            job["ended"] = time.time()
+
+    threading.Thread(target=work, name=f"rebuild:{lbl}", daemon=True).start()
+    return job["started"]
+
+
+_bg_started = None
+if not NO_AUTOREFRESH and os.path.exists(html_path) and _page_age_secs(html_path) >= _AUTO_SECS:
+    _bg_started = _bg_rebuild(label, scripts)
 
 
 # ── Month-end catch-up: archive last month to Supabase (History) automatically ──
@@ -820,6 +844,30 @@ if _rm:
     else:
         _how = "Auto-refreshed" if _rm.get("auto") else "Refreshed"
         st.success(f"✓ {_how} from Odoo at {_rm['when']}")
+
+
+# Background rebuild in progress: say so, and rerun the app the moment it ends so the frame
+# below picks up the regenerated page (its cache token is the file's mtime).
+@st.fragment(run_every=5)
+def _bg_watch(lbl, started):
+    job = _bg_jobs()["jobs"].get(lbl)
+    if not job or job["started"] != started or job["ended"] is not None:
+        logs = job["logs"] if job else []
+        st.session_state.refresh_msg = {
+            "when": datetime.datetime.now().strftime("%H:%M:%S"),
+            "fails": [(s, out) for s, rc, out in logs if rc != 0],
+            "unreachable": any(("not reachable" in (out or "").lower())
+                               or ("unreachable" in (out or "").lower())
+                               for _, _, out in logs),
+            "auto": True,
+        }
+        st.rerun(scope="app")
+    st.caption(f":material/sync: Updating from Odoo in the background "
+               f"({int(time.time() - started)}s) — showing the last build until it's ready.")
+
+
+if _bg_started is not None:
+    _bg_watch(label, _bg_started)
 
 # ── Custom period (per page), picked in the page's own Period dropdown ──
 # "Custom range…" in a Period dropdown (custom_range.js) reloads the app with ?page=<label>&crange=<key>:<from>:<to>

@@ -273,7 +273,27 @@ def corporate_from_db():
         pass
     return 0
 
-corporate_bags = corporate_from_db()
+def corporate_clients_from_db():
+    """Current month's corporate activity per client (quoted · invoiced · paid · sold) for
+    the Sales card's "Corporate by client" list. [] when the DB isn't reachable."""
+    try:
+        from lib import db, queries
+        today   = datetime.date.today()
+        import calendar as _cal
+        df = db.run_query(queries.CORPORATE_CLIENTS,
+                          {"start_date": today.replace(day=1).isoformat(),
+                           "end_date":   today.replace(day=_cal.monthrange(today.year, today.month)[1]).isoformat()})
+        if df is not None and not df.empty:
+            return [{"client": str(r["client"]), "quoted": int(r["quoted"] or 0),
+                     "invoiced": int(r["invoiced"] or 0), "agreedKes": int(r["agreed_kes"] or 0),
+                     "paidKes": int(r["paid_kes"] or 0), "sold": round(float(r["sold"] or 0))}
+                    for _, r in df.iterrows()]
+    except Exception:
+        pass
+    return []
+
+corporate_bags    = corporate_from_db()
+corporate_clients = corporate_clients_from_db()
 sales_pos      = total_sales                    # POS-only (Weekly basis)
 total_sales    = total_sales + corporate_bags   # Sales card = POS + corporate
 
@@ -483,6 +503,8 @@ except (ValueError, OSError, KeyError, TypeError):
 
 # ── INJECT INTO HTML ──────────────────────────────────────────
 
+_corp_clients_js = json.dumps(corporate_clients).replace("</", "<\\/")   # client names can't close the <script>
+
 inline_script = (
     "<!-- PERF_DATA_START -->\n"
     "<script>\n"
@@ -495,7 +517,8 @@ inline_script = (
     f'  sales:              "{fmt_int(sales)}",\n'
     f'  salesPos:           "{fmt_int(sales_pos)}",\n'
     f'  corporateBags:      "{fmt_int(corporate_bags)}",\n'
-    f'  rejectBags:         "{fmt_int(reject_bags)}",\n'
+    f'  corporateClients:   {_corp_clients_js},\n'
+    f'  rejectBags:        "{fmt_int(reject_bags)}",\n'
     f'  rejectPct:          "{fmt_pct(reject_pct)}",\n'
     f'  giftBags:           "{fmt_int(gift_bags)}",\n'
     f'  giftPct:            "{fmt_pct(gift_pct)}",\n'

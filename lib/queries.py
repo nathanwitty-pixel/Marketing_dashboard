@@ -78,12 +78,16 @@ def master_products():
 MASTER_BAGS_SOLD = _load_sql("master_bags_sold.sql")
 
 
-# CORPORATE bags sold (dynamic) — from customer invoices (account_move), NOT the
-# POS tills. Counts an invoice's product-line bags once it's paid / in-payment or
-# at least 75% settled. Feeds the Sales card (added on top of POS) and the
-# Forecasted Projection (replacing the old hardcoded corporate figure).
-# Params :start_date / :end_date over invoice_date.
+# CORPORATE bags sold (dynamic) — from sales-order invoices (account_move), NOT the
+# POS tills. Counts bags × the share of the invoice paid in the period (part-paid →
+# only the paid %; the balance counts in the month it arrives). Feeds the Sales card
+# (added on top of POS) and the Forecasted Projection.
+# Params :start_date / :end_date over the payment date.
 CORPORATE_BAGS = _load_sql("corporate_bags.sql")
+
+# Same rule, one row per client/company: quoted · invoiced · paid · sold in the period.
+# Feeds the Sales card's "Corporate by client" list. Params :start_date / :end_date.
+CORPORATE_CLIENTS = _load_sql("corporate_clients.sql")
 
 
 # TOTAL BAGS SOLD — the headline "total sales" figure. Matches the Product Sales
