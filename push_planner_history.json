@@ -149,54 +149,45 @@
    "bag": "FEROZ",
    "market": "kenya",
    "action": "PUT_ON_OFFER",
-   "says": "293 in stock, sold 39 in 28 days — 210.4 days of stock. Try it as a Deal of the Week.",
-   "perDayBefore": 1.39,
-   "stockBefore": 293,
-   "move": null
-  },
-  {
-   "bag": "MINI MAYA",
-   "market": "kenya",
-   "action": "RESTOCK",
-   "says": "Sells 17.61 a day and has 6.1 days of stock left (107 units). Pause its posts until stock lands.",
-   "perDayBefore": 17.61,
-   "stockBefore": 107,
+   "says": "292 in stock, sold 38 in 28 days — 215.2 days of stock. Try it as a Deal of the Week.",
+   "perDayBefore": 1.36,
+   "stockBefore": 292,
    "move": null
   },
   {
    "bag": "ZURI",
    "market": "kenya",
    "action": "PUT_ON_OFFER",
-   "says": "138 in stock, sold 29 in 28 days — 133.2 days of stock. Try it as a Deal of the Week.",
+   "says": "145 in stock, sold 29 in 28 days — 140 days of stock. Try it as a Deal of the Week.",
    "perDayBefore": 1.04,
-   "stockBefore": 138,
+   "stockBefore": 145,
    "move": null
   },
   {
    "bag": "KAI",
    "market": "kenya",
    "action": "POST_MORE",
-   "says": "Posts turn into sales (100% of expected) but it was posted only 2 times (typical: 4). 29.2 days of stock — post it daily this week.",
-   "perDayBefore": 7.43,
-   "stockBefore": 217,
+   "says": "Posts turn into sales (100% of expected) but it was posted only 2 times (typical: 4). 30.8 days of stock — post it daily this week.",
+   "perDayBefore": 7.46,
+   "stockBefore": 230,
    "move": null
   },
   {
    "bag": "NALA",
    "market": "kenya",
    "action": "PUT_ON_OFFER",
-   "says": "62 in stock, sold 28 in 28 days — 62 days of stock. Try it as a Deal of the Week.",
+   "says": "60 in stock, sold 28 in 28 days — 60 days of stock. Try it as a Deal of the Week.",
    "perDayBefore": 1.0,
-   "stockBefore": 62,
+   "stockBefore": 60,
    "move": null
   },
   {
    "bag": "BABY BAG",
    "market": "kenya",
    "action": "PUT_ON_OFFER",
-   "says": "79 in stock, sold 31 in 28 days — 71.4 days of stock. Try it as a Deal of the Week.",
+   "says": "81 in stock, sold 31 in 28 days — 73.2 days of stock. Try it as a Deal of the Week.",
    "perDayBefore": 1.11,
-   "stockBefore": 79,
+   "stockBefore": 81,
    "move": null
   },
   {
@@ -212,42 +203,76 @@
    "bag": "MOON BAG",
    "market": "kenya",
    "action": "POST_MORE",
-   "says": "Posts turn into sales (100% of expected) but it was posted only 3 times (typical: 4). 18.8 days of stock — post it daily this week.",
-   "perDayBefore": 6.82,
-   "stockBefore": 128,
+   "says": "Posts turn into sales (100% of expected) but it was posted only 3 times (typical: 4). 16.9 days of stock — post it daily this week.",
+   "perDayBefore": 7.0,
+   "stockBefore": 118,
    "move": null
   },
   {
    "bag": "LIAM",
    "market": "kenya",
    "action": "POST_MORE",
-   "says": "Posts turn into sales (100% of expected) but it was posted only 2 times (typical: 4). 43.9 days of stock — post it daily this week.",
-   "perDayBefore": 5.11,
-   "stockBefore": 224,
+   "says": "Posts turn into sales (100% of expected) but it was posted only 2 times (typical: 4). 45.2 days of stock — post it daily this week.",
+   "perDayBefore": 4.89,
+   "stockBefore": 221,
    "move": null
+  },
+  {
+   "bag": "PRIME",
+   "market": "kenya",
+   "action": "MOVE_STOCK",
+   "says": "Move 12 from Busia (sold 0 in 14 days) to Hilton (sells 4.3 a day, 23 left).",
+   "perDayBefore": null,
+   "stockBefore": null,
+   "move": {
+    "bag": "PRIME",
+    "from": "BUSIA",
+    "to": "HILTON",
+    "qty": 12,
+    "toPerDay": 4.29,
+    "toStock": 23,
+    "says": "Move 12 from Busia (sold 0 in 14 days) to Hilton (sells 4.3 a day, 23 left)."
+   }
   },
   {
    "bag": "CODE 3",
    "market": "kenya",
    "action": "MOVE_STOCK",
-   "says": "Move 16 from Busia (sold 0 in 14 days) to Ktda (sells 4.2 a day, 4 left).",
+   "says": "Move 15 from Busia (sold 0 in 14 days) to Ktda (sells 3.9 a day, 8 left).",
    "perDayBefore": null,
    "stockBefore": null,
    "move": {
     "bag": "CODE 3",
     "from": "BUSIA",
     "to": "KTDA",
-    "qty": 16,
-    "toPerDay": 4.21,
-    "toStock": 4,
-    "says": "Move 16 from Busia (sold 0 in 14 days) to Ktda (sells 4.2 a day, 4 left)."
+    "qty": 15,
+    "toPerDay": 3.86,
+    "toStock": 8,
+    "says": "Move 15 from Busia (sold 0 in 14 days) to Ktda (sells 3.9 a day, 8 left)."
+   }
+  },
+  {
+   "bag": "ZOEZI",
+   "market": "kenya",
+   "action": "MOVE_STOCK",
+   "says": "Move 8 from Nakuru (sold 0 in 14 days) to Hilton (sells 0.7 a day, 2 left).",
+   "perDayBefore": null,
+   "stockBefore": null,
+   "move": {
+    "bag": "ZOEZI",
+    "from": "NAKURU",
+    "to": "HILTON",
+    "qty": 8,
+    "toPerDay": 0.71,
+    "toStock": 2,
+    "says": "Move 8 from Nakuru (sold 0 in 14 days) to Hilton (sells 0.7 a day, 2 left)."
    }
   },
   {
    "bag": "BRIEF CASE",
    "market": "kenya",
    "action": "MOVE_STOCK",
-   "says": "Move 10 from Mombasa (sold 0 in 14 days) to Hilton (sells 1.5 a day, 0 left).",
+   "says": "Move 10 from Mombasa (sold 0 in 14 days) to Hilton (sells 1.5 a day, 3 left).",
    "perDayBefore": null,
    "stockBefore": null,
    "move": {
@@ -256,68 +281,43 @@
     "to": "HILTON",
     "qty": 10,
     "toPerDay": 1.5,
-    "toStock": 0,
-    "says": "Move 10 from Mombasa (sold 0 in 14 days) to Hilton (sells 1.5 a day, 0 left)."
-   }
-  },
-  {
-   "bag": "ZOEZI",
-   "market": "kenya",
-   "action": "MOVE_STOCK",
-   "says": "Move 7 from Nakuru (sold 0 in 14 days) to Hilton (sells 0.7 a day, 3 left).",
-   "perDayBefore": null,
-   "stockBefore": null,
-   "move": {
-    "bag": "ZOEZI",
-    "from": "NAKURU",
-    "to": "HILTON",
-    "qty": 7,
-    "toPerDay": 0.71,
     "toStock": 3,
-    "says": "Move 7 from Nakuru (sold 0 in 14 days) to Hilton (sells 0.7 a day, 3 left)."
-   }
-  },
-  {
-   "bag": "GYM BAG",
-   "market": "kenya",
-   "action": "MOVE_STOCK",
-   "says": "Move 9 from Rongai (sold 0 in 14 days) to Ktda (sells 0.9 a day, 3 left).",
-   "perDayBefore": null,
-   "stockBefore": null,
-   "move": {
-    "bag": "GYM BAG",
-    "from": "RONGAI",
-    "to": "KTDA",
-    "qty": 9,
-    "toPerDay": 0.86,
-    "toStock": 3,
-    "says": "Move 9 from Rongai (sold 0 in 14 days) to Ktda (sells 0.9 a day, 3 left)."
+    "says": "Move 10 from Mombasa (sold 0 in 14 days) to Hilton (sells 1.5 a day, 3 left)."
    }
   },
   {
    "bag": "DOUBLE PRESS",
    "market": "kenya",
    "action": "POST_MORE",
-   "says": "Posts turn into sales (88.9% of expected) but it was posted only 3 times (typical: 4). 81.4 days of stock — post it daily this week.",
-   "perDayBefore": 2.68,
-   "stockBefore": 218,
+   "says": "Posts turn into sales (88.9% of expected) but it was posted only 3 times (typical: 4). 77.5 days of stock — post it daily this week.",
+   "perDayBefore": 2.75,
+   "stockBefore": 213,
    "move": null
   },
   {
-   "bag": "PRIME",
+   "bag": "OVAL HANDBAG",
+   "market": "kenya",
+   "action": "POST_MORE",
+   "says": "Posts turn into sales (59.3% of expected) but it was posted only 3 times (typical: 4). 26.9 days of stock — post it daily this week.",
+   "perDayBefore": 4.39,
+   "stockBefore": 118,
+   "move": null
+  },
+  {
+   "bag": "REO TRAVEL",
    "market": "kenya",
    "action": "MOVE_STOCK",
-   "says": "Move 8 from Busia (sold 0 in 14 days) to Hilton (sells 4.1 a day, 15 left).",
+   "says": "Move 8 from Kitengela (sold 0 in 14 days) to Hilton (sells 2.2 a day, 11 left).",
    "perDayBefore": null,
    "stockBefore": null,
    "move": {
-    "bag": "PRIME",
-    "from": "BUSIA",
+    "bag": "REO TRAVEL",
+    "from": "KITENGELA",
     "to": "HILTON",
     "qty": 8,
-    "toPerDay": 4.07,
-    "toStock": 15,
-    "says": "Move 8 from Busia (sold 0 in 14 days) to Hilton (sells 4.1 a day, 15 left)."
+    "toPerDay": 2.21,
+    "toStock": 11,
+    "says": "Move 8 from Kitengela (sold 0 in 14 days) to Hilton (sells 2.2 a day, 11 left)."
    }
   }
  ]

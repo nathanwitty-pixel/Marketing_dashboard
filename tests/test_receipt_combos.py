@@ -104,3 +104,33 @@ def test_pair_plus_one_at_other_price_is_combo_plus_single():
 def test_six_identical_bags_are_bulk():
     out = rc.classify([L(16, "Remi Black", 65000)] * 6, OFFERS, infer, M)
     assert out["bulk"]["receipts"] == 1 and not out["selfMade"]
+
+
+# ── offer_split (Bags on Offer › Sinza & Uganda) ──
+def test_offer_split_listed_single_on_combo_bag_alone_off():
+    lines = [L(10, "Bonita Black", 60000),                       # listed single → on offer
+             L(11, "Gym Bag Grey", 45000),                       # listed-combo bag bought alone → not on offer
+             L(12, "Remi Black", 30000)]                         # not listed at all → not on offer
+    out = rc.offer_split(lines, OFFERS, infer)
+    assert out["onSingles"] == {"BONITA": {"units": 1, "revenue": 60000}}
+    assert out["offSingles"]["GYM BAG"] == {"units": 1, "revenue": 45000, "comboBag": True}
+    assert out["offSingles"]["REMI"]["comboBag"] is False
+
+
+def test_offer_split_combos_are_on_and_self_made_bags_counted():
+    lines = [L(20, "Gym Bag Black", 41000), L(20, "Aria Sling Black", 41000),     # running combo
+             L(21, "Remi Black", 40000), L(21, "Fabela Grey", 40000)]             # self-made combo
+    out = rc.offer_split(lines, OFFERS, infer)
+    assert out["combos"]["running"] == {"count": 1, "bags": 2, "revenue": 82000}
+    assert out["combos"]["selfMade"] == {"count": 1, "bags": 2, "revenue": 80000}
+    assert out["comboBags"] == {"REMI": 1, "FABELA": 1}
+    assert not out["onSingles"] and not out["offSingles"]
+
+
+def test_offer_split_bulk_is_others_and_refund_dropped():
+    bulk = [L(30, "Remi Black", 150000, qty=5)]                  # amount = the line total (5 × 30,000)
+    refunded = [dict(L(31, "Bonita Black", 60000), ref="SINZA/001"), dict(L(32, "Bonita Black", -60000, qty=-1), ref="SINZA/001 REFUND")]
+    out = rc.offer_split(bulk + refunded, OFFERS, infer)
+    assert out["bulk"] == {"receipts": 1, "bags": 5, "revenue": 150000}
+    assert not out["onSingles"]                                   # the refunded single is gone
+    assert out["bags"] == 5 and out["revenue"] == 150000           # every bag = on + off + bulk

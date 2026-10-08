@@ -201,6 +201,7 @@ Reject Sale); this table is the per-menu spec index.
 | 5 | Bags on offer vs not on offer | [bags-on-offer.md](bags-on-offer.md) | `bags_on_offer.py` (reads `bags_offer_source.json` from `self_made_combos.py`) | `bags_on_offer.html` |
 | 6 | Posting – Sales Yields from Accurate Posting | [posting-yields.md](posting-yields.md) | `POSTING (SALES YIELDS FROM ACCURATE POSTING).py` | `POSTING (SALES YIELDS FROM ACCURATE POSTING).html` |
 | 7 | Shops Efficiency Tracking | [shops-efficiency.md](shops-efficiency.md) | `shops_dispatch.py` → `shops_efficiency.py` | `shops_efficiency.html` |
+| 7a | Shop Launch (a new shop from its first sale · Nyeri, Oct 2026) | [shop-launch.md](shop-launch.md) | `shop_launch.py` (config `shop_launch_config.json`) | `shop_launch.html` |
 | 7b | Push Planner (what to push, where, why bags aren't moving · Laya second opinion) | [push-planner.md](push-planner.md) | `push_planner.py` | `push_planner.html` |
 | — | ~~Dashboard Insights~~ (menu removed Oct 2026; `generate_insights.py` kept, not run) | [dashboard-insights.md](dashboard-insights.md) | `generate_insights.py` | `insights.html` |
 | 9 | Monthly Report | [monthly-report.md](monthly-report.md) | `monthly_report.py` | `monthly_report.html` |

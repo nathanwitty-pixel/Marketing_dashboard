@@ -80,8 +80,16 @@ Every sale is counted **once**, in the channel it actually went through (agreed 
   else the bag is on. E.g. Sep 1–24: **367 Jumbos** were printed inside combos (290 in
   Jumbo + Jumbo, 77 in Jumbo + Standard/Liam + …) → Combos.
 - **Sold singly** → the offer the single sale belongs to, in this order:
-  **Timed offer → Power Deal → Deal of the Week → Combo bag sold singly**, and if none applies → **not on offer**.
-- **Timed offer** (added 27 Sep 2026) = a single-bag sale inside a campaign from
+  **Power Deal → Deal of the Week**, and if neither applies → **not on offer**.
+- **Changed 8 Oct 2026 (user's call):** **on offer = combo sales + Power Deals + Deal of the Week only.**
+  - **A combo bag bought on its own** (no Power Deal / Deal of the Week at that shop and time) is a full-price
+    single sale, so it's **not on offer**. The *Combo bags sold singly* row is gone from both panels.
+  - **Timed-offer sales** are short sales boosts, not offers, so they're **not on offer** either, unless the
+    bag is also a Power Deal / Deal of the Week there and then. The Timed Offers menu still tracks them.
+  - Months archived before 8 Oct keep the old split.
+  - Such bags in the Not on offer list carry a tag ("combo bag" / "timed offer") so they stay recognisable
+    (`offBags[].comboBag`, `offBags[].timed`).
+- *(Until 8 Oct 2026)* **Timed offer** (added 27 Sep 2026) = a single-bag sale inside a campaign from
   `timed_offers_config.json` (the Timed Offers menu), matched **per till line** with that menu's
   own filters (`timed_offers._shop_sql / _time_sql / _price_sql / _name_sql`): its **shops**
   (empty = all Kenya), **dates** (from `clearanceStart` when set — the day the clearance really
@@ -99,6 +107,23 @@ Every sale is counted **once**, in the channel it actually went through (agreed 
   all month, so a single sale of a bag that is both (e.g. Jamela) is a Power-Deal sale; the
   722 single Jumbos (a Deal of the Week + combo bag) → Deal of the Week.
 - The rows of *Where the on-offer money comes from* therefore sum exactly to the on-offer total.
+- **Inside combos vs on its own (Oct 2026):** a panel under *Where the on-offer money comes from*, grouped by
+  running combo (Amaya/Elyse + Moon/Nizana …). Each bag shows **units inside combos** (combo prints: running and
+  self-made combos, net of refunds) next to **units sold on its own** (every single sale: Power Deal, Deal of the
+  Week or not on offer), the share inside combos, and which wins. Combo list: `combos` in
+  `bags_offer_source.json` (`self_made_combos.write_bags_offer_source`, one `{label, bags}` per running card).
+  Data: `periods[*].comboVsAlone = [{combo, bags: [{bag, inCombos, alone, aloneKes}]}]`.
+- **Row layout (Oct 2026):** each row shows its money (**KES 1.38M**) in the row's bar colour, its share of
+  on-offer money, and its units spelled out. Combo sales read "**312 combos · 647 bags**": combos rung, plus the
+  bags inside them (`comboPrints`, net of refunded combos; a 3-bag combo holds 3). The other rows read "**N bags**".
+  A one-line description sits under each label. *(Until 8 Oct 2026)* **Combo bags sold singly** read "a bag from a running combo
+  bought on its own, with no other offer; offer the combo at the till". It then lists the biggest such bags where
+  singles beat combo prints, e.g. "Big Man Bag 42 alone vs 5 in combos · Mini Umbra 41 vs 6 · Neo Man 21 vs 2"
+  (`onBags[].bySource["Combo component"]` vs `inCombos`). Each example also gives the **price it rang at on the
+  till** when bought alone: average = revenue ÷ units (`price_subtotal_incl`, so line discounts are in), with the
+  low–high range of the per shop-and-day prices, e.g. "Code 3 55 alone at KES 2,4xx avg (2,000–2,600)". Data:
+  `onBags[].revBySource[source]` (KES) and `onBags[].priceBySource[source] = [low, high]` (KES per unit, refund lines
+  left out).
 
 **Bags printed inside combos** come from Odoo's combo **sub-lines** (`sub_product_line = true`):
 one line per bag inside every combo, with the exact colour variant and a KES 0 price — they cover
@@ -155,9 +180,10 @@ the rows add up to on + not on + others):
 |---|---|
 | NOT ON OFFER | the *Not on offer* bucket |
 | POWER DEALS | single sales counted as Power Deal |
-| COMBOS | combo-button sales **+** combo bags sold singly |
+| COMBOS (button) | combo-button sales: a *Jumbo + Jumbo* is **1** unit (the combo) |
+| ~~COMBO BAGS SOLD SINGLY~~ | removed 8 Oct 2026: those sales are now NOT ON OFFER (key `SINGLE` only in data archived 8 Oct) |
 | DEAL OF WK | single sales counted as Deal of the Week |
-| MID-MONTH / OTHERS | timed-offer sales **+** samples |
+| SAMPLES | samples (was "Mid-month / others" = timed offers + samples until 8 Oct 2026; timed-offer sales are now NOT ON OFFER) |
 | GIFT BAG | gift bags |
 | CORPORATE | corporate invoices |
 
@@ -316,6 +342,38 @@ the colour is the colour **family** (`lib/colours.family` — Maroon → Red, Ch
 ## Shop birthdays
 
 Opening anniversaries from [shop-birthdays.md](shop-birthdays.md) (shown from 30 days before to 1 day after): a 🎂 badge beside the shop name in the shops table (`BOO.birthdays`).
+
+## Sinza & Uganda (Oct 2026)
+
+A **market switch** (Kenya | Sinza | Uganda) sits at the top. It defaults to Kenya, is remembered per browser, and
+uses the same period picker. Kenya is unchanged. Sinza (tills `sinza`, `dar-es-alam`, TSh) and Uganda (till `uganda`,
+USh) follow the **same on-offer rule as Kenya** (8 Oct 2026): **on offer = combo sales + the market's deal singles**.
+Those markets have no Power Deal / Deal of the Week. Their deals are the **listed singles** in `offers_monthly.csv`
+(the same list the Combos page uses), so:
+
+- **On offer:** every **combo** read from the till receipts (running + self-made), plus **single sales of a bag on
+  the market's singles list**.
+- **Not on offer:** every other single sale, including a listed-combo bag bought on its own. There are no timed
+  offers in these markets.
+- **Others:** **bulk** receipts (5+ bags), reported apart.
+
+Combos come from receipts (`lib/receipt_combos.py`): refunds dropped; 5+ bags = bulk; bags at the same unit price
+on one receipt = a combo; 2+ leftover bags at different prices = one combo; a lone bag = a single. A combo fitting a
+listed combo = running, else self-made. Delivery, gift bags and non-bag lines are ignored.
+
+**Shown per market and period:**
+- KPI cards: on / not on / others, with money, bags and share.
+- *Where the on-offer money comes from*: Running combos · Self-made combos · Listed singles.
+- On-offer and not-on-offer bag tables: bag, units, money, and bags inside self-made combos.
+
+Running combos are counted by combo, not by bag, because a receipt doesn't say which option of a slot was picked.
+Money is in TSh / USh with KSh in brackets (25 TSh = 1 KSh, 35 USh = 1 KSh).
+
+Data: `BOO.markets = {sinza, uganda}`, each `{label, currency, fx, periods: {monthly, weekly, lastweek[, custom]}}`.
+Each period has `{label, range, from, to, totals: {on, off, oth}, sources: [{label, units, revenue}],
+onBags: [{bag, units, revenue}], offBags: [{bag, units, revenue, comboBag}], comboBags: {bag: units},
+bulk: {receipts, bags, revenue}}`. Built by `receipt_combos.offer_split()`, a pure function tested in
+`tests/test_receipt_combos.py`.
 
 ## Regenerate
 

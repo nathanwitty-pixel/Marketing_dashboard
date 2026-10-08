@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="darkreader-lock" /><!-- the dashboard has its own light/dark theme -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop Launch</title>
+  <!-- Spec: docs/shop-launch.md. Render layer only — shop_launch.py replaces the SL data block. -->
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { overflow-y: scroll; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; padding: 2rem; }
+    @media (max-width: 620px) { body { padding: 1rem; } }
+    .wrap { width: 100%; max-width: 1240px; margin: 0 auto; }
+    .head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.4rem; flex-wrap: wrap; }
+    .pill { color: #fff; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+            padding: 0.3rem 0.75rem; border-radius: 999px; background: #10b981; }
+    .head h1 { font-size: 1.5rem; font-weight: 800; color: #f8fafc; }
+    .sub { font-size: 0.82rem; color: #64748b; margin-bottom: 1.4rem; line-height: 1.55; }
+    .sub b { color: #94a3b8; }
+    .status { display: inline-block; font-size: 0.72rem; font-weight: 800; padding: 0.2rem 0.6rem; border-radius: 999px;
+              background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.4); margin-right: 0.4rem; }
+    .status.wait { background: rgba(245,158,11,0.14); color: #fcd34d; border-color: rgba(245,158,11,0.4); }
+    .panel { background: #1e2130; border: 1px solid #2d3148; border-radius: 12px; padding: 1.3rem 1.4rem; margin-bottom: 1.4rem; }
+    .panel > h2 { font-size: 1.05rem; font-weight: 800; color: #f8fafc; margin-bottom: 0.3rem; }
+    .panel > .hint { font-size: 0.78rem; color: #64748b; margin-bottom: 1rem; line-height: 1.5; }
+    .panel > .hint b { color: #94a3b8; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.9rem; margin-bottom: 1.4rem; }
+    .card { background: #171a27; border: 1px solid #2d3148; border-radius: 10px; padding: 1rem 1.1rem; position: relative; overflow: hidden; }
+    .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--c, #10b981); }
+    .k-lbl { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #94a3b8; margin-bottom: 0.45rem; }
+    .k-val { font-size: 1.6rem; font-weight: 800; color: #f8fafc; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .k-sub { font-size: 0.74rem; color: #64748b; margin-top: 0.35rem; line-height: 1.45; }
+    .chart-wrap { position: relative; height: 280px; }
+    .race-note { font-size: 0.82rem; color: #cbd5e1; margin-top: 0.7rem; }
+    .race-note b { color: #f8fafc; }
+    .mk { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.8rem; }
+    .mk .idea { background: #171a27; border: 1px solid #2d3148; border-radius: 10px; padding: 0.8rem 0.95rem; font-size: 0.78rem; color: #cbd5e1; line-height: 1.5; }
+    .mk .idea b { color: #f8fafc; display: block; margin-bottom: 0.2rem; font-size: 0.82rem; }
+    .bar { display: flex; gap: 0.45rem; flex-wrap: wrap; margin: 0 0 0.9rem; align-items: center; }
+    .seg-btn { font: inherit; font-size: 0.74rem; font-weight: 600; padding: 0.32rem 0.75rem; border-radius: 999px; cursor: pointer;
+               background: #171a27; color: #94a3b8; border: 1px solid #2d3148; }
+    .seg-btn.is-active { background: #10b981; border-color: #10b981; color: #fff; }
+    input[type=search] { font: inherit; font-size: 0.78rem; padding: 0.35rem 0.7rem; border-radius: 8px; background: #171a27; color: #e2e8f0;
+                         border: 1px solid #2d3148; outline: none; min-width: 180px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+    th { text-align: left; padding: 0.5rem 0.55rem; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b;
+         border-bottom: 1px solid #2d3148; white-space: nowrap; position: sticky; top: 0; background: #1e2130; z-index: 1; }
+    td { padding: 0.45rem 0.55rem; border-top: 1px solid #262a3d; color: #cbd5e1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    td.r, th.r { text-align: right; }
+    td.nm { color: #f1f5f9; font-weight: 700; }
+    tr.bag-row { cursor: pointer; }
+    tr.bag-row:hover td { background: rgba(255,255,255,0.02); }
+    tr.cols td { background: #171a27; white-space: normal; padding: 0.5rem 0.9rem; }
+    .chip { display: inline-block; margin: 0.12rem; padding: 0.1rem 0.45rem; border-radius: 5px; font-size: 0.7rem;
+            background: #1e2130; border: 1px solid #2d3148; color: #cbd5e1; }
+    .tbl { overflow-x: auto; max-height: 70vh; overflow-y: auto; }
+    .act { display: inline-block; font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;
+           padding: 0.12rem 0.45rem; border-radius: 6px; color: var(--c); border: 1px solid var(--c); background: rgba(255,255,255,0.03); }
+    .ok { color: #34d399; font-weight: 700; } .bad { color: #f87171; font-weight: 700; } .mid { color: #fbbf24; font-weight: 700; }
+    .muted { color: #64748b; }
+    [title] { cursor: help; }
+    .empty { font-size: 0.82rem; color: #64748b; padding: 0.6rem 0; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<!-- LAUNCH_DATA_START -->
+<script>
+const SL = {"shop":"Nyeri","till":"NYERI","generated":"08 Oct 2026 14:23","opened":null,"day":0,"days":28,"workplanSource":"saved copy","stockLive":false,"postsKnown":true,"openingTotal":1243,"daily":[],"benchmark":{"shop":"Rongai","opened":"2026-04-23","daily":[[1,12,23800],[2,70,110990],[3,36,68592],[4,14,25793],[5,19,32744],[6,7,10098],[7,15,30298],[8,34,67093],[9,22,37800],[10,15,20750],[11,18,34000],[12,17,30750],[13,13,24200],[14,25,46850],[15,9,11500],[16,9,15200],[17,21,28050],[18,10,18900],[19,16,18250],[20,12,24950],[21,13,23050],[22,9,13400],[23,16,31100],[24,9,19300],[25,9,17200],[27,17,30150],[28,15,33100]]},"rows":[{"bag":"JUMBO","opening":100,"sold":0,"kes":0,"left":100,"inWorkplan":true,"postsMonth":5,"postsWeek":20,"colours":[["BLACK",30,0,30],["BROWN",20,0,20],["GREEN",20,0,20],["GREY",20,0,20],["NUDE",10,0,10]]},{"bag":"MAN BAG","opening":74,"sold":0,"kes":0,"left":74,"inWorkplan":true,"postsMonth":3,"postsWeek":15,"colours":[["BLACK",24,0,24],["BROWN",21,0,21],["GREEN",13,0,13],["GREY",11,0,11],["NUDE",5,0,5]]},{"bag":"TRAVEL","opening":72,"sold":0,"kes":0,"left":72,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["GREY",25,0,25],["BROWN",19,0,19],["BLACK",18,0,18],["GREEN",10,0,10]]},{"bag":"CODE 3","opening":69,"sold":0,"kes":0,"left":69,"inWorkplan":true,"postsMonth":9,"postsWeek":27,"colours":[["BLACK",20,0,20],["GREY",18,0,18],["BROWN",15,0,15],["GREEN",10,0,10],["NUDE",6,0,6]]},{"bag":"ANTITHEFT","opening":50,"sold":0,"kes":0,"left":50,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",15,0,15],["GREY",10,0,10],["BROWN",9,0,9],["GREEN",9,0,9],["NUDE",7,0,7]]},{"bag":"TRECENTO","opening":37,"sold":0,"kes":0,"left":37,"inWorkplan":true,"postsMonth":3,"postsWeek":6,"colours":[["BLACK",11,0,11],["DARK BROWN",7,0,7],["GREY",6,0,6],["CRACKED",4,0,4],["RED",3,0,3],["BEIGE",3,0,3],["SPICE",3,0,3]]},{"bag":"MOON BAG","opening":36,"sold":0,"kes":0,"left":36,"inWorkplan":true,"postsMonth":3,"postsWeek":6,"colours":[["BLACK",10,0,10],["GREY",7,0,7],["DARK BROWN",5,0,5],["CRACKED",5,0,5],["CHOCOLATE BROWN",3,0,3],["BEIGE",3,0,3],["SPICE",3,0,3]]},{"bag":"AURORA","opening":33,"sold":0,"kes":0,"left":33,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",10,0,10],["CRACKED",8,0,8],["BEIGE",7,0,7],["SPICE",3,0,3],["GREY",3,0,3],["RED",2,0,2]]},{"bag":"FABELA","opening":32,"sold":0,"kes":0,"left":32,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BROWN",10,0,10],["BLACK",10,0,10],["GREEN",6,0,6],["GREY",6,0,6]]},{"bag":"NIZANA","opening":31,"sold":0,"kes":0,"left":31,"inWorkplan":true,"postsMonth":3,"postsWeek":6,"colours":[["BLACK",10,0,10],["GREY",8,0,8],["CRACKED",8,0,8],["BEIGE",3,0,3],["SPICE",2,0,2]]},{"bag":"REO TRAVEL","opening":31,"sold":0,"kes":0,"left":31,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BROWN",12,0,12],["BLACK",12,0,12],["GREY",5,0,5],["GREEN",2,0,2]]},{"bag":"KATE","opening":29,"sold":0,"kes":0,"left":29,"inWorkplan":true,"postsMonth":3,"postsWeek":12,"colours":[["GREY",8,0,8],["CRACKED",6,0,6],["BEIGE",5,0,5],["BLACK",4,0,4],["RED",3,0,3],["SPICE",3,0,3]]},{"bag":"SARAI","opening":29,"sold":0,"kes":0,"left":29,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",10,0,10],["BROWN",8,0,8],["GREEN",7,0,7],["GREY",4,0,4]]},{"bag":"ZANE MAN","opening":27,"sold":0,"kes":0,"left":27,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",10,0,10],["GREY",5,0,5],["CHOCOLATE",4,0,4],["DARK BROWN",3,0,3],["SPICE",3,0,3],["CRACKED",2,0,2]]},{"bag":"ZURI","opening":25,"sold":0,"kes":0,"left":25,"inWorkplan":true,"postsMonth":3,"postsWeek":8,"colours":[["SPICE",6,0,6],["CRACKED",6,0,6],["BLACK",5,0,5],["GREY",5,0,5],["DARK BROWN",3,0,3]]},{"bag":"SAFIRI TRAVEL","opening":24,"sold":0,"kes":0,"left":24,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",9,0,9],["BROWN",5,0,5],["GREY",5,0,5],["GREEN",5,0,5]]},{"bag":"ARIA SLING","opening":22,"sold":0,"kes":0,"left":22,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["DARK BROWN",10,0,10],["BLACK",5,0,5],["GREY",4,0,4],["CRACKED",3,0,3]]},{"bag":"BELT BAG","opening":22,"sold":0,"kes":0,"left":22,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",7,0,7],["DARK BROWN",5,0,5],["CRACKED",5,0,5],["GREY",3,0,3],["SPICE",2,0,2]]},{"bag":"KAI","opening":21,"sold":0,"kes":0,"left":21,"inWorkplan":true,"postsMonth":2,"postsWeek":8,"colours":[["BLACK",11,0,11],["BROWN",5,0,5],["GREEN",3,0,3],["GREY",2,0,2]]},{"bag":"LIAM","opening":21,"sold":0,"kes":0,"left":21,"inWorkplan":true,"postsMonth":2,"postsWeek":10,"colours":[["GREY",6,0,6],["GREEN",5,0,5],["BROWN",5,0,5],["BLACK",5,0,5]]},{"bag":"PRIME","opening":21,"sold":0,"kes":0,"left":21,"inWorkplan":true,"postsMonth":4,"postsWeek":13,"colours":[["BLACK",6,0,6],["GREEN",5,0,5],["BROWN",5,0,5],["GREY",5,0,5]]},{"bag":"REMI","opening":21,"sold":0,"kes":0,"left":21,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["SPICE",9,0,9],["GREY",5,0,5],["BLACK",3,0,3],["BEIGE",2,0,2],["CRACKED",2,0,2]]},{"bag":"BIG MAN BAG","opening":20,"sold":0,"kes":0,"left":20,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",11,0,11],["GREY",7,0,7],["NUDE",2,0,2]]},{"bag":"MEGA","opening":20,"sold":0,"kes":0,"left":20,"inWorkplan":true,"postsMonth":4,"postsWeek":12,"colours":[["BLACK",6,0,6],["GREEN",5,0,5],["GREY",5,0,5],["BROWN",4,0,4]]},{"bag":"NEO MAN","opening":20,"sold":0,"kes":0,"left":20,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",8,0,8],["BROWN",6,0,6],["GREY",6,0,6]]},{"bag":"CATHY HANDBAG","opening":19,"sold":0,"kes":0,"left":19,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",7,0,7],["SPICE",5,0,5],["CRACKED",5,0,5],["GREY",2,0,2]]},{"bag":"DOUBLE PRESS","opening":18,"sold":0,"kes":0,"left":18,"inWorkplan":true,"postsMonth":3,"postsWeek":12,"colours":[["BROWN",5,0,5],["GREY",5,0,5],["BLACK",5,0,5],["GREEN",3,0,3]]},{"bag":"LOLA","opening":17,"sold":0,"kes":0,"left":17,"inWorkplan":true,"postsMonth":5,"postsWeek":17,"colours":[["BLACK",10,0,10],["GREY",4,0,4],["SPICE",2,0,2],["BEIGE",1,0,1]]},{"bag":"MINI UMBRA","opening":16,"sold":0,"kes":0,"left":16,"inWorkplan":true,"postsMonth":5,"postsWeek":14,"colours":[["GREY",7,0,7],["CRACKED",5,0,5],["BLACK",4,0,4]]},{"bag":"BUTTERFLY SLING","opening":15,"sold":0,"kes":0,"left":15,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",5,0,5],["GREY",4,0,4],["SPICE",3,0,3],["CRACKED",3,0,3]]},{"bag":"GYM BAG","opening":15,"sold":0,"kes":0,"left":15,"inWorkplan":true,"postsMonth":9,"postsWeek":28,"colours":[["BLACK",5,0,5],["GREEN",4,0,4],["BROWN",3,0,3],["GREY",3,0,3]]},{"bag":"GIFT BAG","opening":13,"sold":0,"kes":0,"left":13,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["A3",7,0,7],["A4",3,0,3],["A5",3,0,3]]},{"bag":"AVANA HB","opening":12,"sold":0,"kes":0,"left":12,"inWorkplan":true,"postsMonth":7,"postsWeek":17,"colours":[["DARK BROWN",5,0,5],["BLACK",3,0,3],["RED",2,0,2],["GREY",1,0,1],["CRACKED",1,0,1]]},{"bag":"KARINA","opening":12,"sold":0,"kes":0,"left":12,"inWorkplan":true,"postsMonth":3,"postsWeek":9,"colours":[["BLACK",4,0,4],["GREY",3,0,3],["CRACKED",3,0,3],["SPICE",2,0,2]]},{"bag":"MINI ZURI","opening":12,"sold":0,"kes":0,"left":12,"inWorkplan":true,"postsMonth":6,"postsWeek":17,"colours":[["CRACKED",4,0,4],["DARK BROWN",2,0,2],["BLACK",2,0,2],["SPICE",2,0,2],["GREY",2,0,2]]},{"bag":"SCHOOL BAG","opening":12,"sold":0,"kes":0,"left":12,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",8,0,8],["BROWN",4,0,4]]},{"bag":"ACE","opening":11,"sold":0,"kes":0,"left":11,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK TT",3,0,3],["GREY",3,0,3],["CRACKED",3,0,3],["SPICE",2,0,2]]},{"bag":"AMAYA","opening":11,"sold":0,"kes":0,"left":11,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["SPICE",4,0,4],["CRACKED",3,0,3],["DARK BROWN",2,0,2],["GREY",2,0,2]]},{"bag":"ELYSE","opening":10,"sold":0,"kes":0,"left":10,"inWorkplan":true,"postsMonth":11,"postsWeek":25,"colours":[["BLACK",7,0,7],["GREY",2,0,2],["SPICE",1,0,1]]},{"bag":"COSMO","opening":9,"sold":0,"kes":0,"left":9,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",3,0,3],["GREEN",2,0,2],["BROWN",2,0,2],["GREY",2,0,2]]},{"bag":"JAYDEN MAN","opening":9,"sold":0,"kes":0,"left":9,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BROWN",3,0,3],["BLACK",3,0,3],["GREY",3,0,3]]},{"bag":"OVAL HANDBAG","opening":9,"sold":0,"kes":0,"left":9,"inWorkplan":true,"postsMonth":3,"postsWeek":11,"colours":[["BLACK",3,0,3],["BROWN",3,0,3],["GREY",3,0,3]]},{"bag":"ARIA PRO","opening":8,"sold":0,"kes":0,"left":8,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["GREY",3,0,3],["CRACKED",3,0,3],["SPICE",2,0,2]]},{"bag":"CAIRO BP","opening":8,"sold":0,"kes":0,"left":8,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["DARK BROWN",2,0,2],["CHOCOLATE",2,0,2],["SPICE",2,0,2],["GREY",2,0,2]]},{"bag":"FAYOLA","opening":7,"sold":0,"kes":0,"left":7,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["GREEN",3,0,3],["BLACK",2,0,2],["GREY",2,0,2]]},{"bag":"PIONEER","opening":7,"sold":0,"kes":0,"left":7,"inWorkplan":true,"postsMonth":6,"postsWeek":13,"colours":[["BROWN",3,0,3],["BLACK",2,0,2],["GREY",2,0,2]]},{"bag":"LUNA","opening":6,"sold":0,"kes":0,"left":6,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",5,0,5],["BROWN",1,0,1]]},{"bag":"MINI MANBAG","opening":6,"sold":0,"kes":0,"left":6,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",3,0,3],["SPICE",3,0,3]]},{"bag":"SCOOBY","opening":6,"sold":0,"kes":0,"left":6,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["SPICE",3,0,3],["GREY",3,0,3]]},{"bag":"WASHBAG","opening":6,"sold":0,"kes":0,"left":6,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BROWN",3,0,3],["BLACK",3,0,3]]},{"bag":"ALPHA TRAVEL","opening":5,"sold":0,"kes":0,"left":5,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["GREY",5,0,5]]},{"bag":"BABY BAG","opening":5,"sold":0,"kes":0,"left":5,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BROWN",3,0,3],["GREEN",2,0,2]]},{"bag":"DON","opening":5,"sold":0,"kes":0,"left":5,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",4,0,4],["GREEN",1,0,1]]},{"bag":"FANNY PACK","opening":5,"sold":0,"kes":0,"left":5,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",5,0,5]]},{"bag":"JADE","opening":5,"sold":0,"kes":0,"left":5,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["GREY",3,0,3],["BLACK",2,0,2]]},{"bag":"JAMELA","opening":5,"sold":0,"kes":0,"left":5,"inWorkplan":true,"postsMonth":10,"postsWeek":28,"colours":[["SPICE",3,0,3],["BLACK",2,0,2]]},{"bag":"SAFIRI BP","opening":5,"sold":0,"kes":0,"left":5,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["GREY",5,0,5]]},{"bag":"TYLER","opening":5,"sold":0,"kes":0,"left":5,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BROWN",3,0,3],["GREEN",2,0,2]]},{"bag":"ZOEZI","opening":5,"sold":0,"kes":0,"left":5,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BROWN",3,0,3],["GREEN",2,0,2]]},{"bag":"COLLEGE HB","opening":4,"sold":0,"kes":0,"left":4,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["GREY",3,0,3],["BROWN",1,0,1]]},{"bag":"KAZ","opening":4,"sold":0,"kes":0,"left":4,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["GREEN",2,0,2],["BROWN",2,0,2]]},{"bag":"SIERRA HANDBAG","opening":4,"sold":0,"kes":0,"left":4,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["WOOVEN BLACK",2,0,2],["WOOVEN BROWN",2,0,2]]},{"bag":"ZIPPED LUNCHSET","opening":4,"sold":0,"kes":0,"left":4,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",2,0,2],["BROWN",2,0,2]]},{"bag":"CODE 9","opening":3,"sold":0,"kes":0,"left":3,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",3,0,3]]},{"bag":"LUNCHSET","opening":3,"sold":0,"kes":0,"left":3,"inWorkplan":true,"postsMonth":4,"postsWeek":10,"colours":[["GREEN",2,0,2],["GREY",1,0,1]]},{"bag":"MINI SCHOOL","opening":3,"sold":0,"kes":0,"left":3,"inWorkplan":true,"postsMonth":2,"postsWeek":5,"colours":[["GREY",3,0,3]]},{"bag":"BRIEF CASE","opening":2,"sold":0,"kes":0,"left":2,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",2,0,2]]},{"bag":"CLAIRE HANDBAG","opening":2,"sold":0,"kes":0,"left":2,"inWorkplan":true,"postsMonth":9,"postsWeek":18,"colours":[["BLACK",2,0,2]]},{"bag":"FEROZ","opening":2,"sold":0,"kes":0,"left":2,"inWorkplan":true,"postsMonth":5,"postsWeek":14,"colours":[["CHOCO",1,0,1],["CRACKED",1,0,1]]},{"bag":"MANDY HB","opening":2,"sold":0,"kes":0,"left":2,"inWorkplan":true,"postsMonth":2,"postsWeek":11,"colours":[["DARK BROWN",2,0,2]]},{"bag":"MAYA","opening":2,"sold":0,"kes":0,"left":2,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["LILAC",2,0,2]]},{"bag":"UMBRA","opening":2,"sold":0,"kes":0,"left":2,"inWorkplan":true,"postsMonth":0,"postsWeek":0,"colours":[["BLACK",2,0,2]]}],"other":{"bags":0,"kes":0,"names":[]}};
+</script>
+<!-- LAUNCH_DATA_END -->
+<div class="wrap">
+  <div class="head"><span class="pill">Shop launch</span><h1 id="sl-title">Shop launch</h1></div>
+  <div class="sub" id="sl-sub"></div>
+  <div class="grid" id="sl-kpis"></div>
+
+  <div class="panel">
+    <h2 id="sl-race-h">Race vs the last launch</h2>
+    <div class="hint" id="sl-race-hint"></div>
+    <div class="chart-wrap"><canvas id="sl-race" role="img" aria-label="Cumulative bags sold by launch day"></canvas></div>
+    <div class="race-note" id="sl-race-note"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Marketing for the launch</h2>
+    <div class="hint">Posts are recorded <b>per market, not per shop</b>, so this uses the <b>Kenya</b> posts
+      (MONTHLY / WEEKLY_MARKETING_POST) on the bags this shop stocks. Weekly posts are a week in arrears.</div>
+    <div class="mk" id="sl-mk"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Every bag in the opening stock</h2>
+    <div class="hint">Opening stock from the workplan; <b>sold</b> at this till since day 1; <b>left</b> = live Odoo
+      on-hand at the shop once stock is there, else opening &minus; sold. <b>Tap a bag</b> for its colours.</div>
+    <div class="bar">
+      <span id="sl-filters"></span>
+      <input type="search" id="sl-q" placeholder="Find a bag…" aria-label="Find a bag" />
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>Bag</th><th class="r">Opening</th><th class="r">Sold</th><th class="r">Sell-through</th><th class="r">Left</th>
+        <th class="r" title="Kenya posts this month (MONTHLY_MARKETING_POST)">Posts · month</th>
+        <th class="r" title="Kenya posts last week (WEEKLY_MARKETING_POST, a week in arrears)">Posts · last wk</th><th>Marketing</th></tr></thead>
+      <tbody id="sl-body"></tbody>
+    </table></div>
+    <div class="empty" id="sl-other"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var fmt = function (n) { return Math.round(n || 0).toLocaleString('en-US'); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var title = function (t) { return String(t).toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); }); };
+  var $ = function (id) { return document.getElementById(id); };
+  var D = SL, rows = D.rows || [], open = !!D.opened, bm = D.benchmark || {}, bmName = bm.shop || 'benchmark';
+  var sold = rows.reduce(function (a, r) { return a + r.sold; }, 0) + ((D.other || {}).bags || 0);
+  var kes = rows.reduce(function (a, r) { return a + r.kes; }, 0) + ((D.other || {}).kes || 0);
+  var opening = D.openingTotal || 0, left = rows.reduce(function (a, r) { return a + (r.inWorkplan ? r.left : 0); }, 0);
+  var soldWp = rows.reduce(function (a, r) { return a + (r.inWorkplan ? r.sold : 0); }, 0);
+  var dayN = D.day || 0;
+  var openedTxt = D.opened ? new Date(D.opened + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+
+  $('sl-title').textContent = D.shop + ' launch';
+  $('sl-race-h').textContent = 'Race vs ' + bmName + '’s launch';
+  $('sl-sub').innerHTML = (open
+      ? '<span class="status">Day ' + dayN + '</span>since the first sale on <b>' + openedTxt + '</b>'
+      : '<span class="status wait">Not open yet</span>the ' + esc(D.till) + ' till hasn’t sold a bag; the opening stock below is ready')
+    + ' · opening stock from the <b>' + esc(D.workplanSource || '') + '</b>'
+    + (D.workplanSource === 'saved copy' ? ' (share the workplan sheet with the dashboard’s Google account to read it live)' : '')
+    + ' · built ' + esc(D.generated || '');
+
+  // ── KPIs ──
+  var bmDays = (bm.daily || []).filter(function (d) { return d[0] <= Math.max(dayN, 1); });
+  var bmSold = bmDays.reduce(function (a, d) { return a + d[1]; }, 0);
+  var perDay = dayN ? sold / dayN : 0, bmPerDay = dayN ? bmSold / dayN : 0;
+  var card = function (lbl, val, sub, c) { return '<div class="card" style="--c:' + c + '"><div class="k-lbl">' + lbl + '</div><div class="k-val">' + val + '</div><div class="k-sub">' + sub + '</div></div>'; };
+  var st = opening ? soldWp / opening * 100 : 0;
+  $('sl-kpis').innerHTML =
+      card('Bags sold', fmt(sold), open ? 'since ' + openedTxt : 'not open yet', '#10b981')
+    + card('Revenue', 'KES ' + fmt(kes), open ? 'at the ' + esc(D.till) + ' till' : '—', '#22d3ee')
+    + card('Sell-through', st.toFixed(1) + '%', fmt(soldWp) + ' of ' + fmt(opening) + ' opening bags', '#8b5cf6')
+    + card('Bags per day', open ? perDay.toFixed(1) : '—', open ? bmName + ' did <b style="color:' + (perDay >= bmPerDay ? '#34d399' : '#fbbf24') + '">' + bmPerDay.toFixed(1) + '</b>/day over its first ' + dayN + ' day' + (dayN === 1 ? '' : 's') : bmName + ' sold ' + fmt((bm.daily || []).filter(function (d) { return d[0] <= 7; }).reduce(function (a, d) { return a + d[1]; }, 0)) + ' bags in its first week', '#f59e0b')
+    + card('Stock left', fmt(open || D.stockLive ? left : opening), D.stockLive ? 'live Odoo on-hand at the shop' : 'opening − sold (no stock in Odoo at the shop yet)', '#64748b');
+
+  // ── Race: cumulative bags by launch day ──
+  var N = D.days || 28, cum = function (daily) {
+    var by = {}; (daily || []).forEach(function (d) { by[d[0]] = d[1]; });
+    var out = [], c = 0; for (var i = 1; i <= N; i++) { c += by[i] || 0; out.push(c); } return out;
+  };
+  var me = cum(D.daily), them = cum(bm.daily);
+  me = open ? me.slice(0, Math.min(dayN, N)) : [];     // no line until the first sale
+  $('sl-race-hint').innerHTML = 'Cumulative bags sold by launch day (day 1 = the first bag sold). ' + bmName + '’s day 1 was <b>'
+    + (bm.opened ? new Date(bm.opened + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—') + '</b>.';
+  if (window.Chart) {
+    new Chart($('sl-race'), {
+      type: 'line',
+      data: { labels: Array.from({ length: N }, function (_, i) { return 'Day ' + (i + 1); }),
+        datasets: [{ label: D.shop, data: me, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.12)', fill: true, tension: 0.25, pointRadius: 2 },
+                   { label: bmName, data: them, borderColor: '#94a3b8', borderDash: [5, 4], fill: false, tension: 0.25, pointRadius: 0 }] },
+      options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { labels: { color: '#cbd5e1' } },
+          tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': ' + fmt(c.raw) + ' bags'; } } } },
+        scales: { x: { grid: { display: false }, ticks: { color: '#94a3b8', maxTicksLimit: 14 } },
+                  y: { grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: '#64748b' } } } }
+    });
+  }
+  if (open) {
+    var at = Math.min(dayN, N), mine = me[at - 1] || 0, theirs = them[at - 1] || 0, gap = mine - theirs;
+    $('sl-race-note').innerHTML = 'Day ' + at + ': <b>' + fmt(mine) + '</b> bags vs ' + bmName + '’s <b>' + fmt(theirs) + '</b> → '
+      + (gap >= 0 ? '<span class="ok">ahead by ' + fmt(gap) + '</span>' : '<span class="bad">behind by ' + fmt(-gap) + '</span>') + '.';
+  } else {
+    $('sl-race-note').innerHTML = 'The line for ' + esc(D.shop) + ' starts on its first sale. ' + bmName + ' reached <b>' + fmt(them[6]) + '</b> bags by day 7, <b>'
+      + fmt(them[13]) + '</b> by day 14 and <b>' + fmt(them[N - 1]) + '</b> by day ' + N + ': the bar to beat.';
+  }
+
+  // ── Marketing verdicts ──
+  var verdict = function (r) {
+    if (!D.postsKnown) return null;
+    var posted = (r.postsMonth || 0) > 0;
+    if (!open) return posted ? ['Posted this month', '#60a5fa'] : ['Not posted this month', '#64748b'];
+    if (posted && r.sold > 0) return ['Posted & selling', '#34d399'];
+    if (posted) return ['Posted, not selling', '#f87171'];
+    if (r.sold > 0) return ['Selling without posts', '#fbbf24'];
+    return ['Not posted, not selling', '#64748b'];
+  };
+  var stocked = rows.filter(function (r) { return r.inWorkplan; });
+  var posted = stocked.filter(function (r) { return (r.postsMonth || 0) > 0; });
+  var thru = function (lst) { var o = 0, s = 0; lst.forEach(function (r) { o += r.opening; s += r.sold; }); return o ? s / o * 100 : 0; };
+  var unposted = stocked.filter(function (r) { return !((r.postsMonth || 0) > 0); });
+  var top = function (lst) { return lst.slice().sort(function (a, b) { return b.opening - a.opening; }).slice(0, 5).map(function (r) { return esc(title(r.bag)) + ' (' + fmt(r.opening) + ')'; }).join(', '); };
+  $('sl-mk').innerHTML = !D.postsKnown ? '<div class="empty">Posting sheet unavailable at the last build.</div>'
+    : '<div class="idea"><b>' + posted.length + ' of ' + stocked.length + ' stocked bags posted this month</b>Kenya posts on the bags in the opening stock. Biggest stocked bags not posted: ' + (top(unposted) || 'none') + '.</div>'
+    + '<div class="idea"><b>Sell-through: posted ' + thru(posted).toFixed(1) + '% vs not posted ' + thru(unposted).toFixed(1) + '%</b>'
+      + (open ? 'Of the opening stock of posted vs unposted bags, how much has sold here.' : 'Fills in once the shop sells.') + '</div>'
+    + (open ? '<div class="idea"><b>' + rows.filter(function (r) { var v = verdict(r); return v && v[0] === 'Selling without posts'; }).length + ' bags selling without posts</b>They sell here with no Kenya posts this month: candidates to post. '
+      + rows.filter(function (r) { var v = verdict(r); return v && v[0] === 'Posted, not selling'; }).length + ' are posted but haven’t sold here yet.</div>' : '');
+
+  // ── Bag table ──
+  var FILTERS = [['all', 'All'], ['Posted & selling', 'Posted & selling'], ['Posted, not selling', 'Posted, not selling'],
+                 ['Selling without posts', 'Selling, no posts'], ['Not posted, not selling', 'Neither']];
+  if (!open) FILTERS = [['all', 'All'], ['Posted this month', 'Posted'], ['Not posted this month', 'Not posted']];
+  var mode = 'all', openBag = {};
+  $('sl-filters').innerHTML = D.postsKnown ? FILTERS.map(function (f) { return '<button type="button" class="seg-btn' + (f[0] === mode ? ' is-active' : '') + '" data-f="' + esc(f[0]) + '">' + esc(f[1]) + '</button>'; }).join(' ') : '';
+  var draw = function () {
+    var q = ($('sl-q').value || '').trim().toUpperCase();
+    var list = rows.filter(function (r) {
+      var v = verdict(r);
+      return (!q || r.bag.indexOf(q) >= 0) && (mode === 'all' || (v && v[0] === mode));
+    });
+    $('sl-body').innerHTML = list.map(function (r) {
+      var v = verdict(r), stp = r.opening ? r.sold / r.opening * 100 : null;
+      var row = '<tr class="bag-row" data-bag="' + esc(r.bag) + '"><td class="nm">' + esc(title(r.bag)) + (r.inWorkplan ? '' : ' <span class="muted" title="Sold here but not in the opening stock (workplan)">· not in workplan</span>') + '</td>'
+        + '<td class="r">' + fmt(r.opening) + '</td><td class="r">' + fmt(r.sold) + '</td>'
+        + '<td class="r ' + (stp === null ? 'muted' : stp >= 50 ? 'ok' : stp > 0 ? 'mid' : 'muted') + '">' + (stp === null ? '—' : stp.toFixed(0) + '%') + '</td>'
+        + '<td class="r">' + fmt(r.left) + '</td>'
+        + '<td class="r">' + (r.postsMonth == null ? '–' : fmt(r.postsMonth)) + '</td><td class="r">' + (r.postsWeek == null ? '–' : fmt(r.postsWeek)) + '</td>'
+        + '<td>' + (v ? '<span class="act" style="--c:' + v[1] + '">' + v[0] + '</span>' : '') + '</td></tr>';
+      if (openBag[r.bag]) {
+        row += '<tr class="cols"><td colspan="8">' + (r.colours || []).map(function (c) {
+          return '<span class="chip">' + esc(title(c[0])) + ' · <b>' + fmt(c[1]) + '</b> opening · <b style="color:#6ee7b7">' + fmt(c[2]) + '</b> sold · ' + fmt(c[3]) + ' left</span>';
+        }).join('') + '</td></tr>';
+      }
+      return row;
+    }).join('') || '<tr><td colspan="8" class="empty">No bags match.</td></tr>';
+  };
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest && ev.target.closest('#sl-filters .seg-btn');
+    if (b) { mode = b.getAttribute('data-f'); [].forEach.call(document.querySelectorAll('#sl-filters .seg-btn'), function (x) { x.classList.toggle('is-active', x === b); }); draw(); return; }
+    var tr = ev.target.closest && ev.target.closest('tr.bag-row');
+    if (tr) { var k = tr.getAttribute('data-bag'); openBag[k] = !openBag[k]; draw(); }
+  });
+  $('sl-q').addEventListener('input', draw);
+  draw();
+  var o = D.other || {};
+  $('sl-other').innerHTML = o.bags ? '<b>' + fmt(o.bags) + '</b> bags sold here didn’t match a workplan bag (counted in Bags sold, not in sell-through): '
+    + o.names.map(function (n) { return esc(n[0]) + ' ' + fmt(n[1]); }).join(' · ') : '';
+})();
+</script>
+</body>
+</html>

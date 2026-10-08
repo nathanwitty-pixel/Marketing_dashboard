@@ -135,6 +135,19 @@
     {
       "order": 10,
       "section": "Marketing",
+      "label": "Shop Launch",
+      "html": "shop_launch.html",
+      "title": "Shop Launch",
+      "scripts": [
+        "shop_launch.py"
+      ],
+      "icon": "rocket_launch",
+      "purpose": "A new shop from its first sale: sell-through of its opening stock, a race against the last launch, and the Kenya posts on its bags",
+      "short": "Launch"
+    },
+    {
+      "order": 11,
+      "section": "Marketing",
       "label": "Push Planner",
       "html": "push_planner.html",
       "title": "Push Planner",
@@ -147,7 +160,7 @@
       "password_secret": "PUSH_PLANNER_PASSWORD"
     },
     {
-      "order": 11,
+      "order": 12,
       "section": "Marketing",
       "label": "Bag Signals",
       "html": "bag_signals.html",
@@ -161,7 +174,7 @@
       "password_secret": "BAG_SIGNALS_PASSWORD"
     },
     {
-      "order": 12,
+      "order": 13,
       "section": "Intelligence",
       "label": "Monthly Report",
       "html": "monthly_report.html",
@@ -174,7 +187,7 @@
       "short": "Monthly Report"
     },
     {
-      "order": 13,
+      "order": 14,
       "section": "Intelligence",
       "label": "History",
       "html": "history.html",

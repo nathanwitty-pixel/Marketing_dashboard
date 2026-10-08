@@ -639,6 +639,16 @@ so you see what customers prefer to pair the bag with. **Combo cards only** — 
 from the receipt date) — shown as `3 Oct, 4 Oct ×2` beside the combo in the self-made list and in the
 "What people chose instead" hover.
 
+### Sinza & Uganda — self-made combos vs singles, per bag (Oct 2026)
+
+Under *Bags clients keep pairing*, each region view lists every bag that sold this month with **bags in self-made combos**
+(each self-made combo's bags × times sold; a combo holding a bag twice counts it twice) against **bags sold singly**
+(receipts with exactly one bag, from the same receipt rule), the singles' money, the share in self-made combos, a tag
+(**more in self-made** / **more as singles** / **even**), whether the bag is on that market's list, and its stock there.
+Sorted by total. Running (listed) combos aren't split by bag, because a receipt doesn't say which option of a slot was
+picked; they're in the running cards above. Bulk receipts (5+ bags) are left out, as everywhere.
+Data: `SMC.regions[r].receipts.bagSplit = [{bag, selfMade, singles, singlesValue, inOfficial, stock}]`.
+
 ### Sinza & Uganda — last month vs this month (Oct 2026)
 
 Like Kenya, each region view's offer panel has **no Sales vs Stock Guidance chart** — its **Sort** / **Stock**

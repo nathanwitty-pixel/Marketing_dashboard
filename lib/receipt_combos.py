@@ -79,11 +79,8 @@ def _fits(bags, slots):
     return any(all(b in slots[i] for b, i in zip(bags, perm)) for perm in itertools.permutations(range(len(slots))))
 
 
-def classify(lines, offers, infer, month_start):
-    """lines: [{receipt, d, product, qty, amount}] → per-market summary:
-    {running: {offer: {count, revenue, weeks{wk: n}}}, selfMade: {label: {...}}, singles: {bag: {...}},
-     singlesOffer: {offer: {...}}, bulk: {receipts, bags, revenue}, receipts, comboReceipts}."""
-    anchor = month_start - datetime.timedelta(days=(month_start.weekday() + 1) % 7)   # Sunday on/before day 1
+def _receipts(lines, infer):
+    """Receipt lines → {receipt: {d, bags: [(bag, unit)], ref}} with refunded receipts dropped; also the refund count."""
     by_r, refunded = {}, set()
     for ln in lines:
         k = bag_key(ln["product"], infer)
@@ -97,7 +94,72 @@ def classify(lines, offers, infer, month_start):
         unit = int(round(float(ln["amount"] or 0) / q, -1))     # to the nearest 10: 40,000 = 40,001
         rec = by_r.setdefault(ln["receipt"], {"d": ln["d"], "bags": [], "ref": ref})
         rec["bags"] += [(k, unit)] * q
-    by_r = {k: v for k, v in by_r.items() if not v["ref"] or v["ref"] not in refunded}
+    return {k: v for k, v in by_r.items() if not v["ref"] or v["ref"] not in refunded}, refunded
+
+
+def _groups(bags):
+    """One receipt's [(bag, unit)] → ([(bags, revenue)] combos, [(bag, unit)] singles): same unit price = a
+    combo per price; two or more leftover bags at different prices = one more combo; one leftover = a single."""
+    groups = {}
+    for k, unit in bags:
+        groups.setdefault(unit, []).append(k)
+    combos, left = [], []
+    for unit, bs in groups.items():
+        if len(bs) >= 2:
+            combos.append((bs, unit * len(bs)))
+        else:
+            left.append((bs[0], unit))
+    if len(left) >= 2:                        # sold together at different prices = one combo
+        combos.append(([b for b, _ in left], sum(u for _, u in left)))
+        left = []
+    return combos, left
+
+
+def offer_split(lines, offers, infer):
+    """On / not on offer for Sinza / Uganda (docs/bags-on-offer.md › Sinza & Uganda): every combo (running or
+    self-made) and single sales of a bag on the market's listed singles are ON offer; every other single is NOT
+    on offer; 5+ bag receipts are bulk (others). Returns {combos: {running: {count, bags, revenue}, selfMade:
+    {…}}, onSingles: {bag: {units, revenue}}, offSingles: {bag: {units, revenue, comboBag}}, bulk: {receipts,
+    bags, revenue}, comboBags: {bag: units in self-made combos}, bags, revenue}."""
+    recs, _ = _receipts(lines, infer)
+    listed_singles = {b for o in (offers or {}).get("singles", []) for slot in o["slots"] for b in slot}
+    listed_combo_bags = {b for o in (offers or {}).get("combos", []) for slot in o["slots"] for b in slot}
+    out = {"combos": {"running": {"count": 0, "bags": 0, "revenue": 0}, "selfMade": {"count": 0, "bags": 0, "revenue": 0}},
+           "onSingles": {}, "offSingles": {}, "bulk": {"receipts": 0, "bags": 0, "revenue": 0}, "comboBags": {},
+           "bags": sum(len(v["bags"]) for v in recs.values()),
+           "revenue": sum(u for v in recs.values() for _, u in v["bags"])}
+    for rec in recs.values():
+        if len(rec["bags"]) >= BULK_MIN:
+            out["bulk"]["receipts"] += 1
+            out["bulk"]["bags"] += len(rec["bags"])
+            out["bulk"]["revenue"] += sum(u for _, u in rec["bags"])
+            continue
+        combos, left = _groups(rec["bags"])
+        for bags, rev in combos:
+            running = any(_fits(bags, o["slots"]) for o in (offers or {}).get("combos", []))
+            c = out["combos"]["running" if running else "selfMade"]
+            c["count"] += 1
+            c["bags"] += len(bags)
+            c["revenue"] += rev
+            if not running:
+                for b in bags:
+                    out["comboBags"][b.lstrip("*")] = out["comboBags"].get(b.lstrip("*"), 0) + 1
+        for b, unit in left:
+            side = out["onSingles"] if b in listed_singles else out["offSingles"]
+            e = side.setdefault(b.lstrip("*"), {"units": 0, "revenue": 0})
+            e["units"] += 1
+            e["revenue"] += unit
+            if side is out["offSingles"]:
+                e["comboBag"] = b in listed_combo_bags
+    return out
+
+
+def classify(lines, offers, infer, month_start):
+    """lines: [{receipt, d, product, qty, amount}] → per-market summary:
+    {running: {offer: {count, revenue, weeks{wk: n}}}, selfMade: {label: {...}}, singles: {bag: {...}},
+     singlesOffer: {offer: {...}}, bulk: {receipts, bags, revenue}, receipts, comboReceipts}."""
+    anchor = month_start - datetime.timedelta(days=(month_start.weekday() + 1) % 7)   # Sunday on/before day 1
+    by_r, refunded = _receipts(lines, infer)
     out = {"running": {}, "selfMade": {}, "singles": {}, "singlesOffer": {},
            "bulk": {"receipts": 0, "bags": 0, "revenue": 0}, "receipts": len(by_r), "comboReceipts": 0,
            "refunded": len(refunded),
@@ -122,18 +184,7 @@ def classify(lines, offers, infer, month_start):
             out["bulk"]["bags"] += len(rec["bags"])
             out["bulk"]["revenue"] += sum(u for _, u in rec["bags"])
             continue
-        groups = {}
-        for k, unit in rec["bags"]:
-            groups.setdefault(unit, []).append(k)
-        combos, left = [], []                     # [(bags, revenue)], [(bag, price)]
-        for unit, bags in groups.items():
-            if len(bags) >= 2:
-                combos.append((bags, unit * len(bags)))
-            else:
-                left.append((bags[0], unit))
-        if len(left) >= 2:                        # sold together at different prices = one combo
-            combos.append(([b for b, _ in left], sum(u for _, u in left)))
-            left = []
+        combos, left = _groups(rec["bags"])     # [(bags, revenue)], [(bag, price)]
         for bags, rev in combos:
             offer = next((o["name"] for o in (offers or {}).get("combos", []) if _fits(bags, o["slots"])), None)
             if offer:
@@ -148,6 +199,20 @@ def classify(lines, offers, infer, month_start):
                 bump(out["singlesOffer"], offer, None, unit, wk)
         out["comboReceipts"] += bool(combos)
     return out
+
+
+def market_lines(market, start, end):
+    """Receipt lines for a market's tills between start and end (inclusive), or None if offline."""
+    try:
+        df = db.run_query(RECEIPT_LINES_SQL.replace(":tills", "(" + ", ".join("'" + t + "'" for t in TILLS[market]) + ")"),
+                          {"s": start.isoformat(), "e": end.isoformat()})
+    except Exception as e:                                   # noqa: BLE001
+        print(f"  {market} receipts unavailable: {e}")
+        return None
+    if df is None:
+        return None
+    return [{"receipt": r.receipt, "ref": r.ref, "d": r.d, "product": r.product, "qty": r.qty, "amount": r.amount}
+            for r in df.itertuples(index=False)]
 
 
 def market_summary(market, month_start, month_end, infer, month_name=None):

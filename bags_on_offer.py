@@ -149,7 +149,10 @@ WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', '
 # several offers goes to the first of these — a timed-offer campaign is how the sale was
 # actually priced; a Power Deal runs at every shop all month, so it wins over a Deal of the
 # Week; a combo bag sold singly is the fallback.
-_SOURCE_ORDER = ["Timed offer", "Power Deal", "Deal of the Week", "Combo component"]
+# On offer (8 Oct 2026) = combo sales + Power Deal + Deal of the Week. A combo bag bought on its own and a
+# timed-offer sale are NOT on offer (full-price single / a short sales boost) — docs/bags-on-offer.md.
+_SOURCE_ORDER = ["Power Deal", "Deal of the Week"]
+_TAG_ORDER = ["Timed offer", "Power Deal", "Deal of the Week", "Combo component"]   # which offers a bag is in
 _NON_KENYA = ("SINZA", "DAR-ES-ALAM", "UGANDA", "?")
 
 # Non-offer POS sales counted under "Others" (with corporate invoices): name prefix → group.
@@ -159,11 +162,11 @@ _OTHER_GROUPS = (("GIFT BAG", "Gift bags"), ("SAMPLE", "Samples"))
 
 # ── Offer type summary (matrix) ──
 # Rows, in display order. Every sale lands in exactly one (see docs/bags-on-offer.md).
-OFFER_ROWS = [("OFF", "Not on offer"), ("POWER", "Power deals"), ("COMBOS", "Combos"),
-              ("DOW", "Deal of wk"), ("MID", "Mid-month / others"), ("GIFT", "Gift bag"),
+OFFER_ROWS = [("OFF", "Not on offer"), ("POWER", "Power deals"), ("COMBOS", "Combos (button)"),
+              ("DOW", "Deal of wk"), ("MID", "Samples"), ("GIFT", "Gift bag"),
               ("CORP", "Corporate")]
-_ROW_OF_SOURCE = {"Combo sale": "COMBOS", "Combo component": "COMBOS", "Power Deal": "POWER",
-                  "Deal of the Week": "DOW", "Timed offer": "MID"}
+# Combo bags sold singly are bags bought on their own, not combos — their own row (Oct 2026).
+_ROW_OF_SOURCE = {"Combo sale": "COMBOS", "Power Deal": "POWER", "Deal of the Week": "DOW"}
 _ROW_OF_OTHER = {"Gift bags": "GIFT", "Samples": "MID"}
 # The 18 bag categories (offer sheet, bag_names tab) — "Top 5" + "Other 13".
 CATEGORIES = ["BABY BAG", "BACKPACK", "BRIEFCASE", "CHEST BAG", "GIFT BAG", "HANDBAG", "HOOD",
@@ -354,6 +357,62 @@ def _base_windows(today, m_start, m_end, ws, d):
     }
 
 
+_MARKETS = (("sinza", "Sinza", "TSh"), ("uganda", "Uganda", "USh"))
+
+
+def _market_periods(wins, today):
+    """Sinza & Uganda on / not on offer per period, from till receipts (docs/bags-on-offer.md › Sinza & Uganda):
+    on = every combo + single sales of a listed single; not on = every other single; others = bulk receipts."""
+    from lib import receipt_combos as rc
+    infer, _ = smc.bag_classifier(set())
+    lo = min(w["start"] for w in wins.values())
+    hi = min(max(w["end"] for w in wins.values()), today)
+    as_date = lambda v: v if isinstance(v, datetime.date) and not isinstance(v, datetime.datetime) else datetime.date.fromisoformat(str(v)[:10])
+    blank = lambda: {"units": 0, "revenue": 0}
+    out = {}
+    for key, label, cur in _MARKETS:
+        lines = rc.market_lines(key, lo, hi)
+        if lines is None:
+            continue
+        for ln in lines:
+            ln["d"] = as_date(ln["d"])
+        cur_offers = rc.load_offers(today.strftime("%B"), key)
+        periods = {}
+        for pk, w in wins.items():
+            s, e = w["start"], w["end"]
+            offers = rc.load_offers(s.strftime("%B"), key) or cur_offers
+            sp = rc.offer_split([ln for ln in lines if s <= ln["d"] <= e], offers, infer)
+            run, sm = sp["combos"]["running"], sp["combos"]["selfMade"]
+            on_s = sp["onSingles"]
+            on = {"units": run["bags"] + sm["bags"] + sum(v["units"] for v in on_s.values()),
+                  "revenue": run["revenue"] + sm["revenue"] + sum(v["revenue"] for v in on_s.values())}
+            off = {"units": sum(v["units"] for v in sp["offSingles"].values()),
+                   "revenue": sum(v["revenue"] for v in sp["offSingles"].values())}
+            oth = {"units": sp["bulk"]["bags"], "revenue": sp["bulk"]["revenue"]}
+            periods[pk] = {
+                "label": w["label"], "range": f"{s:%d %b} – {e:%d %b %Y}", "from": s.isoformat(), "to": e.isoformat(),
+                "totals": {"on": on, "off": off, "oth": oth},
+                "sources": [{"label": "Running combos", "units": run["count"], "bags": run["bags"], "revenue": run["revenue"]},
+                            {"label": "Self-made combos", "units": sm["count"], "bags": sm["bags"], "revenue": sm["revenue"]},
+                            {"label": "Listed singles", "units": sum(v["units"] for v in on_s.values()), "bags": sum(v["units"] for v in on_s.values()),
+                             "revenue": sum(v["revenue"] for v in on_s.values())}],
+                "onBags": sorted(({"bag": b, **v, "inSelfMade": sp["comboBags"].get(b, 0)} for b, v in on_s.items()),
+                                 key=lambda x: (-x["revenue"], x["bag"])),
+                "offBags": sorted(({"bag": b, **v, "inSelfMade": sp["comboBags"].get(b, 0)} for b, v in sp["offSingles"].items()),
+                                  key=lambda x: (-x["revenue"], x["bag"])),
+                "comboBags": sp["comboBags"], "bulk": sp["bulk"],
+                "receiptBags": sp["bags"], "receiptRevenue": sp["revenue"],
+                "offersListed": bool(offers),
+            }
+        out[key] = {"label": label, "currency": cur, "fx": smc.FX_PER_KSH.get(cur), "periods": periods}
+        m = periods.get("monthly", {})
+        if m:
+            t = m["totals"]
+            print(f"  {label:7} monthly: on {t['on']['units']} bags / {cur} {t['on']['revenue']:,} · "
+                  f"not on {t['off']['units']} / {cur} {t['off']['revenue']:,} · bulk {t['oth']['units']}")
+    return out
+
+
 def _pick_target(rows, shop, period, start, end):
     """Latest target row for `shop` with this period that overlaps [start, end]. A custom range
     sums each overlapping month target × the share of that month's days inside the range."""
@@ -423,13 +482,21 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
             src["revenue"] += rev
             if srcs[0] != "Combo sale":
                 b = on_bags.setdefault(bag, {"bag": bag, "sources": offers, "isNew": is_new,
-                                             "bySource": {}, **blank()})
+                                             "bySource": {}, "revBySource": {}, "priceBySource": {}, **blank()})
                 b["units"] += u
                 b["revenue"] += rev
                 b["bySource"][srcs[0]] = b["bySource"].get(srcs[0], 0) + u
+                # money per source + the low–high till price (per shop-day line; refunds left out)
+                b["revBySource"][srcs[0]] = b["revBySource"].get(srcs[0], 0) + rev
+                if u > 0 and rev > 0:
+                    p = round(rev / u)
+                    lo_hi = b["priceBySource"].setdefault(srcs[0], [p, p])
+                    lo_hi[0], lo_hi[1] = min(lo_hi[0], p), max(lo_hi[1], p)
         elif side == "off":
             # "dowElsewhere": a Deal-of-the-Week bag sold at a shop / in a week the deal wasn't running.
-            b = off_bags.setdefault(bag, {"isNew": is_new, "dowElsewhere": "Deal of the Week" in offers, **blank()})
+            b = off_bags.setdefault(bag, {"isNew": is_new, "dowElsewhere": "Deal of the Week" in offers,
+                                          "comboBag": "Combo component" in offers, "timed": False, **blank()})
+            b["timed"] = b["timed"] or bool(r.get("timed"))
             b["units"] += u
             b["revenue"] += rev
         elif side == "oth":
@@ -542,9 +609,11 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
             continue
         side, bt, srcs, is_new, offers = classify(bag)
         if side == "on":
-            on_bags[bag] = {"bag": bag, "sources": offers or srcs, "isNew": is_new, "bySource": {}, **blank()}
+            on_bags[bag] = {"bag": bag, "sources": offers or srcs, "isNew": is_new, "bySource": {},
+                            "revBySource": {}, "priceBySource": {}, **blank()}
         elif side == "off":
-            off_bags[bag] = {"isNew": is_new, "dowElsewhere": False, **blank()}
+            off_bags[bag] = {"isNew": is_new, "dowElsewhere": False, "comboBag": "Combo component" in offers,
+                             "timed": False, **blank()}
 
     off_list = []
     for bag, v in off_bags.items():
@@ -553,6 +622,7 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
         x = cover.get(bag) or extra_off.get(bag, {})
         off_list.append({"bag": bag, "isNew": v["isNew"], "units": v["units"], "revenue": v["revenue"],
                          "dowElsewhere": v.get("dowElsewhere", False),
+                         "comboBag": v.get("comboBag", False), "timed": v.get("timed", False),
                          # combo prints are shown once — on the on-offer row when the bag has one
                          "inCombos": 0 if bag in on_bags else in_combos.get(bag, 0),
                          "stock": x.get("stock"), "avgPerDay": x.get("avgPerDay"),
@@ -599,6 +669,7 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
         "totals": tot,
         "others": [{"label": k, **v} for k, v in others.items()],
         "comboPrints": sum(in_combos.values()),
+        "inCombosByBag": in_combos,
         "unclassifiedNames": sorted(unc_names)[:40],
         "unclassifiedCount": len(unc_names),
         "trend": trend_rows,
@@ -681,7 +752,7 @@ def fetch():
             for match, srcs in per_name:
                 if match(bt):
                     tags += [x for x in srcs if x not in tags]
-            return sorted(tags, key=lambda x: _SOURCE_ORDER.index(x) if x in _SOURCE_ORDER else 99)
+            return sorted(tags, key=lambda x: _TAG_ORDER.index(x) if x in _TAG_ORDER else 99)
 
         cache = {}
 
@@ -729,14 +800,14 @@ def fetch():
             else:
                 wk, loc = (d - anchor_m).days // 7 + 1, _shop_label(shop)
                 dow_ok = any(wk in weeks and loc in locs for weeks, locs in runs)
-            srcs = ["Timed offer"] if timed else []
-            srcs += [x for x in ("Power Deal",) if x in static]
+            # Counted on offer only through a Power Deal or a Deal of the Week (8 Oct 2026); a timed-offer
+            # sale or a combo bag bought alone is not on offer (it still carries the tag in all_offers).
+            srcs = [x for x in ("Power Deal",) if x in static]
             if dow_ok:
                 srcs.append("Deal of the Week")
-            srcs += [x for x in ("Combo component",) if x in static]
             all_offers = sorted(set(static) | ({"Deal of the Week"} if runs else set())
                                 | ({"Timed offer"} if timed or bt in timed_bags else set()),
-                                key=lambda x: _SOURCE_ORDER.index(x) if x in _SOURCE_ORDER else 99)
+                                key=lambda x: _TAG_ORDER.index(x) if x in _TAG_ORDER else 99)
             return ("on" if srcs else "off", bt, srcs, is_new, all_offers)
         return infer, base, classify
 
@@ -927,6 +998,27 @@ def fetch():
     periods = {k: _build_period(w, lines, till, corp, targets, classify, extra_off, w.get("anchor", month_anchor),
                                 prints, cover, seg_of)
                for k, w in wins.items()}
+    # Inside combos vs on its own, per running combo (docs/bags-on-offer.md › Inside combos vs on its own).
+    combo_list = src.get("combos") or []
+    for P in periods.values():
+        singles = {}
+        for lst in (P["onBags"], P["offBags"]):
+            for b in lst:
+                u, k = singles.get(b["bag"], (0, 0))
+                singles[b["bag"]] = (u + (b.get("units") or 0), k + (b.get("revenue") or 0))
+        prints = P.pop("inCombosByBag", {}) or {}
+        out = []
+        for c in combo_list:
+            keys = []
+            for n in c.get("bags") or []:
+                bt = infer(n) if n else None
+                if bt and bt not in keys:
+                    keys.append(bt)
+            rows = [{"bag": bt, "inCombos": prints.get(bt, 0), "alone": singles.get(bt, (0, 0))[0],
+                     "aloneKes": singles.get(bt, (0, 0))[1]} for bt in keys]
+            if any(r["inCombos"] or r["alone"] for r in rows):
+                out.append({"combo": c.get("label", ""), "bags": rows})
+        P["comboVsAlone"] = out
     # Tier + category on every bag row, for the bag tables' Tier tags / filter.
     for P in periods.values():
         for lst in (P["onBags"], P["offBags"]):
@@ -955,6 +1047,8 @@ def fetch():
         "newProducts": new_names,
         "menu4NotOnOfferRevenue": nof.get("notOnOfferRevenue"),
         "periods": periods,
+        # Sinza & Uganda, same on-offer rule, from till receipts (docs/bags-on-offer.md › Sinza & Uganda)
+        "markets": _market_periods(wins, today),
     }
 
 

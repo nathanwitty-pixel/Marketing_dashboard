@@ -1518,7 +1518,21 @@ def _apply_receipt_offers(regions, m_start, m_end, stocks):
         top = sorted(freq, key=lambda b: (-freq[b], b))[:6]
         top_bags = [{"bag": b.lstrip("*"), "times": freq[b], "combos": inn[b], "inOfficial": b in listed,
                      "stock": int(stock.get(b, 0))} for b in top]
-        reg["receipts"] = {"source": "POS receipts", "selfMade": sm,
+        # Per bag: bags inside self-made combos vs bags sold singly (docs › self-made combos vs singles, per bag).
+        split = {}
+        for v in summ["selfMade"].values():
+            for b in v.get("bags") or []:
+                e = split.setdefault(b.lstrip("*"), {"selfMade": 0, "singles": 0, "singlesValue": 0})
+                e["selfMade"] += v["count"]
+        for b, v in summ["singles"].items():
+            e = split.setdefault(b.lstrip("*"), {"selfMade": 0, "singles": 0, "singlesValue": 0})
+            e["singles"] += v["count"]
+            e["singlesValue"] += v["revenue"]
+        listed_plain = {b.lstrip("*") for b in listed}
+        bag_split = sorted(({"bag": b, **e, "inOfficial": b in listed_plain, "stock": int(stock.get(b, 0))}
+                            for b, e in split.items()),
+                           key=lambda x: (-(x["selfMade"] + x["singles"]), x["bag"]))
+        reg["receipts"] = {"source": "POS receipts", "selfMade": sm, "bagSplit": bag_split,
                            "smTotals": tot(summ["selfMade"]), "runTotals": tot(summ["running"]), "topBags": top_bags,
                            "selfMadeCount": sum(x["count"] for x in sm),
                            "runningCount": sum(v["count"] for v in summ["running"].values()),
@@ -2428,6 +2442,10 @@ def write_bags_offer_source(payload):
                             "locations": d.get("locations") or []}
                            for d in deals.get("dealOfWeek", [])],
                "bagsNotOnOffer": payload.get("bagsNotOnOffer", {}),
+               # Running combos and their bags — Bags on Offer's "inside combos vs on its own" panel.
+               "combos": [{"label": rc.get("sheetLabel") or rc.get("name", ""),
+                           "bags": [b.get("name", "") for b in rc.get("bags", [])]}
+                          for rc in payload.get("runningCards", [])],
                # Kenya stock per bag type (sheet + Odoo live fallback) — so every bag on
                # the Bags on/off offer page gets stock + days of cover.
                "stockMap": {str(k).strip().upper(): int(v or 0)
