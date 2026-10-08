@@ -254,6 +254,22 @@ Columns (revenue / units / share toggle): **All**, **Top 5 categories**, **Other
 > `📞 12 waiting · 2 online · 10 walk-in`; popover header: `12 still waiting · 15 asked, 3 already bought` (entry
 > `asked` = gross). The separate **"Waiting now"** toggles were removed (redundant). On Combos the Marketing guide's
 > 📞 and "remind all N" are the same number.
+> **Call now vs waiting (Oct 2026):** a still-waiting client counts as **📲 call now** when their bag is in stock at
+> the shop where they asked. If they named a colour, that colour must be in stock there. Everyone else stays **📞 waiting**
+> (no stock at their shop yet). A person is "call now" if any of their requests for that bag is in stock. Entry
+> `callNow` = those people (`lib/oos_callbacks.attach_stock(..., rows=…)`). The chip reads **📲 11 call now · 📞 1
+> waiting** when anyone can be called. Otherwise it stays as before (**📞 N waiting · online · walk-in**). The popover
+> header repeats the split, and the online / walk-in totals stay in the popover. Example (8 Oct 2026): all 12 Amaya
+> clients asked at shops that hold Amaya (Hilton 21, Starmall 11, Mombasa 25 …), so 11 are "call now" and 1 is still
+> waiting (Thika, Black: 0 there).
+> **Popover (8 Oct 2026):** hover or tap a bag's 📞 chip for the full popover: the call-now / waiting header and what
+> "call now" means, the "N asked, M already bought" line, the Online / Walk-in totals, By shop (with stock) and
+> By colour, then the source note.
+> **"No colour"** = the request didn't name a colour (e.g. a lead that just says "Amaya"). The popover labels it
+> "No colour given".
+> **Combo requests:** a request whose product names a whole combo (contains "+", e.g. "Amaya Handbag or Elyse
+> Handbag + Moon Bag or Nizana") is **not** counted on any single bag. It counts only on that combo's
+> "📞 clients to convert" chip (Combos page). The bag matcher used to file it under the first bag (Amaya).
 > **Long popovers scroll:** the pointer can move from the chip onto the popover (220 ms grace) and it stays open
 > while hovered, scrolled or clicked inside; scrolling the page or moving away closes it.
 

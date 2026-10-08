@@ -887,9 +887,10 @@ def _np_oos_key(name):
 
 
 _np_oos_colour = lambda n: _odoo_colour(n, _np_oos_key(n) or "")      # exact colour, shades kept
-np_oos = oos_callbacks.aggregate(oos_callbacks.load_rows(), key_fn=_np_oos_key, colour_fn=_np_oos_colour,
-                                 custom=NP_CUSTOM)
-oos_callbacks.attach_stock(np_oos, _np_oos_key, _np_oos_colour)       # each shop's live on-hand
+_np_oos_rows = oos_callbacks.load_rows()
+np_oos = oos_callbacks.aggregate(_np_oos_rows, key_fn=_np_oos_key, colour_fn=_np_oos_colour, custom=NP_CUSTOM)
+# each shop's live on-hand + "call now" (still waiting, bag / colour in stock where they asked)
+oos_callbacks.attach_stock(np_oos, _np_oos_key, _np_oos_colour, rows=_np_oos_rows, custom=NP_CUSTOM)
 print(f"  OOS call-backs        : {sum(v['total'] for v in np_oos.get('lifetime', {}).values())} people asked (lifetime) "
       f"for {len(np_oos.get('lifetime', {}))} of {len(_np_names)} new products")
 

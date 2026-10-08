@@ -135,6 +135,17 @@ def _safe(fn, arg):
         return None
 
 
+def is_combo_request(product):
+    """True when the request names a whole combo ("Amaya Handbag or Elyse Handbag + Moon Bag or Nizana")."""
+    return "+" in str(product or "")
+
+
+def combo_key_fn(fn):
+    """Mark a key_fn as combo-aware: collect() then passes combo-named requests to it too."""
+    fn.combo_ok = True
+    return fn
+
+
 def collect(rows, key_fn=None, shop_filter=None, today=None, colour_fn=None, custom=None):
     """{period: {key: {shop: set(person)}}}. key_fn(product) → the page's bag key, or None to
     drop the product; shop_filter(row) → False to leave a shop out (e.g. a market scope).
@@ -147,7 +158,11 @@ def collect(rows, key_fn=None, shop_filter=None, today=None, colour_fn=None, cus
         if shop_filter and not shop_filter(r):
             continue
         if r["product"] not in keys:
-            keys[r["product"]] = _safe(key_fn, r["product"]) if key_fn else r["product"]
+            # A combo-named request counts on that combo only (combo_key_fn), never on its first bag.
+            if key_fn and is_combo_request(r["product"]) and not getattr(key_fn, "combo_ok", False):
+                keys[r["product"]] = None
+            else:
+                keys[r["product"]] = _safe(key_fn, r["product"]) if key_fn else r["product"]
             if colour_fn:
                 cols[r["product"]] = _safe(colour_fn, r["product"]) or "No colour"
         k = keys[r["product"]]
@@ -234,11 +249,15 @@ def oos_by_bag_shop(today=None):
             for p, bags in sets.items()}
 
 
-def attach_stock(block, key_fn, colour_fn=None, stock_by_code=None):
+def attach_stock(block, key_fn, colour_fn=None, stock_by_code=None, rows=None, shop_filter=None,
+                 today=None, custom=None):
     """Add each shop's live on-hand to an aggregate() block, in place: every [shop, people]
     (bag level and under each colour) becomes [shop, people, stock], stock = that shop's units of
     the bag (or of that colour), matched with the page's own key_fn / colour_fn. stock is None for
-    a shop with no stock location (Website — online). stock_by_code = {CODE: {NAME: qty}} (tests)."""
+    a shop with no stock location (Website — online). stock_by_code = {CODE: {NAME: qty}} (tests).
+    With rows (the same rows / shop_filter / today / custom given to aggregate()), each entry also
+    gets "callNow" = still-waiting people whose bag is in stock at the shop they asked at (the colour
+    they named, when they named one) — call them now; total − callNow are still waiting for stock."""
     if not block:
         return block
     if stock_by_code is None:
@@ -273,4 +292,20 @@ def attach_stock(block, key_fn, colour_fn=None, stock_by_code=None):
             e["shops"] = [[s, n, stk(bag, (k,), s)] for s, n, *_ in e["shops"]]
             for c in e.get("colours", []):
                 c[2] = [[s, n, stk(col, (k, c[0]), s)] for s, n, *_ in c[2]]
+
+    if rows is not None:
+        def in_stock(r):
+            k = _safe(key_fn, r["product"])
+            if not k:
+                return False
+            c = (_safe(colour_fn, r["product"]) or "No colour") if colour_fn else "No colour"
+            n = stk(col, (k, c), r["shop"]) if c != "No colour" else stk(bag, (k,), r["shop"])
+            return bool(n and n > 0)
+
+        ready = [r for r in rows if not r["purchased"] and in_stock(r)]
+        sets = collect(ready, key_fn, shop_filter, today, None, custom)
+        for p, bags in block.items():
+            for k, e in bags.items():
+                shops = sets.get(p, {}).get(k, {})
+                e["callNow"] = len(set().union(*shops.values())) if shops else 0
     return block

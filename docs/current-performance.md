@@ -79,6 +79,32 @@ refunds netted, → `PERF.samples` / `customBags` / `customFees`):
   (`'%customization%'` — a service line, **not** in Sales). The tooltip gives the split.
 Sep 2026: 4 samples, 1 customised bag, 0 customisation charges.
 
+**Corporate by client** (Sales popover, `sql/corporate_clients.sql` → `PERF.corporateClients`):
+one row per client: quoted · invoiced · paid % · sold. In the Invoiced column, a **month badge** marks
+when each counted invoice was raised (`invMonths`, Oct 2026), so you can see which month a client
+converted. This month's badge is **green** (quoted and invoiced this month). Older months are **grey**
+(invoiced then, paid this month). Those older ones are also listed in the "Why Aug / Sep invoices are
+here" note (`earlier`, `earlierPaidOn`). A client with only a quote gets no badge. A NULL month from
+the DB is blank, never "nan".
+**Quoted, explained (Oct 2026):** Quoted = bags on quotations dated this month (declined / cancelled left out),
+whether or not they became an invoice. Under each Quoted figure, a small tag says what became of the quote:
+**invoiced 2 Oct** (green) when an invoice (not cancelled) was raised from it (`invoice.quote_id`), otherwise its
+status, **draft / sent / accepted · not invoiced** (grey). Several quotes read "1 invoiced · 1 not invoiced".
+Hovering the figure lists each quote: number, status, quoted on, bags, KES, then "→ invoiced as INV-… (status)
+on …" or "→ not invoiced yet, valid until …" (`quotes` in `sql/corporate_clients.sql` → `quotes`). Example
+(8 Oct 2026): Zakale 10 = QUO-00062, invoiced as INV-00134 (paid) on 2 Oct. safarilink 100 = QUO-00064, sent 5 Oct,
+not invoiced yet; its 100 under Invoiced is a different, older August invoice. (A separate Pending column was
+tried on 8 Oct and dropped in favour of this.)
+**Whole bags only (Oct 2026):** a part-paid invoice counts the **whole** bags its payment covers, rounded
+down per invoice (`FLOOR`, in both `corporate_bags.sql` and `corporate_clients.sql`). So the Sales card's
+"N corporate", the table's Sold total and Forward Projections always agree. Example: CIArb paid 75% of
+250 bags = 187.5, which counts as 187; the half bag counts when the balance arrives. Before, the card rounded the
+total (312.5 → 312) while the table rounded each client (187.5 → 188, total 313).
+**Layout (Oct 2026):** the whole client area (table, the "Why …" note and the legend) is one scrolling box
+(`.corp-scroll`, max 300 px, about the donut column's height). The column header is pinned at the top and
+shows the **totals** beside each name: Quoted · Invoiced · Paid (all paid ÷ all agreed, after WHT) · Sold.
+They stay in view while you scroll.
+
 ## Data sources
 
 - **MONTHLY_TARGET** sheet: col C target, D sales, E deficit (summed).

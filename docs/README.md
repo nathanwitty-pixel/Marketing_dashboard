@@ -150,6 +150,24 @@ the seconds so far. When the rebuild ends, the app reruns and the new page swaps
 per page, shared by every viewer. A Refresh or range change made while one is running is queued to run
 straight after it.
 
+**Hover popovers (Oct 2026), one rule on every page:**
+- A popover you can read or scroll gets a **220 ms grace** after the pointer leaves its trigger, so you can
+  cross the gap onto it.
+- It **stays open while the pointer is on it**, and closes once the pointer has left both the trigger and the popover.
+- Entering a **different** trigger (the next row, tile or chip) while one is open **waits 220 ms** before
+  swapping, and the swap is cancelled if the pointer reaches the popover. Moving down across the next row no
+  longer replaces it.
+- Click or tap still pins.
+
+Covered:
+- `oos_chip.js` (📞 chips on New Products, Combos and Bags on Offer).
+- Combos: shop self-made table (`#smc-smshop-table`) and Deal-of-the-Week shop / category tooltips (`wireDowHover`).
+- New Products: KPI card popovers (`attachNpPopover`), KPI tiles (`npTilePopover`) and colour-guidance tiles (`cgPop`).
+- Current Performance: Sales card (`attachPopover`, already compliant).
+
+Exempt: browser `title` tooltips, the Posting Yields chart label that follows the cursor (nothing to read
+inside), and the Combos "shares …" CSS popover (it sits flush on its chip).
+
 **Navigation:** there is no sidebar. One sticky top bar (like `shell.html`'s header) holds the brand,
 every page as a pill tab (a `?page=` link, so reloads and shared links keep the page and theme), the
 Light/Dark switch, contact and the owner card. The tab track scrolls left ↔ right (`top_nav.js`); below

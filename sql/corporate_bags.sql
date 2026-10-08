@@ -26,6 +26,8 @@ paid AS (
     GROUP BY inv.id, inv.bags, inv.agreed
 )
 SELECT COUNT(*)                                                                      AS invoices,
-       COALESCE(ROUND(SUM(bags * LEAST(paid / NULLIF(agreed, 0), 1))), 0)::int     AS bags,
+       -- whole bags paid for, rounded down per invoice (same rule as corporate_clients.sql, so the
+       -- Sales card and the client table always agree); the tiny epsilon guards float error (12.9999 → 13)
+       COALESCE(SUM(FLOOR((bags * LEAST(paid / NULLIF(agreed, 0), 1))::numeric + 0.000001)), 0)::int AS bags,
        COALESCE(SUM(bags), 0)::int                                                   AS invoiced_bags
 FROM paid

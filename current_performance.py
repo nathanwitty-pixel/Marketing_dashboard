@@ -273,6 +273,16 @@ def corporate_from_db():
         pass
     return 0
 
+def _txt(v):
+    """A text cell from a query row: '' for NULL / NaN."""
+    return "" if v is None or v != v else str(v)
+
+def _months(v):
+    """'2026-09,2026-10' → [{"m": "Sep", "cur": False}, {"m": "Oct", "cur": True}], oldest first."""
+    this = datetime.date.today().strftime("%Y-%m")
+    return [{"m": datetime.date(int(k[:4]), int(k[5:7]), 1).strftime("%b"), "cur": k == this}
+            for k in sorted(set(_txt(v).split(","))) if k]
+
 def corporate_clients_from_db():
     """Current month's corporate activity per client (quoted · invoiced · paid · sold) for
     the Sales card's "Corporate by client" list. [] when the DB isn't reachable."""
@@ -287,8 +297,12 @@ def corporate_clients_from_db():
             return [{"client": str(r["client"]), "quoted": int(r["quoted"] or 0),
                      "invoiced": int(r["invoiced"] or 0), "agreedKes": int(r["agreed_kes"] or 0),
                      "paidKes": int(r["paid_kes"] or 0), "sold": round(float(r["sold"] or 0)),
-                     "earlier": str(r["earlier"] or ""),
-                     "earlierPaidOn": str(r["earlier_paid_on"] or "")}
+                     # NULL comes back as NaN (truthy, and NaN != NaN), so `or ""` alone printed "nan"
+                     "earlier": _txt(r["earlier"]), "earlierPaidOn": _txt(r["earlier_paid_on"]),
+                     # the quotes behind "quoted": [{no, status, on, until, bags, kes, invoice}, …]
+                     "quotes": [dict(zip(("no", "status", "on", "until", "bags", "kes", "invoice"), q.split("~")))
+                                for q in _txt(r["quotes"]).split("|") if q.count("~") == 6],
+                     "invMonths": _months(r["inv_months"])}
                     for _, r in df.iterrows()]
     except Exception:
         pass

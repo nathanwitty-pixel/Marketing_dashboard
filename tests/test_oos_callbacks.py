@@ -66,7 +66,8 @@ def _kai(name):
 def test_rekey_unions_people_not_counts():
     b = oc.aggregate(ROWS, key_fn=_kai, today=datetime.date(2026, 9, 20))["lifetime"]
     assert set(b) == {"KAI"}                                  # DRAWER REPAIR dropped
-    assert dict(map(tuple, b["KAI"]["shops"])) == {"Hilton": 1, "Thika": 2, "Uganda": 1}
+    # NET: a bought at Thika, so only b is still waiting there
+    assert dict(map(tuple, b["KAI"]["shops"])) == {"Hilton": 1, "Thika": 1, "Uganda": 1}
     assert b["KAI"]["total"] == 3                             # a counted once across shades + shops
 
 
@@ -91,8 +92,8 @@ def test_shops_sorted_high_to_low():
 def test_colours_break_down_each_bag():
     col = lambda n: n.split()[-1]
     b = oc.aggregate(ROWS, key_fn=_kai, colour_fn=col, today=datetime.date(2026, 9, 20))["lifetime"]["KAI"]
-    cols = {c: (n, dict(map(tuple, shops))) for c, n, shops in b["colours"]}
-    assert cols == {"Black": (3, {"Hilton": 1, "Thika": 2, "Uganda": 1}), "Brown": (1, {"Hilton": 1})}
+    cols = {c: (n, dict(map(tuple, shops))) for c, n, shops, *_ in b["colours"]}   # 4th item = channel split
+    assert cols == {"Black": (3, {"Hilton": 1, "Thika": 1, "Uganda": 1}), "Brown": (1, {"Hilton": 1})}
     assert b["total"] == 3 and dict(map(tuple, b["shops"]))["Hilton"] == 1   # shades merged per shop
 
 
@@ -105,6 +106,34 @@ def test_attach_stock_per_shop_and_colour():
     assert {s: st for s, _, st in e["shops"]} == {"Hilton": 4, "Thika": 2, "Uganda": None}
     black = {s: st for s, _, st in next(c for c in e["colours"] if c[0] == "Black")[2]}
     assert black == {"Hilton": 4, "Thika": 0, "Uganda": None}     # Thika holds Brown only
+
+
+def test_call_now_needs_the_named_colour_in_stock_at_their_shop():
+    col = lambda n: n.split()[-1].title()
+    blk = oc.aggregate(ROWS, key_fn=_kai, colour_fn=col, today=datetime.date(2026, 9, 20))
+    stock = {"HTN": {"KAI BLACK": 4, "KAI BROWN": 0}, "THK": {"KAI BROWN": 2}}
+    oc.attach_stock(blk, _kai, col, stock_by_code=stock, rows=ROWS, today=datetime.date(2026, 9, 20))
+    e = blk["lifetime"]["KAI"]
+    # a: Hilton Black in stock → call now. b: Thika Black, Thika holds Brown only → waiting. c: Uganda, no shelf.
+    assert e["total"] == 3 and e["callNow"] == 1
+
+
+def test_call_now_without_a_colour_uses_the_bag_stock():
+    rows = [{"date": D, "shop": "Thika", "kind": "shop", "person": "x", "purchased": False, "product": "Kai"}]
+    kai = lambda n: "KAI" if n.upper().startswith("KAI") else None
+    blk = oc.aggregate(rows, key_fn=kai, colour_fn=lambda n: None, today=datetime.date(2026, 9, 20))
+    oc.attach_stock(blk, kai, lambda n: None, stock_by_code={"THK": {"KAI BROWN": 2}}, rows=rows,
+                    today=datetime.date(2026, 9, 20))
+    assert blk["lifetime"]["KAI"]["callNow"] == 1
+
+
+def test_combo_request_stays_off_single_bags():
+    rows = [{"date": D, "shop": "Hilton", "kind": "shop", "person": "y", "purchased": False,
+             "product": "Kai Black + Moon Bag"}]
+    assert oc.aggregate(rows, key_fn=_kai, today=datetime.date(2026, 9, 20)) == {"lifetime": {}, "monthly": {}, "weekly": {},
+                                                                                 "lastweek": {}, "current": {}}
+    combo = oc.combo_key_fn(lambda p: "COMBO" if oc.is_combo_request(p) else None)
+    assert oc.aggregate(rows, key_fn=combo, today=datetime.date(2026, 9, 20))["lifetime"]["COMBO"]["total"] == 1
 
 
 # ── offline ──────────────────────────────────────────────────

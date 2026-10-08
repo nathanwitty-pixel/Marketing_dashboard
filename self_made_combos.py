@@ -2322,6 +2322,18 @@ def _add_noffer_posts(payload):
               f"{sum(1 for x in lst if x['posts'])} of {len(lst)} bags posted this month ({sum(x['posts'] for x in lst)} posts)")
 
 
+def _norm_combo(name):
+    """A combo name compared loosely: lower case, letters / digits / '+' only."""
+    return re.sub(r"[^a-z0-9+]", "", str(name or "").lower())
+
+
+def _safe_infer(infer, name):
+    try:
+        return infer(name) if name else None
+    except Exception:                                        # noqa: BLE001 — an odd option just drops out
+        return None
+
+
 def _add_oos(payload):
     """Out of stock — call back (WhatsApp Monitoring): distinct people who asked for each bag while
     it was out of stock, per shop, per market — SMC.oos = {kenya|sinza|uganda: {period: {bag: …}}}.
@@ -2338,8 +2350,34 @@ def _add_oos(payload):
         from lib import stock as _lstock
         from lib.odoo_tabs import STOCK_CODE_TO_SHOP
         _stk = _lstock.odoo_stock_by_shop_code(tuple(STOCK_CODE_TO_SHOP))
-        for blk in payload["oos"].values():
-            oos_callbacks.attach_stock(blk, infer, colours.family, stock_by_code=_stk)
+        for m, blk in payload["oos"].items():     # + "call now": still waiting, bag / colour in stock where they asked
+            oos_callbacks.attach_stock(blk, infer, colours.family, stock_by_code=_stk, rows=rows, shop_filter=markets[m])
+    # Per running combo (Kenya): clients to convert = distinct people still waiting for ANY bag in
+    # the combo (name split on "+" and "or" / "/"). Spec: docs/self-made-combos.md › Per combo.
+    payload["oosCombo"] = {}
+    for rc in payload.get("runningCards", []) if rows else []:
+        keys = {_safe_infer(infer, opt.strip()) for part in re.split(r"\s*\+\s*", rc["name"])
+                for opt in re.split(r"\s+or\s+|/", part, flags=re.I)} - {None, ""}
+        if not keys:
+            continue
+        me = _norm_combo(rc["name"])
+        blk = oos_callbacks.aggregate(rows, shop_filter=markets["kenya"], key_fn=oos_callbacks.combo_key_fn(
+            lambda p, ks=keys, me=me: "COMBO" if (_norm_combo(p) == me if oos_callbacks.is_combo_request(p)
+                                                  else infer(p) in ks) else None))
+        # Of those, the people who asked for the combo itself (its name, not one of its bags).
+        whole_blk = oos_callbacks.aggregate(rows, shop_filter=markets["kenya"], key_fn=oos_callbacks.combo_key_fn(
+            lambda p, me=me: "COMBO" if oos_callbacks.is_combo_request(p) and _norm_combo(p) == me else None))
+        label = rc.get("sheetLabel") or rc["name"]
+        ent = {}
+        for p, e in blk.items():
+            if not (e.get("COMBO") or {}).get("total"):
+                continue
+            w = (whole_blk.get(p) or {}).get("COMBO") or {}
+            # where they asked: [[shop, people, online, walk-in], …] high → low
+            where = [[s, n] + (w.get("shopCh") or {}).get(s, [0, 0]) for s, n in w.get("shops", [])]
+            ent[p] = {"total": e["COMBO"]["total"], "whole": w.get("total", 0), "wholeShops": where}
+        if ent:
+            payload["oosCombo"][label] = ent
     shown = {b["name"] for rc in payload.get("runningCards", []) for b in rc.get("bags", [])}
     for reg in (payload.get("regions") or {}).values():
         for g in reg.get("groups", []):

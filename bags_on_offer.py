@@ -938,9 +938,11 @@ def fetch():
     def oos_key(name):
         kind, bt = base(name)[:2]
         return bt if kind == "bag" else None
-    oos = oos_callbacks.aggregate(oos_callbacks.load_rows(), key_fn=oos_key, colour_fn=colours.family,
-                                  shop_filter=lambda r: r["kind"] != "region" and r["shop"].upper() != "SINZA")
-    oos_callbacks.attach_stock(oos, oos_key, colours.family)          # each shop's live on-hand
+    oos_rows = oos_callbacks.load_rows()
+    kenya = lambda r: r["kind"] != "region" and r["shop"].upper() != "SINZA"
+    oos = oos_callbacks.aggregate(oos_rows, key_fn=oos_key, colour_fn=colours.family, shop_filter=kenya)
+    # each shop's live on-hand + "call now" (still waiting, bag / colour in stock where they asked)
+    oos_callbacks.attach_stock(oos, oos_key, colours.family, rows=oos_rows, shop_filter=kenya)
     shown = {b["bag"] for P in periods.values() for lst in (P["onBags"], P["offBags"]) for b in lst}
     print(f"  OOS call-backs: {len(oos.get('lifetime', {}))} bags asked for (lifetime), "
           f"{len(shown & set(oos.get('lifetime', {})))} of {len(shown)} table bags have asks")

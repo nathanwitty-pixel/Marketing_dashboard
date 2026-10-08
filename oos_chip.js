@@ -26,6 +26,7 @@
     '.oos-chip{display:inline-flex;align-items:center;gap:0.25rem;padding:0.08rem 0.45rem;border-radius:999px;' +
     'font-size:0.68rem;font-weight:600;line-height:1.5;white-space:nowrap;cursor:pointer;user-select:none;' +
     'background:rgba(245,158,11,0.14);color:#fcd34d;border:1px solid rgba(245,158,11,0.35);vertical-align:middle}' +
+    '.oos-chip.call{background:rgba(16,185,129,0.13);border-color:rgba(16,185,129,0.4)}.oos-chip .cn{color:#6ee7b7;font-weight:700}' +
     '.oos-chip.wait{background:rgba(239,68,68,0.14);color:#fca5a5;border-color:rgba(239,68,68,0.38)}' +
     '.oos-chip:hover,.oos-chip:focus-visible,.oos-chip.on{border-color:#f59e0b;outline:none}' +
     '.oos-pop{position:fixed;z-index:9999;max-width:min(300px,calc(100vw - 24px));padding:0.6rem 0.75rem;' +
@@ -67,9 +68,15 @@
   function chip(entry, waiting, bag) {
     if (!entry || !entry.total) return '';
     var id = reg.push({ e: entry, w: !!waiting, b: bag || '' }) - 1;
-    return '<span class="oos-chip' + (waiting ? ' wait' : '') + '" tabindex="0" role="button" data-oos="' + id + '"' +
-      ' aria-label="' + esc(bag ? bag + ': ' : '') + entry.total + ' people still waiting for it — show shops">' +
-      '📞 ' + entry.total + ' waiting' + split(entry) + '</span>';
+    // Some can be called now (their bag / colour is in stock where they asked): "📲 11 call now · 📞 1 waiting";
+    // the online / walk-in split then lives in the popover. Nobody to call yet: "📞 N waiting · online · walk-in".
+    var call = Math.min(entry.callNow || 0, entry.total), wait = entry.total - call;
+    var label = call
+      ? '<b class="cn">📲 ' + call + ' call now</b>' + (wait ? '<span class="sp">· 📞 ' + wait + ' waiting</span>' : '')
+      : '📞 ' + entry.total + ' waiting' + split(entry);
+    return '<span class="oos-chip' + (waiting ? ' wait' : '') + (call ? ' call' : '') + '" tabindex="0" role="button" data-oos="' + id + '"' +
+      ' aria-label="' + esc(bag ? bag + ': ' : '') + (call ? call + ' to call now (in stock at their shop), ' + wait + ' still waiting'
+        : entry.total + ' people still waiting for it') + ' — show shops">' + label + '</span>';
   }
 
   // " · 7 online · 17 walk-in" (only the channels with people; nothing for an old entry without the split)
@@ -80,6 +87,7 @@
     if (e.walkin) p.push('<b class="w">' + e.walkin + '</b> walk-in');
     return p.length ? '<span class="sp">· ' + p.join(' · ') + '</span>' : '';
   }
+
   // the per-shop channel tags: "1 online" "5 walk-in"
   function chTags(ch) {
     if (!ch) return '';
@@ -91,6 +99,7 @@
     if (openFor) openFor.classList.remove('on');
     openFor = null;
   }
+
 
   // "Mombasa 2 · 0 stk" — [shop, people, stock]; stock null = no shelf (Website → online).
   function shopItem(s, chMap) {
@@ -108,13 +117,16 @@
     if (!pop) {
       pop = document.createElement('div'); pop.className = 'oos-pop'; pop.setAttribute('role', 'tooltip'); document.body.appendChild(pop);
       // The pointer can move onto the popover (to scroll its list) without it closing.
-      pop.addEventListener('mouseenter', keep);
+      pop.addEventListener('mouseenter', function () { keep(); clearTimeout(swapT); });
       pop.addEventListener('mouseleave', function (ev) {
         if (openFor && !openFor.__tapped && !(ev.relatedTarget && openFor.contains(ev.relatedTarget))) later();
       });
     }
     pop.innerHTML = '<div class="h">' + (it.b ? '<span class="bg">' + esc(it.b) + '</span> — ' : '') +
-      it.e.total + ' still waiting</div>' +
+      (it.e.callNow
+        ? '<span style="color:#6ee7b7">' + Math.min(it.e.callNow, it.e.total) + ' to call now</span> · ' + (it.e.total - Math.min(it.e.callNow, it.e.total)) + ' still waiting</div>' +
+          '<div style="color:#94a3b8;font-size:0.7rem">call now = their bag' + (it.e.colours ? ' (the colour they named)' : '') + ' is in stock at the shop where they asked</div>'
+        : it.e.total + ' still waiting</div>') +
       '<div style="color:#94a3b8;font-size:0.7rem">asked while it was out of stock and not bought since' +
       ((it.e.asked || 0) > it.e.total ? ' &middot; ' + it.e.asked + ' asked, ' + (it.e.asked - it.e.total) + ' already bought' : '') + '</div>' +
       (it.e.online != null || it.e.walkin != null
@@ -123,7 +135,7 @@
       '<div class="sec">By shop · in stock now</div><div class="sh">' + (it.e.shops || []).map(function (s) { return shopItem(s, it.e.shopCh); }).join(' · ') + '</div>' +
       // Colours asked for, each with its own shops ("Black 63 — Ktda 23 · Eldoret 6").
       ((it.e.colours || []).length ? '<div class="sec">By colour</div>' + it.e.colours.map(function (c) {
-        return '<div class="col"><div class="row"><span>' + esc(c[0]) + '</span><b>' + c[1] + '</b></div>' +
+        return '<div class="col"><div class="row"><span>' + (c[0] === 'No colour' ? 'No colour given <span style="color:#64748b;font-weight:400">(the request didn\'t name one)</span>' : esc(c[0])) + '</span><b>' + c[1] + '</b></div>' +
           '<div class="sh">' + (c[2] || []).map(function (s) { return shopItem(s, c[3]); }).join(' · ') + '</div></div>';
       }).join('') : '') +
       '<div class="n">People, not requests · ' + NOTE + '</div>';
@@ -138,13 +150,23 @@
     openFor = el;
   }
 
-  function chipOf(t) { return t && t.closest ? t.closest('.oos-chip') : null; }
+  // Only chips that carry a popover (data-oos) — a plain .oos-chip, e.g. the combo chip, opens nothing.
+  function chipOf(t) { return t && t.closest ? t.closest('.oos-chip[data-oos]') : null; }
   function inPop(t) { return !!(pop && t && (t === pop || pop.contains(t))); }
   // Leaving the chip closes after a short grace, so the pointer can cross the gap onto the popover.
   var hideT = null;
   function keep() { clearTimeout(hideT); }
-  function later() { clearTimeout(hideT); hideT = setTimeout(function () { if (openFor && !openFor.__tapped) close(); }, 220); }
-  document.addEventListener('mouseover', function (ev) { var c = chipOf(ev.target); if (c) { keep(); open(c); } });
+  function later() { clearTimeout(hideT); clearTimeout(swapT); hideT = setTimeout(function () { if (openFor && !openFor.__tapped) close(); }, 220); }
+  // Another chip while one is open: swap after the same grace, cancelled if the pointer reaches the popover
+  // (so crossing a neighbouring chip on the way down doesn't replace it). docs/README.md › Hover popovers.
+  var swapT = null;
+  document.addEventListener('mouseover', function (ev) {
+    var c = chipOf(ev.target);
+    if (!c) return;
+    keep(); clearTimeout(swapT);
+    if (openFor && openFor !== c && !openFor.__tapped) swapT = setTimeout(function () { open(c); }, 220);
+    else open(c);
+  });
   document.addEventListener('mouseout', function (ev) {
     var c = chipOf(ev.target);
     if (c && c === openFor && !c.__tapped && !(ev.relatedTarget && (c.contains(ev.relatedTarget) || inPop(ev.relatedTarget)))) later();

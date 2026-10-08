@@ -303,6 +303,16 @@ tooltips can be **clicked to pin** — the tooltip stays open and becomes intera
 (`pointer-events:auto`) so you can read/click inside it (e.g. the inline combo notes); clicking
 the same cell again, or anywhere outside, closes it, and hover still previews when nothing is
 pinned. A hint line ("click to pin" / "pinned — click outside to close") shows the state.
+**Combo tag (Oct 2026):** a bag that's part of a running combo gets a highlighted purple tag on its own line
+under the bag: "↳ combo: <name>", listing every combo it's in. It used to be a short inline "↳ in …" that got cut off.
+In a **shop** tooltip, each combo also shows its sales at that shop next to the bag's deal sales, e.g.
+"↳ combo: Fabela+Code 3/Doublepress+Man Bag · **2** combos here vs **1** on the deal". *Combos here* = that
+running combo rung through the combo button at this shop this month (`usage.shops[].rung`, 0 when the shop
+isn't listed). *On the deal* = the bag's Deal-of-the-Week sales at the shop (the bag's "sold"). On a side with
+options (Moon / Nizana) the combo count isn't split by bag: it's the combo's count at the shop.
+**Hover stays open (Oct 2026):** works like the 📞 popover. The hover preview is interactive too, so the
+pointer can move from the cell onto the tooltip (220 ms grace) and it stays open while hovered or
+scrolled. It closes once the pointer leaves both the cell and the tooltip.
 
 ## Combo button usage (till check)
 
@@ -494,6 +504,36 @@ Deal of the Week / Power Deal) + `bagsNotOnOffer` — which `bags_on_offer.py` r
 > `📞 12 waiting · 2 online · 10 walk-in`; popover header: `12 still waiting · 15 asked, 3 already bought` (entry
 > `asked` = gross). The separate **"Waiting now"** toggles were removed (redundant). On Combos the Marketing guide's
 > 📞 and "remind all N" are the same number.
+> **Per combo: clients to convert (Oct 2026):** each Kenya running-combo card shows **📞 N clients to convert**
+> beside its ▲ sold pill. N = the distinct people still waiting for **any** bag in the combo (Odoo name split on
+> `+` and ` or ` / `/`; names that aren't a catalogue bag drop out), for the page's call-back period. These are the
+> clients within reach: pitch them the combo, or at least sell them the bag. Example: Amaya/Elyse+Moon/Nizana =
+> Amaya 12 · Elyse 24 · Moon 16 · Nizana 47 = **99** (nobody overlaps). The chip has **no popover**, only a
+> hover note: the shop, channel and colour detail is already on each bag's own 📞 chip. Checked 8 Oct 2026: of
+> 886 waiting Kenya clients, 13 asked for 2+ different bags and **none** waits on both sides of a running combo,
+> so a "both sides" count was dropped. Data: `SMC.oosCombo[sheetLabel || name][period] = {total, whole}` (`_add_oos`).
+> **Whole-combo requests (Oct 2026):** people whose request names the combo itself are counted in N and called out:
+> **📞 97 clients to convert · 🎯 2 want the whole combo** (`whole`). The hover note gives the sum (95 waiting for one
+> of its bags + 2 asked for the whole combo). They're shown on the combo chip only, not in the bag popovers, with
+> where they asked: **🎯 2 want the whole combo (Starmall 2 · walk-in)**. The combo chip has **no hover** (no popover, no tooltip): everything is on the chip, while each
+> bag's 📞 chip keeps its full popover (`wholeShops: [[shop, people, online,
+> walk-in], …]`).
+> **Call now vs waiting (Oct 2026):** a still-waiting client counts as **📲 call now** when their bag is in stock at
+> the shop where they asked. If they named a colour, that colour must be in stock there. Everyone else stays **📞 waiting**
+> (no stock at their shop yet). A person is "call now" if any of their requests for that bag is in stock. Entry
+> `callNow` = those people (`lib/oos_callbacks.attach_stock(..., rows=…)`). The chip reads **📲 11 call now · 📞 1
+> waiting** when anyone can be called. Otherwise it stays as before (**📞 N waiting · online · walk-in**). The popover
+> header repeats the split, and the online / walk-in totals stay in the popover. Example (8 Oct 2026): all 12 Amaya
+> clients asked at shops that hold Amaya (Hilton 21, Starmall 11, Mombasa 25 …), so 11 are "call now" and 1 is still
+> waiting (Thika, Black: 0 there).
+> **Popover (8 Oct 2026):** hover or tap a bag's 📞 chip for the full popover: the call-now / waiting header and what
+> "call now" means, the "N asked, M already bought" line, the Online / Walk-in totals, By shop (with stock) and
+> By colour, then the source note.
+> **"No colour"** = the request didn't name a colour (e.g. a lead that just says "Amaya"). The popover labels it
+> "No colour given".
+> **Combo requests:** a request whose product names a whole combo (contains "+", e.g. "Amaya Handbag or Elyse
+> Handbag + Moon Bag or Nizana") is **not** counted on any single bag. It counts only on that combo's
+> "📞 clients to convert" chip (Combos page). The bag matcher used to file it under the first bag (Amaya).
 > **Long popovers scroll:** the pointer can move from the chip onto the popover (220 ms grace) and it stays open
 > while hovered, scrolled or clicked inside; scrolling the page or moving away closes it.
 
