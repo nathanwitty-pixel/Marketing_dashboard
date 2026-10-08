@@ -171,7 +171,7 @@
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 146,
+      "community": 144,
       "community_name": "Answer",
       "file_type": "code",
       "norm_label": "answer",
@@ -1749,7 +1749,7 @@
       "file_type": "code",
       "norm_label": "fmt_int()",
       "source_file": "current_performance.py",
-      "source_location": "L480"
+      "source_location": "L483"
     },
     {
       "id": "current_performance_fmt_pct",
@@ -1761,7 +1761,7 @@
       "file_type": "code",
       "norm_label": "fmt_pct()",
       "source_file": "current_performance.py",
-      "source_location": "L483"
+      "source_location": "L486"
     },
     {
       "id": "current_performance_fmt_signed",
@@ -1773,7 +1773,7 @@
       "file_type": "code",
       "norm_label": "fmt_signed()",
       "source_file": "current_performance.py",
-      "source_location": "L486"
+      "source_location": "L489"
     },
     {
       "id": "current_performance_fmt_signed_pct",
@@ -1785,7 +1785,7 @@
       "file_type": "code",
       "norm_label": "fmt_signed_pct()",
       "source_file": "current_performance.py",
-      "source_location": "L489"
+      "source_location": "L492"
     },
     {
       "id": "current_performance_load_snapshot",
@@ -1845,7 +1845,7 @@
       "file_type": "code",
       "norm_label": "update_growth_history()",
       "source_file": "current_performance.py",
-      "source_location": "L458"
+      "source_location": "L461"
     },
     {
       "id": "current_performance_update_month_boundary",
@@ -3048,6 +3048,42 @@
       "source_location": "L174"
     },
     {
+      "id": "lib_laya_answer_confidence",
+      "label": ".confidence()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 144,
+      "community_name": "Answer",
+      "file_type": "code",
+      "norm_label": ".confidence()",
+      "source_file": "lib/laya.py",
+      "source_location": "L44"
+    },
+    {
+      "id": "lib_laya_answer_init",
+      "label": ".__init__()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 144,
+      "community_name": "Answer",
+      "file_type": "code",
+      "norm_label": ".__init__()",
+      "source_file": "lib/laya.py",
+      "source_location": "L38"
+    },
+    {
+      "id": "lib_laya_answer_yes",
+      "label": ".yes()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 144,
+      "community_name": "Answer",
+      "file_type": "code",
+      "norm_label": ".yes()",
+      "source_file": "lib/laya.py",
+      "source_location": "L48"
+    },
+    {
       "id": "export_self_made_combos_bundle_self_made_combos_build_sheet_slots",
       "label": "_build_sheet_slots()",
       "_callable": true,
@@ -3072,47 +3108,11 @@
       "source_location": "L681"
     },
     {
-      "id": "lib_laya_answer_confidence",
-      "label": ".confidence()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 146,
-      "community_name": "Answer",
-      "file_type": "code",
-      "norm_label": ".confidence()",
-      "source_file": "lib/laya.py",
-      "source_location": "L44"
-    },
-    {
-      "id": "lib_laya_answer_init",
-      "label": ".__init__()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 146,
-      "community_name": "Answer",
-      "file_type": "code",
-      "norm_label": ".__init__()",
-      "source_file": "lib/laya.py",
-      "source_location": "L38"
-    },
-    {
-      "id": "lib_laya_answer_yes",
-      "label": ".yes()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 146,
-      "community_name": "Answer",
-      "file_type": "code",
-      "norm_label": ".yes()",
-      "source_file": "lib/laya.py",
-      "source_location": "L48"
-    },
-    {
       "id": "lib_laya_save_cache",
       "label": "save_cache()",
       "_callable": true,
       "_origin": "ast",
-      "community": 147,
+      "community": 146,
       "community_name": "add_laya",
       "file_type": "code",
       "norm_label": "save_cache()",
@@ -3124,7 +3124,7 @@
       "label": "set_budget()",
       "_callable": true,
       "_origin": "ast",
-      "community": 147,
+      "community": 146,
       "community_name": "add_laya",
       "file_type": "code",
       "norm_label": "set_budget()",
@@ -3136,7 +3136,7 @@
       "label": "add_laya()",
       "_callable": true,
       "_origin": "ast",
-      "community": 147,
+      "community": 146,
       "community_name": "add_laya",
       "file_type": "code",
       "norm_label": "add_laya()",
@@ -8208,6 +8208,90 @@
       "source_location": "L179"
     },
     {
+      "id": "lib_custom_range_block",
+      "label": "block()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 58,
+      "community_name": "custom_range.py",
+      "file_type": "code",
+      "norm_label": "block()",
+      "source_file": "lib/custom_range.py",
+      "source_location": "L85"
+    },
+    {
+      "id": "lib_custom_range_from_argv",
+      "label": "from_argv()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 58,
+      "community_name": "custom_range.py",
+      "file_type": "code",
+      "norm_label": "from_argv()",
+      "source_file": "lib/custom_range.py",
+      "source_location": "L56"
+    },
+    {
+      "id": "lib_custom_range_label",
+      "label": "label()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 58,
+      "community_name": "custom_range.py",
+      "file_type": "code",
+      "norm_label": "label()",
+      "source_file": "lib/custom_range.py",
+      "source_location": "L68"
+    },
+    {
+      "id": "lib_custom_range_load",
+      "label": "load()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 58,
+      "community_name": "custom_range.py",
+      "file_type": "code",
+      "norm_label": "load()",
+      "source_file": "lib/custom_range.py",
+      "source_location": "L28"
+    },
+    {
+      "id": "lib_custom_range_month_share",
+      "label": "month_share()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 58,
+      "community_name": "custom_range.py",
+      "file_type": "code",
+      "norm_label": "month_share()",
+      "source_file": "lib/custom_range.py",
+      "source_location": "L75"
+    },
+    {
+      "id": "lib_custom_range_path",
+      "label": "path()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 58,
+      "community_name": "custom_range.py",
+      "file_type": "code",
+      "norm_label": "path()",
+      "source_file": "lib/custom_range.py",
+      "source_location": "L24"
+    },
+    {
+      "id": "lib_custom_range_save",
+      "label": "save()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 58,
+      "community_name": "custom_range.py",
+      "file_type": "code",
+      "norm_label": "save()",
+      "source_file": "lib/custom_range.py",
+      "source_location": "L44"
+    },
+    {
       "id": "agent_skills_sales_share_targets_scripts_share_targets_allocate",
       "label": "allocate()",
       "_callable": true,
@@ -8349,7 +8433,7 @@
       "file_type": "code",
       "norm_label": "in_stock()",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L297"
+      "source_location": "L298"
     },
     {
       "id": "lib_oos_callbacks_attach_stock_stk",
@@ -10056,88 +10140,112 @@
       "source_location": "L147"
     },
     {
-      "id": "lib_custom_range_block",
-      "label": "block()",
+      "id": "bag_signals_build",
+      "label": "build()",
       "_callable": true,
       "_origin": "ast",
       "community": 78,
-      "community_name": "custom_range.py",
+      "community_name": "json",
       "file_type": "code",
-      "norm_label": "block()",
-      "source_file": "lib/custom_range.py",
-      "source_location": "L85"
+      "norm_label": "build()",
+      "source_file": "bag_signals.py",
+      "source_location": "L55"
     },
     {
-      "id": "lib_custom_range_from_argv",
-      "label": "from_argv()",
+      "id": "bag_signals_inject",
+      "label": "inject()",
       "_callable": true,
       "_origin": "ast",
       "community": 78,
-      "community_name": "custom_range.py",
+      "community_name": "json",
       "file_type": "code",
-      "norm_label": "from_argv()",
-      "source_file": "lib/custom_range.py",
-      "source_location": "L56"
+      "norm_label": "inject()",
+      "source_file": "bag_signals.py",
+      "source_location": "L77"
     },
     {
-      "id": "lib_custom_range_label",
-      "label": "label()",
+      "id": "bag_signals_posts",
+      "label": "_posts()",
       "_callable": true,
       "_origin": "ast",
       "community": 78,
-      "community_name": "custom_range.py",
+      "community_name": "json",
       "file_type": "code",
-      "norm_label": "label()",
-      "source_file": "lib/custom_range.py",
-      "source_location": "L68"
+      "norm_label": "_posts()",
+      "source_file": "bag_signals.py",
+      "source_location": "L20"
     },
     {
-      "id": "lib_custom_range_load",
-      "label": "load()",
+      "id": "bag_signals_save_history",
+      "label": "_save_history()",
       "_callable": true,
       "_origin": "ast",
       "community": 78,
-      "community_name": "custom_range.py",
+      "community_name": "json",
       "file_type": "code",
-      "norm_label": "load()",
-      "source_file": "lib/custom_range.py",
-      "source_location": "L28"
+      "norm_label": "_save_history()",
+      "source_file": "bag_signals.py",
+      "source_location": "L31"
     },
     {
-      "id": "lib_custom_range_month_share",
-      "label": "month_share()",
+      "id": "lib_bag_quant_bag_posts",
+      "label": "bag_posts()",
       "_callable": true,
       "_origin": "ast",
       "community": 78,
-      "community_name": "custom_range.py",
+      "community_name": "json",
       "file_type": "code",
-      "norm_label": "month_share()",
-      "source_file": "lib/custom_range.py",
-      "source_location": "L75"
+      "norm_label": "bag_posts()",
+      "source_file": "lib/bag_quant.py",
+      "source_location": "L151"
     },
     {
-      "id": "lib_custom_range_path",
-      "label": "path()",
+      "id": "lib_bag_quant_bag_posts_tally",
+      "label": "tally()",
       "_callable": true,
       "_origin": "ast",
       "community": 78,
-      "community_name": "custom_range.py",
+      "community_name": "json",
       "file_type": "code",
-      "norm_label": "path()",
-      "source_file": "lib/custom_range.py",
+      "norm_label": "tally()",
+      "source_file": "lib/bag_quant.py",
+      "source_location": "L153"
+    },
+    {
+      "id": "tests_test_sheet_reads_sources",
+      "label": "_sources()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 78,
+      "community_name": "json",
+      "file_type": "code",
+      "norm_label": "_sources()",
+      "source_file": "tests/test_sheet_reads.py",
+      "source_location": "L15"
+    },
+    {
+      "id": "tests_test_sheet_reads_test_only_the_main_spreadsheet",
+      "label": "test_only_the_main_spreadsheet()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 78,
+      "community_name": "json",
+      "file_type": "code",
+      "norm_label": "test_only_the_main_spreadsheet()",
+      "source_file": "tests/test_sheet_reads.py",
+      "source_location": "L38"
+    },
+    {
+      "id": "tests_test_sheet_reads_test_only_three_tabs_are_read",
+      "label": "test_only_three_tabs_are_read()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 78,
+      "community_name": "json",
+      "file_type": "code",
+      "norm_label": "test_only_three_tabs_are_read()",
+      "source_file": "tests/test_sheet_reads.py",
       "source_location": "L24"
-    },
-    {
-      "id": "lib_custom_range_save",
-      "label": "save()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 78,
-      "community_name": "custom_range.py",
-      "file_type": "code",
-      "norm_label": "save()",
-      "source_file": "lib/custom_range.py",
-      "source_location": "L44"
     },
     {
       "id": "self_made_combos_local_deal_rows",
@@ -11362,114 +11470,6 @@
       "norm_label": "test_wrong_shops_kenya_only()",
       "source_file": "tests/test_push_planner.py",
       "source_location": "L194"
-    },
-    {
-      "id": "bag_signals_build",
-      "label": "build()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "json",
-      "file_type": "code",
-      "norm_label": "build()",
-      "source_file": "bag_signals.py",
-      "source_location": "L55"
-    },
-    {
-      "id": "bag_signals_inject",
-      "label": "inject()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "json",
-      "file_type": "code",
-      "norm_label": "inject()",
-      "source_file": "bag_signals.py",
-      "source_location": "L77"
-    },
-    {
-      "id": "bag_signals_posts",
-      "label": "_posts()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "json",
-      "file_type": "code",
-      "norm_label": "_posts()",
-      "source_file": "bag_signals.py",
-      "source_location": "L20"
-    },
-    {
-      "id": "bag_signals_save_history",
-      "label": "_save_history()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "json",
-      "file_type": "code",
-      "norm_label": "_save_history()",
-      "source_file": "bag_signals.py",
-      "source_location": "L31"
-    },
-    {
-      "id": "lib_bag_quant_bag_posts",
-      "label": "bag_posts()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "json",
-      "file_type": "code",
-      "norm_label": "bag_posts()",
-      "source_file": "lib/bag_quant.py",
-      "source_location": "L151"
-    },
-    {
-      "id": "lib_bag_quant_bag_posts_tally",
-      "label": "tally()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "json",
-      "file_type": "code",
-      "norm_label": "tally()",
-      "source_file": "lib/bag_quant.py",
-      "source_location": "L153"
-    },
-    {
-      "id": "tests_test_sheet_reads_sources",
-      "label": "_sources()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "json",
-      "file_type": "code",
-      "norm_label": "_sources()",
-      "source_file": "tests/test_sheet_reads.py",
-      "source_location": "L15"
-    },
-    {
-      "id": "tests_test_sheet_reads_test_only_the_main_spreadsheet",
-      "label": "test_only_the_main_spreadsheet()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "json",
-      "file_type": "code",
-      "norm_label": "test_only_the_main_spreadsheet()",
-      "source_file": "tests/test_sheet_reads.py",
-      "source_location": "L38"
-    },
-    {
-      "id": "tests_test_sheet_reads_test_only_three_tabs_are_read",
-      "label": "test_only_three_tabs_are_read()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "json",
-      "file_type": "code",
-      "norm_label": "test_only_three_tabs_are_read()",
-      "source_file": "tests/test_sheet_reads.py",
-      "source_location": "L24"
     },
     {
       "id": "agent_skills_stockout_demand_scripts_stockout_demand_aggregate",
@@ -14197,7 +14197,7 @@
       "id": "push_planner_rationale_370",
       "label": "Laya's second opinion (lib/push_laya) when the model is on this PC; else a\u2026",
       "_origin": "ast",
-      "community": 147,
+      "community": 146,
       "community_name": "add_laya",
       "file_type": "rationale",
       "norm_label": "laya's second opinion (lib/push_laya) when the model is on this pc; else a...",
@@ -16526,124 +16526,92 @@
       "source_location": "L246"
     },
     {
-      "id": "docs_bags_on_offer_bags_on_offer_vs_not_on_offer",
-      "label": "Bags on offer vs not on offer",
+      "id": "lib_custom_range",
+      "label": "custom_range.py",
       "_origin": "ast",
       "community": 58,
-      "community_name": "Bags on offer vs not on offer",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "bags on offer vs not on offer",
-      "source_file": "docs/bags-on-offer.md",
+      "community_name": "custom_range.py",
+      "file_type": "code",
+      "norm_label": "custom_range.py",
+      "source_file": "lib/custom_range.py",
       "source_location": "L1"
     },
     {
-      "id": "docs_bags_on_offer_buckets",
-      "label": "Buckets",
+      "id": "lib_custom_range_rationale_1",
+      "label": "Per-page Custom period: the From \u2013 To dates a page was last built for. Each\u2026",
       "_origin": "ast",
       "community": 58,
-      "community_name": "Bags on offer vs not on offer",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "buckets",
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L46"
+      "community_name": "custom_range.py",
+      "file_type": "rationale",
+      "norm_label": "per-page custom period: the from \u2013 to dates a page was last built for. each...",
+      "source_file": "lib/custom_range.py",
+      "source_location": "L1"
     },
     {
-      "id": "docs_bags_on_offer_counted_by_how_it_was_sold",
-      "label": "Counted by how it was sold",
+      "id": "lib_custom_range_rationale_29",
+      "label": "(from, to) dates for the page's Custom period, or None. Swapped if reversed;\u2026",
       "_origin": "ast",
       "community": 58,
-      "community_name": "Bags on offer vs not on offer",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "counted by how it was sold",
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L75"
+      "community_name": "custom_range.py",
+      "file_type": "rationale",
+      "norm_label": "(from, to) dates for the page's custom period, or none. swapped if reversed;...",
+      "source_file": "lib/custom_range.py",
+      "source_location": "L29"
     },
     {
-      "id": "docs_bags_on_offer_laptop_sleeves_are_bags_27_sep_2026",
-      "label": "Laptop sleeves are bags (27 Sep 2026)",
+      "id": "lib_custom_range_rationale_45",
+      "label": "Write the range, or with a=None delete it (Clear).",
       "_origin": "ast",
       "community": 58,
-      "community_name": "Bags on offer vs not on offer",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "laptop sleeves are bags (27 sep 2026)",
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L143"
+      "community_name": "custom_range.py",
+      "file_type": "rationale",
+      "norm_label": "write the range, or with a=none delete it (clear).",
+      "source_file": "lib/custom_range.py",
+      "source_location": "L45"
     },
     {
-      "id": "docs_bags_on_offer_layout_laptop_tablet_phone",
-      "label": "Layout (laptop / tablet / phone)",
+      "id": "lib_custom_range_rationale_57",
+      "label": "`<script> FROM TO` saves a range, `<script> clear` deletes it; anything else is\u2026",
       "_origin": "ast",
       "community": 58,
-      "community_name": "Bags on offer vs not on offer",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "layout (laptop / tablet / phone)",
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L327"
+      "community_name": "custom_range.py",
+      "file_type": "rationale",
+      "norm_label": "`<script> from to` saves a range, `<script> clear` deletes it; anything else is...",
+      "source_file": "lib/custom_range.py",
+      "source_location": "L57"
     },
     {
-      "id": "docs_bags_on_offer_period_selector_monthly_weekly_last_week_custom",
-      "label": "Period selector (Monthly / Weekly / Last week / Custom)",
+      "id": "lib_custom_range_rationale_69",
+      "label": "01 Sep \u2013 30 Sep' (years added when the range crosses one or isn't this year).",
       "_origin": "ast",
       "community": 58,
-      "community_name": "Bags on offer vs not on offer",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "period selector (monthly / weekly / last week / custom)",
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L12"
+      "community_name": "custom_range.py",
+      "file_type": "rationale",
+      "norm_label": "01 sep \u2013 30 sep' (years added when the range crosses one or isn't this year).",
+      "source_file": "lib/custom_range.py",
+      "source_location": "L69"
     },
     {
-      "id": "docs_bags_on_offer_regenerate",
-      "label": "Regenerate",
+      "id": "lib_custom_range_rationale_76",
+      "label": "How many months the range covers \u2014 each day counts 1/(days in its month). A\u2026",
       "_origin": "ast",
       "community": 58,
-      "community_name": "Bags on offer vs not on offer",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "regenerate",
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L318"
+      "community_name": "custom_range.py",
+      "file_type": "rationale",
+      "norm_label": "how many months the range covers \u2014 each day counts 1/(days in its month). a...",
+      "source_file": "lib/custom_range.py",
+      "source_location": "L76"
     },
     {
-      "id": "docs_bags_on_offer_shop_birthdays",
-      "label": "Shop birthdays",
+      "id": "lib_custom_range_rationale_86",
+      "label": "The page's NP/PA `custom` data block: None, or {from, to, label, days, months}.",
       "_origin": "ast",
       "community": 58,
-      "community_name": "Bags on offer vs not on offer",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "shop birthdays",
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L314"
-    },
-    {
-      "id": "docs_bags_on_offer_shop_metrics_vs_the_odoo_revenue_target",
-      "label": "Shop metrics (vs the Odoo revenue target)",
-      "_origin": "ast",
-      "community": 58,
-      "community_name": "Bags on offer vs not on offer",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "shop metrics (vs the odoo revenue target)",
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L219"
-    },
-    {
-      "id": "docs_bags_on_offer_what_the_page_shows_per_period",
-      "label": "What the page shows (per period)",
-      "_origin": "ast",
-      "community": 58,
-      "community_name": "Bags on offer vs not on offer",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "what the page shows (per period)",
-      "source_file": "docs/bags-on-offer.md",
-      "source_location": "L117"
+      "community_name": "custom_range.py",
+      "file_type": "rationale",
+      "norm_label": "the page's np/pa `custom` data block: none, or {from, to, label, days, months}.",
+      "source_file": "lib/custom_range.py",
+      "source_location": "L86"
     },
     {
       "id": "agent_skills_sales_share_targets_scripts_share_targets",
@@ -17666,92 +17634,103 @@
       "source_location": "L185"
     },
     {
-      "id": "lib_custom_range",
-      "label": "custom_range.py",
+      "id": "aug_offer_restore",
+      "label": "aug_offer_restore.py",
       "_origin": "ast",
       "community": 78,
-      "community_name": "custom_range.py",
+      "community_name": "json",
       "file_type": "code",
-      "norm_label": "custom_range.py",
-      "source_file": "lib/custom_range.py",
+      "norm_label": "aug_offer_restore.py",
+      "source_file": "aug_offer_restore.py",
       "source_location": "L1"
     },
     {
-      "id": "lib_custom_range_rationale_1",
-      "label": "Per-page Custom period: the From \u2013 To dates a page was last built for. Each\u2026",
+      "id": "bag_signals",
+      "label": "bag_signals.py",
       "_origin": "ast",
       "community": 78,
-      "community_name": "custom_range.py",
-      "file_type": "rationale",
-      "norm_label": "per-page custom period: the from \u2013 to dates a page was last built for. each...",
-      "source_file": "lib/custom_range.py",
+      "community_name": "json",
+      "file_type": "code",
+      "norm_label": "bag_signals.py",
+      "source_file": "bag_signals.py",
       "source_location": "L1"
     },
     {
-      "id": "lib_custom_range_rationale_29",
-      "label": "(from, to) dates for the page's Custom period, or None. Swapped if reversed;\u2026",
+      "id": "tests_test_sheet_reads",
+      "label": "test_sheet_reads.py",
       "_origin": "ast",
       "community": 78,
-      "community_name": "custom_range.py",
-      "file_type": "rationale",
-      "norm_label": "(from, to) dates for the page's custom period, or none. swapped if reversed;...",
-      "source_file": "lib/custom_range.py",
-      "source_location": "L29"
+      "community_name": "json",
+      "file_type": "code",
+      "norm_label": "test_sheet_reads.py",
+      "source_file": "tests/test_sheet_reads.py",
+      "source_location": "L1"
     },
     {
-      "id": "lib_custom_range_rationale_45",
-      "label": "Write the range, or with a=None delete it (Clear).",
+      "id": "aug_offer_restore_rationale_1",
+      "label": "One-off: restore August's Offer Type figures into monthly_report_history.json\u2026",
       "_origin": "ast",
       "community": 78,
-      "community_name": "custom_range.py",
+      "community_name": "json",
       "file_type": "rationale",
-      "norm_label": "write the range, or with a=none delete it (clear).",
-      "source_file": "lib/custom_range.py",
-      "source_location": "L45"
+      "norm_label": "one-off: restore august's offer type figures into monthly_report_history.json...",
+      "source_file": "aug_offer_restore.py",
+      "source_location": "L1"
     },
     {
-      "id": "lib_custom_range_rationale_57",
-      "label": "`<script> FROM TO` saves a range, `<script> clear` deletes it; anything else is\u2026",
+      "id": "bag_signals_rationale_1",
+      "label": "bag_signals.py \u2014 the Bag Signals page: drift, volatility, reliability, trend,\u2026",
       "_origin": "ast",
       "community": 78,
-      "community_name": "custom_range.py",
+      "community_name": "json",
       "file_type": "rationale",
-      "norm_label": "`<script> from to` saves a range, `<script> clear` deletes it; anything else is...",
-      "source_file": "lib/custom_range.py",
-      "source_location": "L57"
+      "norm_label": "bag_signals.py \u2014 the bag signals page: drift, volatility, reliability, trend,...",
+      "source_file": "bag_signals.py",
+      "source_location": "L1"
     },
     {
-      "id": "lib_custom_range_rationale_69",
-      "label": "01 Sep \u2013 30 Sep' (years added when the range crosses one or isn't this year).",
+      "id": "bag_signals_rationale_21",
+      "label": "MONTHLY / WEEKLY_MARKETING_POST rows, or ([], []) if the sheet can't be read.",
       "_origin": "ast",
       "community": 78,
-      "community_name": "custom_range.py",
+      "community_name": "json",
       "file_type": "rationale",
-      "norm_label": "01 sep \u2013 30 sep' (years added when the range crosses one or isn't this year).",
-      "source_file": "lib/custom_range.py",
-      "source_location": "L69"
+      "norm_label": "monthly / weekly_marketing_post rows, or ([], []) if the sheet can't be read.",
+      "source_file": "bag_signals.py",
+      "source_location": "L21"
     },
     {
-      "id": "lib_custom_range_rationale_76",
-      "label": "How many months the range covers \u2014 each day counts 1/(days in its month). A\u2026",
+      "id": "bag_signals_rationale_32",
+      "label": "Append last week's posts + sales per bag (one row per Sun\u2013Sat week) \u2014 feeds the\u2026",
       "_origin": "ast",
       "community": 78,
-      "community_name": "custom_range.py",
+      "community_name": "json",
       "file_type": "rationale",
-      "norm_label": "how many months the range covers \u2014 each day counts 1/(days in its month). a...",
-      "source_file": "lib/custom_range.py",
-      "source_location": "L76"
+      "norm_label": "append last week's posts + sales per bag (one row per sun\u2013sat week) \u2014 feeds the...",
+      "source_file": "bag_signals.py",
+      "source_location": "L32"
     },
     {
-      "id": "lib_custom_range_rationale_86",
-      "label": "The page's NP/PA `custom` data block: None, or {from, to, label, days, months}.",
+      "id": "lib_bag_quant_rationale_152",
+      "label": "{BAG: (posts this month, posts last week)} \u2014 Kenya posts (col E) from the two\u2026",
       "_origin": "ast",
       "community": 78,
-      "community_name": "custom_range.py",
+      "community_name": "json",
       "file_type": "rationale",
-      "norm_label": "the page's np/pa `custom` data block: none, or {from, to, label, days, months}.",
-      "source_file": "lib/custom_range.py",
-      "source_location": "L86"
+      "norm_label": "{bag: (posts this month, posts last week)} \u2014 kenya posts (col e) from the two...",
+      "source_file": "lib/bag_quant.py",
+      "source_location": "L152"
+    },
+    {
+      "id": "tests_test_sheet_reads_rationale_1",
+      "label": "Guard: the dashboard reads ONLY three Google-Sheet tabs \u2014 MONTHLY_TARGET,\u2026",
+      "_origin": "ast",
+      "community": 78,
+      "community_name": "json",
+      "file_type": "rationale",
+      "norm_label": "guard: the dashboard reads only three google-sheet tabs \u2014 monthly_target,...",
+      "source_file": "tests/test_sheet_reads.py",
+      "source_location": "L1"
     },
     {
       "id": "tests_test_deals_csv",
@@ -18585,103 +18564,124 @@
       "source_location": "L88"
     },
     {
-      "id": "aug_offer_restore",
-      "label": "aug_offer_restore.py",
+      "id": "docs_bags_on_offer_bags_on_offer_vs_not_on_offer",
+      "label": "Bags on offer vs not on offer",
       "_origin": "ast",
       "community": 88,
-      "community_name": "json",
-      "file_type": "code",
-      "norm_label": "aug_offer_restore.py",
-      "source_file": "aug_offer_restore.py",
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "bags on offer vs not on offer",
+      "source_file": "docs/bags-on-offer.md",
       "source_location": "L1"
     },
     {
-      "id": "bag_signals",
-      "label": "bag_signals.py",
+      "id": "docs_bags_on_offer_buckets",
+      "label": "Buckets",
       "_origin": "ast",
       "community": 88,
-      "community_name": "json",
-      "file_type": "code",
-      "norm_label": "bag_signals.py",
-      "source_file": "bag_signals.py",
-      "source_location": "L1"
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "buckets",
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L46"
     },
     {
-      "id": "tests_test_sheet_reads",
-      "label": "test_sheet_reads.py",
+      "id": "docs_bags_on_offer_counted_by_how_it_was_sold",
+      "label": "Counted by how it was sold",
       "_origin": "ast",
       "community": 88,
-      "community_name": "json",
-      "file_type": "code",
-      "norm_label": "test_sheet_reads.py",
-      "source_file": "tests/test_sheet_reads.py",
-      "source_location": "L1"
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "counted by how it was sold",
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L75"
     },
     {
-      "id": "aug_offer_restore_rationale_1",
-      "label": "One-off: restore August's Offer Type figures into monthly_report_history.json\u2026",
+      "id": "docs_bags_on_offer_laptop_sleeves_are_bags_27_sep_2026",
+      "label": "Laptop sleeves are bags (27 Sep 2026)",
       "_origin": "ast",
       "community": 88,
-      "community_name": "json",
-      "file_type": "rationale",
-      "norm_label": "one-off: restore august's offer type figures into monthly_report_history.json...",
-      "source_file": "aug_offer_restore.py",
-      "source_location": "L1"
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "laptop sleeves are bags (27 sep 2026)",
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L143"
     },
     {
-      "id": "bag_signals_rationale_1",
-      "label": "bag_signals.py \u2014 the Bag Signals page: drift, volatility, reliability, trend,\u2026",
+      "id": "docs_bags_on_offer_layout_laptop_tablet_phone",
+      "label": "Layout (laptop / tablet / phone)",
       "_origin": "ast",
       "community": 88,
-      "community_name": "json",
-      "file_type": "rationale",
-      "norm_label": "bag_signals.py \u2014 the bag signals page: drift, volatility, reliability, trend,...",
-      "source_file": "bag_signals.py",
-      "source_location": "L1"
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "layout (laptop / tablet / phone)",
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L329"
     },
     {
-      "id": "bag_signals_rationale_21",
-      "label": "MONTHLY / WEEKLY_MARKETING_POST rows, or ([], []) if the sheet can't be read.",
+      "id": "docs_bags_on_offer_period_selector_monthly_weekly_last_week_custom",
+      "label": "Period selector (Monthly / Weekly / Last week / Custom)",
       "_origin": "ast",
       "community": 88,
-      "community_name": "json",
-      "file_type": "rationale",
-      "norm_label": "monthly / weekly_marketing_post rows, or ([], []) if the sheet can't be read.",
-      "source_file": "bag_signals.py",
-      "source_location": "L21"
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "period selector (monthly / weekly / last week / custom)",
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L12"
     },
     {
-      "id": "bag_signals_rationale_32",
-      "label": "Append last week's posts + sales per bag (one row per Sun\u2013Sat week) \u2014 feeds the\u2026",
+      "id": "docs_bags_on_offer_regenerate",
+      "label": "Regenerate",
       "_origin": "ast",
       "community": 88,
-      "community_name": "json",
-      "file_type": "rationale",
-      "norm_label": "append last week's posts + sales per bag (one row per sun\u2013sat week) \u2014 feeds the...",
-      "source_file": "bag_signals.py",
-      "source_location": "L32"
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "regenerate",
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L320"
     },
     {
-      "id": "lib_bag_quant_rationale_152",
-      "label": "{BAG: (posts this month, posts last week)} \u2014 Kenya posts (col E) from the two\u2026",
+      "id": "docs_bags_on_offer_shop_birthdays",
+      "label": "Shop birthdays",
       "_origin": "ast",
       "community": 88,
-      "community_name": "json",
-      "file_type": "rationale",
-      "norm_label": "{bag: (posts this month, posts last week)} \u2014 kenya posts (col e) from the two...",
-      "source_file": "lib/bag_quant.py",
-      "source_location": "L152"
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "shop birthdays",
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L316"
     },
     {
-      "id": "tests_test_sheet_reads_rationale_1",
-      "label": "Guard: the dashboard reads ONLY three Google-Sheet tabs \u2014 MONTHLY_TARGET,\u2026",
+      "id": "docs_bags_on_offer_shop_metrics_vs_the_odoo_revenue_target",
+      "label": "Shop metrics (vs the Odoo revenue target)",
       "_origin": "ast",
       "community": 88,
-      "community_name": "json",
-      "file_type": "rationale",
-      "norm_label": "guard: the dashboard reads only three google-sheet tabs \u2014 monthly_target,...",
-      "source_file": "tests/test_sheet_reads.py",
-      "source_location": "L1"
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "shop metrics (vs the odoo revenue target)",
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L219"
+    },
+    {
+      "id": "docs_bags_on_offer_what_the_page_shows_per_period",
+      "label": "What the page shows (per period)",
+      "_origin": "ast",
+      "community": 88,
+      "community_name": "Bags on offer vs not on offer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "what the page shows (per period)",
+      "source_file": "docs/bags-on-offer.md",
+      "source_location": "L117"
     },
     {
       "id": "agent_skills_stockout_demand_scripts_stockout_demand",
@@ -20575,7 +20575,7 @@
       "_origin": "semantic",
       "author": null,
       "captured_at": null,
-      "community": 142,
+      "community": 137,
       "community_name": "Semantic color rules (green=good, amber=risk, red=critical, cyan=info)",
       "contributor": null,
       "file_type": "concept",
@@ -20590,7 +20590,7 @@
       "_origin": "semantic",
       "author": null,
       "captured_at": null,
-      "community": 142,
+      "community": 137,
       "community_name": "Semantic color rules (green=good, amber=risk, red=critical, cyan=info)",
       "contributor": null,
       "file_type": "concept",
@@ -20605,7 +20605,7 @@
       "_origin": "semantic",
       "author": null,
       "captured_at": null,
-      "community": 142,
+      "community": 137,
       "community_name": "Semantic color rules (green=good, amber=risk, red=critical, cyan=info)",
       "contributor": null,
       "file_type": "rationale",
@@ -20621,7 +20621,7 @@
       "_origin": "semantic",
       "author": null,
       "captured_at": null,
-      "community": 142,
+      "community": 137,
       "community_name": "Semantic color rules (green=good, amber=risk, red=critical, cyan=info)",
       "contributor": null,
       "file_type": "rationale",
@@ -20637,7 +20637,7 @@
       "_origin": "semantic",
       "author": null,
       "captured_at": null,
-      "community": 144,
+      "community": 142,
       "community_name": "_bucket() function (Python bucketing of bag products)",
       "contributor": null,
       "file_type": "code",
@@ -20652,7 +20652,7 @@
       "_origin": "semantic",
       "author": null,
       "captured_at": null,
-      "community": 144,
+      "community": 142,
       "community_name": "_bucket() function (Python bucketing of bag products)",
       "contributor": null,
       "file_type": "code",
@@ -20667,7 +20667,7 @@
       "_origin": "semantic",
       "author": null,
       "captured_at": null,
-      "community": 144,
+      "community": 142,
       "community_name": "_bucket() function (Python bucketing of bag products)",
       "contributor": null,
       "file_type": "rationale",
@@ -20683,7 +20683,7 @@
       "_origin": "semantic",
       "author": null,
       "captured_at": null,
-      "community": 144,
+      "community": 142,
       "community_name": "_bucket() function (Python bucketing of bag products)",
       "contributor": null,
       "file_type": "rationale",
@@ -25313,18 +25313,6 @@
       "type": "external"
     },
     {
-      "id": "lib",
-      "label": "lib",
-      "_origin": "semantic",
-      "community": 137,
-      "community_name": "lib",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "lib",
-      "source_file": "",
-      "type": "external"
-    },
-    {
       "id": "collections",
       "label": "collections",
       "_origin": "semantic",
@@ -25333,6 +25321,18 @@
       "external": true,
       "file_type": "concept",
       "norm_label": "collections",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "lib",
+      "label": "lib",
+      "_origin": "semantic",
+      "community": 147,
+      "community_name": "lib",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "lib",
       "source_file": "",
       "type": "external"
     },
@@ -25637,6 +25637,42 @@
       "type": "external"
     },
     {
+      "id": "json",
+      "label": "json",
+      "_origin": "semantic",
+      "community": 78,
+      "community_name": "json",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "json",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "re",
+      "label": "re",
+      "_origin": "semantic",
+      "community": 78,
+      "community_name": "json",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "re",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "webbrowser",
+      "label": "webbrowser",
+      "_origin": "semantic",
+      "community": 78,
+      "community_name": "json",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "webbrowser",
+      "source_file": "",
+      "type": "external"
+    },
+    {
       "id": "sys",
       "label": "sys",
       "_origin": "semantic",
@@ -25657,42 +25693,6 @@
       "external": true,
       "file_type": "concept",
       "norm_label": "pathlib",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "json",
-      "label": "json",
-      "_origin": "semantic",
-      "community": 88,
-      "community_name": "json",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "json",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "re",
-      "label": "re",
-      "_origin": "semantic",
-      "community": 88,
-      "community_name": "json",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "re",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "webbrowser",
-      "label": "webbrowser",
-      "_origin": "semantic",
-      "community": 88,
-      "community_name": "json",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "webbrowser",
       "source_file": "",
       "type": "external"
     },
@@ -27579,7 +27579,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "current_performance.py",
-      "source_location": "L302",
+      "source_location": "L305",
       "weight": 1.0
     },
     {
@@ -30399,7 +30399,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L306",
+      "source_location": "L307",
       "weight": 1.0
     },
     {
@@ -30411,7 +30411,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L298",
+      "source_location": "L299",
       "weight": 1.0
     },
     {
@@ -30423,7 +30423,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L302",
+      "source_location": "L303",
       "weight": 1.0
     },
     {
@@ -40599,7 +40599,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L297",
+      "source_location": "L298",
       "weight": 1.0
     },
     {
@@ -42543,7 +42543,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "current_performance.py",
-      "source_location": "L505",
+      "source_location": "L508",
       "weight": 1.0
     },
     {
@@ -49221,7 +49221,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "current_performance.py",
-      "source_location": "L458",
+      "source_location": "L461",
       "weight": 1.0
     },
     {
@@ -49243,7 +49243,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "current_performance.py",
-      "source_location": "L480",
+      "source_location": "L483",
       "weight": 1.0
     },
     {
@@ -49254,7 +49254,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "current_performance.py",
-      "source_location": "L483",
+      "source_location": "L486",
       "weight": 1.0
     },
     {
@@ -49265,7 +49265,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "current_performance.py",
-      "source_location": "L486",
+      "source_location": "L489",
       "weight": 1.0
     },
     {
@@ -49276,7 +49276,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "current_performance.py",
-      "source_location": "L489",
+      "source_location": "L492",
       "weight": 1.0
     },
     {
@@ -49518,7 +49518,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L314",
+      "source_location": "L316",
       "weight": 1.0
     },
     {
@@ -49529,7 +49529,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L318",
+      "source_location": "L320",
       "weight": 1.0
     },
     {
@@ -49540,7 +49540,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L327",
+      "source_location": "L329",
       "weight": 1.0
     },
     {
@@ -62696,7 +62696,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L316",
+      "source_location": "L318",
       "weight": 1.0
     },
     {
@@ -63161,7 +63161,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "lib/oos_callbacks.py",
-      "source_location": "L302",
+      "source_location": "L303",
       "weight": 1.0
     },
     {
@@ -64025,7 +64025,7 @@
       "confidence_score": 0.95,
       "context": "bag_classifier",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L305",
+      "source_location": "L307",
       "weight": 1.0
     },
     {
@@ -64061,7 +64061,7 @@
       "confidence_score": 0.95,
       "context": "base()",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L305",
+      "source_location": "L307",
       "weight": 1.0
     },
     {
@@ -69233,5 +69233,5 @@
       "source_file": "docs/timed-offers.md"
     }
   ],
-  "built_at_commit": "8fb5545dcbf5ed66c2b357edf1753fe1e40b5215"
+  "built_at_commit": "ad073ca94b6cdf5590001c11e025c41b12511d1c"
 }

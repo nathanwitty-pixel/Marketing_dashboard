@@ -296,7 +296,7 @@ def corporate_clients_from_db():
         if df is not None and not df.empty:
             return [{"client": str(r["client"]), "quoted": int(r["quoted"] or 0),
                      "invoiced": int(r["invoiced"] or 0), "agreedKes": int(r["agreed_kes"] or 0),
-                     "paidKes": int(r["paid_kes"] or 0), "sold": round(float(r["sold"] or 0)),
+                     "paidKes": int(r["paid_kes"] or 0), "receivedKes": int(r["received_kes"] or 0), "sold": round(float(r["sold"] or 0)),
                      # NULL comes back as NaN (truthy, and NaN != NaN), so `or ""` alone printed "nan"
                      "earlier": _txt(r["earlier"]), "earlierPaidOn": _txt(r["earlier_paid_on"]),
                      # the quotes behind "quoted": [{no, status, on, until, bags, kes, invoice}, …]
@@ -310,6 +310,27 @@ def corporate_clients_from_db():
 
 corporate_bags    = corporate_from_db()
 corporate_clients = corporate_clients_from_db()
+
+
+def corporate_target_from_db():
+    """This month's Odoo corporate target {bags, kes} (sales_pos_target, scope 'corporate', period 'month'),
+    or None when there is no row / no DB — the "Corporate by client" target strip then stays hidden."""
+    try:
+        from lib import db
+        today = datetime.date.today()
+        df = db.run_query("""
+            SELECT target_qty::float AS bags, target_amount::float AS kes FROM sales_pos_target
+            WHERE target_scope = 'corporate' AND period = 'month'
+              AND start_date <= :d AND end_date >= :d
+            ORDER BY write_date DESC LIMIT 1""", {"d": today.isoformat()})
+        if df is not None and not df.empty:
+            return {"bags": int(df.iloc[0]["bags"] or 0), "kes": int(df.iloc[0]["kes"] or 0)}
+    except Exception:
+        pass
+    return None
+
+
+corporate_target = corporate_target_from_db()
 sales_pos      = total_sales                    # POS-only (Weekly basis)
 total_sales    = total_sales + corporate_bags   # Sales card = POS + corporate
 
@@ -535,6 +556,7 @@ inline_script = (
     f'  salesPos:           "{fmt_int(sales_pos)}",\n'
     f'  corporateBags:      "{fmt_int(corporate_bags)}",\n'
     f'  corporateClients:   {_corp_clients_js},\n'
+    f'  corporateTarget:    {json.dumps(corporate_target)},\n'
     f'  rejectBags:        "{fmt_int(reject_bags)}",\n'
     f'  rejectPct:          "{fmt_pct(reject_pct)}",\n'
     f'  giftBags:           "{fmt_int(gift_bags)}",\n'

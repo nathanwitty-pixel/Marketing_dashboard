@@ -265,8 +265,10 @@ Columns (revenue / units / share toggle): **All**, **Top 5 categories**, **Other
 > **Popover (8 Oct 2026):** hover or tap a bag's 📞 chip for the full popover: the call-now / waiting header and what
 > "call now" means, the "N asked, M already bought" line, the Online / Walk-in totals, By shop (with stock) and
 > By colour, then the source note.
-> **"No colour"** = the request didn't name a colour (e.g. a lead that just says "Amaya"). The popover labels it
-> "No colour given".
+> **Any colour:** a request that names no colour (e.g. a lead that just says "Amaya") can take **any** colour. The
+> popover lists it as **"Any colour"**, and each shop's stock there is the bag's stock in **every** colour (Hilton
+> Amaya 21 stk), not stock with no colour. Internally the group is still keyed "No colour". Call-now uses the same
+> rule (any colour in stock).
 > **Combo requests:** a request whose product names a whole combo (contains "+", e.g. "Amaya Handbag or Elyse
 > Handbag + Moon Bag or Nizana") is **not** counted on any single bag. It counts only on that combo's
 > "📞 clients to convert" chip (Combos page). The bag matcher used to file it under the first bag (Amaya).

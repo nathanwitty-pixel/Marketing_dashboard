@@ -1,7 +1,7 @@
 # Graph Report - Marketing_dashboard  (2026-10-08)
 
 ## Corpus Check
-- 182 files · ~740,589 words
+- 182 files · ~741,732 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 15 file(s) not represented in the graph (top: .csv 8, (none) 2, .toml 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8fb5545d`
+- Built from commit: `ad073ca9`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -74,7 +74,7 @@
 - dataviz-charts skill
 - July 2026 Monthly Report Page
 - laya.py
-- Bags on offer vs not on offer
+- custom_range.py
 - High-End Visual Design skill
 - datetime
 - Kitengela Rejects tracker (timed offer)
@@ -94,7 +94,7 @@
 - shop_birthdays.py
 - current_performance.html
 - moves
-- custom_range.py
+- json
 - sys
 - _combo_button_usage
 - push_laya.py
@@ -104,7 +104,7 @@
 - self_made_combos.py
 - Chart type switcher (every chart, every menu)
 - test_push_planner.py
-- json
+- Bags on offer vs not on offer
 - test_stockout_demand.py
 - Out-of-stock demand — people, not requests
 - Denri Africa Dashboard Design System (skill)
@@ -139,16 +139,16 @@
 - Pricing rule — two tiers (BAND cost cutoff) + hand pins
 - _odoo_colour
 - contextlib
-- lib
+- Semantic color rules (green=good, amber=risk, red=critical, cyan=info)
 - _bg_rebuild
 - colours.py
 - _base_colour
 - Bag targets October 2026_b78d9f88.md
-- Semantic color rules (green=good, amber=risk, red=critical, cyan=info)
 - _bucket() function (Python bucketing of bag products)
-- _build_sheet_slots
 - Answer
+- _build_sheet_slots
 - add_laya
+- lib
 - self_made_combos_bundle/lib/__init__.py
 - _load_combos_by_shop
 
@@ -420,9 +420,9 @@ Nodes (12): What Needs Attention Section, Finding: Uganda marketing conversion a
 Cohesion: 0.20
 Nodes (16): hashlib, _ask(), ask_choice(), ask_yes_no(), available(), _cache_get(), _cache_put(), _load() (+8 more)
 
-### Community 58 - "Bags on offer vs not on offer"
-Cohesion: 0.20
-Nodes (10): Bags on offer vs not on offer, Buckets, Counted by how it was sold, Laptop sleeves are bags (27 Sep 2026), Layout (laptop / tablet / phone), Period selector (Monthly / Weekly / Last week / Custom), Regenerate, Shop birthdays (+2 more)
+### Community 58 - "custom_range.py"
+Cohesion: 0.19
+Nodes (14): block(), from_argv(), label(), load(), month_share(), path(), Per-page Custom period: the From – To dates a page was last built for. Each…, (from, to) dates for the page's Custom period, or None. Swapped if reversed;… (+6 more)
 
 ### Community 59 - "High-End Visual Design skill"
 Cohesion: 0.40
@@ -488,9 +488,9 @@ Nodes (5): current_performance.html, monthly_report_history.json, Sales-card rej
 Cohesion: 0.20
 Nodes (10): Actions (one per bag × market, then ranked), moves(), Kenya shop → shop moves: a shop holding ≥ min_from of a bag that sold 0 there…, More weight as the month runs out and when the market is behind its pace (gap…, Value at stake (units × price) × urgency × confidence. Price missing → KES…, score(), urgency(), test_moves_from_dead_shop_to_selling_low_shop() (+2 more)
 
-### Community 78 - "custom_range.py"
-Cohesion: 0.19
-Nodes (14): block(), from_argv(), label(), load(), month_share(), path(), Per-page Custom period: the From – To dates a page was last built for. Each…, (from, to) dates for the page's Custom period, or None. Swapped if reversed;… (+6 more)
+### Community 78 - "json"
+Cohesion: 0.12
+Nodes (17): One-off: restore August's Offer Type figures into monthly_report_history.json…, build(), _posts(), bag_signals.py — the Bag Signals page: drift, volatility, reliability, trend,…, MONTHLY / WEEKLY_MARKETING_POST rows, or ([], []) if the sheet can't be read., Append last week's posts + sales per bag (one row per Sun–Sat week) — feeds the…, _save_history(), json (+9 more)
 
 ### Community 79 - "sys"
 Cohesion: 0.12
@@ -528,9 +528,9 @@ Nodes (5): Chart type switcher (every chart, every menu), Layout rules, Skipped 
 Cohesion: 0.16
 Nodes (25): context(), What the reasons need beyond one row: Kenya pace per bag, the on-offer sellers…, Every reason that applies to a not-moving bag, each {code, label, text} with…, reasons(), codes(), F(), Tests for lib/push_rules.py (the Push Planner's pure logic). Run: python -m…, A facts row with sensible defaults, overridden by kw. (+17 more)
 
-### Community 88 - "json"
-Cohesion: 0.12
-Nodes (17): One-off: restore August's Offer Type figures into monthly_report_history.json…, build(), _posts(), bag_signals.py — the Bag Signals page: drift, volatility, reliability, trend,…, MONTHLY / WEEKLY_MARKETING_POST rows, or ([], []) if the sheet can't be read., Append last week's posts + sales per bag (one row per Sun–Sat week) — feeds the…, _save_history(), json (+9 more)
+### Community 88 - "Bags on offer vs not on offer"
+Cohesion: 0.20
+Nodes (10): Bags on offer vs not on offer, Buckets, Counted by how it was sold, Laptop sleeves are bags (27 Sep 2026), Layout (laptop / tablet / phone), Period selector (Monthly / Weekly / Last week / Custom), Regenerate, Shop birthdays (+2 more)
 
 ### Community 89 - "test_stockout_demand.py"
 Cohesion: 0.14
@@ -664,6 +664,10 @@ Nodes (6): "Below cost" flag, "No BOM" flag, "Pinned" flag, Pricing rule — two
 Cohesion: 0.33
 Nodes (6): _aliases(), odoo_name(), {NORM(odoo name): NORM(sheet name)} from product_aliases.csv — products Odoo…, Odoo's spelling of a catalogue name (the reverse of product_aliases.csv), for…, _odoo_colour(), The colour as the product itself is named — the product name minus its bag…
 
+### Community 137 - "Semantic color rules (green=good, amber=risk, red=critical, cyan=info)"
+Cohesion: 0.50
+Nodes (4): Design Tokens (colors, typography, spacing), Semantic color rules (green=good, amber=risk, red=critical, cyan=info), Analytics Dashboard specific rules (VISUAL_DENSITY: dense), Region colour palette (reference for Executive Dashboard)
+
 ### Community 138 - "_bg_rebuild"
 Cohesion: 0.33
 Nodes (7): _bg_rebuild(), work(), Seconds the last good `kind` rebuild of `lbl` took (any kind as a fallback),…, Rebuild `lbl` in the background. kind: "auto" (skipped if a rebuild was tried…, _rebuild_secs(), run_scripts(), _save_rebuild_secs()
@@ -680,11 +684,7 @@ Nodes (6): _base_colour(), _merge_rows_by_base_colour(), Upper-case, punctuation
 Cohesion: 0.50
 Nodes (3): Sheet: Bag targets, Sheet: Inputs, Sheet: Method
 
-### Community 142 - "Semantic color rules (green=good, amber=risk, red=critical, cyan=info)"
-Cohesion: 0.50
-Nodes (4): Design Tokens (colors, typography, spacing), Semantic color rules (green=good, amber=risk, red=critical, cyan=info), Analytics Dashboard specific rules (VISUAL_DENSITY: dense), Region colour palette (reference for Executive Dashboard)
-
-### Community 144 - "_bucket() function (Python bucketing of bag products)"
+### Community 142 - "_bucket() function (Python bucketing of bag products)"
 Cohesion: 0.50
 Nodes (4): _bucket() function (Python bucketing of bag products), "Other rejects" catch-all row (_OTHER_REJECTS), Python-side bucketing vs ILIKE OR-chain optimization, "Why these bags?" reject-only + totals table
 
@@ -692,7 +692,7 @@ Nodes (4): _bucket() function (Python bucketing of bag products), "Other rejects
 Cohesion: 0.50
 Nodes (4): _build_sheet_slots(), _combo_sheet_slots(), Sheet label "AMAYA/ELYSE+MOON/NIZANA" → [ {AMAYA,ELYSE}, {MOON,NIZANA} ]., [(label, slots)] for each running combo on the offer sheet (skips the TOTAL…
 
-### Community 147 - "add_laya"
+### Community 146 - "add_laya"
 Cohesion: 0.50
 Nodes (4): save_cache(), set_budget(), add_laya(), Laya's second opinion (lib/push_laya) when the model is on this PC; else a…
 

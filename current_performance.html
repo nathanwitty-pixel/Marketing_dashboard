@@ -416,11 +416,12 @@
     </div>
     <div id="corp-clients" hidden style="font-size:0.72rem;color:#94a3b8">
       <div class="corp-head card-label" style="margin-bottom:0.45rem"></div>
+      <div class="corp-target" hidden style="display:flex;flex-wrap:wrap;gap:0.35rem 0.9rem;margin:-0.1rem 0 0.55rem;padding:0.4rem 0.55rem;border-radius:8px;background:rgba(99,102,241,0.08);border:1px solid #2d3148;font-size:0.68rem;color:#94a3b8"></div>
       <div class="corp-scroll">
         <table style="width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums">
           <thead><tr style="color:#64748b;text-align:right">
             <th style="text-align:left;font-weight:600;padding:0.15rem 0.3rem 0.15rem 0">Client</th>
-            <th style="font-weight:600;padding:0.15rem 0.3rem" title="Bags on quotations dated this month (declined / cancelled left out). The tag under each number says what became of the quote; hover it for details.">Quoted<span class="ct" data-t="quoted"></span></th>
+            <th style="font-weight:600;padding:0.15rem 0.3rem" title="Bags on quotations dated this month (declined / cancelled left out). The total counts only bags still to invoice; the tag under each number says what became of the quote — hover it for details.">Quoted<span class="ct" data-t="quoted"></span></th>
             <th style="font-weight:600;padding:0.15rem 0.3rem" title="Bags on invoices raised this month, plus older invoices paid this month">Invoiced<span class="ct" data-t="invoiced"></span></th>
             <th style="font-weight:600;padding:0.15rem 0.3rem" title="Paid so far ÷ agreed amount (after WHT) — the total is all paid ÷ all agreed">Paid<span class="ct" data-t="paid"></span></th>
             <th style="font-weight:600;padding:0.15rem 0 0.15rem 0.3rem" title="Bags × share of the money received this month — what goes into Sales">Sold<span class="ct" data-t="sold"></span></th>
@@ -434,7 +435,8 @@
         a month tag (e.g. <span style="border:1px solid #334155;border-radius:4px;padding:0 0.2rem">Sep</span>) means the invoice
         was raised then and only the money came in now. <b style="color:#94a3b8">Paid</b> = paid so far ÷ agreed amount (after WHT).
         <b style="color:#94a3b8">Quoted</b> = bags on quotations raised this month; the tag under it says what became of
-        each quote (invoiced, or its status — draft / sent / accepted — and not invoiced yet).
+        each quote (invoiced, or its status and how many bags are still to invoice). The Quoted total counts only bags
+        still to invoice.
         <b style="color:#94a3b8">–</b> = none yet, e.g. a quotation not invoiced.
       </div>
       </div>
@@ -507,7 +509,8 @@ const PERF = {
   sales:              "4,490",
   salesPos:           "4,178",
   corporateBags:      "312",
-  corporateClients:   [{"client": "CIArb KENYA", "quoted": 0, "invoiced": 250, "agreedKes": 301000, "paidKes": 225750, "sold": 187, "earlier": "Sep", "earlierPaidOn": "1 Oct", "quotes": [], "invMonths": [{"m": "Sep", "cur": false}]}, {"client": "safarilink", "quoted": 100, "invoiced": 100, "agreedKes": 399000, "paidKes": 399000, "sold": 100, "earlier": "Aug", "earlierPaidOn": "5 Oct", "quotes": [{"no": "QUO-00064", "status": "sent", "on": "5 Oct", "until": "31 Oct", "bags": "100", "kes": "406000", "invoice": ""}], "invMonths": [{"m": "Aug", "cur": false}]}, {"client": "Greenlight Planet Kenya Ltd", "quoted": 0, "invoiced": 13, "agreedKes": 69996, "paidKes": 69996, "sold": 13, "earlier": "Sep", "earlierPaidOn": "2 Oct", "quotes": [], "invMonths": [{"m": "Sep", "cur": false}]}, {"client": "Zakale", "quoted": 10, "invoiced": 10, "agreedKes": 37000, "paidKes": 37000, "sold": 10, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00062", "status": "accepted", "on": "2 Oct", "until": "1 Nov", "bags": "10", "kes": "37000", "invoice": "INV-00134 paid 2 Oct"}], "invMonths": [{"m": "Oct", "cur": true}]}, {"client": "Mirror Arts Designs Limited", "quoted": 2, "invoiced": 2, "agreedKes": 5900, "paidKes": 5900, "sold": 2, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00063", "status": "accepted", "on": "4 Oct", "until": "3 Nov", "bags": "2", "kes": "5900", "invoice": "INV-00133 paid 4 Oct"}], "invMonths": [{"m": "Oct", "cur": true}]}, {"client": "George Eshuchi", "quoted": 10, "invoiced": 0, "agreedKes": 0, "paidKes": 0, "sold": 0, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00066", "status": "draft", "on": "7 Oct", "until": "6 Nov", "bags": "10", "kes": "28790", "invoice": ""}], "invMonths": []}, {"client": "H.k", "quoted": 1, "invoiced": 0, "agreedKes": 0, "paidKes": 0, "sold": 0, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00067", "status": "draft", "on": "8 Oct", "until": "7 Nov", "bags": "1", "kes": "6500", "invoice": ""}], "invMonths": []}],
+  corporateClients:   [{"client": "CIArb KENYA", "quoted": 0, "invoiced": 250, "agreedKes": 301000, "paidKes": 225750, "receivedKes": 225750, "sold": 187, "earlier": "Sep", "earlierPaidOn": "1 Oct", "quotes": [], "invMonths": [{"m": "Sep", "cur": false}]}, {"client": "safarilink", "quoted": 100, "invoiced": 100, "agreedKes": 399000, "paidKes": 399000, "receivedKes": 399000, "sold": 100, "earlier": "Aug", "earlierPaidOn": "5 Oct", "quotes": [{"no": "QUO-00064", "status": "sent", "on": "5 Oct", "until": "31 Oct", "bags": "100", "kes": "406000", "invoice": ""}], "invMonths": [{"m": "Aug", "cur": false}]}, {"client": "Greenlight Planet Kenya Ltd", "quoted": 0, "invoiced": 13, "agreedKes": 69996, "paidKes": 69996, "receivedKes": 69996, "sold": 13, "earlier": "Sep", "earlierPaidOn": "2 Oct", "quotes": [], "invMonths": [{"m": "Sep", "cur": false}]}, {"client": "Zakale", "quoted": 10, "invoiced": 10, "agreedKes": 37000, "paidKes": 37000, "receivedKes": 37000, "sold": 10, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00062", "status": "accepted", "on": "2 Oct", "until": "1 Nov", "bags": "10", "kes": "37000", "invoice": "INV-00134 paid 2 Oct"}], "invMonths": [{"m": "Oct", "cur": true}]}, {"client": "Mirror Arts Designs Limited", "quoted": 2, "invoiced": 2, "agreedKes": 5900, "paidKes": 5900, "receivedKes": 5900, "sold": 2, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00063", "status": "accepted", "on": "4 Oct", "until": "3 Nov", "bags": "2", "kes": "5900", "invoice": "INV-00133 paid 4 Oct"}], "invMonths": [{"m": "Oct", "cur": true}]}, {"client": "George Eshuchi", "quoted": 10, "invoiced": 0, "agreedKes": 0, "paidKes": 0, "receivedKes": 0, "sold": 0, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00066", "status": "draft", "on": "7 Oct", "until": "6 Nov", "bags": "10", "kes": "28790", "invoice": ""}], "invMonths": []}, {"client": "H.k", "quoted": 1, "invoiced": 0, "agreedKes": 0, "paidKes": 0, "receivedKes": 0, "sold": 0, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00067", "status": "draft", "on": "8 Oct", "until": "7 Nov", "bags": "1", "kes": "6500", "invoice": ""}], "invMonths": []}],
+  corporateTarget:    {"bags": 1163, "kes": 2325368},
   rejectBags:        "0",
   rejectPct:          "0.00%",
   giftBags:           "81",
@@ -625,26 +628,35 @@ const PROJ = {
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
     var n = function (v) { return v ? Number(v).toLocaleString() : '<span style="color:#475569">–</span>'; };
     var td = 'padding:0.15rem 0.3rem;border-top:1px solid rgba(100,116,139,0.18);text-align:right';
+    // Bags on this month's quotes that haven't become an invoice yet (the Quoted total counts only these).
+    var toInvoice = function (r) {
+      return (r.quotes || []).reduce(function (a, x) { return a + (x.invoice ? 0 : (Number(x.bags) || 0)); }, 0);
+    };
+    var fmt = function (v) { return Number(v || 0).toLocaleString(); };
     // Quoted: what became of each quote — a small tag ("invoiced 2 Oct" / "sent · not invoiced"), details on hover.
     var quoteTag = function (r) {
       var q = r.quotes || [];
       if (!q.length) return '';
       var done = q.filter(function (x) { return x.invoice; }).length, open = q.length - done, last = q[q.length - 1];
       var txt = q.length === 1
-        ? (last.invoice ? 'invoiced ' + esc(last.invoice.split(' ').slice(2).join(' ')) : esc(last.status) + ' · not invoiced')
-        : (done ? done + ' invoiced' : '') + (done && open ? ' · ' : '') + (open ? open + ' not invoiced' : '');
+        ? (last.invoice ? 'invoiced ' + esc(last.invoice.split(' ').slice(2).join(' ')) : esc(last.status) + ' · ' + fmt(toInvoice(r)) + ' to invoice')
+        : (done ? done + ' invoiced' : '') + (done && open ? ' · ' : '') + (open ? fmt(toInvoice(r)) + ' to invoice' : '');
       return '<span style="display:block;font-size:0.6rem;font-weight:500;white-space:nowrap;color:'
         + (open ? '#94a3b8' : '#6ee7b7') + '">' + txt + '</span>';
     };
     var quoteTip = function (r) {
       var q = r.quotes || [];
       if (!q.length) return '';
+      var more = toInvoice(r);
       return ' title="' + q.map(function (x) {
         var inv = x.invoice ? x.invoice.split(' ') : null;
         return esc(x.no) + ' (' + esc(x.status) + '), quoted ' + esc(x.on) + ': ' + Number(x.bags).toLocaleString() + ' bags · KES '
           + Number(x.kes).toLocaleString() + (inv ? ' → invoiced as ' + esc(inv[0]) + ' (' + esc(inv[1]) + ') on ' + esc(inv.slice(2).join(' '))
             : ' → not invoiced yet, valid until ' + esc(x.until));
-      }).join('&#10;') + '"';
+      }).join('&#10;')
+        // A client already invoiced this month with a new open quote: it's MORE, not the same order.
+        + (more && r.invoiced ? '&#10;If accepted: ' + fmt(more) + ' more bags to invoice, on top of the ' + fmt(r.invoiced) + ' already invoiced.' : '')
+        + '"';
     };
     box.querySelector('tbody').innerHTML = rows.map(function (r) {
       var pct = r.agreedKes ? Math.round(r.paidKes / r.agreedKes * 100) : null;
@@ -666,9 +678,27 @@ const PROJ = {
     // Totals in the pinned header, beside each column name.
     var sum = function (k) { return rows.reduce(function (a, r) { return a + (Number(r[k]) || 0); }, 0); };
     var agreed = sum('agreedKes'), tPct = agreed ? Math.round(sum('paidKes') / agreed * 100) : null;
-    var tot = { quoted: n(quoted), invoiced: n(sum('invoiced')), sold: n(Math.round(sum('sold'))),
+    var tot = { quoted: n(rows.reduce(function (a, r) { return a + toInvoice(r); }, 0)) + '<span style="display:block;font-size:0.58rem;font-weight:500;color:#94a3b8">to invoice</span>', invoiced: n(sum('invoiced')), sold: n(Math.round(sum('sold'))),
                 paid: tPct === null ? '–' : '<span style="color:' + (tPct >= 100 ? '#34d399' : (tPct > 0 ? '#fbbf24' : '#f87171')) + '">' + tPct + '%</span>' };
     Array.prototype.forEach.call(box.querySelectorAll('thead .ct'), function (el) { el.innerHTML = tot[el.getAttribute('data-t')] || ''; });
+    // Target strip: the month against the Odoo corporate target — bags sold, KES received, month gone, pipeline.
+    var T = PERF.corporateTarget, strip = box.querySelector('.corp-target');
+    if (T && strip && (T.bags || T.kes)) {
+      var now = new Date(), dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      var gone = Math.round(now.getDate() / dim * 100);
+      var pct = function (a, b) { return b ? Math.round(a / b * 100) : null; };
+      var badge = function (p) {
+        return p === null ? '–' : '<b style="color:' + (p >= gone ? '#34d399' : '#fbbf24') + '">' + p + '%</b>';
+      };
+      var soldB = Math.round(sum('sold')), recv = sum('receivedKes'), pipe = rows.reduce(function (a, r) { return a + toInvoice(r); }, 0);
+      strip.innerHTML =
+        '<span title="Odoo corporate target for the month (sales_pos_target)"><b style="color:#e2e8f0">Target</b> ' + fmt(T.bags) + ' bags · KES ' + fmt(T.kes) + '</span>'
+        + '<span title="Bags sold this month (Sold total) ÷ target bags">Bags <b style="color:#e2e8f0">' + fmt(soldB) + '</b> · ' + badge(pct(soldB, T.bags)) + '</span>'
+        + '<span title="Money received this month ÷ target KES">Received <b style="color:#e2e8f0">KES ' + fmt(recv) + '</b> · ' + badge(pct(recv, T.kes)) + '</span>'
+        + '<span title="Share of the month gone — green = at or ahead of it">Month gone <b style="color:#e2e8f0">' + gone + '%</b> (day ' + now.getDate() + ' of ' + dim + ')</span>'
+        + (pipe ? '<span title="Bags on this month\'s quotes not invoiced yet">Pipeline <b style="color:#e2e8f0">' + fmt(pipe) + '</b> to invoice</span>' : '');
+      strip.hidden = false;
+    }
     box.querySelector('.corp-head').textContent = 'Corporate by client (' + rows.length + ')'
       + (quoted ? ' · ' + quoted.toLocaleString() + ' bags quoted' : '');
     box.hidden = false;

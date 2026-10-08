@@ -291,7 +291,8 @@ def attach_stock(block, key_fn, colour_fn=None, stock_by_code=None, rows=None, s
         for k, e in bags.items():
             e["shops"] = [[s, n, stk(bag, (k,), s)] for s, n, *_ in e["shops"]]
             for c in e.get("colours", []):
-                c[2] = [[s, n, stk(col, (k, c[0]), s)] for s, n, *_ in c[2]]
+                # "No colour" = the client didn't name one, so any colour will do: the bag's stock in every colour
+                c[2] = [[s, n, stk(bag, (k,), s) if c[0] == "No colour" else stk(col, (k, c[0]), s)] for s, n, *_ in c[2]]
 
     if rows is not None:
         def in_stock(r):

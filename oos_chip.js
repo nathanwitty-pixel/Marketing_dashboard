@@ -135,7 +135,7 @@
       '<div class="sec">By shop · in stock now</div><div class="sh">' + (it.e.shops || []).map(function (s) { return shopItem(s, it.e.shopCh); }).join(' · ') + '</div>' +
       // Colours asked for, each with its own shops ("Black 63 — Ktda 23 · Eldoret 6").
       ((it.e.colours || []).length ? '<div class="sec">By colour</div>' + it.e.colours.map(function (c) {
-        return '<div class="col"><div class="row"><span>' + (c[0] === 'No colour' ? 'No colour given <span style="color:#64748b;font-weight:400">(the request didn\'t name one)</span>' : esc(c[0])) + '</span><b>' + c[1] + '</b></div>' +
+        return '<div class="col"><div class="row"><span>' + (c[0] === 'No colour' ? 'Any colour <span style="color:#64748b;font-weight:400">(no colour named, so any will do)</span>' : esc(c[0])) + '</span><b>' + c[1] + '</b></div>' +
           '<div class="sh">' + (c[2] || []).map(function (s) { return shopItem(s, c[3]); }).join(' · ') + '</div></div>';
       }).join('') : '') +
       '<div class="n">People, not requests · ' + NOTE + '</div>';

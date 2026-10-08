@@ -95,6 +95,22 @@ on …" or "→ not invoiced yet, valid until …" (`quotes` in `sql/corporate_c
 (8 Oct 2026): Zakale 10 = QUO-00062, invoiced as INV-00134 (paid) on 2 Oct. safarilink 100 = QUO-00064, sent 5 Oct,
 not invoiced yet; its 100 under Invoiced is a different, older August invoice. (A separate Pending column was
 tried on 8 Oct and dropped in favour of this.)
+**Quoted total = still to invoice:** the header total under Quoted counts only bags on this month's quotes that
+haven't become an invoice ("111 · to invoice" on 8 Oct: safarilink 100 + George Eshuchi 10 + H.k 1). Rows still
+show every quoted bag. A not-invoiced tag reads "sent · 100 to invoice". When the client already has invoiced bags
+in the table, the hover adds "If accepted: 100 more bags to invoice, on top of the 100 already invoiced". Safarilink
+reorders the same 100 Safarilink Travel Brown: Jan paid, Jul draft, Aug paid 5 Oct, and a **new** quote on 5 Oct
+with 100% payment on order. So its open quote is a likely repeat order, not the August one again.
+**Corporate target (Oct 2026):** a strip at the top of "Corporate by client" sets the month against the Odoo
+corporate target (`sales_pos_target`, `target_scope = 'corporate'`, `period = 'month'`, the row covering this
+month: `target_qty` bags, `target_amount` KES → `PERF.corporateTarget {bags, kes}`). It shows:
+- **Bags:** Sold total ÷ target bags.
+- **Money:** KES received this month ÷ target KES. Received = payments dated in the month (a deposit before
+  its invoice counts on the invoice date), summed from `received` in `sql/corporate_clients.sql`.
+- **Month gone:** days elapsed ÷ days in the month. Each % is green when at or above it, amber below.
+- **Pipeline:** the Quoted "to invoice" bags.
+Example, 8 Oct 2026: target 1,163 bags · KES 2,325,368; sold 312 (27%); received KES 737,646 (32%); day 8 of 31
+(26%); 111 to invoice. No target row → no strip.
 **Whole bags only (Oct 2026):** a part-paid invoice counts the **whole** bags its payment covers, rounded
 down per invoice (`FLOOR`, in both `corporate_bags.sql` and `corporate_clients.sql`). So the Sales card's
 "N corporate", the table's Sold total and Forward Projections always agree. Example: CIArb paid 75% of

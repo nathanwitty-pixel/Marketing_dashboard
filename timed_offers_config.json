@@ -1,5 +1,26 @@
 {
   "_help": "Timed offers for the month. Add each new offer as an item in 'offers'; all run live and stack on the page. At month rollover the generator archives these to Supabase and clears the list. Each offer: name, market, shops (list; empty=whole market), startDate/endDate (YYYY-MM-DD), bags (list), prices {BAG:{was,now}}.",
   "month": "2026-10",
-  "offers": []
+  "offers": [
+    {
+      "name": "9–10 Oct · Up to KES 1,400 Off (Kenya)",
+      "market": "Kenya",
+      "shops": [],
+      "startDate": "2026-10-09",
+      "endDate": "2026-10-10",
+      "bags": ["Aurora", "Avana HB", "Big Man Bag", "Double Press", "Fabela", "Gym Bag", "Mini Zuri", "Neo Man", "Pioneer", "Zuri"],
+      "prices": {
+        "Aurora":       {"was": 2100, "now": 1500},
+        "Avana HB":     {"was": 2100, "now": 1500},
+        "Big Man Bag":  {"was": 2100, "now": 1500},
+        "Double Press": {"was": 2600, "now": 2000},
+        "Fabela":       {"was": 2400, "now": 2000},
+        "Gym Bag":      {"was": 2600, "now": 2000},
+        "Mini Zuri":    {"was": 2600, "now": 1600},
+        "Neo Man":      {"was": 1600, "now": 1200},
+        "Pioneer":      {"was": 2600, "now": 2200},
+        "Zuri":         {"was": 3600, "now": 2200}
+      }
+    }
+  ]
 }
