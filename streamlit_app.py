@@ -17,7 +17,6 @@ import subprocess
 import threading
 import datetime
 from urllib.parse import quote
-from contextlib import contextmanager
 
 # ── Auto-launch ───────────────────────────────────────────────
 # Run this file directly — `python streamlit_app.py`, VS Code's Run button or a double-click —
@@ -539,14 +538,17 @@ if label in LOCKED:
 SCRIPT_TIMEOUT = 600
 
 
-def run_scripts(script_list, force_fresh=False):
+def run_scripts(script_list, force_fresh=False, on_step=None):
     # force_fresh (a manual Refresh) bypasses the Odoo TTL disk-cache and repopulates it;
     # auto-refresh / page-load leaves it unset so cached lookups are reused within their TTL.
+    # on_step(i) is called before script i starts (the progress bar's "step i+1 of n").
     env = {**os.environ, "DENRI_LAUNCHER": "1", "PYTHONIOENCODING": "utf-8"}
     if force_fresh:
         env["DENRI_FORCE_FRESH"] = "1"
     logs = []
-    for s in script_list:
+    for i, s in enumerate(script_list):
+        if on_step:
+            on_step(i)
         try:
             r = subprocess.run([sys.executable, os.path.join(BASE, s)], cwd=BASE, env=env,
                                capture_output=True, text=True, encoding="utf-8",
@@ -559,70 +561,20 @@ def run_scripts(script_list, force_fresh=False):
     return logs
 
 
-# ── Arcade "loading level" card — shown instead of st.spinner while Odoo rebuilds a page ──
-# Pure CSS (Pac-Man eating dots, a segmented power bar, rotating tips), so it keeps animating
-# while the Python side is blocked in run_scripts. Colours ride the --v5-* theme tokens.
-_GAME_CSS = """<style>
-.gl-card{margin:0.6rem 0 1rem;padding:1rem 1.2rem;border-radius:14px;background:var(--v5-raised);
-  border:2px solid var(--v5-indigo);box-shadow:0 0 0 3px rgba(79,70,229,0.15),0 8px 24px rgba(79,70,229,0.18);
-  font-family:ui-monospace,'Cascadia Mono',Consolas,monospace;color:var(--v5-hi);}
-.gl-top{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
-.gl-tag{font-size:0.7rem;font-weight:800;letter-spacing:0.18em;color:#facc15;animation:gl-blink 1s steps(2) infinite;}
-.gl-lvl{font-size:1.05rem;font-weight:800;margin-top:0.15rem;}
-.gl-p1{font-size:0.7rem;color:var(--v5-lo);letter-spacing:0.12em;}
-.gl-track{position:relative;height:26px;margin:0.9rem 0 0.7rem;overflow:hidden;}
-.gl-pac{position:absolute;top:1px;left:0;width:24px;height:24px;border-radius:50%;background:#facc15;
-  animation:gl-chomp 0.3s linear infinite alternate,gl-run 4s linear infinite;z-index:2;}
-.gl-dots{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-around;padding-left:30px;}
-.gl-dots i{width:7px;height:7px;border-radius:2px;background:var(--v5-mid);}
-.gl-bar{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;}
-.gl-bar i{height:10px;border-radius:2px;background:var(--v5-track);animation:gl-seg 2.4s linear infinite;}
-.gl-tips{position:relative;height:1.2rem;margin-top:0.7rem;font-size:0.78rem;color:var(--v5-mid);}
-.gl-tips span{position:absolute;left:0;opacity:0;animation:gl-tip 12s linear infinite;}
-@keyframes gl-blink{50%{opacity:0.25}}
-@keyframes gl-chomp{from{clip-path:polygon(100% 0,50% 50%,100% 100%,0 100%,0 0)}
-  to{clip-path:polygon(100% 50%,50% 50%,100% 50%,0 100%,0 0)}}
-@keyframes gl-run{from{left:-24px}to{left:100%}}
-@keyframes gl-seg{0%,100%{background:var(--v5-track)}8%,40%{background:linear-gradient(90deg,#4f46e5,#22d3ee);box-shadow:0 0 6px rgba(34,211,238,0.6)}}
-@keyframes gl-tip{0%{opacity:0;transform:translateY(4px)}3%,22%{opacity:1;transform:none}25%,100%{opacity:0}}
-@media (prefers-reduced-motion:reduce){.gl-card *{animation:none !important}.gl-tips span:first-child{opacity:1}}
-</style>"""
-_GAME_TIPS = ("▶ Respawning sales from Odoo…", "★ Collecting combo XP…",
-              "⚔ Syncing every shop on the map…", "💾 Saving your progress…")
-
-
-@contextmanager
-def game_loading(title, tag="LOADING LEVEL"):
-    """Show the arcade loading card while the with-block runs, then clear it."""
-    tips = "".join(f"<span style='animation-delay:{i * 3}s'>{_esc(t)}</span>" for i, t in enumerate(_GAME_TIPS))
-    segs = "".join(f"<i style='animation-delay:{i * 0.2:.1f}s'></i>" for i in range(12))
-    slot = st.empty()
-    slot.markdown(
-        _GAME_CSS + "<div class='gl-card' role='status' aria-live='polite'>"
-        "<div class='gl-top'><div><div class='gl-tag'>" + _esc(tag) + "</div>"
-        "<div class='gl-lvl'>" + _esc(title) + "</div></div><div class='gl-p1'>PLAYER 1 · READY</div></div>"
-        "<div class='gl-track'><div class='gl-pac'></div><div class='gl-dots'>" + "<i></i>" * 14 + "</div></div>"
-        "<div class='gl-bar'>" + segs + "</div><div class='gl-tips'>" + tips + "</div></div>",
-        unsafe_allow_html=True)
-    try:
-        yield
-    finally:
-        slot.empty()
-
-
-# ── Auto-refresh every AUTO_REFRESH_MIN minutes ──────────────────────────────
-# The current page regenerates itself from Odoo once its data goes stale. The
-# generated HTML's mtime is the shared freshness clock (every viewer sees it). The
-# rebuild runs in a background thread so the last-built page shows straight away;
-# a small watcher reruns the app when the rebuild ends, which swaps the new page in.
-# One job per page across all sessions, at most one attempt per interval (so a
-# failed build doesn't loop), and a JS timer in the header reloads an idle tab so
-# the check keeps firing even with no clicks.
+# ── Background rebuilds: auto-refresh, the Refresh button and custom ranges ──
+# Every rebuild runs in a background thread, so the last-built page stays on screen; a
+# watcher above it shows a progress bar and reruns the app when the rebuild ends, which
+# swaps the new page in. One job per page across all sessions. The hourly auto-refresh
+# uses the generated HTML's mtime as the shared freshness clock and tries at most once per
+# interval (so a failed build doesn't loop); a JS timer in the header reloads an idle tab
+# so the check keeps firing even with no clicks. Spec: docs/README.md › Refreshing.
 AUTO_REFRESH_MIN = 60
 _AUTO_SECS = AUTO_REFRESH_MIN * 60
 # DASH_NO_AUTOREFRESH=1 (testing / previews): never rebuild pages from Odoo on a page view and
 # never reload idle tabs. The manual "Refresh this page" button still works.
 NO_AUTOREFRESH = os.environ.get("DASH_NO_AUTOREFRESH") == "1"
+# How long each page's last good rebuild took ("<label>|<kind>" → seconds) — the progress estimate.
+REBUILD_TIMES = os.path.join(BASE, ".rebuild_times.json")
 
 
 def _page_age_secs(path):
@@ -632,38 +584,75 @@ def _page_age_secs(path):
         return float("inf")
 
 
+def _rebuild_secs(lbl, kind):
+    """Seconds the last good `kind` rebuild of `lbl` took (any kind as a fallback), else None."""
+    try:
+        with open(REBUILD_TIMES, encoding="utf-8") as fh:
+            times = _json.load(fh)
+    except (OSError, ValueError):
+        return None
+    return times.get(f"{lbl}|{kind}") or next((v for k, v in times.items() if k.startswith(lbl + "|")), None)
+
+
+def _save_rebuild_secs(lbl, kind, secs):
+    try:
+        with open(REBUILD_TIMES, encoding="utf-8") as fh:
+            times = _json.load(fh)
+    except (OSError, ValueError):
+        times = {}
+    times[f"{lbl}|{kind}"] = round(secs, 1)
+    try:
+        with open(REBUILD_TIMES, "w", encoding="utf-8") as fh:
+            _json.dump(times, fh, indent=1)
+    except OSError:
+        pass
+
+
 @st.cache_resource
 def _bg_jobs():
-    """Background rebuilds shared by every session: label → {started, ended, logs}."""
+    """Background rebuilds shared by every session: label → job (see _bg_rebuild)."""
     return {"lock": threading.Lock(), "jobs": {}}
 
 
-def _bg_rebuild(lbl, script_list):
-    """Start a background rebuild of `lbl` unless one is running or was tried this interval.
-    Returns the job's start time when one is running (new or existing), else None."""
+def _bg_rebuild(lbl, script_list, kind="auto", title=""):
+    """Rebuild `lbl` in the background. kind: "auto" (skipped if a rebuild was tried this
+    interval), "manual" (Refresh — bypasses the Odoo cache) or "range" (custom period Apply /
+    Clear). While one is running, a manual / range request is queued to run straight after it."""
     reg = _bg_jobs()
     with reg["lock"]:
         job = reg["jobs"].get(lbl)
         if job and job["ended"] is None:
-            return job["started"]
-        if job and time.time() - job["started"] < _AUTO_SECS:
-            return None
-        job = {"started": time.time(), "ended": None, "logs": []}
+            if kind != "auto":
+                job["next"] = (script_list, kind, title)
+            return
+        if kind == "auto" and job and time.time() - job["started"] < _AUTO_SECS:
+            return
+        job = {"id": time.time_ns(), "started": time.time(), "ended": None, "logs": [],
+               "kind": kind, "title": title, "next": (script_list, kind, title),
+               "pass_started": time.time(), "steps": len(script_list), "step": 0,
+               "expected": _rebuild_secs(lbl, kind)}
         reg["jobs"][lbl] = job
 
     def work():
         try:
-            job["logs"] = run_scripts(script_list)
+            while True:
+                with reg["lock"]:
+                    nxt, job["next"] = job["next"], None
+                    if not nxt:
+                        job["ended"] = time.time()
+                        return
+                sl, k, t = nxt
+                job.update(kind=k, title=t, steps=len(sl), step=0, pass_started=time.time(),
+                           expected=_rebuild_secs(lbl, k))
+                job["logs"] = run_scripts(sl, force_fresh=(k == "manual"),
+                                          on_step=lambda i: job.update(step=i))
+                if all(rc == 0 for _, rc, _ in job["logs"]):
+                    _save_rebuild_secs(lbl, k, time.time() - job["pass_started"])
         finally:
-            job["ended"] = time.time()
+            if job["ended"] is None:
+                job["ended"] = time.time()
 
     threading.Thread(target=work, name=f"rebuild:{lbl}", daemon=True).start()
-    return job["started"]
-
-
-_bg_started = None
-if not NO_AUTOREFRESH and os.path.exists(html_path) and _page_age_secs(html_path) >= _AUTO_SECS:
-    _bg_started = _bg_rebuild(label, scripts)
 
 
 # ── Month-end catch-up: archive last month to Supabase (History) automatically ──
@@ -814,18 +803,7 @@ with _rc:
     _do_refresh = st.button("Refresh", icon=":material/refresh:", use_container_width=True,
                             type="primary", key="refresh_btn")
 if _do_refresh:
-    with game_loading(label, "RELOADING LEVEL"):
-        logs = run_scripts(scripts, force_fresh=True)   # manual: bypass cache, pull fresh + repopulate
-    fails = [(s, out) for s, rc, out in logs if rc != 0]
-    unreachable = any(("not reachable" in (out or "").lower())
-                      or ("unreachable" in (out or "").lower())
-                      for _, _, out in logs)
-    # Stash the result so it survives the rerun (a toast would vanish immediately).
-    st.session_state.refresh_msg = {
-        "when": datetime.datetime.now().strftime("%H:%M:%S"),
-        "fails": fails, "unreachable": unreachable,
-    }
-    st.rerun()
+    _bg_rebuild(label, scripts, "manual")          # bypass the Odoo cache, pull fresh + repopulate
 
 # Persistent refresh feedback (shown after the rerun re-reads the regenerated page)
 _rm = st.session_state.pop("refresh_msg", None)
@@ -842,37 +820,12 @@ if _rm:
                    "On the deployed app this means the DB secrets are missing or the "
                    "database is refusing the connection.")
     else:
-        _how = "Auto-refreshed" if _rm.get("auto") else "Refreshed"
-        st.success(f"✓ {_how} from Odoo at {_rm['when']}")
-
-
-# Background rebuild in progress: say so, and rerun the app the moment it ends so the frame
-# below picks up the regenerated page (its cache token is the file's mtime).
-@st.fragment(run_every=5)
-def _bg_watch(lbl, started):
-    job = _bg_jobs()["jobs"].get(lbl)
-    if not job or job["started"] != started or job["ended"] is not None:
-        logs = job["logs"] if job else []
-        st.session_state.refresh_msg = {
-            "when": datetime.datetime.now().strftime("%H:%M:%S"),
-            "fails": [(s, out) for s, rc, out in logs if rc != 0],
-            "unreachable": any(("not reachable" in (out or "").lower())
-                               or ("unreachable" in (out or "").lower())
-                               for _, _, out in logs),
-            "auto": True,
-        }
-        st.rerun(scope="app")
-    st.caption(f":material/sync: Updating from Odoo in the background "
-               f"({int(time.time() - started)}s) — showing the last build until it's ready.")
-
-
-if _bg_started is not None:
-    _bg_watch(label, _bg_started)
+        st.success(f"✓ {_rm.get('how', 'Refreshed')} from Odoo at {_rm['when']}")
 
 # ── Custom period (per page), picked in the page's own Period dropdown ──
 # "Custom range…" in a Period dropdown (custom_range.js) reloads the app with ?page=<label>&crange=<key>:<from>:<to>
-# (or <key>:clear). Here the dates go to that page's range file and the page is rebuilt from Odoo for them; its
-# dropdowns then show "Custom (dd Mon – dd Mon)". Specs: docs/README.md › Custom range.
+# (or <key>:clear). Here the dates go to that page's range file and the page is rebuilt from Odoo for them in the
+# background; its dropdowns then show "Custom (dd Mon – dd Mon)". Specs: docs/README.md › Custom range.
 CUSTOM_RANGE_KEYS = {
     "boo": ("boo_custom_range.json", ["bags_on_offer.py"]),
     "np":  ("np_custom_range.json", ["new_products.py"]),
@@ -893,20 +846,74 @@ if _qp_cr:
     if _cfg and _cr_ok:
         with open(os.path.join(BASE, _cfg[0]), "w", encoding="utf-8") as _fh:
             _json.dump({"from": _cr_ok[0].isoformat(), "to": _cr_ok[1].isoformat()}, _fh)
-        with game_loading(f"{_cr_ok[0]:%d %b} – {_cr_ok[1]:%d %b}", "BUILDING CUSTOM LEVEL"):
-            _logs = run_scripts(_cfg[1])
-        st.session_state.refresh_msg = {
-            "when": datetime.datetime.now().strftime("%H:%M:%S"),
-            "fails": [(s, out) for s, rc, out in _logs if rc != 0], "unreachable": False}
-        st.rerun()
+        _bg_rebuild(label, _cfg[1], "range", f"Building {_cr_ok[0]:%d %b} – {_cr_ok[1]:%d %b}")
     elif _cfg and _parts[1:] == ["clear"]:
         try:
             os.remove(os.path.join(BASE, _cfg[0]))
         except OSError:
             pass
-        with game_loading("Back to the default period", "CLEARING LEVEL"):
-            run_scripts(_cfg[1])
-        st.rerun()
+        _bg_rebuild(label, _cfg[1], "range", "Going back to the default period")
+
+# Hourly auto-refresh: a stale page starts a background rebuild (no-op if one is running).
+if not NO_AUTOREFRESH and os.path.exists(html_path) and _page_age_secs(html_path) >= _AUTO_SECS:
+    _bg_rebuild(label, scripts)
+
+
+def _fmt_secs(s):
+    s = int(max(s, 0))
+    return f"{s}s" if s < 60 else f"{s // 60}m {s % 60:02d}s"
+
+
+def _bg_done_msg(job):
+    """The refresh_msg for a finished background rebuild (None: the job vanished)."""
+    logs = job["logs"] if job else []
+    return {
+        "when": datetime.datetime.fromtimestamp((job or {}).get("ended") or time.time()).strftime("%H:%M:%S"),
+        "fails": [(s, out) for s, rc, out in logs if rc != 0],
+        "unreachable": any(("not reachable" in (out or "").lower())
+                           or ("unreachable" in (out or "").lower())
+                           for _, _, out in logs),
+        "how": {"auto": "Auto-refreshed", "range": "Custom period built"}.get((job or {}).get("kind"), "Refreshed"),
+    }
+
+
+# Background rebuild in progress: a progress bar above the last build, and a rerun of the app
+# the moment it ends so the frame below picks up the regenerated page (its cache token is the
+# file's mtime). The % is elapsed ÷ how long this page's last good rebuild took.
+@st.fragment(run_every=2)
+def _bg_watch(lbl, job_id):
+    job = _bg_jobs()["jobs"].get(lbl)
+    if not job or job["id"] != job_id or job["ended"] is not None:
+        st.session_state.pop("bg_watching", None)
+        st.session_state.refresh_msg = _bg_done_msg(job)
+        st.rerun(scope="app")
+    kind = job.get("kind", "auto")
+    what = job.get("title") or {"manual": "Refreshing from Odoo"}.get(kind, "Updating from Odoo")
+    el = time.time() - job.get("pass_started", job["started"])
+    exp = job.get("expected")
+    if exp:
+        pct = min(el / exp, 0.97)
+        how_far = (f"{pct:.0%} · about {_fmt_secs(exp - el)} left" if el < exp
+                   else f"{pct:.0%} · almost done ({_fmt_secs(el)})")
+    else:
+        pct = el / (el + 45)                           # no estimate yet: creep towards full
+        how_far = f"{_fmt_secs(el)} so far (first run, no time estimate yet)"
+    steps = job.get("steps", 1)
+    step = f" · step {job.get('step', 0) + 1} of {steps}" if steps > 1 else ""
+    if job.get("next"):
+        step += " · another rebuild queued"
+    st.progress(pct, text=f"⟳ {what} — {how_far}{step} · showing the last build until it's ready")
+
+
+_bg_job = _bg_jobs()["jobs"].get(label)
+if _bg_job and _bg_job["ended"] is None:
+    st.session_state.bg_watching = (label, _bg_job["id"])
+    _bg_watch(label, _bg_job["id"])
+elif st.session_state.get("bg_watching") == (label, _bg_job and _bg_job["id"]):
+    # The rebuild this session was watching ended between watcher ticks — still say how it went.
+    st.session_state.pop("bg_watching")
+    st.session_state.refresh_msg = _bg_done_msg(_bg_job)
+    st.rerun()
 
 # ── Render the selected page ──
 # Injected into each embedded page so it (a) doesn't force a full-viewport black

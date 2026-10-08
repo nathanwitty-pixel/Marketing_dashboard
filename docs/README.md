@@ -141,6 +141,15 @@ commits nothing.
 streamlit_app.py` — pages are never rebuilt on a page view and idle tabs don't reload
 (the manual *Refresh this page* button still works).
 
+**Refreshing (Oct 2026):** every rebuild runs in the background: the hourly auto-refresh, the
+**Refresh** button (which bypasses the Odoo cache) and a custom range Apply / Clear. The last-built page
+stays on screen. Above it, a progress bar shows the percentage, the time left and the step (when a page
+has more than one script). The estimate is how long that page and kind of rebuild took last time
+(`.rebuild_times.json`, local only). The first run has no estimate, so the bar just creeps and shows
+the seconds so far. When the rebuild ends, the app reruns and the new page swaps in. There is one rebuild
+per page, shared by every viewer. A Refresh or range change made while one is running is queued to run
+straight after it.
+
 **Navigation:** there is no sidebar. One sticky top bar (like `shell.html`'s header) holds the brand,
 every page as a pill tab (a `?page=` link, so reloads and shared links keep the page and theme), the
 Light/Dark switch, contact and the owner card. The tab track scrolls left ↔ right (`top_nav.js`); below
@@ -226,7 +235,8 @@ Pages whose **Period** dropdowns can take any From – To window get a **Custom*
   opens a From / To picker with quick picks (last 7 / 30 days, last month, this month) and **Apply / Clear /
   Cancel**. Apply reloads the app with `?page=<label>&crange=<key>:<from>:<to>` (Clear: `<key>:clear`;
   keys `boo` / `np` / `py`); `streamlit_app.py` (`CUSTOM_RANGE_KEYS`) writes the page's range file, rebuilds
-  the page from Odoo behind the loading screen, drops `crange` from the URL and opens the page — its
+  the page from Odoo in the background (the previous build stays up with a progress bar; see
+  *Refreshing*), drops `crange` from the URL and swaps the new page in when it's ready — its
   dropdowns then show **Custom (dd Mon – dd Mon)**. The range stays (auto-refresh keeps rebuilding it) until
   **Clear**. The page frame's sandbox can't navigate the app itself, so the picker schedules the navigation
   on the (same-origin) app window. Opened as a plain file, the picker shows the command to run instead.
