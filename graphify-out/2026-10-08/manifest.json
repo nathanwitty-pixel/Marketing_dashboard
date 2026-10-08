@@ -768,27 +768,27 @@
     "semantic_hash": ""
   },
   "bags_offer_source.json": {
-    "mtime": 1791460631.2212894,
-    "seen": 1791460689.0558996,
-    "ast_hash": "7f95e9181d843e6544e7f2e88f08a70f",
+    "mtime": 1791465021.8565092,
+    "seen": 1791465146.8068514,
+    "ast_hash": "77801fc29da9056818da59551e2413df",
     "semantic_hash": ""
   },
   "bags_on_offer.py": {
-    "mtime": 1791459294.3927138,
-    "seen": 1791459466.8584685,
-    "ast_hash": "d2d9513970114ca63a9f9f75613043ba",
+    "mtime": 1791464942.7651646,
+    "seen": 1791465146.806868,
+    "ast_hash": "57dd6b88070426eba429660d4d61886e",
     "semantic_hash": ""
   },
   "bags_on_offer.html": {
-    "mtime": 1791459421.4683502,
-    "seen": 1791459466.85932,
-    "ast_hash": "030e6878d8e6340081cacb8c00e72d10",
+    "mtime": 1791465103.3795245,
+    "seen": 1791465146.8077035,
+    "ast_hash": "86fe1fece29f3cdf225981d1be3826ec",
     "semantic_hash": ""
   },
   "docs/bags-on-offer.md": {
-    "mtime": 1791459250.0857854,
-    "seen": 1791459466.859347,
-    "ast_hash": "a40addda61d0af82d2a44dc51c8d4aea",
+    "mtime": 1791464839.3961663,
+    "seen": 1791465146.8077285,
+    "ast_hash": "5ce0f1a8eab9f530755cf6b60dcc03be",
     "semantic_hash": ""
   },
   "lib/new_products_list.py": {
@@ -1014,15 +1014,15 @@
     "semantic_hash": ""
   },
   "lib/receipt_combos.py": {
-    "mtime": 1791136723.7101943,
-    "seen": 1791136931.728301,
-    "ast_hash": "ea23f83c2273e20625410915d21db296",
+    "mtime": 1791464883.4178045,
+    "seen": 1791465146.8070524,
+    "ast_hash": "3b563418d4798131500a7f94ee0be2b4",
     "semantic_hash": ""
   },
   "tests/test_receipt_combos.py": {
-    "mtime": 1791133922.867855,
-    "seen": 1791134164.7890842,
-    "ast_hash": "ba4cf78882680b3261070cda19d54a24",
+    "mtime": 1791464899.315256,
+    "seen": 1791465146.8074799,
+    "ast_hash": "f8f0b06956390c2d2846b29fa6a1bcc4",
     "semantic_hash": ""
   },
   "RALPH_OUTSIDE.md": {
@@ -1200,9 +1200,9 @@
     "semantic_hash": ""
   },
   "bags_offer_source_2026-10.json": {
-    "mtime": 1791460631.2258747,
-    "seen": 1791460689.0559072,
-    "ast_hash": "7f95e9181d843e6544e7f2e88f08a70f",
+    "mtime": 1791465021.859568,
+    "seen": 1791465146.8068633,
+    "ast_hash": "77801fc29da9056818da59551e2413df",
     "semantic_hash": ""
   },
   "boo_custom_range.json": {
@@ -1269,6 +1269,12 @@
     "mtime": 1791458614.1537979,
     "seen": 1791458644.7711039,
     "ast_hash": "d474c80f0455407d374b08f5b23cfe1a",
+    "semantic_hash": ""
+  },
+  "RALPH_MARKETS.md": {
+    "mtime": 1791465130.2632327,
+    "seen": 1791465146.807644,
+    "ast_hash": "b3946ab42f1c2a6b5c0aa607de303134",
     "semantic_hash": ""
   }
 }
