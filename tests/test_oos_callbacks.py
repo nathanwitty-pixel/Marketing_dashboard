@@ -1,6 +1,6 @@
 """Tests for lib/oos_callbacks.py (WhatsApp "Out of stock — call back" demand). Run:
     python -m pytest tests/test_oos_callbacks.py -q
-The reconciliation tests read live Odoo and are skipped when it is unreachable.
+The reconciliation tests (WhatsApp channel vs sql/oos_callbacks.sql) read live Odoo and are skipped when it is unreachable.
 """
 import datetime
 import os
@@ -27,17 +27,25 @@ def live():
     return oc.oos_by_bag_shop()
 
 
+@pytest.fixture(scope="module")
+def online(live):
+    """Lifetime {product: {shop: people}} from the WhatsApp channel only — oos_callbacks.sql's rows
+    (live also holds walk-in leads, which that SQL doesn't see)."""
+    return {k: {s: len(v) for s, v in shops.items()}
+            for k, shops in oc.collect(oc._online_rows())["lifetime"].items()}
+
+
 # ── reconciliation against raw SQL ───────────────────────────
-def test_lifetime_total_matches_raw_sql(live):
-    got = sum(n for shops in live["lifetime"].values() for n in shops.values())
+def test_lifetime_total_matches_raw_sql(online):
+    got = sum(n for shops in online.values() for n in shops.values())
     raw = db.run_query(f"SELECT COUNT(*) AS n FROM (SELECT DISTINCT person, product, shop FROM ({_base_sql()}) q) x")
     assert got == int(raw.n[0])
 
 
-def test_top_bag_per_shop_matches_raw_sql(live):
+def test_top_bag_per_shop_matches_raw_sql(online):
     raw = db.run_query(f"SELECT shop, COUNT(DISTINCT person) AS n FROM ({_base_sql()}) q "
                        "WHERE product = :p GROUP BY shop", {"p": TOP_BAG})
-    assert live["lifetime"][TOP_BAG] == {r.shop: int(r.n) for r in raw.itertuples()}
+    assert online[TOP_BAG] == {r.shop: int(r.n) for r in raw.itertuples()}
 
 
 def test_current_and_periods_never_exceed_lifetime(live):
