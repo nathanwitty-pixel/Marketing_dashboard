@@ -8,8 +8,9 @@
  *
  * Left alone: the page sidebar (#hsb), hover popovers, chart menus, <template> content and
  * fixed / absolute overlays. Buttons, links, selects, inputs, tables and the chart canvas
- * itself never start a drag (chart tooltips, sorting and copying keep working) — grab a card
- * by its title or padding. On touch, hold briefly to pick up, so swiping still scrolls.
+ * itself never start a drag (chart tooltips, sorting and copying keep working). Pressing on text
+ * (a value, a name, a title) selects it instead — grab a card by its padding / empty space.
+ * On touch, hold briefly to pick up, so swiping still scrolls.
  *
  * Order is saved in localStorage per page + container, keyed by each item's id or title, so
  * a regenerated page keeps the viewer's layout; content a page rebuilds in JS is re-sorted
@@ -24,6 +25,31 @@
   var SKIP = '#hsb, .hsb, .sales-popover, .chartsw-menu, template, nav, header, footer';
   var NO_DRAG = 'a, button, select, input, textarea, label, summary, canvas, table, [contenteditable], .chartsw-btn, .kpi-reset';
   var TITLE = 'h1, h2, h3, h4, .card-label, .chart-cap, .block-title, .sec-head, .panel-title, .title, summary';
+
+  // A mouse press right on a word (a KPI value, a shop / bag name, a title) selects text instead of
+  // picking the card up — grab cards by their padding / empty space. Touch keeps hold-to-pick-up.
+  function onText(evt) {
+    if (evt.pointerType === 'touch' || /^touch/.test(evt.type || '')) return false;
+    var x = evt.clientX, y = evt.clientY, node, off;
+    if (document.caretPositionFromPoint) {
+      var p = document.caretPositionFromPoint(x, y); if (!p) return false;
+      node = p.offsetNode; off = p.offset;
+    } else if (document.caretRangeFromPoint) {
+      var c = document.caretRangeFromPoint(x, y); if (!c) return false;
+      node = c.startContainer; off = c.startOffset;
+    } else return false;
+    if (!node || node.nodeType !== 3 || !node.textContent.trim()) return false;
+    var r = document.createRange(), len = node.textContent.length;
+    for (var i = Math.max(0, off - 1); i <= Math.min(len - 1, off); i++) {   // the characters either side of the caret
+      r.setStart(node, i); r.setEnd(node, i + 1);
+      var rects = r.getClientRects();
+      for (var j = 0; j < rects.length; j++) {
+        var b = rects[j];
+        if (x >= b.left - 1 && x <= b.right + 1 && y >= b.top - 1 && y <= b.bottom + 1) return true;
+      }
+    }
+    return false;
+  }
 
   function store(key, val) {
     try {
@@ -75,6 +101,7 @@
       '.dnd-box > .dnd-item { cursor: grab; }' +
       '.dnd-box > .dnd-item:active { cursor: grabbing; }' +
       '.dnd-box > .dnd-item table, .dnd-box > .dnd-item canvas { cursor: auto; }' +
+      '.dnd-box > .dnd-item :is(h1,h2,h3,h4,p,b,span,td,th,div):not(:has(*)) { cursor: text; }' +
       '.kpi-ghost { opacity: 0.35; outline: 2px dashed rgba(99,102,241,0.7); outline-offset: -2px; }' +
       '.kpi-chosen { box-shadow: 0 12px 32px rgba(0,0,0,0.45) !important; }' +
       'body.kpi-dragging .sales-popover { display: none !important; }' +
@@ -111,7 +138,10 @@
       draggable: '.dnd-item',
       animation: 160,
       delay: 180, delayOnTouchOnly: true,
-      filter: NO_DRAG,
+      filter: function (evt, target) {
+        var m = target && target.closest ? target.closest(NO_DRAG) : null;
+        return !!(m && el.contains(m)) || onText(evt);
+      },
       preventOnFilter: false,
       ghostClass: 'kpi-ghost', chosenClass: 'kpi-chosen',
       onStart: function () { document.body.classList.add('kpi-dragging'); },

@@ -1,15 +1,15 @@
 """
 bags_on_offer.py
 ─────────────────────────────────────────────────────────────────
-Bags on offer vs bags not on offer vs others — Kenya, for three periods
-(Monthly = live month to date, Weekly = current Sun–Sat week, Last week = previous
-complete Sun–Sat week).
+Bags on offer vs bags not on offer vs others — Kenya, Tanzania and Uganda on one page (in KES),
+for three periods (Monthly = live month to date, Weekly = current Sun–Sat week, Last week =
+previous complete Sun–Sat week).
 
-On offer     = combo products (running + self-made, name "A + B") and single sales of any
-               bag that is a running-combo component, a Deal of the Week or a Power Deal.
-Not on offer = every other catalogue bag sold, plus the month's new products (MONTHLY_TARGET
-               col I) that are on no offer — even ones not in the price catalogue yet.
-Others       = gift bags (POS) and corporate sales (customer invoices).
+On offer     = combos (all three countries), Power Deals + Deal of the Week (Kenya) and
+               Mid-month offers: timed offers + new products (Kenya), listed singles + new
+               products (Tanzania, Uganda).
+Not on offer = every other bag sold, all three countries.
+Others       = corporate invoices, samples and gift bags (Kenya).
 
 The on-offer bag set comes from self_made_combos.py (bags_offer_source.json), and bags are
 resolved with the same self_made_combos.bag_classifier(), so the Monthly not-on-offer money
@@ -67,6 +67,20 @@ LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid')
   {_KENYA_TILLS}
+GROUP BY 1, 2
+"""
+
+# Tanzania (Sinza + Dar-es-Salaam tills) & Uganda till revenue per day, in the till's own
+# currency (TSh / USh): converted to KES in fetch() so those shops sit in the shop table
+# against their Odoo target, which Odoo keeps in KES.
+MARKET_TILL_SQL = """
+SELECT UPPER(COALESCE(pc."name",'?')) AS shop, p.date_order::date AS d,
+       ROUND(SUM(pl.price_subtotal_incl))::bigint AS revenue
+FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+LEFT JOIN pos_session ps ON p.session_id=ps.id
+LEFT JOIN pos_config pc ON ps.config_id=pc.id
+WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid')
+  AND lower(COALESCE(pc."name",'')) IN ('sinza','dar-es-alam','uganda')
 GROUP BY 1, 2
 """
 
@@ -149,11 +163,16 @@ WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', '
 # several offers goes to the first of these — a timed-offer campaign is how the sale was
 # actually priced; a Power Deal runs at every shop all month, so it wins over a Deal of the
 # Week; a combo bag sold singly is the fallback.
-# On offer (8 Oct 2026) = combo sales + Power Deal + Deal of the Week. A combo bag bought on its own and a
-# timed-offer sale are NOT on offer (full-price single / a short sales boost) — docs/bags-on-offer.md.
-_SOURCE_ORDER = ["Power Deal", "Deal of the Week"]
-_TAG_ORDER = ["Timed offer", "Power Deal", "Deal of the Week", "Combo component"]   # which offers a bag is in
+# On offer (9 Oct 2026) = combo sales + Power Deal + Deal of the Week + Mid-month offers (a timed-offer sale
+# or a new product). A combo bag bought on its own is NOT on offer (full-price single) — docs/bags-on-offer.md.
+_SOURCE_ORDER = ["Power Deal", "Deal of the Week", "Mid-month offer"]
+_TAG_ORDER = ["Timed offer", "Power Deal", "Deal of the Week", "Mid-month offer", "Combo component"]   # which offers a bag is in
 _NON_KENYA = ("SINZA", "DAR-ES-ALAM", "UGANDA", "?")
+# Shop-table keys for the two other countries: Tanzania's Sinza + Dar-es-Salaam tills show as one
+# "Sinza" row (as everywhere else on the page), Uganda as "Uganda" — both in the Diaspora region.
+_MARKET_SHOP = {"Tanzania": "SINZA", "Uganda": "UGANDA"}
+_MARKET_TILL_SHOP = {"SINZA": ("SINZA", "TSh"), "DAR-ES-ALAM": ("SINZA", "TSh"), "UGANDA": ("UGANDA", "USh")}
+_MARKET_TARGET_TILLS = {"SINZA": ("SINZA", "DAR-ES-ALAM"), "UGANDA": ("UGANDA",)}
 
 # Non-offer POS sales counted under "Others" (with corporate invoices): name prefix → group.
 # (Laptop sleeves are bags since 27 Sep 2026 — see base(): any "…LAPTOP SLEEVE…" → the LAPTOP SLEEVE bag.)
@@ -162,12 +181,14 @@ _OTHER_GROUPS = (("GIFT BAG", "Gift bags"), ("SAMPLE", "Samples"))
 
 # ── Offer type summary (matrix) ──
 # Rows, in display order. Every sale lands in exactly one (see docs/bags-on-offer.md).
-OFFER_ROWS = [("OFF", "Not on offer"), ("POWER", "Power deals"), ("COMBOS", "Combos (button)"),
-              ("DOW", "Deal of wk"), ("MID", "Samples"), ("GIFT", "Gift bag"),
-              ("CORP", "Corporate")]
-# Combo bags sold singly are bags bought on their own, not combos — their own row (Oct 2026).
-_ROW_OF_SOURCE = {"Combo sale": "COMBOS", "Power Deal": "POWER", "Deal of the Week": "DOW"}
-_ROW_OF_OTHER = {"Gift bags": "GIFT", "Samples": "MID"}
+# All three countries (9 Oct 2026): Power deals / Deal of wk / Corporate / Samples / Gift bags are Kenya only.
+OFFER_ROWS = [("OFF", "Not on offer"), ("POWER", "Power deals"), ("COMBOS", "Combos"),
+              ("DOW", "Deal of wk"), ("CORP", "Corporate"), ("MID", "Mid-month offers"),
+              ("SAMPLE", "Samples"), ("GIFT", "Gift bags")]
+_ROW_OF_SOURCE = {"Combo sale": "COMBOS", "Power Deal": "POWER", "Deal of the Week": "DOW",
+                  "Mid-month offer": "MID"}
+_ROW_OF_OTHER = {"Gift bags": "GIFT", "Samples": "SAMPLE"}
+COUNTRIES = ["Kenya", "Tanzania", "Uganda"]
 # The 18 bag categories (offer sheet, bag_names tab) — "Top 5" + "Other 13".
 CATEGORIES = ["BABY BAG", "BACKPACK", "BRIEFCASE", "CHEST BAG", "GIFT BAG", "HANDBAG", "HOOD",
               "LUNCH BAG", "MAKE UP", "MAN BAG", "MESSENGER", "SCHOOL BAG", "SLING", "SPORT",
@@ -357,60 +378,52 @@ def _base_windows(today, m_start, m_end, ws, d):
     }
 
 
-_MARKETS = (("sinza", "Sinza", "TSh"), ("uganda", "Uganda", "USh"))
+_MARKETS = (("sinza", "Tanzania", "TSh"), ("uganda", "Uganda", "USh"))
 
 
-def _market_periods(wins, today):
-    """Sinza & Uganda on / not on offer per period, from till receipts (docs/bags-on-offer.md › Sinza & Uganda):
-    on = every combo + single sales of a listed single; not on = every other single; others = bulk receipts."""
+def _market_records(lo, hi, infer, new_of, new_names):
+    """Tanzania (Sinza) & Uganda till receipts → sales in KES for the all-country rows (docs/bags-on-offer.md ›
+    Three countries, one page): every combo → COMBOS; a single on the month's singles list (offers_monthly.csv)
+    or a new product → MID; any other single, and every bag on a bulk (5+ bag) receipt → OFF.
+    Returns [{d, mkt, row, side, units, revenue, bags, parts: ((bag, weight), …)}], grouped by day."""
     from lib import receipt_combos as rc
-    infer, _ = smc.bag_classifier(set())
-    lo = min(w["start"] for w in wins.values())
-    hi = min(max(w["end"] for w in wins.values()), today)
-    as_date = lambda v: v if isinstance(v, datetime.date) and not isinstance(v, datetime.datetime) else datetime.date.fromisoformat(str(v)[:10])
-    blank = lambda: {"units": 0, "revenue": 0}
-    out = {}
-    for key, label, cur in _MARKETS:
-        lines = rc.market_lines(key, lo, hi)
+    key_of = lambda n: infer(n) or new_of(str(n).strip().upper())
+    new_set = set(new_names)
+    bag = lambda b: "LAPTOP SLEEVE" if b == "*SLEEVE" else b
+    agg = {}
+
+    def add(d, mkt, row, units, rev, bags, parts):
+        a = agg.setdefault((d, mkt, row, parts), [0, 0.0, 0])
+        a[0] += units
+        a[1] += rev
+        a[2] += bags
+    for mk, label, cur in _MARKETS:
+        lines = rc.market_lines(mk, lo, hi)
         if lines is None:
             continue
-        for ln in lines:
-            ln["d"] = as_date(ln["d"])
-        cur_offers = rc.load_offers(today.strftime("%B"), key)
-        periods = {}
-        for pk, w in wins.items():
-            s, e = w["start"], w["end"]
-            offers = rc.load_offers(s.strftime("%B"), key) or cur_offers
-            sp = rc.offer_split([ln for ln in lines if s <= ln["d"] <= e], offers, infer)
-            run, sm = sp["combos"]["running"], sp["combos"]["selfMade"]
-            on_s = sp["onSingles"]
-            on = {"units": run["bags"] + sm["bags"] + sum(v["units"] for v in on_s.values()),
-                  "revenue": run["revenue"] + sm["revenue"] + sum(v["revenue"] for v in on_s.values())}
-            off = {"units": sum(v["units"] for v in sp["offSingles"].values()),
-                   "revenue": sum(v["revenue"] for v in sp["offSingles"].values())}
-            oth = {"units": sp["bulk"]["bags"], "revenue": sp["bulk"]["revenue"]}
-            periods[pk] = {
-                "label": w["label"], "range": f"{s:%d %b} – {e:%d %b %Y}", "from": s.isoformat(), "to": e.isoformat(),
-                "totals": {"on": on, "off": off, "oth": oth},
-                "sources": [{"label": "Running combos", "units": run["count"], "bags": run["bags"], "revenue": run["revenue"]},
-                            {"label": "Self-made combos", "units": sm["count"], "bags": sm["bags"], "revenue": sm["revenue"]},
-                            {"label": "Listed singles", "units": sum(v["units"] for v in on_s.values()), "bags": sum(v["units"] for v in on_s.values()),
-                             "revenue": sum(v["revenue"] for v in on_s.values())}],
-                "onBags": sorted(({"bag": b, **v, "inSelfMade": sp["comboBags"].get(b, 0)} for b, v in on_s.items()),
-                                 key=lambda x: (-x["revenue"], x["bag"])),
-                "offBags": sorted(({"bag": b, **v, "inSelfMade": sp["comboBags"].get(b, 0)} for b, v in sp["offSingles"].items()),
-                                  key=lambda x: (-x["revenue"], x["bag"])),
-                "comboBags": sp["comboBags"], "bulk": sp["bulk"],
-                "receiptBags": sp["bags"], "receiptRevenue": sp["revenue"],
-                "offersListed": bool(offers),
-            }
-        out[key] = {"label": label, "currency": cur, "fx": smc.FX_PER_KSH.get(cur), "periods": periods}
-        m = periods.get("monthly", {})
-        if m:
-            t = m["totals"]
-            print(f"  {label:7} monthly: on {t['on']['units']} bags / {cur} {t['on']['revenue']:,} · "
-                  f"not on {t['off']['units']} / {cur} {t['off']['revenue']:,} · bulk {t['oth']['units']}")
-    return out
+        fx = smc.FX_PER_KSH.get(cur) or 1
+        recs, _ = rc._receipts(lines, key_of)
+        listed = {}                                          # month name → set of listed single bags
+        for rec in recs.values():
+            d = _as_date(rec["d"])
+            mn = d.strftime("%B")
+            if mn not in listed:
+                offers = rc.load_offers(mn, mk) or {}
+                listed[mn] = {b for o in offers.get("singles", []) for slot in o["slots"] for b in slot}
+            if len(rec["bags"]) >= rc.BULK_MIN:
+                for b, unit in rec["bags"]:
+                    add(d, label, "OFF", 1, unit / fx, 1, ((bag(b), 1.0),))
+                continue
+            combos, left = rc._groups(rec["bags"])
+            for bs, rev in combos:
+                add(d, label, "COMBOS", 1, rev / fx, len(bs), tuple(sorted((bag(b), 1.0 / len(bs)) for b in bs)))
+            for b, unit in left:
+                row = "MID" if b in listed[mn] or b in new_set else "OFF"
+                add(d, label, row, 1, unit / fx, 1, ((bag(b), 1.0),))
+        print(f"  {label:9}        : {len(recs)} receipts (KES at {fx} {cur} = 1)")
+    side = {"OFF": "off", "COMBOS": "on", "MID": "on"}
+    return [{"d": d, "mkt": mkt, "row": row, "side": side[row], "units": a[0], "revenue": round(a[1]),
+             "bags": a[2], "parts": parts} for (d, mkt, row, parts), a in agg.items()]
 
 
 def _pick_target(rows, shop, period, start, end):
@@ -439,7 +452,8 @@ def _pick_target(rows, shop, period, start, end):
     return best[1] if best and best[1] else None
 
 
-def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_anchor, prints, cover, seg_of):
+def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_anchor, prints, cover, seg_of,
+                  markets=()):
     s, e = w["start"], w["end"]
     elapsed = max(1, min((min(w["upto"], e) - s).days + 1, w["days"]))
     frac = elapsed / w["days"]
@@ -450,17 +464,21 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
     tot = {"on": blank(), "off": blank(), "oth": blank(), "unc": blank()}
     others = {"Gift bags": blank(), "Samples": blank(), "Corporate": blank()}
     trend, by_source, on_bags, off_bags, unc_names, shops = {}, {}, {}, {}, set(), {}
-    # Offer type × category and × tier: {row: {"cat": {CAT: [units, rev]}, "tier": {TIER: [units, rev]}}}
-    mtx = {k: {"cat": {}, "tier": {}, "tree": {}} for k, _l in OFFER_ROWS}
+    # Offer type × category / tier / tree / country: {row: {"cat": {CAT: [units, rev]}, …, "mkt": {COUNTRY: [units, rev]}}}
+    mtx = {k: {"cat": {}, "tier": {}, "tree": {}, "mkt": {}} for k, _l in OFFER_ROWS}
     by_week = {}                                             # {week no: {row: [units, rev]}} (Monthly only)
+    market_bags = 0                                          # bags inside Tanzania / Uganda combos
 
-    def add_mtx(row, parts, u, rev):
+    def add_mtx(row, parts, u, rev, mkt="Kenya"):
         for cat, tier, bg, wt in parts:
             node = (tier or "Unassigned") + "|" + (cat or "UNASSIGNED") + "|" + (bg or "")
             for dim, key in (("cat", cat or "UNASSIGNED"), ("tier", tier or "Unassigned"), ("tree", node)):
                 c = mtx[row][dim].setdefault(key, [0.0, 0.0])
                 c[0] += u * wt
                 c[1] += rev * wt
+        c = mtx[row]["mkt"].setdefault(mkt, [0.0, 0.0])
+        c[0] += u
+        c[1] += rev
 
     def tkey(d):
         if w["trend"] == "week":
@@ -516,6 +534,29 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
         sh[side]["units"] += u
         sh[side]["revenue"] += rev
 
+    # Tanzania & Uganda (KES), already classified into their row by _market_records.
+    for r in markets:
+        if not (s <= r["d"] <= e):
+            continue
+        side, row, u, rev = r["side"], r["row"], r["units"], r["revenue"]
+        tot[side]["units"] += u
+        tot[side]["revenue"] += rev
+        trend.setdefault(tkey(r["d"]), {"on": 0, "off": 0, "oth": 0})[side] += rev
+        if side == "on":
+            src = by_source.setdefault("Combo sale" if row == "COMBOS" else "Mid-month offer", blank())
+            src["units"] += u
+            src["revenue"] += rev
+        msh = shops.setdefault(_MARKET_SHOP[r["mkt"]], {k: blank() for k in ("on", "off", "oth", "unc")})
+        msh[side]["units"] += u
+        msh[side]["revenue"] += rev
+        if row == "COMBOS":
+            market_bags += r["bags"]
+        add_mtx(row, r["segs"], u, rev, r["mkt"])
+        if w["trend"] == "week":
+            c = by_week.setdefault(tkey(r["d"]), {}).setdefault(row, [0, 0])
+            c[0] += u
+            c[1] += rev
+
     in_combos = {}
     for r in prints:
         if s <= r["d"] <= e:
@@ -545,11 +586,14 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
     shop_rows = []
     target_tills = {t["shop"] for t in target_rows if t["scope"] == "pos"}
     for tl in sorted(set(shops) | set(till_rev) | target_tills):
-        if tl in _NON_KENYA:
-            continue
+        if tl in _NON_KENYA and tl not in _MARKET_TARGET_TILLS:
+            continue                                         # DAR-ES-ALAM is folded into the Sinza row
         sh = shops.get(tl, {k: blank() for k in ("on", "off", "oth", "unc")})
         rev = till_rev.get(tl, 0)
-        tgt = _pick_target(target_rows, tl, w["period"], s, e)
+        if tl in _MARKET_TARGET_TILLS:                       # Sinza = its own + Dar-es-Salaam's target
+            tgt = sum(_pick_target(target_rows, t, w["period"], s, e) or 0 for t in _MARKET_TARGET_TILLS[tl])
+        else:
+            tgt = _pick_target(target_rows, tl, w["period"], s, e)
         if not rev and not tgt:
             continue
         label = _shop_label(tl)
@@ -578,7 +622,7 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
         rev = sum(x["revenue"] for x in lst if x["target"])
         return round(rev / (tgt * frac) * 100, 1) if tgt else None
 
-    kenya_pace = _pace_of([x for x in shop_rows if x["till"] != "CORPORATE"])
+    kenya_pace = _pace_of([x for x in shop_rows if x["till"] != "CORPORATE" and x["till"] not in _MARKET_TARGET_TILLS])
     regions = {}
     for x in shop_rows:
         regions.setdefault(x["region"], []).append(x)
@@ -668,7 +712,7 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
         "kenyaPace": kenya_pace,
         "totals": tot,
         "others": [{"label": k, **v} for k, v in others.items()],
-        "comboPrints": sum(in_combos.values()),
+        "comboPrints": sum(in_combos.values()) + market_bags,
         "inCombosByBag": in_combos,
         "unclassifiedNames": sorted(unc_names)[:40],
         "unclassifiedCount": len(unc_names),
@@ -698,6 +742,8 @@ def _offer_types(mtx):
         "cat": {k: {c: rnd(x) for c, x in v["cat"].items()} for k, v in mtx.items()},
         "tier": {k: {t: rnd(x) for t, x in v["tier"].items()} for k, v in mtx.items()},
         "tree": {k: {n: rnd(x) for n, x in v["tree"].items()} for k, v in mtx.items()},
+        "mkt": {k: {m: rnd(x) for m, x in v["mkt"].items()} for k, v in mtx.items()},
+        "countries": COUNTRIES,
         "top": top, "rest": [c for c in CATEGORIES if c not in top],
         "catRevenue": {c: round(v) for c, v in cat_rev.items()},
     }
@@ -800,13 +846,16 @@ def fetch():
             else:
                 wk, loc = (d - anchor_m).days // 7 + 1, _shop_label(shop)
                 dow_ok = any(wk in weeks and loc in locs for weeks, locs in runs)
-            # Counted on offer only through a Power Deal or a Deal of the Week (8 Oct 2026); a timed-offer
-            # sale or a combo bag bought alone is not on offer (it still carries the tag in all_offers).
+            # On offer through a Power Deal, a Deal of the Week, or else a Mid-month offer — sold inside a
+            # timed-offer campaign, or a new product (9 Oct 2026). A combo bag bought alone is not on offer.
             srcs = [x for x in ("Power Deal",) if x in static]
             if dow_ok:
                 srcs.append("Deal of the Week")
+            if not srcs and (timed or is_new):
+                srcs.append("Mid-month offer")
             all_offers = sorted(set(static) | ({"Deal of the Week"} if runs else set())
-                                | ({"Timed offer"} if timed or bt in timed_bags else set()),
+                                | ({"Timed offer"} if timed or bt in timed_bags else set())
+                                | ({"Mid-month offer"} if timed or is_new or bt in timed_bags else set()),
                                 key=lambda x: _TAG_ORDER.index(x) if x in _TAG_ORDER else 99)
             return ("on" if srcs else "off", bt, srcs, is_new, all_offers)
         return infer, base, classify
@@ -847,6 +896,11 @@ def fetch():
         return out
 
     lines, till, corp, targets = rows(LINES_SQL), rows(TILL_SQL), rows(CORPORATE_SQL), rows(TARGET_SQL)
+    # Sinza / Uganda till revenue → KES (same rate as the rest of the page) so they join the shop table.
+    for r in rows(MARKET_TILL_SQL):
+        key, cur = _MARKET_TILL_SHOP.get(r["shop"], (None, None))
+        if key:
+            till.append({"shop": key, "d": r["d"], "revenue": round((r["revenue"] or 0) / (smc.FX_PER_KSH.get(cur) or 1))})
 
     # ── Timed offers: carve each campaign's single-bag lines out of `lines` ──
     timed_lines, timed_names = {}, []
@@ -995,8 +1049,13 @@ def fetch():
         cover[bt] = {"stock": stk, "avgPerDay": round(avg, 1),
                      "daysCover": int(round(stk / avg)) if avg > 0 else None}
 
+    # Tanzania & Uganda from till receipts, in KES (docs/bags-on-offer.md › Three countries, one page).
+    markets = _market_records(lo, min(hi, today), infer, new_of, new_names)
+    for r in markets:
+        r["segs"] = [cat_tier(b) + (b, wt) for b, wt in r["parts"]]
+
     periods = {k: _build_period(w, lines, till, corp, targets, classify, extra_off, w.get("anchor", month_anchor),
-                                prints, cover, seg_of)
+                                prints, cover, seg_of, markets)
                for k, w in wins.items()}
     # Inside combos vs on its own, per running combo (docs/bags-on-offer.md › Inside combos vs on its own).
     combo_list = src.get("combos") or []
@@ -1047,8 +1106,7 @@ def fetch():
         "newProducts": new_names,
         "menu4NotOnOfferRevenue": nof.get("notOnOfferRevenue"),
         "periods": periods,
-        # Sinza & Uganda, same on-offer rule, from till receipts (docs/bags-on-offer.md › Sinza & Uganda)
-        "markets": _market_periods(wins, today),
+        "countries": COUNTRIES,
     }
 
 
@@ -1079,7 +1137,7 @@ def main():
     if payload is None:
         return
     inject(payload)
-    print(f"bags_on_offer.html updated — {payload['month']} (Kenya).")
+    print(f"bags_on_offer.html updated — {payload['month']} (Kenya, Tanzania, Uganda).")
     for key, p in payload["periods"].items():
         t = p["totals"]
         print(f"  [{p['label']}] {p['range']} · day {p['daysElapsed']}/{p['daysInPeriod']}")

@@ -327,7 +327,28 @@ chip row (from `card.usage`, this month) shows `rung` vs `pot.`, **ordered by `r
 performing shop in its own region**. The shop→region map is read from
 [shop-regions.md](shop-regions.md) at build time (`_load_shop_regions`, fallback
 `_SHOP_REGION_DEFAULT`) — edit that table to change regions, no code change;
-`_combo_button_usage` computes each region's best `rung` per combo and sets `red`. The standalone panel `#smc-usage-panel` still exists but is
+`_combo_button_usage` computes each region's best `rung` per combo and sets `red`.
+
+**Shop performance — all running combos (Oct 2026)** (`#smc-shop-totals`, `renderShopTotals()`,
+called at the end of `renderRunningCards`): a table just below the running-combo cards that adds up
+every card's per-shop chips (`card.usage.shops`) per shop — **rung** (total combos on the combo
+button), **pot.**, **≈ revenue** (each combo's rung × its average sold price `value ÷ total`),
+**share** of all combos rung, **combos** (how many different running combos the shop rang) and its
+**top combo**. Sorted by rung, highest first, and **red** when below half its region's best shop (same
+rule as the chips). Uses all running combos and ignores the Sort/Stock filters, so it shows the
+month's totals. Shop rung adds up to the cards' total (9 Oct 2026: 268 across 17 shops, Hilton 58).
+Built in the browser from data already on the page.
+
+**By week:** one column per week (**Wk 1 … Wk N**, Sun–Sat, the same weeks as the cards; the last is
+"so far") before the month **Rung**, with ▲/▼ against the week before on completed weeks, plus an
+**All shops** footer row of weekly totals. The data comes from `COMBO_BY_SHOP_SQL`, now grouped by
+`_WK_EXPR` too (`:anchor` = the Sunday on or before the month start). `_combo_button_usage` adds
+`weeks {week no.: rung}` to each `usage.shops[]` row. A shop's weeks always sum to its `rung`.
+Checked 9 Oct 2026: Hilton 26 / 32, KTDA 13 / 23, Eldoret 10 / 25; all shops 108 / 163. These are
+button-rung only, so the card's week-1 Jumbo + Jumbo "sold as singles" backfill isn't split by shop. If
+the page was built before this change (no `weeks`), the week columns are hidden.
+
+The standalone panel `#smc-usage-panel` still exists but is
 `display:none` (kept as a fallback / for `SMC.comboUsage`), built by `_combo_button_usage()`:
 
 - **Expected** — the offer sheet's COMBO figure for that combo.
@@ -418,6 +439,14 @@ self-made combos the shop sold · **Running units** = official running combos it
 each. (Full price / Discount / Disc % / Top combo were removed 6 Oct 2026 — short combo names like "Cess + Moon Combo"
 only resolve one bag, which made the full price wrong for 14 of 38 self-made combos.) KPIs: **Leading shop** (+ runner-up),
 **Shops selling self-made** (n of all, + requests raised), **Leans most on self-made** (highest share, tills with ≥ 5 combo units).
+
+**By week (9 Oct 2026):** columns **Wk 1 … Wk N** (Sun–Sat, the same weeks as the running-combo cards; the
+last is "so far") sit between Shop and **Self-made units (month)**, with ▲/▼ against the week before and weekly
+totals in the Total row. `SM_BY_SHOP_SQL` is grouped by week too (its `__WK__` placeholder is swapped for
+`_WK_EXPR` at run time, `:anchor` = the Sunday on or before the month start). Each shop row carries
+`smWeeks {week no.: self-made units}`, and those weeks sum to `smUnits`. Checked 9 Oct 2026: KTDA 9 / 3,
+Hilton 3 / 8, Starmall 6 / 3. This matches the week split in the running-combos **Shop performance**
+table, so the two can be read side by side.
 
 **Hover or tap a shop** → every self-made combo it sold (× units · KES), its requests (approved of raised), and
 **requested combos counted as running**. Checked 6 Oct 2026: Eldoret raised 2 approved requests and sold both

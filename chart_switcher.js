@@ -456,9 +456,95 @@
     }
   });
 
+  // ── Week-on-week change on every week chart (docs/chart-switcher.md › Week change) ──
+  // A bar / line chart whose x labels are weeks ("Wk 1", "Week 2", "W3", ["Wk 4 (now)", "dates"])
+  // gets ▲ / ▼ % vs the week before above each week from the 2nd on: green up, red down, grey flat.
+  // Stacked bars (or one series) → change of the total; 2–3 side-by-side series → one per series.
+  // Opt out with options.plugins.weekChange = false.
+  var WEEK_RE = /^\s*(?:wk|week|w)\s*\.?\s*(\d+)/i;
+  function weekNo(l) { var m = String(Array.isArray(l) ? l[0] : l).match(WEEK_RE); return m ? +m[1] : null; }
+  function valAt(v, horiz) { return v && typeof v === 'object' ? num(horiz ? v.x : v.y) : num(v); }
+  function changeTxt(prev, cur) {
+    if (!prev && !cur) return null;
+    if (!prev) return { t: 'new', c: UP };
+    var d = cur - prev, pc = Math.abs(d / Math.abs(prev) * 100);
+    if (Math.round(pc) === 0) return { t: '0%', c: '#94a3b8' };
+    return { t: (d > 0 ? '▲' : '▼') + (pc >= 10 ? Math.round(pc) : pc.toFixed(1)) + '%', c: d > 0 ? UP : DOWN };
+  }
+  function weekChart(chart) {
+    var o = chart.options || (chart.config && chart.config.options) || {}, pl = o.plugins || {};
+    if (pl.weekChange === false || (pl.valueLabels && pl.valueLabels.above)) return false;
+    if (['bar', 'line'].indexOf(chart.config.type) < 0) return false;
+    if (chart.$csType && chart.$csType !== 'original' && !/^(bar|line|stack|group|area)/.test(chart.$csType)) return false;
+    var labels = (chart.data && chart.data.labels) || [];
+    var nWk = labels.filter(function (l) { return weekNo(l) != null; }).length;
+    return labels.length >= 2 && nWk >= 2 && nWk >= labels.length / 2;
+  }
+  // Headroom on the value axis so the label above the tallest bar isn't squeezed into the top edge.
+  // Added to the config as the chart is created (Chart.js has read its axis options by the first plugin hook).
+  function headroom(config) {
+    var raw = config.options || (config.options = {}), pl = raw.plugins || {};
+    if (['bar', 'line'].indexOf(config.type) < 0 || pl.weekChange === false || (pl.valueLabels && pl.valueLabels.above)) return;
+    var labels = (config.data && config.data.labels) || [];
+    var nWk = labels.filter(function (l) { return weekNo(l) != null; }).length;
+    if (labels.length < 2 || nWk < 2 || nWk < labels.length / 2) return;
+    var ax = raw.indexAxis === 'y' ? 'x' : 'y';
+    var sc = (raw.scales = raw.scales || {}), a = (sc[ax] = sc[ax] || {});
+    if (a.grace == null) a.grace = '14%';
+  }
+  Base.register({
+    id: 'weekChange',
+    // Headroom on the value axis so the label above the tallest bar isn't squeezed into the top edge
+    // (a fixed grace, set only when the page hasn't — so repeated updates can't grow it).
+    afterDatasetsDraw: function (chart) {
+      if (!weekChart(chart)) return;
+      var o = chart.options || {}, pl = o.plugins || {};
+      var labels = chart.data.labels, wk = labels.map(weekNo);
+      var horiz = o.indexAxis === 'y', sc = o.scales || {};
+      var stacked = !!((sc.x && sc.x.stacked) || (sc.y && sc.y.stacked));
+      var vis = chart.data.datasets.map(function (ds, di) { return di; }).filter(function (di) {
+        var m = chart.getDatasetMeta(di); return chart.isDatasetVisible(di) && m && m.data && m.data.length;
+      });
+      if (!vis.length) return;
+      var groups = (stacked || vis.length === 1) ? [vis] : (vis.length <= 3 ? vis.map(function (d) { return [d]; }) : null);
+      if (!groups) return;
+      var ctx = chart.ctx, area = chart.chartArea;
+      var lift = pl.valueLabels && pl.valueLabels.totals ? 24 : 10;   // clear of a page's own total label
+      ctx.save();
+      ctx.font = '800 ' + (groups.length === 1 ? 12 : 10) + 'px "Segoe UI", system-ui, sans-serif';
+      ctx.textBaseline = 'middle';
+      groups.forEach(function (g) {
+        var tot = labels.map(function (_, i) {
+          return g.reduce(function (a, di) { return a + valAt(chart.data.datasets[di].data[i], horiz); }, 0);
+        });
+        labels.forEach(function (_, i) {
+          if (i === 0 || wk[i] == null || wk[i - 1] == null) return;
+          var ch = changeTxt(tot[i - 1], tot[i]); if (!ch) return;
+          var els = g.map(function (di) { return chart.getDatasetMeta(di).data[i]; }).filter(Boolean);
+          if (!els.length) return;
+          var px, py;
+          if (horiz) {
+            px = Math.max.apply(null, els.map(function (e) { return Math.max(e.x, e.base != null ? e.base : e.x); })) + 6;
+            py = els[0].y;
+            ctx.textAlign = 'left';
+          } else {
+            px = els.reduce(function (a, e) { return a + e.x; }, 0) / els.length;
+            py = Math.min.apply(null, els.map(function (e) { return Math.min(e.y, e.base != null ? e.base : e.y); })) - lift;
+            py = Math.max(py, (area ? area.top : 0) - 4, 8);
+            ctx.textAlign = 'center';
+          }
+          ctx.fillStyle = ch.c;
+          ctx.fillText(ch.t, px, py);
+        });
+      });
+      ctx.restore();
+    }
+  });
+
   // ── Wrap the Chart class: keep the pristine config, re-apply a remembered type ──
   var seq = 0;
   function Chart(item, config) {
+    if (config) { try { headroom(config); } catch (e) {} }
     var orig = config ? clone({ type: config.type, data: config.data, options: config.options || {} }) : null;
     var chart = Reflect.construct(Base, [item, config], new.target || Chart);
     chart.$csOrig = orig;

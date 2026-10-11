@@ -3,11 +3,40 @@
 - **Generator:** `bags_on_offer.py` (reads `bags_offer_source.json`, written by `self_made_combos.py`)
 - **HTML:** `bags_on_offer.html`
 - **Data markers:** `<!-- BOO_DATA_START -->…<!-- BOO_DATA_END -->` (const `BOO`)
-- **Scope:** **Kenya only** (every till except `sinza`, `dar-es-alam`, `uganda`), plus Kenya
-  corporate invoices.
+- **Scope:** **Kenya, Tanzania (Sinza) and Uganda on one page** (9 Oct 2026). Kenya = every till except
+  `sinza`, `dar-es-alam`, `uganda`, plus Kenya corporate invoices. Tanzania and Uganda come from their till
+  receipts (see *Three countries, one page*). The shops-vs-target table and the two bag tables stay Kenya.
 
 A new metric **next to** Menu 4 — it does **not** replace anything there. The Self made combos
 page keeps its Combos / Power Deals views and its own "Bags not on offer" panel unchanged.
+
+## Three countries, one page (9 Oct 2026)
+
+The Kenya | Sinza | Uganda switch is gone: every money figure on the page (KPIs, trend, *Where the on-offer
+money comes from*, Offer type summary) covers all three countries, Tanzania and Uganda converted to KES
+(25 TSh = 1 KES, 35 USh = 1 KES, `self_made_combos.FX_PER_KSH`). Every sale lands in one of these rows:
+
+| Row | Kenya | Tanzania | Uganda | Side |
+|---|---|---|---|---|
+| **Not on offer** | ✓ | ✓ | ✓ | not on offer |
+| **Power deals** | ✓ | — | — | on offer |
+| **Combos** | ✓ (combo button) | ✓ (receipts) | ✓ (receipts) | on offer |
+| **Deal of wk** | ✓ | — | — | on offer |
+| **Corporate** | ✓ (invoices) | — | — | others |
+| **Mid-month offers** | new products + timed offers | listed singles + new products | listed singles + new products | on offer |
+| **Samples** | ✓ | — | — | others |
+| **Gift bags** | ✓ | — | — | others |
+
+- **On offer = Power deals + Combos + Deal of wk + Mid-month offers.** Others = Corporate + Samples + Gift bags.
+- A Kenya single sale counts in the first that applies: **Power Deal → Deal of the Week → Mid-month offer**
+  (sold inside a timed-offer campaign, or a new product), else **not on offer**. A combo bag bought on its own
+  is still not on offer.
+- Tanzania / Uganda receipts (`lib/receipt_combos`): every combo (running or self-made) → **Combos** (1 unit per
+  combo, money split evenly over its bags for category / tier); a single on the market's singles list in
+  `offers_monthly.csv`, or a new product → **Mid-month offers**; every other single → **Not on offer**;
+  **bulk** receipts (5+ bags) → **Not on offer** too. Gift bags are not read there.
+- **Country tab** in the Offer type summary: each row split Kenya / Tanzania / Uganda.
+- Data: `offerTypes.mkt = {row: {Kenya|Tanzania|Uganda: {units, revenue}}}`; `BOO.markets` was removed.
 
 ## Period selector (Monthly / Weekly / Last week / Custom)
 
@@ -87,6 +116,8 @@ Every sale is counted **once**, in the channel it actually went through (agreed 
   - **Timed-offer sales** are short sales boosts, not offers, so they're **not on offer** either, unless the
     bag is also a Power Deal / Deal of the Week there and then. The Timed Offers menu still tracks them.
   - Months archived before 8 Oct keep the old split.
+  - **9 Oct 2026:** timed-offer sales and new products are back **on offer**, as **Mid-month offers** (after
+    Power Deal and Deal of the Week). See *Three countries, one page*.
   - Such bags in the Not on offer list carry a tag ("combo bag" / "timed offer") so they stay recognisable
     (`offBags[].comboBag`, `offBags[].timed`).
 - *(Until 8 Oct 2026)* **Timed offer** (added 27 Sep 2026) = a single-bag sale inside a campaign from
@@ -155,6 +186,14 @@ discount reward and a couple of one-off items (Enzo, KCB briefcase) stay unclass
    **Region** column, ranked by pace (no-target shops last, then by revenue). Badges are unchanged.
    All shops has filters — region, status (red / amber / green / no target), shop search — and
    click-to-sort headers; **#** stays the Kenya-wide pace rank whatever the filter or sort.
+   **Sinza and Uganda (9 Oct 2026)** are in the table too, under **Diaspora**. **Sinza** combines the Sinza and
+   Dar-es-Salaam tills, as everywhere else on the page. Its target is the sum of both tills' Odoo targets;
+   in Oct 2026 only Dar-es-Salaam has one. Till revenue (`MARKET_TILL_SQL`) is in TSh / USh, so it's converted to
+   KES at `smc.FX_PER_KSH` (25 TSh, 35 USh = 1 KES), because Odoo keeps those targets in KES (Oct: Dar
+   1,374,081, Uganda 1,056,986). On / not-on-offer money comes from the same `_market_records` rows as the
+   country totals. They're left out of **Kenya pace**, so the Kenya benchmark doesn't move; Diaspora is
+   judged by its own region pace. 9 Oct 2026, Monthly: Sinza KES 198k of 1.37M (pace 50%), Uganda 123k of
+   1.06M (pace 40%, red).
 6. **Bag tables** — on-offer bags: offer tags, `NEW`, **in combos** (units printed inside combos),
    **sold singly** (units), which row the singles count in, and singles revenue. Not-on-offer bags:
    `NEW`, sold singly, in combos (self-made combos), revenue, stock, days of cover.
@@ -176,16 +215,18 @@ unless an offer covers it. It is no longer an *Others* group.
 Every sale in the period lands in exactly one **offer type** row (same money as the buckets, so
 the rows add up to on + not on + others):
 
-| Row | What it holds |
+| Row (key) | What it holds |
 |---|---|
-| NOT ON OFFER | the *Not on offer* bucket |
-| POWER DEALS | single sales counted as Power Deal |
-| COMBOS (button) | combo-button sales: a *Jumbo + Jumbo* is **1** unit (the combo) |
-| ~~COMBO BAGS SOLD SINGLY~~ | removed 8 Oct 2026: those sales are now NOT ON OFFER (key `SINGLE` only in data archived 8 Oct) |
-| DEAL OF WK | single sales counted as Deal of the Week |
-| SAMPLES | samples (was "Mid-month / others" = timed offers + samples until 8 Oct 2026; timed-offer sales are now NOT ON OFFER) |
-| GIFT BAG | gift bags |
-| CORPORATE | corporate invoices |
+| NOT ON OFFER (`OFF`) | the *Not on offer* bucket, all three countries |
+| POWER DEALS (`POWER`) | Kenya single sales counted as Power Deal |
+| COMBOS (`COMBOS`) | combo sales, all three countries: a *Jumbo + Jumbo* is **1** unit (the combo) |
+| DEAL OF WK (`DOW`) | Kenya single sales counted as Deal of the Week |
+| CORPORATE (`CORP`) | corporate invoices |
+| MID-MONTH OFFERS (`MID`) | new products + timed offers (Kenya), listed singles + new products (Tanzania, Uganda) — 9 Oct 2026 |
+| SAMPLES (`SAMPLE`) | samples (was key `MID` until 9 Oct 2026) |
+| GIFT BAGS (`GIFT`) | gift bags |
+
+~~COMBO BAGS SOLD SINGLY~~ (`SINGLE`) was removed 8 Oct 2026; those sales are NOT ON OFFER.
 
 Columns (revenue / units / share toggle): **All**, **Top 5 categories**, **Other 13 categories**,
 **Premium**, **Core**, **Entry**, and **Unassigned** when anything has no category / tier.
@@ -343,7 +384,10 @@ the colour is the colour **family** (`lib/colours.family` — Maroon → Red, Ch
 
 Opening anniversaries from [shop-birthdays.md](shop-birthdays.md) (shown from 30 days before to 1 day after): a 🎂 badge beside the shop name in the shops table (`BOO.birthdays`).
 
-## Sinza & Uganda (Oct 2026)
+## Sinza & Uganda (Oct 2026) — replaced 9 Oct 2026
+
+> Superseded by *Three countries, one page*: the switch and the separate market view were removed; the receipt
+> rules below still decide combos vs singles. The section is kept for history.
 
 A **market switch** (Kenya | Sinza | Uganda) sits at the top. It defaults to Kenya, is remembered per browser, and
 uses the same period picker. Kenya is unchanged. Sinza (tills `sinza`, `dar-es-alam`, TSh) and Uganda (till `uganda`,

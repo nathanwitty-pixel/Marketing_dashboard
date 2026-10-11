@@ -84,7 +84,7 @@ ORDER BY qty DESC, value DESC
 # Combo units / revenue per SHOP (till) — the same rows as COMBO_SQL (same filters), split by till,
 # for "Self-made combos by shop" (which shop leads with self-made combos).
 SM_BY_SHOP_SQL = """
-SELECT pt."name" AS product, COALESCE(pc."name", '(no till)') AS till,
+SELECT pt."name" AS product, COALESCE(pc."name", '(no till)') AS till, __WK__ AS wk,
        SUM(pl.qty)::int AS qty, ROUND(SUM(pl.price_subtotal_incl))::numeric AS value,
        (pt.id IN (SELECT DISTINCT combo_product_id FROM pos_combo_request WHERE combo_product_id IS NOT NULL)) AS is_cbr
 FROM pos_order p
@@ -100,8 +100,8 @@ WHERE p.date_order::date BETWEEN :start_date AND :end_date
   AND pt."name" LIKE '%+%'
   AND pt."name" NOT ILIKE '%delivery%'
   AND pt."name" NOT ILIKE '%customi%'
-GROUP BY pt."name", COALESCE(pc."name", '(no till)'), pt.id
-"""
+GROUP BY pt."name", COALESCE(pc."name", '(no till)'), pt.id, wk
+"""   # __WK__ is swapped for _WK_EXPR (defined further down) when the query runs
 # Combo requests (CBR) raised per till in the month — "did this shop ask for any self-made combos?".
 CBR_REQUESTS_BY_SHOP_SQL = """
 SELECT COALESCE(pc."name", '(no till)') AS till, COUNT(*) AS requests,
@@ -1146,8 +1146,8 @@ def _region_on_offer_bags(payload, region_key):
 # THROUGH the combo button (Odoo combo product), vs the component bags sold as
 # singles at that shop — surfaces tills that sell a combo as separate bags (the
 # Jumbo+Jumbo problem) instead of using the combo button.
-COMBO_BY_SHOP_SQL = """
-SELECT UPPER(COALESCE(pc."name",'?')) AS shop, pt."name" AS combo, SUM(pl.qty)::int AS qty
+COMBO_BY_SHOP_SQL = f"""
+SELECT UPPER(COALESCE(pc."name",'?')) AS shop, pt."name" AS combo, {_WK_EXPR} AS wk, SUM(pl.qty)::int AS qty
 FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
@@ -1156,7 +1156,7 @@ LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
   AND lower(COALESCE(pc."name",'')) NOT IN ('sinza','dar-es-alam','uganda')
   AND pt."name" LIKE '%+%' AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
-GROUP BY shop, pt."name"
+GROUP BY shop, pt."name", wk
 """
 SINGLES_BY_SHOP_SQL = """
 SELECT UPPER(COALESCE(pc."name",'?')) AS shop, UPPER(pt."name") AS name, SUM(pl.qty)::int AS qty
@@ -1223,13 +1223,19 @@ def _combo_button_usage(m_start, m_end, offer, sheet_slots, running, week_totals
         return _SHOP_TO_LOC.get(s, s.title())
 
     rung = {lbl: {} for lbl, _ in sheet_slots}
-    cf = db.run_query(COMBO_BY_SHOP_SQL, {"s": m_start.isoformat(), "e": m_end.isoformat()})
+    rung_wk = {lbl: {} for lbl, _ in sheet_slots}   # lbl -> shop -> {week no.: combos rung}
+    _anchor = m_start - datetime.timedelta(days=(m_start.weekday() + 1) % 7)   # Sunday on/before month start (same Sun–Sat weeks as the cards)
+    cf = db.run_query(COMBO_BY_SHOP_SQL, {"s": m_start.isoformat(), "e": m_end.isoformat(), "anchor": _anchor})
     if cf is not None and not cf.empty:
         for _, r in cf.iterrows():
             lbl = name_to_label.get(str(r["combo"]).strip())
             if lbl:
                 sh = _shop(r["shop"])
-                rung[lbl][sh] = rung[lbl].get(sh, 0) + int(r["qty"] or 0)
+                q = int(r["qty"] or 0)
+                rung[lbl][sh] = rung[lbl].get(sh, 0) + q
+                wks = rung_wk[lbl].setdefault(sh, {})
+                wk = int(r["wk"])
+                wks[wk] = wks.get(wk, 0) + q
 
     # Single-bag sales by shop & token, to estimate combos the singles could have formed.
     shop_tok = {}    # shop -> {token: units}
@@ -1272,7 +1278,8 @@ def _combo_button_usage(m_start, m_end, offer, sheet_slots, running, week_totals
                 # numbers rather than the combo's all-shops total.
                 _toks = shop_tok.get(s, {})
                 solo = {t: _toks.get(t, 0) for t in combo_toks if _toks.get(t, 0)}
-                shoprows.append({"shop": s, "rung": rn, "implied": im, "soloTok": solo})
+                shoprows.append({"shop": s, "rung": rn, "implied": im, "soloTok": solo,
+                                 "weeks": rung_wk[lbl].get(s, {})})
         # Red flag: a shop ringing less than half the best-performing shop in its region.
         region_best = {}
         for x in shoprows:
@@ -2158,19 +2165,22 @@ def build_payload(m_start, m_end):
     try:
         _sm_names = {r["name"] for r in self_made}
         _run_names = {r["name"] for r in running}
-        _sdf = db.run_query(SM_BY_SHOP_SQL, {"start_date": m_start.isoformat(), "end_date": m_end.isoformat()})
+        _sm_anchor = m_start - datetime.timedelta(days=(m_start.weekday() + 1) % 7)   # Sunday on/before month start
+        _sdf = db.run_query(SM_BY_SHOP_SQL.replace("__WK__", _WK_EXPR),
+                            {"start_date": m_start.isoformat(), "end_date": m_end.isoformat(), "anchor": _sm_anchor})
         _rq = db.run_query(CBR_REQUESTS_BY_SHOP_SQL, {"start_date": m_start.isoformat(), "end_date": m_end.isoformat()})
         _label = lambda t: _TILL_LABEL.get(str(t).strip().lower(), str(t).strip().title())
         _shops = {}
 
         def _shop(lbl):
             return _shops.setdefault(lbl, {"shop": lbl, "smUnits": 0, "smValue": 0.0, "runUnits": 0,
-                                           "combos": {}, "cbrRun": {}, "requests": 0, "approved": 0})
+                                           "combos": {}, "cbrRun": {}, "requests": 0, "approved": 0, "smWeeks": {}})
         for _, _x in (_sdf.iterrows() if _sdf is not None else []):
             _nm, _q, _v = str(_x["product"]).strip(), int(_x["qty"] or 0), float(_x["value"] or 0)
             _s = _shop(_label(_x["till"]))
             if _nm in _sm_names:
                 _s["smUnits"] += _q; _s["smValue"] += _v
+                _w = int(_x["wk"]); _s["smWeeks"][_w] = _s["smWeeks"].get(_w, 0) + _q
                 _c = _s["combos"].setdefault(_nm, [0, 0.0]); _c[0] += _q; _c[1] += _v
             elif _nm in _run_names:
                 _s["runUnits"] += _q
@@ -2190,6 +2200,7 @@ def build_payload(m_start, m_end):
                 "smShare": round(s["smUnits"] / (s["smUnits"] + s["runUnits"]) * 100, 1) if (s["smUnits"] + s["runUnits"]) else 0.0,
                 "ofAllSm": round(s["smUnits"] / _sm_all * 100, 1) if _sm_all else 0.0,
                 "requests": s["requests"], "approved": s["approved"],
+                "smWeeks": s["smWeeks"],   # {week no. (Sun–Sat, same as the cards): self-made units}
                 # every self-made combo the shop sold: [name, units, revenue], most units first
                 "combos": [[n, c[0], int(round(c[1]))] for n, c in sorted(s["combos"].items(), key=lambda kv: (-kv[1][0], kv[0]))],
                 # rung through a combo request but its bags match an offer-sheet combo → counted as running

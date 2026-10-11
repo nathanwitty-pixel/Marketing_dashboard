@@ -64,3 +64,14 @@ sparklines), its data is x/y points (scatter/bubble), or it opts out with
   a `ResizeObserver` on the canvas shows / hides / re-places it.
 - All CSS classes are prefixed **`chartsw-`**. (The first version used `cs-btn`, which New Products
   and Posting already use for their own drop-down buttons — it restyled and squashed them.)
+
+## Week change (9 Oct 2026)
+
+Every bar / line chart whose x labels are weeks (`Wk 1`, `Week 2`, `W3`, or `["Wk 4 (now)", "dates"]`) shows the
+change vs the week before above each week from the 2nd on: **▲ x% green** up, **▼ x% red** down, grey when flat,
+"new" when the week before was 0. Stacked bars (or a single series) show the change of the total; 2–3 side-by-side
+series show one label per series; 4+ series are left alone. Skipped for pie / waterfall-style switched types, for
+non-week labels, and for charts that set `options.plugins.weekChange = false` or draw their own change labels
+(`valueLabels.above`, e.g. Bags on offer's Week 1 → latest week, whose latest-week bar is itself green / red).
+Plugin `weekChange` in `chart_switcher.js`, so every page that loads the switcher gets it (Shop Launch doesn't — its
+charts are by day).
