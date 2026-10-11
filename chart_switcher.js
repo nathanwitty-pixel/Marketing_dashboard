@@ -538,16 +538,14 @@
     ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
     ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
   }
-  // White pill text. v5_theme.js (light mode) recolours every fillText on the page's canvases, which
-  // would turn it dark on the coloured pill — so it is drawn on an OffscreenCanvas (a separate
-  // context type the theme doesn't patch) at the device pixel ratio and copied in, pixel-aligned.
-  function whiteText(ctx, text, cx, cy, w, h, dpr) {
-    if (typeof OffscreenCanvas === 'undefined') { ctx.fillStyle = PILL.ink; ctx.fillText(text, cx, cy + 1); return; }
-    var oc = new OffscreenCanvas(Math.ceil(w * dpr), Math.ceil(h * dpr)), o = oc.getContext('2d');
-    o.scale(dpr, dpr);
-    o.font = ctx.font; o.fillStyle = PILL.ink; o.textAlign = 'center'; o.textBaseline = 'middle';
-    o.fillText(text, w / 2, h / 2 + 1);
-    ctx.drawImage(oc, cx - w / 2, cy - h / 2, w, h);
+  // White pill text, drawn straight onto the chart canvas so it stays crisp (copying it in from an
+  // offscreen canvas resampled it and left it hazy). v5_theme.js (light mode) recolours fillText
+  // whose fillStyle is a colour STRING; a one-colour gradient isn't one, so the ink stays white.
+  function whiteText(ctx, text, cx, cy) {
+    var g = ctx.createLinearGradient(0, 0, 0, 1);
+    g.addColorStop(0, PILL.ink); g.addColorStop(1, PILL.ink);
+    ctx.fillStyle = g; ctx.shadowColor = 'rgba(0,0,0,0)';
+    ctx.fillText(text, cx, cy + 1);
   }
   function drawWeekPills(chart) {
     if (chart.$csPillsDone) return;
@@ -617,8 +615,9 @@
         taken.push(bx);
         roundRect(ctx, bx.x0, bx.y0, w, h, 4);
         ctx.fillStyle = fill; ctx.fill();
+        roundRect(ctx, bx.x0 + 0.5, bx.y0 + 0.5, w - 1, h - 1, 4);    // 1px edge on whole pixels, not split across two
         ctx.lineWidth = 1; ctx.strokeStyle = PILL.edge; ctx.stroke();
-        whiteText(ctx, ch.t, pick.cx, pick.cy, w, h, chart.currentDevicePixelRatio || 1);
+        whiteText(ctx, ch.t, pick.cx, pick.cy);
       });
     });
     ctx.restore();
