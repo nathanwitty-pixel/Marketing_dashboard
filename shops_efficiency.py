@@ -766,6 +766,50 @@ if dispatch:
     apply_odoo(weekly,  dispatch.get("weekly"),  WK_BAGS_TARGET, WK_BUFFER_STOCK)
     apply_odoo(monthly, dispatch.get("monthly"), MO_BAGS_TARGET, MO_BUFFER_STOCK)
 
+
+# ── WALK-IN CONVERSION (Odoo walk-in counts vs in-shop receipts) ──
+# conversion = buyers ÷ walk-ins, on the days the shop entered a count
+# (sql/shop_walkin_conversion.sql). Above 100% the shop logged more buyers than
+# walk-ins, i.e. it under-counts — shown as "under-counted", not as a rate.
+def apply_walkins(period, start, end):
+    from lib import db
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "sql",
+                               "shop_walkin_conversion.sql"), encoding="utf-8") as f:
+            df = db.run_query(f.read(), {"start_date": start.isoformat(), "end_date": end.isoformat()})
+    except Exception as e:                              # noqa: BLE001
+        print("  Walk-ins         : not available (%s)" % e)
+        return
+    if df is None or df.empty:
+        print("  Walk-ins         : no counts in this window")
+        return
+    by = {str(r.shop): r for r in df.itertuples()}
+    for p in period.get("performance", []):
+        r = by.get(p["shop"])
+        if r is None or not r.walkins:
+            p["walkins"] = None
+            continue
+        w, b = int(r.walkins), int(r.buyers)
+        p["walkins"] = w
+        p["buyers"] = b
+        p["countedDays"] = int(r.counted_days)
+        p["countedTo"] = r.counted_to.strftime("%d %b")
+        p["walkinConv"] = round(100.0 * b / w, 1)
+        p["underCounted"] = b > w
+        p["bagsPerBuyer"] = round(float(r.items) / b, 2) if b else None
+    shown = [p for p in period.get("performance", []) if p.get("walkins")]
+    period["walkinTotals"] = {
+        "walkins": sum(p["walkins"] for p in shown),
+        "buyers":  sum(p["buyers"] for p in shown),
+        # the date most shops have counted to (counts are entered late, some shops further than others)
+        "countedTo": df["counted_to"].mode().max().strftime("%d %b"),
+    }
+    print("  Walk-ins         : %d shops, counted to %s" % (len(shown), period["walkinTotals"]["countedTo"]))
+
+
+apply_walkins(weekly,  *_wk_win)
+apply_walkins(monthly, *_mo_win)
+
 # Snapshot the trend AFTER the Odoo override, so remaining/cleared history
 # matches what the page now shows.
 history = update_history()

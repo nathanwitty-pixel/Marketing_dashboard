@@ -492,53 +492,143 @@
     var sc = (raw.scales = raw.scales || {}), a = (sc[ax] = sc[ax] || {});
     if (a.grace == null) a.grace = '14%';
   }
+  // The ▲/▼ labels are drawn as pills (solid backing, coloured border, bright ink) so they read over
+  // lines, fills and gridlines, and are placed clear of any text the chart or page drew — a page's own
+  // value labels sit at the same spot above each point. While a chart renders, every fillText on its
+  // canvas is recorded as a box; the pills are drawn last (just before the tooltip) in a free spot.
+  // Solid fills with white text: the sharpest, most legible option on any background, both themes.
+  var PILL = { up: '#059669', down: '#dc2626', flat: '#64748b', ink: '#ffffff', edge: 'rgba(0,0,0,0.35)' };
+  function fontPx(f) { var m = /(\d+(?:\.\d+)?)px/.exec(f || ''); return m ? +m[1] : 12; }
+  function textBox(ctx, text, x, y, dpr) {
+    var t = ctx.getTransform ? ctx.getTransform() : null;
+    if (t && (Math.abs(t.b) > 1e-6 || Math.abs(t.c) > 1e-6)) return null;    // rotated (axis titles)
+    var s = t ? t.a / dpr : 1, w = ctx.measureText(String(text)).width * s, h = fontPx(ctx.font) * s;
+    var cx = t ? (t.a * x + t.e) / dpr : x, cy = t ? (t.d * y + t.f) / dpr : y;
+    var al = ctx.textAlign, bl = ctx.textBaseline;
+    var x0 = al === 'center' ? cx - w / 2 : (al === 'right' || al === 'end') ? cx - w : cx;
+    var y0 = (bl === 'top' || bl === 'hanging') ? cy : bl === 'middle' ? cy - h / 2 : cy - h * 0.85;
+    return { x0: x0, y0: y0, x1: x0 + w, y1: y0 + h };
+  }
+  function startRecording(chart) {
+    var ctx = chart.ctx; if (!ctx) return;
+    chart.$csTexts = []; chart.$csPillsDone = false;
+    var rec = ctx.$csRec;
+    if (!rec) {
+      rec = ctx.$csRec = {};
+      var proto = Object.getPrototypeOf(ctx);
+      ctx.fillText = function (text, x, y) {
+        var r = rec.on && rec.chart && rec.chart.$csTexts;
+        if (r) { var b = textBox(this, text, x, y, rec.chart.currentDevicePixelRatio || 1); if (b) r.push(b); }
+        return proto.fillText.apply(this, arguments);     // looked up each time: v5_theme may patch it later
+      };
+    }
+    rec.chart = chart; rec.on = true;
+  }
+  function overlaps(a, list) {
+    for (var i = 0; i < list.length; i++) {
+      var b = list[i];
+      if (a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0) return true;
+    }
+    return false;
+  }
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
+  }
+  // White pill text. v5_theme.js (light mode) recolours every fillText on the page's canvases, which
+  // would turn it dark on the coloured pill — so it is drawn on an OffscreenCanvas (a separate
+  // context type the theme doesn't patch) at the device pixel ratio and copied in, pixel-aligned.
+  function whiteText(ctx, text, cx, cy, w, h, dpr) {
+    if (typeof OffscreenCanvas === 'undefined') { ctx.fillStyle = PILL.ink; ctx.fillText(text, cx, cy + 1); return; }
+    var oc = new OffscreenCanvas(Math.ceil(w * dpr), Math.ceil(h * dpr)), o = oc.getContext('2d');
+    o.scale(dpr, dpr);
+    o.font = ctx.font; o.fillStyle = PILL.ink; o.textAlign = 'center'; o.textBaseline = 'middle';
+    o.fillText(text, w / 2, h / 2 + 1);
+    ctx.drawImage(oc, cx - w / 2, cy - h / 2, w, h);
+  }
+  function drawWeekPills(chart) {
+    if (chart.$csPillsDone) return;
+    chart.$csPillsDone = true;
+    if (chart.ctx && chart.ctx.$csRec) chart.ctx.$csRec.on = false;
+    if (!weekChart(chart)) return;
+    var o = chart.options || {}, pl = o.plugins || {};
+    var labels = chart.data.labels, wk = labels.map(weekNo);
+    var horiz = o.indexAxis === 'y', sc = o.scales || {};
+    var stacked = !!((sc.x && sc.x.stacked) || (sc.y && sc.y.stacked));
+    var vis = chart.data.datasets.map(function (ds, di) { return di; }).filter(function (di) {
+      var m = chart.getDatasetMeta(di); return chart.isDatasetVisible(di) && m && m.data && m.data.length;
+    });
+    if (!vis.length) return;
+    var groups = (stacked || vis.length === 1) ? [vis] : (vis.length <= 3 ? vis.map(function (d) { return [d]; }) : null);
+    if (!groups) return;
+    var ctx = chart.ctx, area = chart.chartArea || { left: 0, top: 0, right: chart.width, bottom: chart.height };
+    var fs = groups.length === 1 ? 12 : 11, padX = 6, h = 20;        // even sizes keep edges on whole pixels
+    var lift = pl.valueLabels && pl.valueLabels.totals ? 24 : 10;             // clear of a page's own total label
+    var taken = (chart.$csTexts || []).slice();
+    ctx.save();
+    ctx.font = '800 ' + fs + 'px "Segoe UI", system-ui, sans-serif';
+    ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+    groups.forEach(function (g) {
+      var tot = labels.map(function (_, i) {
+        return g.reduce(function (a, di) { return a + valAt(chart.data.datasets[di].data[i], horiz); }, 0);
+      });
+      // A week with no value at all (not reached yet) gets no label — not a "▼100%".
+      var has = labels.map(function (_, i) {
+        return g.some(function (di) {
+          var v = chart.data.datasets[di].data[i];
+          return v != null && !(typeof v === 'object' && (horiz ? v.x : v.y) == null);
+        });
+      });
+      labels.forEach(function (_, i) {
+        if (i === 0 || wk[i] == null || wk[i - 1] == null || !has[i] || !has[i - 1]) return;
+        var ch = changeTxt(tot[i - 1], tot[i]); if (!ch) return;
+        var els = g.map(function (di) { return chart.getDatasetMeta(di).data[i]; }).filter(Boolean);
+        if (!els.length) return;
+        var fill = ch.c === UP ? PILL.up : ch.c === DOWN ? PILL.down : PILL.flat;
+        var w = Math.ceil(ctx.measureText(ch.t).width) + padX * 2, cands = [];
+        w += w % 2;
+        if (horiz) {
+          var right = Math.max.apply(null, els.map(function (e) { return Math.max(e.x, e.base != null ? e.base : e.x); }));
+          var y = els[0].y;
+          [8, 8 + w + 4, 8 + 2 * (w + 4)].forEach(function (d) { cands.push({ cx: right + d + w / 2, cy: y }); });
+          cands.push({ cx: right + 8 + w / 2, cy: y - h - 2 }, { cx: right + 8 + w / 2, cy: y + h + 2 });
+        } else {
+          var x = els.reduce(function (a, e) { return a + e.x; }, 0) / els.length;
+          var top = Math.min.apply(null, els.map(function (e) { return Math.min(e.y, e.base != null ? e.base : e.y); }));
+          var bottom = Math.max.apply(null, els.map(function (e) { return e.y; }));
+          for (var k = 0; k < 4; k++) cands.push({ cx: x, cy: top - lift - k * (h + 3) });       // above, stepping up
+          for (k = 0; k < 2; k++) cands.push({ cx: x, cy: bottom + lift + 4 + k * (h + 3) });   // then below
+          cands.push({ cx: x + w / 2 + 10, cy: top }, { cx: x - w / 2 - 10, cy: top });          // then beside
+        }
+        var box = function (c) { return { x0: c.cx - w / 2, y0: c.cy - h / 2, x1: c.cx + w / 2, y1: c.cy + h / 2 }; };
+        var inside = function (b) { return b.y0 >= 0 && b.y1 <= chart.height && b.x0 >= 0 && b.x1 <= chart.width; };
+        var pick = null;
+        for (var j = 0; j < cands.length && !pick; j++) { var b = box(cands[j]); if (inside(b) && !overlaps(b, taken)) pick = cands[j]; }
+        if (!pick) {                                            // nowhere free: nearest spot above, kept on the canvas
+          pick = cands[0];
+          pick.cy = Math.max(pick.cy, h / 2 + 1);
+        }
+        // Snap to whole pixels so the edges and text don't blur across two pixels.
+        pick = { cx: Math.round(pick.cx), cy: Math.round(pick.cy) };
+        var bx = box(pick);
+        taken.push(bx);
+        roundRect(ctx, bx.x0, bx.y0, w, h, 4);
+        ctx.fillStyle = fill; ctx.fill();
+        ctx.lineWidth = 1; ctx.strokeStyle = PILL.edge; ctx.stroke();
+        whiteText(ctx, ch.t, pick.cx, pick.cy, w, h, chart.currentDevicePixelRatio || 1);
+      });
+    });
+    ctx.restore();
+  }
   Base.register({
     id: 'weekChange',
-    // Headroom on the value axis so the label above the tallest bar isn't squeezed into the top edge
-    // (a fixed grace, set only when the page hasn't — so repeated updates can't grow it).
-    afterDatasetsDraw: function (chart) {
-      if (!weekChart(chart)) return;
-      var o = chart.options || {}, pl = o.plugins || {};
-      var labels = chart.data.labels, wk = labels.map(weekNo);
-      var horiz = o.indexAxis === 'y', sc = o.scales || {};
-      var stacked = !!((sc.x && sc.x.stacked) || (sc.y && sc.y.stacked));
-      var vis = chart.data.datasets.map(function (ds, di) { return di; }).filter(function (di) {
-        var m = chart.getDatasetMeta(di); return chart.isDatasetVisible(di) && m && m.data && m.data.length;
-      });
-      if (!vis.length) return;
-      var groups = (stacked || vis.length === 1) ? [vis] : (vis.length <= 3 ? vis.map(function (d) { return [d]; }) : null);
-      if (!groups) return;
-      var ctx = chart.ctx, area = chart.chartArea;
-      var lift = pl.valueLabels && pl.valueLabels.totals ? 24 : 10;   // clear of a page's own total label
-      ctx.save();
-      ctx.font = '800 ' + (groups.length === 1 ? 12 : 10) + 'px "Segoe UI", system-ui, sans-serif';
-      ctx.textBaseline = 'middle';
-      groups.forEach(function (g) {
-        var tot = labels.map(function (_, i) {
-          return g.reduce(function (a, di) { return a + valAt(chart.data.datasets[di].data[i], horiz); }, 0);
-        });
-        labels.forEach(function (_, i) {
-          if (i === 0 || wk[i] == null || wk[i - 1] == null) return;
-          var ch = changeTxt(tot[i - 1], tot[i]); if (!ch) return;
-          var els = g.map(function (di) { return chart.getDatasetMeta(di).data[i]; }).filter(Boolean);
-          if (!els.length) return;
-          var px, py;
-          if (horiz) {
-            px = Math.max.apply(null, els.map(function (e) { return Math.max(e.x, e.base != null ? e.base : e.x); })) + 6;
-            py = els[0].y;
-            ctx.textAlign = 'left';
-          } else {
-            px = els.reduce(function (a, e) { return a + e.x; }, 0) / els.length;
-            py = Math.min.apply(null, els.map(function (e) { return Math.min(e.y, e.base != null ? e.base : e.y); })) - lift;
-            py = Math.max(py, (area ? area.top : 0) - 4, 8);
-            ctx.textAlign = 'center';
-          }
-          ctx.fillStyle = ch.c;
-          ctx.fillText(ch.t, px, py);
-        });
-      });
-      ctx.restore();
-    }
+    beforeDraw: function (chart) { startRecording(chart); },
+    // Drawn after the page's own labels and just before the tooltip, so the tooltip still covers them.
+    beforeTooltipDraw: function (chart) { drawWeekPills(chart); },
+    afterRender: function (chart) { drawWeekPills(chart); }
   });
 
   // ── Wrap the Chart class: keep the pristine config, re-apply a remembered type ──

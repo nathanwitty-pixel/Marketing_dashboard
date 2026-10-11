@@ -11,7 +11,9 @@ Run with the Chronos venv (PyTorch lives there, not in Anaconda):
 Steps:
   1. daily bags = BAGS_SOLD_TOTAL grouped by day (same filters as Sales,
      till sales only — corporate bags are NOT included)
-  2. this month: Chronos forecasts the remaining days (10% / 50% / 90%)
+  2. this month: Chronos forecasts the remaining days (10% / 50% / 90%),
+     told in advance about the calendar (chronos_train.calendar_inputs), and
+     shown daily walk-ins and new walk-in leads so far (from Jan 2026)
   3. track record: for each of the last 12 finished months, project the
      month on day 3/7/10/15/20/25 both ways and compare with the actual
   4. inject the result as JSON between the CHRONOS_DATA markers, plus
@@ -26,10 +28,12 @@ import re
 import time
 from datetime import date, datetime, timedelta
 
+import numpy as np
 import pandas as pd
 import torch
 from chronos import Chronos2Pipeline
 
+from chronos_train import item
 from lib import db, queries
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -73,18 +77,42 @@ def daily_bags(end):
     return s.reindex(pd.date_range(HISTORY_START, end), fill_value=0.0)
 
 
+def walkins_and_leads(idx):
+    """Daily walk-ins (denri_footfall_count) and new walk-in leads (denri_lead), as past-only
+    inputs: Chronos sees them up to today but not ahead. Both start in Jan 2026; earlier days
+    are NaN (unknown, not zero), and so are days whose walk-in count hasn't been entered yet.
+    Backtest Feb–Sep 2026: 3.4% average miss with them vs 3.6% calendar only."""
+    w = db.run_query("SELECT date AS day, SUM(manual_count)::float AS n FROM denri_footfall_count GROUP BY 1")
+    walkins = pd.Series(w["n"].values, index=pd.to_datetime(w["day"])).reindex(idx)
+    ld = db.run_query("""SELECT capture_date AS day, COUNT(*)::float AS n FROM denri_lead
+                         WHERE active AND capture_date IS NOT NULL GROUP BY 1""")
+    leads = pd.Series(ld["n"].values, index=pd.to_datetime(ld["day"])).reindex(idx)
+    since = walkins.first_valid_index()
+    if since is not None:
+        leads[leads.index >= since] = leads[leads.index >= since].fillna(0.0)
+    return {"walkins": walkins, "leads": leads}
+
+
 def main():
     t0 = time.time()
     yesterday = date.today() - timedelta(days=1)
     s = daily_bags(yesterday)
     print(f"{len(s)} days of sales loaded")
+    extra = walkins_and_leads(s.index)
 
     torch.set_num_threads(os.cpu_count() or 4)
     pipe = Chronos2Pipeline.from_pretrained("amazon/chronos-2", device_map="cpu")
 
     def forecast(upto, days):
-        q, _ = pipe.predict_quantiles([torch.tensor(s[s.index <= upto].values)],
-                                      prediction_length=days, quantile_levels=QUANTILES)
+        # Calendar inputs (Black Friday, Christmas, holidays, payday) — the best
+        # method in chronos_train.py (5.1% average miss vs 5.8% without) — plus
+        # walk-ins and new leads so far.
+        if days <= 0:
+            return np.zeros((0, len(QUANTILES)))
+        x = item(s[s.index <= upto], days)
+        for k, ser in extra.items():
+            x["past_covariates"][k] = ser[ser.index <= upto].values
+        q, _ = pipe.predict_quantiles([x], prediction_length=days, quantile_levels=QUANTILES)
         return q[0][0].numpy()        # (days, 3) → lo, med, hi per day
 
     # ── This month ────────────────────────────────────────────────
