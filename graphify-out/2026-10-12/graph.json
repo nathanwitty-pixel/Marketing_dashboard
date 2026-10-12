@@ -2973,7 +2973,7 @@
       "file_type": "code",
       "norm_label": "_page()",
       "source_file": "stocks_picking_app.py",
-      "source_location": "L433"
+      "source_location": "L434"
     },
     {
       "id": "stocks_picking_app_page_inline",
@@ -2985,7 +2985,7 @@
       "file_type": "code",
       "norm_label": "inline()",
       "source_file": "stocks_picking_app.py",
-      "source_location": "L439"
+      "source_location": "L440"
     },
     {
       "id": "stocks_picking_app_read",
@@ -3033,7 +3033,7 @@
       "file_type": "code",
       "norm_label": "_idle_check()",
       "source_file": "stocks_picking_app.py",
-      "source_location": "L384"
+      "source_location": "L385"
     },
     {
       "id": "stocks_picking_app_job",
@@ -3129,7 +3129,7 @@
       "file_type": "code",
       "norm_label": "_watch()",
       "source_file": "stocks_picking_app.py",
-      "source_location": "L363"
+      "source_location": "L364"
     },
     {
       "id": "push_to_supabase_main",
@@ -15850,7 +15850,7 @@
       "source_location": ""
     },
     {
-      "id": "stocks_picking_app_rationale_434",
+      "id": "stocks_picking_app_rationale_435",
       "label": "The page HTML as the dashboard serves its pages: local scripts inlined (the\u2026",
       "_origin": "ast",
       "community": 150,
@@ -15858,7 +15858,7 @@
       "file_type": "rationale",
       "norm_label": "the page html as the dashboard serves its pages: local scripts inlined (the...",
       "source_file": "stocks_picking_app.py",
-      "source_location": "L434"
+      "source_location": "L435"
     },
     {
       "id": "streamlit_app_rationale_674",
@@ -15927,7 +15927,7 @@
       "source_location": "L151"
     },
     {
-      "id": "stocks_picking_app_rationale_364",
+      "id": "stocks_picking_app_rationale_365",
       "label": "While a rebuild runs: a progress bar; when it ends, rerun the app so the new\u2026",
       "_origin": "ast",
       "community": 152,
@@ -15935,10 +15935,10 @@
       "file_type": "rationale",
       "norm_label": "while a rebuild runs: a progress bar; when it ends, rerun the app so the new...",
       "source_file": "stocks_picking_app.py",
-      "source_location": "L364"
+      "source_location": "L365"
     },
     {
-      "id": "stocks_picking_app_rationale_385",
+      "id": "stocks_picking_app_rationale_386",
       "label": "An open, idle tab still auto-refreshes: every minute, rebuild if the page is\u2026",
       "_origin": "ast",
       "community": 152,
@@ -15946,7 +15946,7 @@
       "file_type": "rationale",
       "norm_label": "an open, idle tab still auto-refreshes: every minute, rebuild if the page is...",
       "source_file": "stocks_picking_app.py",
-      "source_location": "L385"
+      "source_location": "L386"
     },
     {
       "id": "push_to_supabase",
@@ -39812,7 +39812,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "stocks_picking_app.py",
-      "source_location": "L386",
+      "source_location": "L387",
       "weight": 1.0
     },
     {
@@ -39824,7 +39824,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "stocks_picking_app.py",
-      "source_location": "L386",
+      "source_location": "L387",
       "weight": 1.0
     },
     {
@@ -39836,7 +39836,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "stocks_picking_app.py",
-      "source_location": "L437",
+      "source_location": "L438",
       "weight": 1.0
     },
     {
@@ -39848,7 +39848,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "stocks_picking_app.py",
-      "source_location": "L440",
+      "source_location": "L441",
       "weight": 1.0
     },
     {
@@ -39884,7 +39884,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "stocks_picking_app.py",
-      "source_location": "L365",
+      "source_location": "L366",
       "weight": 1.0
     },
     {
@@ -45632,7 +45632,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "stocks_picking_app.py",
-      "source_location": "L383",
+      "source_location": "L384",
       "weight": 1.0
     },
     {
@@ -45656,7 +45656,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "stocks_picking_app.py",
-      "source_location": "L432",
+      "source_location": "L433",
       "weight": 1.0
     },
     {
@@ -45668,7 +45668,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "stocks_picking_app.py",
-      "source_location": "L362",
+      "source_location": "L363",
       "weight": 1.0
     },
     {
@@ -61609,7 +61609,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "stocks_picking_app.py",
-      "source_location": "L363",
+      "source_location": "L364",
       "weight": 1.0
     },
     {
@@ -61620,7 +61620,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "stocks_picking_app.py",
-      "source_location": "L384",
+      "source_location": "L385",
       "weight": 1.0
     },
     {
@@ -61642,7 +61642,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "stocks_picking_app.py",
-      "source_location": "L433",
+      "source_location": "L434",
       "weight": 1.0
     },
     {
@@ -68334,36 +68334,36 @@
       "weight": 1.0
     },
     {
-      "source": "stocks_picking_app_rationale_364",
+      "source": "stocks_picking_app_rationale_365",
       "target": "stocks_picking_app_watch",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "stocks_picking_app.py",
-      "source_location": "L364",
+      "source_location": "L365",
       "weight": 1.0
     },
     {
-      "source": "stocks_picking_app_rationale_385",
+      "source": "stocks_picking_app_rationale_386",
       "target": "stocks_picking_app_idle_check",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "stocks_picking_app.py",
-      "source_location": "L385",
+      "source_location": "L386",
       "weight": 1.0
     },
     {
-      "source": "stocks_picking_app_rationale_434",
+      "source": "stocks_picking_app_rationale_435",
       "target": "stocks_picking_app_page",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "stocks_picking_app.py",
-      "source_location": "L434",
+      "source_location": "L435",
       "weight": 1.0
     },
     {
@@ -69771,7 +69771,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "stocks_picking_app.py",
-      "source_location": "L442",
+      "source_location": "L443",
       "weight": 1.0
     },
     {
@@ -75939,5 +75939,5 @@
       "source_file": "docs/timed-offers.md"
     }
   ],
-  "built_at_commit": "48a25d3d3a424d36c7feea9edb9ac35853cbabc9"
+  "built_at_commit": "96783f4ac56e1ebed9ec8f1d841eab12bfed8591"
 }
