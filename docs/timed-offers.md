@@ -98,6 +98,20 @@ capped at was per bag so a stray pricelist value can't inflate the total. The bo
 above the table re-orders the rows client-side (Sold / In stock / Discount, largest↔smallest); the
 catch-all **Other rejects** row always sinks to the bottom.
 
+**Corporate / bulk orders in the lift (always flagged).** Any single POS line of
+**`BULK_LINE_QTY` (10)+ units** of an offer bag is a bulk / corporate order (`odoo_bulk_lines`,
+1st of the offer month → offer end, same scope filters). It still counts in **Sold**, but:
+- the bag's **Sales lift** cell keeps the raw figure, adds a **⚠** with a hover naming each order
+  (qty × product, order ref, till, date, KES, before/during the offer), and shows a second line
+  **"X% without corporate order"** (`bagLiftExBulk` — same windows, bulk units removed);
+- a **"Corporate order"** insight under the table explains why the lift looks off and how the bag
+  did without it;
+- the **"Did the offer lift sales?"** panel adds a **Without corporate orders** card
+  (`lift.liftPctExBulk`, `basePerDayExBulk → offerPerDayExBulk`).
+The Monthly Report's copy of the table carries the same ⚠ + ex-bulk line. Origin: Oct 2026 —
+one **440 × Fabela Grey** order (HILTON/99665, 5 Oct, KES 1.01M) inflated Fabela's pre-offer pace
+to 71/day, so the 9–10 Oct offer read **−61%**; walk-in pace actually went 16.1 → 27.5/day (**+71%**).
+
 **"Other rejects" catch-all (accurate totals).** `_bucket` maps an Odoo product to a listed bag by
 longest-prefix, so a `[REJECT]` unit whose product name doesn't match a listed reject bag —
 colour/condition or plural/variant spellings (**Moon Bag …** vs the sheet's **Moon Bags**, **Mega

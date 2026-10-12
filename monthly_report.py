@@ -841,6 +841,16 @@ if timed_offers:
                 _lift = ('<span style="color:#64748b">&mdash;</span>' if _bl is None
                          else f'<span style="color:{"#34d399" if _bl >= 0 else "#f87171"};font-weight:700">'
                               f'{"+" if _bl >= 0 else ""}{_bl}%</span>')
+                if b.get("bulk"):
+                    # Bulk / corporate order distorts the lift — flag it and show the lift without it.
+                    _bx = b.get("bagLiftExBulk")
+                    _btip = "; ".join(f'{x.get("qty")} x {x.get("product")} ({x.get("order")}, {x.get("till")}, {x.get("date")}) '
+                                      f'{x.get("window")} the offer' for x in b["bulk"])
+                    _lift = (f'<span title="Corporate / bulk order: {esc(_btip).replace(chr(34), "&quot;")}" style="cursor:help">{_lift} '
+                             f'<span style="color:#fbbf24">&#9888;</span><div style="font-size:0.68rem;color:#94a3b8">'
+                             + ("n/a" if _bx is None else
+                                f'<b style="color:{"#34d399" if _bx >= 0 else "#f87171"}">{"+" if _bx >= 0 else ""}{_bx}%</b>')
+                             + ' without corporate order</div></span>')
                 _was = f'KES {fmt(num(b.get("priceWas")))}' if b.get("priceWas") is not None else '&mdash;'
                 _now = f'KES {fmt(num(b.get("priceNow")))}' if b.get("priceNow") is not None else '&mdash;'
                 _wbody += ("<tr>"
@@ -1730,6 +1740,8 @@ def _timed_offer_snapshots():
                 "discountKes": r.get("discountKes"),
                 "discountPct": r.get("discountPct"),
                 "bagLift":     r.get("bagLift"),
+                "bagLiftExBulk": r.get("bagLiftExBulk"),
+                "bulk":        r.get("bulk") or [],
             })
         out.append({
             "name":        c.get("name"),

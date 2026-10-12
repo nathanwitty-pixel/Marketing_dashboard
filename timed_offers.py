@@ -29,6 +29,10 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # pricelist prices are near-static metadata (long TTL) and were the per-bag round-trip cost.
 ODOO_CACHE_MIN = 30      # POS sales scans (window, daily, per-bag value, price averages)
 META_CACHE_MIN = 720     # list_price / pricelist per-bag lookups (rarely change)
+# A single POS line of this many units or more is a bulk / corporate order (walk-ins buy 1–2).
+# It still counts in Sold, but it's flagged and taken out of the lift — one 440-unit Fabela
+# order on 5 Oct 2026 made Fabela's lift read −61% when walk-in pace actually rose ~+71%.
+BULK_LINE_QTY = 10
 
 from google_auth import get_gspread_client
 
@@ -364,6 +368,49 @@ def odoo_bag_prices(bags, start, end):
     if dfc is not None and not dfc.empty and dfc.iloc[0]["avg"] is not None:
         catalog = int(dfc.iloc[0]["avg"])
     return prices, catalog
+
+
+def odoo_bulk_lines(start, end):
+    """Bulk / corporate POS lines (qty >= BULK_LINE_QTY) for the offer bags in [start,end],
+    same scope filters as the sales queries. [{bag, date, order, till, product, qty, value}],
+    bucketed to the configured bag. [] if no DB."""
+    out = []
+    try:
+        from lib import db
+        ok, _ = db.check_connection()
+        if not ok:
+            return out
+    except Exception:
+        return out
+    q = f"""
+    SELECT p.date_order::date AS d, p."name" AS ord, COALESCE(pc."name",'') AS till,
+           pt."name" AS product, SUM(pl.qty)::int AS qty, SUM(pl.price_subtotal_incl)::numeric AS val
+    FROM pos_order p
+    JOIN pos_order_line pl ON pl.order_id = p.id
+    LEFT JOIN pos_session ps ON p.session_id = ps.id
+    LEFT JOIN pos_config pc ON ps.config_id = pc.id
+    LEFT JOIN product_product pp ON pl.product_id = pp.id
+    LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
+    LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
+    WHERE p.date_order::date BETWEEN CAST(:s AS date) AND CAST(:e AS date)
+      AND p.state IN ('done', 'invoiced', 'paid'){_QTY_SQL}
+      AND pl.qty >= :bulk
+      AND lower(COALESCE(pc."name",'')) NOT IN ('sinza','dar-es-alam','uganda')
+    {_SHOP_SQL}{_TIME_SQL}{_PRICE_SQL}{_NAME_SQL}
+      AND COALESCE(pt."name",'') NOT LIKE '%+%'
+      AND COALESCE(pcat."name",'') NOT ILIKE '%Pos%'
+    GROUP BY 1, 2, 3, 4 ORDER BY 1
+    """
+    df = db.run_query_cached(q, {"s": start, "e": end, "bulk": BULK_LINE_QTY}, ttl_min=ODOO_CACHE_MIN)
+    if df is None or df.empty:
+        return out
+    for _, r in df.iterrows():
+        b = _bucket(r["product"])
+        if b:
+            out.append({"bag": b, "date": str(r["d"]), "order": r["ord"], "till": r["till"],
+                        "product": r["product"], "qty": int(r["qty"] or 0),
+                        "value": round(float(r["val"] or 0))})
+    return out
 
 
 def _sheet_category_by_bag(bags):
@@ -735,6 +782,16 @@ def build_offer(offer):
     # Baseline = 1st of the offer's month → the day before the offer started
     # ("first week … up to when the offer ran"). Daily series feeds the trend chart.
     lift = None
+    # Bulk / corporate lines from the 1st of the offer month → offer end (covers the lift's
+    # before + during windows). Flagged per bag and excluded from the "ex-bulk" lifts.
+    try:
+        _bulk = odoo_bulk_lines(date.fromisoformat(CFG["startDate"]).replace(day=1).isoformat(),
+                                CFG["endDate"])
+    except (ValueError, TypeError):
+        _bulk = []
+
+    def _bulk_qty(a, b, bag=None):
+        return sum(x["qty"] for x in _bulk if a <= x["date"] <= b and (bag is None or x["bag"] == bag))
     try:
         _os = date.fromisoformat(CFG["startDate"])
         _oe = date.fromisoformat(CFG["endDate"])
@@ -817,6 +874,15 @@ def build_offer(offer):
                 "liftPct": lift_pct, "daily": _series, "weekly": weekly,
                 "clearanceStart": (_split.isoformat() if CFG.get("clearanceStart") else ""),
             }
+            # Same lift with bulk / corporate lines taken out of both windows.
+            _bb = _bulk_qty(_mstart.isoformat(), (_split - timedelta(days=1)).isoformat())
+            _bo = _bulk_qty(_split.isoformat(), _oe_eff.isoformat())
+            if _bb or _bo:
+                _bpd = round((base_total - _bb) / base_days, 1) if base_days else 0.0
+                _opd = round((offer_total - _bo) / offer_days, 1) if offer_days else 0.0
+                lift.update({"bulkBase": _bb, "bulkOffer": _bo,
+                             "basePerDayExBulk": _bpd, "offerPerDayExBulk": _opd,
+                             "liftPctExBulk": round((_opd - _bpd) / _bpd * 100) if _bpd else None})
             # Normal (full-price) vs clearance (reject) over the whole month-to-date window
             # (e.g. 1st→21st), per day — the comparison the reject panel shows.
             if _NAME_SQL:
@@ -948,6 +1014,20 @@ def build_offer(offer):
         pre_pd = round(pre_q / _bd, 1) if _bd else None
         off_pd = round(off_q / _od, 1) if _od else None
         bag_lift = round((off_pd - pre_pd) / pre_pd * 100) if (pre_pd and off_pd is not None) else None
+        # Bulk / corporate orders behind this bag's lift — shown as the reason, plus the
+        # walk-in lift with them removed (same windows as pre_q / off_q above).
+        _bag_bulk, bag_lift_ex = [], None
+        if _bd is not None and _od is not None and _pre_prices:
+            _pre_s, _pre_e = _ms_d.isoformat(), (_os_d - timedelta(days=1)).isoformat()
+            _off_s, _off_e = _os_d.isoformat(), _oe_d.isoformat()
+            _bag_bulk = [dict(x, window=("before" if x["date"] <= _pre_e else "during"))
+                         for x in _bulk if x["bag"] == bu and _pre_s <= x["date"] <= _off_e]
+            if _bag_bulk:
+                _pq = pre_q - _bulk_qty(_pre_s, _pre_e, bu)
+                _oq = off_q - _bulk_qty(_off_s, _off_e, bu)
+                _ppd = round(_pq / _bd, 1) if _bd else None
+                _opd = round(_oq / _od, 1) if _od else None
+                bag_lift_ex = round((_opd - _ppd) / _ppd * 100) if (_ppd and _opd is not None) else None
         sm = _stock_map.get(bu, {"stock": 0, "category": ""})
         _is_other = bool(r.get("isOther"))
         why_bags.append({
@@ -955,6 +1035,7 @@ def build_offer(offer):
             "priceWas": was, "priceNow": now, "discountKes": disc_kes,
             "discountPct": disc_pct, "discounted": discounted, "soldAt": sold_at,
             "prePerDay": pre_pd, "offerPerDay": off_pd, "bagLift": bag_lift,
+            "bulk": _bag_bulk, "bagLiftExBulk": bag_lift_ex,
             "category": ("Other / variant names" if _is_other else sm["category"]),
             "isOther": _is_other,
         })
@@ -1011,6 +1092,24 @@ def build_offer(offer):
             f"All six sit in <b>{', '.join(c.title() for c in _cats)}</b> — school categories — and the step-up landed in the offer week as schools opened. "
             f"{_season_bag}The timing fits the sales pattern as much as the price cut does."})
 
+    # 5) Corporate / bulk orders — why a bag's lift looks odd, and how it did without them.
+    for w in why_bags:
+        if not w["bulk"]:
+            continue
+        _orders = "; ".join(
+            f"<b>{x['qty']:,} × {x['product']}</b> ({x['order']}, {x['till']}, {x['date']}, KES {x['value']:,}) "
+            f"{'before' if x['window'] == 'before' else 'during'} the offer" for x in w["bulk"])
+        _raw = "n/a" if w["bagLift"] is None else f"{w['bagLift']:+d}%"
+        _ex = "n/a" if w["bagLiftExBulk"] is None else f"{w['bagLiftExBulk']:+d}%"
+        _why = ("it inflated the before-offer pace, so the offer looks worse than it was"
+                if all(x["window"] == "before" for x in w["bulk"]) else
+                "it inflated the offer pace, so the offer looks better than it was"
+                if all(x["window"] == "during" for x in w["bulk"]) else
+                "it sits in both windows and distorts the comparison")
+        _insights.append({"tag": "Corporate order", "text":
+            f"<b>{w['name']}</b> shows <b>{_raw}</b> because of a bulk / corporate order: {_orders} — {_why}. "
+            f"<b>Without it, {w['name']} did {_ex}</b> (walk-in pace only)."})
+
     if _all_cut and _deepest:
         _verdict = (f"<b>Good move.</b> All six ran a real <b>{min(_pcts)}–{max(_pcts)}% cut</b> and daily sales rose <b>{_lift_txt}</b> during back-to-school. "
                     f"The catch: <b>discount depth didn't pick the winners</b> — the deepest cut ({_deepest['name']}, {_deepest['discountPct']}%) sold least, while the popular school lines led. "
@@ -1065,6 +1164,7 @@ def build_offer(offer):
         "windowLabel": _win_label(CFG["startDate"], CFG["endDate"])
                        + (" &middot; " + _time_label + " daily" if _time_label else ""),
         "lift":       lift,
+        "bulkLineQty": BULK_LINE_QTY,
         "why":        why,
         "salesLive":  sales_live,
         "bags":       bag_rows,
