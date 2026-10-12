@@ -454,6 +454,20 @@ table, so the two can be read side by side.
 Jumbo + Jumbo through a CBR product (running); Nanyuki made none. Data per shop: `combos [[name, units, KES]]`,
 `cbrAsRunning [[name, units]]`, `requests`, `approved`.
 
+## Filterable shop tables (`smcTableTools`) — Oct 2026
+
+Both shop tables — **Shop performance — all running combos** (`#smc-shop-totals`) and
+**Self-made combos by shop** (`#smc-smshop-table`) — get a toolbar above the table:
+**Search shop** (text) · **Region** (All regions / each region) · **Reset** · a count
+("Showing X of Y shops · Total row = all shops"). Every column header is **click-to-sort**
+(first click: text columns A→Z, numbers high→low; click again to flip; ▴/▾ marks the column;
+"—" cells always sink to the bottom; "approved / raised" sorts on the first number). The
+**Total / All shops row stays pinned last** and keeps the all-shop totals. Filter and sort
+state survive re-renders (the running table re-renders on the Sort/Stock filters).
+Data rows carry `data-shop` / `data-region`; the self-made table has no region of its own, so it
+borrows it from the running cards' `usage.shops[].region` (`_shopRegion`). JS-only — lives in
+the page template, outside the SMC_DATA markers, so regenerating doesn't touch it.
+
 ## Monetary implication (`#smc-mi-panel`, `SMC.monetaryImplication`)
 
 The money given away by bundling. Per combo, **Expected** = the combo's bags valued at

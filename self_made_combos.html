@@ -549,6 +549,86 @@ window.addEventListener('DOMContentLoaded', function () {
   bar('smc-units', sm.units || 0, run.units || 0, function (v) { return fmt(v); });
   bar('smc-value', sm.value || 0, run.value || 0, function (v) { return 'KES ' + fmt(v); });
 
+  // ── Shop-table filter + sort (docs/self-made-combos.md › Filterable shop tables) ──
+  // Call right after a shop table is (re)rendered into `wrap`. Data rows carry
+  // data-shop / data-region; the Total row has no data-shop and stays pinned last.
+  // Adds a toolbar (search shop · Region · Reset · "showing X of Y") and click-to-sort
+  // headers. Filter/sort state survives re-renders (kept per table key).
+  var _tblState = {};
+  function smcTableTools(wrap, key) {
+    var table = wrap && wrap.querySelector('table'); if (!table) return;
+    var st = _tblState[key] || (_tblState[key] = { q: '', region: '', col: null, dir: -1 });
+    var tbody = table.tBodies[0]; if (!tbody) return;
+    var dataRows = [].slice.call(tbody.rows).filter(function (tr) { return tr.hasAttribute('data-shop'); });
+    var restRows = [].slice.call(tbody.rows).filter(function (tr) { return !tr.hasAttribute('data-shop'); });
+    var regions = [];
+    dataRows.forEach(function (tr) { var r = tr.getAttribute('data-region'); if (r && regions.indexOf(r) < 0) regions.push(r); });
+    regions.sort();
+    var ctl = 'background:#161824;color:#e2e8f0;border:1px solid #2d3148;border-radius:6px;padding:0.3rem 0.5rem;font-size:0.8rem';
+    var bar = document.createElement('div');
+    bar.style.cssText = 'display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;margin:0.4rem 0 0.6rem';
+    bar.innerHTML = '<input type="search" placeholder="Search shop…" data-f="q" style="' + ctl + ';min-width:160px">'
+      + (regions.length ? '<select data-f="region" style="' + ctl + '"><option value="">All regions</option>'
+          + regions.map(function (r) { return '<option>' + r.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</option>'; }).join('') + '</select>' : '')
+      + '<button type="button" data-f="reset" style="' + ctl + ';cursor:pointer">Reset</button>'
+      + '<span data-f="count" style="font-size:0.74rem;color:#64748b"></span>';
+    table.parentNode.insertBefore(bar, table);
+    var qIn = bar.querySelector('[data-f="q"]'), rSel = bar.querySelector('[data-f="region"]');
+    qIn.value = st.q; if (rSel) rSel.value = st.region;
+    // Number in a cell: "1,234", "45%", "3 / 7" (first number), "12 ▲" → 1234 / 45 / 3 / 12.
+    var cellVal = function (tr, i) {
+      var c = tr.cells[i]; if (!c) return '';
+      var t = (c.textContent || '').trim(), m = t.replace(/,/g, '').match(/-?\d+(\.\d+)?/);
+      if (!/[A-Za-z]/.test(t)) return m ? parseFloat(m[0]) : null;   // "—" → null, always last
+      return t.toLowerCase();
+    };
+    var ths = [].slice.call(table.tHead ? table.tHead.rows[0].cells : []);
+    var apply = function () {
+      var q = st.q.toLowerCase(), shown = 0;
+      dataRows.forEach(function (tr) {
+        var ok = (!q || (tr.getAttribute('data-shop') || '').toLowerCase().indexOf(q) >= 0)
+              && (!st.region || tr.getAttribute('data-region') === st.region);
+        tr.style.display = ok ? '' : 'none'; if (ok) shown++;
+      });
+      var ordered = dataRows.slice();
+      if (st.col !== null) {
+        ordered.sort(function (a, b) {
+          var x = cellVal(a, st.col), y = cellVal(b, st.col);
+          if (x === null || y === null) return (x === null) - (y === null);
+          if (typeof x === 'number' && typeof y === 'number') return (x - y) * st.dir;
+          return String(x).localeCompare(String(y)) * st.dir;
+        });
+      }
+      ordered.concat(restRows).forEach(function (tr) { tbody.appendChild(tr); });
+      ths.forEach(function (th, i) {
+        var ar = th.querySelector('.smc-sort'); if (ar) ar.textContent = (st.col === i ? (st.dir > 0 ? ' ▴' : ' ▾') : '');
+      });
+      bar.querySelector('[data-f="count"]').textContent = (shown < dataRows.length)
+        ? 'Showing ' + shown + ' of ' + dataRows.length + ' shops · Total row = all shops'
+        : dataRows.length + ' shops · click a column to sort';
+    };
+    ths.forEach(function (th, i) {
+      th.style.cursor = 'pointer'; th.style.userSelect = 'none';
+      th.insertAdjacentHTML('beforeend', '<span class="smc-sort" style="color:#a5b4fc"></span>');
+      th.addEventListener('click', function () {
+        if (st.col === i) st.dir = -st.dir; else { st.col = i; st.dir = (i <= 1 ? 1 : -1); }   // text cols A→Z first, numbers high→low
+        apply();
+      });
+    });
+    qIn.addEventListener('input', function () { st.q = this.value; apply(); });
+    if (rSel) rSel.addEventListener('change', function () { st.region = this.value; apply(); });
+    bar.querySelector('[data-f="reset"]').addEventListener('click', function () {
+      st.q = ''; st.region = ''; st.col = null; st.dir = -1; qIn.value = ''; if (rSel) rSel.value = '';
+      apply();   // col = null → original ranking order
+    });
+    apply();
+  }
+  // shop → region, from the running-combo cards (the self-made table has no region of its own).
+  var _shopRegion = {};
+  (SMC.runningCards || []).forEach(function (c) {
+    ((c.usage || {}).shops || []).forEach(function (s) { if (s.shop && s.region) _shopRegion[s.shop] = s.region; });
+  });
+
   // ── Combo button usage (till check) — is each running combo rung as a combo? ──
   (function () {
     var U = SMC.comboUsage || [];
@@ -650,7 +730,7 @@ window.addEventListener('DOMContentLoaded', function () {
         + th('Combo requests', 'Combo requests (CBR) the shop raised on the POS this month — approved / raised', 'r')
         + '</tr></thead><tbody>'
         + all.map(function (r, i) {
-            return '<tr class="smshop-row" data-i="' + i + '" tabindex="0" style="cursor:pointer' + (i === 0 && r.smUnits ? ';background:rgba(245,158,11,0.08)' : '') + '"><td>' + badge(ranks[i]) + '</td>'
+            return '<tr class="smshop-row" data-i="' + i + '" data-shop="' + esc(r.shop) + '" data-region="' + esc(_shopRegion[r.shop] || '') + '" tabindex="0" style="cursor:pointer' + (i === 0 && r.smUnits ? ';background:rgba(245,158,11,0.08)' : '') + '"><td>' + badge(ranks[i]) + '</td>'
               + '<td class="name">' + esc(r.shop) + ' <span style="color:#475569;font-size:0.7rem">&#9432;</span></td>'
               + wkCells(r)
               + '<td class="r"><div style="display:flex;align-items:center;justify-content:flex-end;gap:0.45rem"><div style="width:70px;height:6px;background:#0f1117;border-radius:99px;overflow:hidden"><div style="height:100%;width:' + Math.round(r.smUnits / maxU * 100) + '%;background:#fbbf24"></div></div><b style="color:#fde68a">' + fmt(r.smUnits) + '</b></div></td>'
@@ -671,6 +751,7 @@ window.addEventListener('DOMContentLoaded', function () {
         + '<b style="color:#67e8f9">Running units</b> = official running combos (the offer sheet) the shop sold — set against self-made units to give the <b style="color:#c4b5fd">self-made share</b>. '
         + '<b style="color:#cbd5e1">Combo requests</b> = CBR requests the shop raised this month (approved / raised). A combo counts as self-made or running by its <b>bags</b>: a requested combo whose bags match an offer-sheet combo (e.g. Standard Travel + Code 3, Jumbo + Jumbo) is counted as <b>running</b>. '
         + '<b style="color:#e2e8f0">Hover or tap a shop</b> for all its self-made combos.</div>';
+      smcTableTools(t, 'smshop');
     }
 
     // Hover / tap a shop → every self-made combo it sold, its combo requests, and CBR-rung combos counted as running.
@@ -1292,7 +1373,7 @@ window.addEventListener('DOMContentLoaded', function () {
     var body = rows.map(function (r, i) {
       var best = regBest[r.region] || 0, red = best > 0 && r.rung < 0.5 * best;
       var share = tot ? Math.round(r.rung / tot * 100) : 0;
-      return '<tr' + (red ? ' style="background:rgba(248,113,113,0.08)"' : '') + ' title="' + esc(r.shop) + (r.region ? ' · ' + esc(r.region) : '')
+      return '<tr data-shop="' + esc(r.shop) + '" data-region="' + esc(r.region) + '"' + (red ? ' style="background:rgba(248,113,113,0.08)"' : '') + ' title="' + esc(r.shop) + (r.region ? ' · ' + esc(r.region) : '')
         + (red ? ' — under half its region\'s best shop (' + fmt(best) + ' rung)' : '') + '">'
         + '<td style="color:#64748b">' + (i + 1) + '</td>'
         + '<td><b style="color:' + (red ? '#fca5a5' : '#f1f5f9') + '">' + esc(r.shop) + '</b><div style="font-size:0.64rem;color:#64748b">' + esc(r.region) + '</div></td>'
@@ -1323,6 +1404,7 @@ window.addEventListener('DOMContentLoaded', function () {
       + '</table></div>'
       + '<div style="font-size:0.64rem;color:#64748b;margin-top:0.3rem"><b style="color:#e2e8f0">Wk 1&hellip;</b> = combos rung at the shop that week (Sun&ndash;Sat), <span style="color:#34d399">&#9650;</span>/<span style="color:#f87171">&#9660;</span> vs the week before, last week is the current one so far · <b style="color:#6ee7b7">rung</b> = combos sold on the combo button, all running combos added up · <b style="color:#fca5a5">pot.</b> = combos the shop&rsquo;s single-bag sales could have formed · <b style="color:#fcd34d">&asymp; revenue</b> = rung &times; each combo&rsquo;s average sold price · <b style="color:#94a3b8">combos</b> = how many different running combos the shop rang · <b style="color:#f87171">red</b> = under half its region&rsquo;s best shop · ignores the Sort/Stock filters above</div>'
       + '</div>';
+    smcTableTools(wrap, 'runshop');
   }
   // Initial render is driven by the guidance panel's draw() above (which also
   // applies the Sort/Stock filters); it calls renderRunningCards on load & change.
