@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chronos Forecast Preview</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { overflow-y: scroll; }
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track { background: #0f1117; }
+    ::-webkit-scrollbar-thumb { background: #2d3148; border-radius: 6px; border: 3px solid #0f1117; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      gap: 3rem;
+    }
+
+    .section { width: 100%; max-width: 960px; }
+    .section-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .pill {
+      color: #fff; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; padding: 0.3rem 0.75rem; border-radius: 999px;
+    }
+    .pill-forecast { background: #0ea5e9; }
+    .pill-check    { background: #6366f1; }
+    .pill-train    { background: #0d9488; }
+    .sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 0.45rem; vertical-align: middle; }
+    td.best { color: #f8fafc; font-weight: 700; background: rgba(34,211,238,0.10); }
+    .card-value.sm { font-size: 1.6rem; }
+    .section-header h2 { font-size: 1.4rem; font-weight: 700; color: #f8fafc; letter-spacing: 0.02em; }
+    .date-line { font-size: 0.78rem; color: #64748b; margin-bottom: 1.5rem; padding-left: 0.1rem; }
+    .date-line span { color: #94a3b8; font-weight: 600; }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: #1e2130;
+      border: 1px solid #2d3148;
+      border-radius: 10px;
+      padding: 1.2rem 1.4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+    .card.indigo::before { background: #6366f1; }
+    .card.slate::before  { background: #94a3b8; }
+    .card.cyan::before   { background: #06b6d4; }
+    .card.teal::before   { background: #14b8a6; }
+    .card-label {
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #94a3b8; margin-bottom: 0.6rem; line-height: 1.4;
+    }
+    .card-value { font-size: 2rem; font-weight: 700; color: #f8fafc; font-variant-numeric: tabular-nums; line-height: 1.1; }
+    .card-value.cyan { color: #22d3ee; }
+    .card-sub { font-size: 0.78rem; color: #64748b; margin-top: 0.5rem; line-height: 1.45; }
+    .card-sub strong { color: #cbd5e1; font-weight: 600; }
+
+    .panel {
+      background: #1e2130; border: 1px solid #2d3148; border-radius: 10px;
+      padding: 1.3rem 1.4rem; margin-bottom: 1.5rem;
+    }
+    .panel h3 { font-size: 0.95rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.3rem; }
+    .panel .hint { font-size: 0.78rem; color: #64748b; margin-bottom: 1rem; line-height: 1.5; }
+    .chart-box { position: relative; height: 320px; }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.8rem; }
+    .legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 0.4rem; }
+    .legend i.band { height: 10px; background: rgba(6,182,212,0.22); }
+    .legend i.dash { background: repeating-linear-gradient(90deg, #94a3b8 0 4px, transparent 4px 7px); }
+
+    .verdict {
+      background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.25);
+      border-radius: 10px; padding: 1rem 1.2rem; font-size: 0.88rem; line-height: 1.6;
+      color: #cbd5e1; margin-bottom: 1.5rem;
+    }
+    .verdict strong { color: #f8fafc; }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+    th {
+      text-align: left; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
+      color: #64748b; font-weight: 600; padding: 0.5rem 0.6rem; border-bottom: 1px solid #2d3148; white-space: nowrap;
+    }
+    td { padding: 0.5rem 0.6rem; border-bottom: 1px solid #252a3c; color: #cbd5e1; white-space: nowrap; }
+    td.num, th.num { text-align: right; }
+    tr:last-child td { border-bottom: none; }
+    .win  { color: #22d3ee; font-weight: 700; }
+    .miss-pos { color: #fbbf24; }
+    .miss-neg { color: #f87171; }
+    .tag { font-size: 0.7rem; padding: 0.1rem 0.45rem; border-radius: 999px; font-weight: 600; }
+    .tag.ch { background: rgba(6,182,212,0.15); color: #22d3ee; }
+    .tag.rr { background: rgba(148,163,184,0.15); color: #cbd5e1; }
+    .tag.in  { color: #34d399; }
+    .tag.out { color: #f87171; }
+
+    .seg { display: inline-flex; background: #151823; border: 1px solid #2d3148; border-radius: 999px; padding: 3px; margin-bottom: 1rem; flex-wrap: wrap; }
+    .seg button {
+      background: none; border: 0; color: #94a3b8; font: inherit; font-size: 0.78rem; font-weight: 600;
+      padding: 0.35rem 0.8rem; border-radius: 999px; cursor: pointer;
+    }
+    .seg button.on { background: #6366f1; color: #fff; }
+
+    .notes { font-size: 0.82rem; color: #94a3b8; line-height: 1.65; padding-left: 1.1rem; }
+    .notes li { margin-bottom: 0.4rem; }
+    .notes strong { color: #e2e8f0; }
+
+    @media (max-width: 600px) {
+      body { padding: 1.25rem 16px; gap: 2rem; }
+      .card-value { font-size: 1.6rem; }
+      .chart-box { height: 260px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- CHRONOS_DATA_START -->
+<script>const CHRONOS = {"generated": "11 Oct 2026 15:24", "current": {"month_label": "October 2026", "data_to": "10 Oct 2026", "dim": 31, "day": 10, "so_far": 6245, "runrate": 19360, "lo": 12605, "med": 16641, "hi": 20960, "actual_daily": [613, 666, 748, 185, 963, 482, 490, 611, 978, 509], "fc_daily": {"lo": [-73, 251, 200, 245, 256, 353, 351, -80, 269, 230, 322, 355, 439, 454, 34, 361, 405, 446, 454, 554, 533], "med": [83, 437, 413, 464, 499, 610, 582, 111, 468, 433, 528, 558, 647, 636, 196, 538, 549, 594, 615, 731, 703], "hi": [224, 594, 596, 694, 736, 878, 821, 279, 656, 622, 727, 762, 865, 832, 319, 700, 743, 809, 861, 1028, 971]}}, "summary": [{"day": 3, "rr": 19.7, "ch": 7.0, "wins": 11, "hit": 12, "n": 12}, {"day": 7, "rr": 9.8, "ch": 6.8, "wins": 8, "hit": 12, "n": 12}, {"day": 10, "rr": 9.1, "ch": 4.8, "wins": 10, "hit": 12, "n": 12}, {"day": 15, "rr": 5.0, "ch": 4.6, "wins": 7, "hit": 11, "n": 12}, {"day": 20, "rr": 6.4, "ch": 3.2, "wins": 10, "hit": 12, "n": 12}, {"day": 25, "rr": 4.8, "ch": 3.1, "wins": 9, "hit": 10, "n": 12}], "months": [{"month": "Oct 2025", "day": 3, "actual": 15450, "rr": 20822, "ch": 17077, "lo": 13116, "hi": 23807}, {"month": "Oct 2025", "day": 7, "actual": 15450, "rr": 17914, "ch": 17265, "lo": 12994, "hi": 24054}, {"month": "Oct 2025", "day": 10, "actual": 15450, "rr": 17611, "ch": 16316, "lo": 12611, "hi": 20971}, {"month": "Oct 2025", "day": 15, "actual": 15450, "rr": 16186, "ch": 16502, "lo": 14423, "hi": 18939}, {"month": "Oct 2025", "day": 20, "actual": 15450, "rr": 14759, "ch": 15657, "lo": 13812, "hi": 18145}, {"month": "Oct 2025", "day": 25, "actual": 15450, "rr": 15104, "ch": 15382, "lo": 14476, "hi": 16453}, {"month": "Nov 2025", "day": 3, "actual": 24900, "rr": 13340, "ch": 18419, "lo": 13768, "hi": 26170}, {"month": "Nov 2025", "day": 7, "actual": 24900, "rr": 18120, "ch": 19623, "lo": 15645, "hi": 26317}, {"month": "Nov 2025", "day": 10, "actual": 24900, "rr": 16857, "ch": 20101, "lo": 16227, "hi": 26653}, {"month": "Nov 2025", "day": 15, "actual": 24900, "rr": 20010, "ch": 20097, "lo": 17240, "hi": 24517}, {"month": "Nov 2025", "day": 20, "actual": 24900, "rr": 20559, "ch": 21260, "lo": 18849, "hi": 26273}, {"month": "Nov 2025", "day": 25, "actual": 24900, "rr": 21948, "ch": 22068, "lo": 20954, "hi": 23759}, {"month": "Dec 2025", "day": 3, "actual": 25708, "rr": 23188, "ch": 22158, "lo": 14158, "hi": 34829}, {"month": "Dec 2025", "day": 7, "actual": 25708, "rr": 23285, "ch": 22128, "lo": 15332, "hi": 32032}, {"month": "Dec 2025", "day": 10, "actual": 25708, "rr": 29830, "ch": 25311, "lo": 18497, "hi": 37264}, {"month": "Dec 2025", "day": 15, "actual": 25708, "rr": 26640, "ch": 24550, "lo": 19430, "hi": 32262}, {"month": "Dec 2025", "day": 20, "actual": 25708, "rr": 28984, "ch": 25493, "lo": 21680, "hi": 31503}, {"month": "Dec 2025", "day": 25, "actual": 25708, "rr": 28493, "ch": 26311, "lo": 24419, "hi": 29107}, {"month": "Jan 2026", "day": 3, "actual": 14253, "rr": 11646, "ch": 14321, "lo": 9018, "hi": 20454}, {"month": "Jan 2026", "day": 7, "actual": 14253, "rr": 12435, "ch": 14167, "lo": 10404, "hi": 18636}, {"month": "Jan 2026", "day": 10, "actual": 14253, "rr": 13956, "ch": 14522, "lo": 11616, "hi": 17731}, {"month": "Jan 2026", "day": 15, "actual": 14253, "rr": 13382, "ch": 14376, "lo": 12447, "hi": 16361}, {"month": "Jan 2026", "day": 20, "actual": 14253, "rr": 13006, "ch": 14155, "lo": 12983, "hi": 15519}, {"month": "Jan 2026", "day": 25, "actual": 14253, "rr": 13128, "ch": 14096, "lo": 13458, "hi": 14919}, {"month": "Feb 2026", "day": 3, "actual": 15931, "rr": 10519, "ch": 14910, "lo": 11864, "hi": 19654}, {"month": "Feb 2026", "day": 7, "actual": 15931, "rr": 13876, "ch": 14013, "lo": 11696, "hi": 17436}, {"month": "Feb 2026", "day": 10, "actual": 15931, "rr": 13062, "ch": 14309, "lo": 12317, "hi": 17340}, {"month": "Feb 2026", "day": 15, "actual": 15931, "rr": 16384, "ch": 16615, "lo": 14670, "hi": 20163}, {"month": "Feb 2026", "day": 20, "actual": 15931, "rr": 16274, "ch": 16197, "lo": 15191, "hi": 17878}, {"month": "Feb 2026", "day": 25, "actual": 15931, "rr": 15576, "ch": 15972, "lo": 15636, "hi": 16558}, {"month": "Mar 2026", "day": 3, "actual": 16624, "rr": 14115, "ch": 15703, "lo": 12800, "hi": 19564}, {"month": "Mar 2026", "day": 7, "actual": 16624, "rr": 18932, "ch": 16155, "lo": 13807, "hi": 19691}, {"month": "Mar 2026", "day": 10, "actual": 16624, "rr": 17112, "ch": 16622, "lo": 14359, "hi": 20064}, {"month": "Mar 2026", "day": 15, "actual": 16624, "rr": 15971, "ch": 16145, "lo": 14684, "hi": 18376}, {"month": "Mar 2026", "day": 20, "actual": 16624, "rr": 15368, "ch": 15238, "lo": 14084, "hi": 16758}, {"month": "Mar 2026", "day": 25, "actual": 16624, "rr": 14572, "ch": 14813, "lo": 14291, "hi": 15604}, {"month": "Apr 2026", "day": 3, "actual": 15129, "rr": 18620, "ch": 14681, "lo": 10642, "hi": 20003}, {"month": "Apr 2026", "day": 7, "actual": 15129, "rr": 15369, "ch": 14856, "lo": 11875, "hi": 19004}, {"month": "Apr 2026", "day": 10, "actual": 15129, "rr": 15630, "ch": 14658, "lo": 12289, "hi": 17790}, {"month": "Apr 2026", "day": 15, "actual": 15129, "rr": 14564, "ch": 14700, "lo": 13174, "hi": 16728}, {"month": "Apr 2026", "day": 20, "actual": 15129, "rr": 14175, "ch": 14636, "lo": 13666, "hi": 15843}, {"month": "Apr 2026", "day": 25, "actual": 15129, "rr": 14902, "ch": 14883, "lo": 14370, "hi": 15534}, {"month": "May 2026", "day": 3, "actual": 16204, "rr": 14022, "ch": 15389, "lo": 12319, "hi": 19708}, {"month": "May 2026", "day": 7, "actual": 16204, "rr": 16412, "ch": 15804, "lo": 12974, "hi": 20301}, {"month": "May 2026", "day": 10, "actual": 16204, "rr": 16886, "ch": 16387, "lo": 13752, "hi": 20930}, {"month": "May 2026", "day": 15, "actual": 16204, "rr": 16978, "ch": 16395, "lo": 14755, "hi": 19329}, {"month": "May 2026", "day": 20, "actual": 16204, "rr": 15210, "ch": 16199, "lo": 14674, "hi": 18605}, {"month": "May 2026", "day": 25, "actual": 16204, "rr": 16218, "ch": 16517, "lo": 15697, "hi": 17999}, {"month": "Jun 2026", "day": 3, "actual": 14279, "rr": 12970, "ch": 14323, "lo": 11169, "hi": 19015}, {"month": "Jun 2026", "day": 7, "actual": 14279, "rr": 16011, "ch": 15124, "lo": 12179, "hi": 19413}, {"month": "Jun 2026", "day": 10, "actual": 14279, "rr": 15435, "ch": 14904, "lo": 12702, "hi": 18128}, {"month": "Jun 2026", "day": 15, "actual": 14279, "rr": 14674, "ch": 14671, "lo": 13257, "hi": 16765}, {"month": "Jun 2026", "day": 20, "actual": 14279, "rr": 14752, "ch": 14709, "lo": 13747, "hi": 16043}, {"month": "Jun 2026", "day": 25, "actual": 14279, "rr": 13909, "ch": 14066, "lo": 13321, "hi": 15179}, {"month": "Jul 2026", "day": 3, "actual": 16780, "rr": 19933, "ch": 15653, "lo": 12534, "hi": 20476}, {"month": "Jul 2026", "day": 7, "actual": 16780, "rr": 16426, "ch": 15881, "lo": 12866, "hi": 20151}, {"month": "Jul 2026", "day": 10, "actual": 16780, "rr": 17090, "ch": 16037, "lo": 13623, "hi": 19902}, {"month": "Jul 2026", "day": 15, "actual": 16780, "rr": 15917, "ch": 16176, "lo": 14432, "hi": 18745}, {"month": "Jul 2026", "day": 20, "actual": 16780, "rr": 15855, "ch": 16518, "lo": 15417, "hi": 18127}, {"month": "Jul 2026", "day": 25, "actual": 16780, "rr": 16125, "ch": 16149, "lo": 15625, "hi": 16780}, {"month": "Aug 2026", "day": 3, "actual": 17525, "rr": 16688, "ch": 16762, "lo": 14420, "hi": 20083}, {"month": "Aug 2026", "day": 7, "actual": 17525, "rr": 18268, "ch": 16856, "lo": 14640, "hi": 20089}, {"month": "Aug 2026", "day": 10, "actual": 17525, "rr": 17369, "ch": 16909, "lo": 14883, "hi": 19830}, {"month": "Aug 2026", "day": 15, "actual": 17525, "rr": 17726, "ch": 16937, "lo": 15617, "hi": 18634}, {"month": "Aug 2026", "day": 20, "actual": 17525, "rr": 17248, "ch": 17699, "lo": 16698, "hi": 19181}, {"month": "Aug 2026", "day": 25, "actual": 17525, "rr": 17294, "ch": 17657, "lo": 17167, "hi": 18321}, {"month": "Sep 2026", "day": 3, "actual": 16354, "rr": 17820, "ch": 16036, "lo": 13785, "hi": 18691}, {"month": "Sep 2026", "day": 7, "actual": 16354, "rr": 16963, "ch": 16316, "lo": 14418, "hi": 18706}, {"month": "Sep 2026", "day": 10, "actual": 16354, "rr": 17310, "ch": 16776, "lo": 15040, "hi": 18860}, {"month": "Sep 2026", "day": 15, "actual": 16354, "rr": 16538, "ch": 16760, "lo": 15662, "hi": 18031}, {"month": "Sep 2026", "day": 20, "actual": 16354, "rr": 16202, "ch": 16739, "lo": 15945, "hi": 17768}, {"month": "Sep 2026", "day": 25, "actual": 16354, "rr": 16426, "ch": 16490, "lo": 16099, "hi": 16960}]};</script>
+<!-- CHRONOS_DATA_END -->
+
+<div class="section">
+  <div class="section-header">
+    <span class="pill pill-forecast">Preview</span>
+    <h2 id="title">Chronos Month-End Forecast</h2>
+  </div>
+  <div class="date-line" id="date-line"></div>
+
+  <div class="card-grid">
+    <div class="card indigo">
+      <div class="card-label">Sold so far</div>
+      <div class="card-value" id="k-sofar">–</div>
+      <div class="card-sub" id="k-sofar-sub"></div>
+    </div>
+    <div class="card slate">
+      <div class="card-label">Straight-line projection</div>
+      <div class="card-value" id="k-rr">–</div>
+      <div class="card-sub">Today's method: sales so far × days in month ÷ days gone.</div>
+    </div>
+    <div class="card cyan">
+      <div class="card-label">Chronos projection</div>
+      <div class="card-value cyan" id="k-ch">–</div>
+      <div class="card-sub" id="k-ch-sub"></div>
+    </div>
+    <div class="card teal">
+      <div class="card-label">Chronos likely range</div>
+      <div class="card-value" id="k-range">–</div>
+      <div class="card-sub">8 times in 10 the month should finish inside this range.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>How the month could finish</h3>
+    <div class="hint">Running total of bags sold. The two projections start where sales stand today.</div>
+    <div class="legend">
+      <span><i style="background:#6366f1"></i>Sold so far</span>
+      <span><i style="background:#06b6d4"></i>Chronos</span>
+      <span><i class="band"></i>Chronos likely range</span>
+      <span><i class="dash"></i>Straight line</span>
+    </div>
+    <div class="chart-box"><canvas id="cum-chart"></canvas></div>
+  </div>
+
+  <div class="panel">
+    <h3>Day by day</h3>
+    <div class="hint">Bars up to yesterday are actual till sales. After that, Chronos's expected sales for each day. It has learnt the weekly and monthly pattern from past months, and is told in advance about Black Friday, Christmas, public holidays and payday. It also sees each day's walk-ins and new walk-in leads so far (recorded since January 2026). The straight line assumes every remaining day matches the average so far.</div>
+    <div class="legend">
+      <span><i style="background:#6366f1;height:10px"></i>Actual</span>
+      <span><i style="background:rgba(6,182,212,0.55);height:10px"></i>Chronos expected</span>
+      <span><i class="dash"></i>Straight-line daily pace</span>
+    </div>
+    <div class="chart-box"><canvas id="day-chart"></canvas></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="pill pill-check">Track record</span>
+    <h2>Would it have been right?</h2>
+  </div>
+  <div class="date-line">Each of the last <span id="n-months">12</span> finished months, projected using only the sales known on that day, then checked against what the month actually sold.</div>
+
+  <div class="verdict" id="verdict"></div>
+
+  <div class="panel">
+    <h3>Average miss on the month-end total</h3>
+    <div class="hint">Lower is better. On each day of the month, how far each method's projection was from the real month total, averaged over the months.</div>
+    <div class="legend">
+      <span><i style="background:#94a3b8;height:10px"></i>Straight line</span>
+      <span><i style="background:#06b6d4;height:10px"></i>Chronos</span>
+    </div>
+    <div class="chart-box" style="height:280px"><canvas id="err-chart"></canvas></div>
+    <div class="table-wrap" style="margin-top:1.2rem">
+      <table id="sum-table"></table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Month by month</h3>
+    <div class="hint">Pick the day the projection was made.</div>
+    <div class="seg" id="day-seg"></div>
+    <div class="table-wrap"><table id="month-table"></table></div>
+  </div>
+
+  <div class="panel">
+    <h3>Things to know</h3>
+    <ul class="notes">
+      <li><strong>Till sales only.</strong> Corporate bags are not in this forecast, so these numbers are lower than the Sales card and are not compared with the monthly target.</li>
+      <li><strong>Black Friday is still under-forecast.</strong> Chronos is now told about the Black Friday run-up, but only one past Black Friday is in the data, so November's forecast should be read as a floor. It will improve once this year's is in the history.</li>
+      <li><strong>Runs on the laptop.</strong> The model is too heavy for Streamlit Cloud, so it would run with the morning refresh and the dashboard would show the result.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- CHRONOS_TRAIN_START -->
+<script>const CHRONOS_TRAIN = {"generated": "11 Oct 2026 12:03", "data_to": "10 Oct 2026", "month_label": "October 2026", "current": {"rr": 19360, "base": 17191, "base_lo": 14417, "base_hi": 20533, "cal": 16967, "cal_lo": 14342, "cal_hi": 19962, "tuned": 16672, "tuned_lo": 13786, "tuned_hi": 20291, "shops": 16519}, "so_far": 6245, "summary": [{"day": 3, "n": 12, "rr": 19.7, "base": 8.8, "cal": 7.8, "tuned": 11.4, "shops": 11.4, "tuned_hit": 10}, {"day": 7, "n": 12, "rr": 9.8, "base": 7.5, "cal": 7.3, "tuned": 9.6, "shops": 10.1, "tuned_hit": 11}, {"day": 10, "n": 12, "rr": 9.1, "base": 5.4, "cal": 5.0, "tuned": 8.5, "shops": 8.8, "tuned_hit": 11}, {"day": 15, "n": 12, "rr": 5.0, "base": 5.4, "cal": 4.3, "tuned": 6.1, "shops": 6.6, "tuned_hit": 11}, {"day": 20, "n": 12, "rr": 6.4, "base": 4.3, "cal": 3.3, "tuned": 3.9, "shops": 3.6, "tuned_hit": 11}, {"day": 25, "n": 12, "rr": 4.8, "base": 3.2, "cal": 2.9, "tuned": 3.3, "shops": 3.4, "tuned_hit": 10}], "months": [{"month": "Oct 2025", "day": 3, "actual": 15450, "rr": 20822, "base": 17472, "base_lo": 14895, "base_hi": 21336, "cal": 16916, "cal_lo": 14235, "cal_hi": 20620, "tuned": 16530, "tuned_lo": 13577, "tuned_hi": 21140, "shops": 15950}, {"month": "Oct 2025", "day": 7, "actual": 15450, "rr": 17914, "base": 17295, "base_lo": 15111, "base_hi": 20043, "cal": 17009, "cal_lo": 14508, "cal_hi": 20185, "tuned": 16651, "tuned_lo": 14323, "tuned_hi": 20149, "shops": 16553}, {"month": "Oct 2025", "day": 10, "actual": 15450, "rr": 17611, "base": 16500, "base_lo": 14512, "base_hi": 19056, "cal": 16239, "cal_lo": 14008, "cal_hi": 18896, "tuned": 16000, "tuned_lo": 13882, "tuned_hi": 19494, "shops": 15895}, {"month": "Oct 2025", "day": 15, "actual": 15450, "rr": 16186, "base": 16616, "base_lo": 15038, "base_hi": 18488, "cal": 16400, "cal_lo": 14833, "cal_hi": 18168, "tuned": 16054, "tuned_lo": 14058, "tuned_hi": 18196, "shops": 16042}, {"month": "Oct 2025", "day": 20, "actual": 15450, "rr": 14759, "base": 15843, "base_lo": 14570, "base_hi": 17302, "cal": 15625, "cal_lo": 14412, "cal_hi": 17191, "tuned": 15535, "tuned_lo": 14095, "tuned_hi": 17524, "shops": 15424}, {"month": "Oct 2025", "day": 25, "actual": 15450, "rr": 15104, "base": 15285, "base_lo": 14719, "base_hi": 15972, "cal": 15430, "cal_lo": 14808, "cal_hi": 16148, "tuned": 15318, "tuned_lo": 14690, "tuned_hi": 16112, "shops": 15295}, {"month": "Nov 2025", "day": 3, "actual": 24900, "rr": 13340, "base": 16957, "base_lo": 13933, "base_hi": 21196, "cal": 17993, "cal_lo": 15056, "cal_hi": 22140, "tuned": 15752, "tuned_lo": 12591, "tuned_hi": 19819, "shops": 15153}, {"month": "Nov 2025", "day": 7, "actual": 24900, "rr": 18120, "base": 17879, "base_lo": 15154, "base_hi": 22039, "cal": 19207, "cal_lo": 16474, "cal_hi": 23205, "tuned": 17126, "tuned_lo": 14271, "tuned_hi": 21901, "shops": 16107}, {"month": "Nov 2025", "day": 10, "actual": 24900, "rr": 16857, "base": 17621, "base_lo": 15369, "base_hi": 21114, "cal": 19586, "cal_lo": 17054, "cal_hi": 23290, "tuned": 16960, "tuned_lo": 14199, "tuned_hi": 20744, "shops": 16854}, {"month": "Nov 2025", "day": 15, "actual": 24900, "rr": 20010, "base": 19344, "base_lo": 17405, "base_hi": 22278, "cal": 19989, "cal_lo": 17872, "cal_hi": 22835, "tuned": 18694, "tuned_lo": 16386, "tuned_hi": 22303, "shops": 18724}, {"month": "Nov 2025", "day": 20, "actual": 24900, "rr": 20559, "base": 20562, "base_lo": 18870, "base_hi": 23624, "cal": 21318, "cal_lo": 19342, "cal_hi": 24971, "tuned": 20235, "tuned_lo": 18801, "tuned_hi": 22577, "shops": 20195}, {"month": "Nov 2025", "day": 25, "actual": 24900, "rr": 21948, "base": 21626, "base_lo": 20866, "base_hi": 23015, "cal": 22068, "cal_lo": 21210, "cal_hi": 23298, "tuned": 21369, "tuned_lo": 20709, "tuned_hi": 22613, "shops": 21677}, {"month": "Dec 2025", "day": 3, "actual": 25708, "rr": 23188, "base": 20980, "base_lo": 12442, "base_hi": 33231, "cal": 21722, "cal_lo": 15600, "cal_hi": 30734, "tuned": 17585, "tuned_lo": 13854, "tuned_hi": 23314, "shops": 18370}, {"month": "Dec 2025", "day": 7, "actual": 25708, "rr": 23285, "base": 21223, "base_lo": 15029, "base_hi": 32554, "cal": 21688, "cal_lo": 16633, "cal_hi": 29090, "tuned": 20719, "tuned_lo": 16993, "tuned_hi": 27275, "shops": 21082}, {"month": "Dec 2025", "day": 10, "actual": 25708, "rr": 29830, "base": 25206, "base_lo": 17475, "base_hi": 38578, "cal": 25008, "cal_lo": 19661, "cal_hi": 34009, "tuned": 22384, "tuned_lo": 18991, "tuned_hi": 28072, "shops": 22731}, {"month": "Dec 2025", "day": 15, "actual": 25708, "rr": 26640, "base": 23793, "base_lo": 17784, "base_hi": 31845, "cal": 24521, "cal_lo": 20443, "cal_hi": 30387, "tuned": 22608, "tuned_lo": 20267, "tuned_hi": 26635, "shops": 22954}, {"month": "Dec 2025", "day": 20, "actual": 25708, "rr": 28984, "base": 25905, "base_lo": 20995, "base_hi": 32200, "cal": 25512, "cal_lo": 22557, "cal_hi": 29818, "tuned": 25761, "tuned_lo": 23729, "tuned_hi": 29254, "shops": 26219}, {"month": "Dec 2025", "day": 25, "actual": 25708, "rr": 28493, "base": 25791, "base_lo": 23465, "base_hi": 29313, "cal": 26280, "cal_lo": 24862, "cal_hi": 28464, "tuned": 26407, "tuned_lo": 25531, "tuned_hi": 27809, "shops": 26501}, {"month": "Jan 2026", "day": 3, "actual": 14253, "rr": 11646, "base": 14681, "base_lo": 10528, "base_hi": 20260, "cal": 14448, "cal_lo": 10832, "cal_hi": 18673, "tuned": 16150, "tuned_lo": 11829, "tuned_hi": 22724, "shops": 16849}, {"month": "Jan 2026", "day": 7, "actual": 14253, "rr": 12435, "base": 14336, "base_lo": 11125, "base_hi": 18486, "cal": 14154, "cal_lo": 11432, "cal_hi": 17428, "tuned": 15000, "tuned_lo": 11356, "tuned_hi": 20375, "shops": 15369}, {"month": "Jan 2026", "day": 10, "actual": 14253, "rr": 13956, "base": 14875, "base_lo": 12663, "base_hi": 17963, "cal": 14507, "cal_lo": 12266, "cal_hi": 17029, "tuned": 15641, "tuned_lo": 12894, "tuned_hi": 20045, "shops": 15906}, {"month": "Jan 2026", "day": 15, "actual": 14253, "rr": 13382, "base": 14201, "base_lo": 12750, "base_hi": 16181, "cal": 14335, "cal_lo": 12671, "cal_hi": 16062, "tuned": 14321, "tuned_lo": 12105, "tuned_hi": 17677, "shops": 14353}, {"month": "Jan 2026", "day": 20, "actual": 14253, "rr": 13006, "base": 13674, "base_lo": 12603, "base_hi": 14901, "cal": 14177, "cal_lo": 13196, "cal_hi": 15349, "tuned": 14325, "tuned_lo": 12618, "tuned_hi": 16476, "shops": 14264}, {"month": "Jan 2026", "day": 25, "actual": 14253, "rr": 13128, "base": 13826, "base_lo": 13328, "base_hi": 14497, "cal": 14086, "cal_lo": 13557, "cal_hi": 14827, "tuned": 13989, "tuned_lo": 13178, "tuned_hi": 15371, "shops": 14168}, {"month": "Feb 2026", "day": 3, "actual": 15931, "rr": 10519, "base": 15864, "base_lo": 12736, "base_hi": 21690, "cal": 14588, "cal_lo": 12028, "cal_hi": 18963, "tuned": 14986, "tuned_lo": 11552, "tuned_hi": 20460, "shops": 14997}, {"month": "Feb 2026", "day": 7, "actual": 15931, "rr": 13876, "base": 15278, "base_lo": 12621, "base_hi": 20177, "cal": 13845, "cal_lo": 11835, "cal_hi": 16886, "tuned": 14935, "tuned_lo": 12156, "tuned_hi": 19762, "shops": 15747}, {"month": "Feb 2026", "day": 10, "actual": 15931, "rr": 13062, "base": 15164, "base_lo": 12840, "base_hi": 19769, "cal": 14131, "cal_lo": 12337, "cal_hi": 16988, "tuned": 14376, "tuned_lo": 11641, "tuned_hi": 18800, "shops": 14511}, {"month": "Feb 2026", "day": 15, "actual": 15931, "rr": 16384, "base": 16609, "base_lo": 15207, "base_hi": 19451, "cal": 16121, "cal_lo": 14420, "cal_hi": 19037, "tuned": 16368, "tuned_lo": 14491, "tuned_hi": 19907, "shops": 16897}, {"month": "Feb 2026", "day": 20, "actual": 15931, "rr": 16274, "base": 16264, "base_lo": 15463, "base_hi": 17630, "cal": 16178, "cal_lo": 15175, "cal_hi": 17822, "tuned": 16190, "tuned_lo": 15185, "tuned_hi": 18009, "shops": 16269}, {"month": "Feb 2026", "day": 25, "actual": 15931, "rr": 15576, "base": 15982, "base_lo": 15655, "base_hi": 16497, "cal": 15955, "cal_lo": 15646, "cal_hi": 16489, "tuned": 16078, "tuned_lo": 15544, "tuned_hi": 17116, "shops": 16185}, {"month": "Mar 2026", "day": 3, "actual": 16624, "rr": 14115, "base": 16331, "base_lo": 13515, "base_hi": 20519, "cal": 15531, "cal_lo": 13015, "cal_hi": 18845, "tuned": 16641, "tuned_lo": 12834, "tuned_hi": 22776, "shops": 16845}, {"month": "Mar 2026", "day": 7, "actual": 16624, "rr": 18932, "base": 16909, "base_lo": 14302, "base_hi": 20903, "cal": 16112, "cal_lo": 13991, "cal_hi": 19286, "tuned": 17736, "tuned_lo": 14613, "tuned_hi": 23036, "shops": 18484}, {"month": "Mar 2026", "day": 10, "actual": 16624, "rr": 17112, "base": 16890, "base_lo": 14591, "base_hi": 20083, "cal": 16551, "cal_lo": 14454, "cal_hi": 19781, "tuned": 17175, "tuned_lo": 14239, "tuned_hi": 21724, "shops": 17375}, {"month": "Mar 2026", "day": 15, "actual": 16624, "rr": 15971, "base": 16171, "base_lo": 14447, "base_hi": 18708, "cal": 16128, "cal_lo": 14734, "cal_hi": 18232, "tuned": 15900, "tuned_lo": 13876, "tuned_hi": 19012, "shops": 16264}, {"month": "Mar 2026", "day": 20, "actual": 16624, "rr": 15368, "base": 15071, "base_lo": 13605, "base_hi": 16768, "cal": 15306, "cal_lo": 14247, "cal_hi": 16750, "tuned": 15407, "tuned_lo": 13969, "tuned_hi": 17492, "shops": 15564}, {"month": "Mar 2026", "day": 25, "actual": 16624, "rr": 14572, "base": 14750, "base_lo": 13897, "base_hi": 15793, "cal": 14907, "cal_lo": 14340, "cal_hi": 15728, "tuned": 15152, "tuned_lo": 14167, "tuned_hi": 16480, "shops": 15154}, {"month": "Apr 2026", "day": 3, "actual": 15129, "rr": 18620, "base": 14412, "base_lo": 10425, "base_hi": 19446, "cal": 14495, "cal_lo": 10992, "cal_hi": 19033, "tuned": 15499, "tuned_lo": 12105, "tuned_hi": 20075, "shops": 16655}, {"month": "Apr 2026", "day": 7, "actual": 15129, "rr": 15369, "base": 14184, "base_lo": 11358, "base_hi": 18127, "cal": 14764, "cal_lo": 12033, "cal_hi": 18460, "tuned": 14176, "tuned_lo": 11257, "tuned_hi": 18141, "shops": 15417}, {"month": "Apr 2026", "day": 10, "actual": 15129, "rr": 15630, "base": 14241, "base_lo": 11578, "base_hi": 17775, "cal": 14680, "cal_lo": 12476, "cal_hi": 17592, "tuned": 14522, "tuned_lo": 12076, "tuned_hi": 17244, "shops": 15349}, {"month": "Apr 2026", "day": 15, "actual": 15129, "rr": 14564, "base": 14129, "base_lo": 12579, "base_hi": 16280, "cal": 14708, "cal_lo": 13354, "cal_hi": 16451, "tuned": 14687, "tuned_lo": 13430, "tuned_hi": 16468, "shops": 15205}, {"month": "Apr 2026", "day": 20, "actual": 15129, "rr": 14175, "base": 14088, "base_lo": 13122, "base_hi": 15530, "cal": 14719, "cal_lo": 13818, "cal_hi": 15789, "tuned": 14340, "tuned_lo": 13354, "tuned_hi": 15827, "shops": 14747}, {"month": "Apr 2026", "day": 25, "actual": 15129, "rr": 14902, "base": 14739, "base_lo": 14254, "base_hi": 15473, "cal": 14964, "cal_lo": 14458, "cal_hi": 15584, "tuned": 14815, "tuned_lo": 14291, "tuned_hi": 15514, "shops": 14881}, {"month": "May 2026", "day": 3, "actual": 16204, "rr": 14022, "base": 14714, "base_lo": 11961, "base_hi": 18557, "cal": 15544, "cal_lo": 12881, "cal_hi": 19114, "tuned": 15164, "tuned_lo": 11691, "tuned_hi": 19785, "shops": 15807}, {"month": "May 2026", "day": 7, "actual": 16204, "rr": 16412, "base": 15225, "base_lo": 12618, "base_hi": 19059, "cal": 15809, "cal_lo": 13477, "cal_hi": 19253, "tuned": 15487, "tuned_lo": 12753, "tuned_hi": 19147, "shops": 15894}, {"month": "May 2026", "day": 10, "actual": 16204, "rr": 16886, "base": 15987, "base_lo": 13909, "base_hi": 19307, "cal": 16348, "cal_lo": 13975, "cal_hi": 20324, "tuned": 15660, "tuned_lo": 13277, "tuned_hi": 18751, "shops": 16616}, {"month": "May 2026", "day": 15, "actual": 16204, "rr": 16978, "base": 15731, "base_lo": 14418, "base_hi": 17842, "cal": 16403, "cal_lo": 14879, "cal_hi": 19113, "tuned": 16337, "tuned_lo": 14692, "tuned_hi": 19219, "shops": 17139}, {"month": "May 2026", "day": 20, "actual": 16204, "rr": 15210, "base": 15527, "base_lo": 14293, "base_hi": 17246, "cal": 16018, "cal_lo": 14782, "cal_hi": 17816, "tuned": 15663, "tuned_lo": 14241, "tuned_hi": 17455, "shops": 15946}, {"month": "May 2026", "day": 25, "actual": 16204, "rr": 16218, "base": 16233, "base_lo": 15523, "base_hi": 17453, "cal": 16532, "cal_lo": 15767, "cal_hi": 17978, "tuned": 16241, "tuned_lo": 15363, "tuned_hi": 17697, "shops": 16731}, {"month": "Jun 2026", "day": 3, "actual": 14279, "rr": 12970, "base": 13577, "base_lo": 10254, "base_hi": 18170, "cal": 14200, "cal_lo": 11479, "cal_hi": 17938, "tuned": 14983, "tuned_lo": 12040, "tuned_hi": 19090, "shops": 14722}, {"month": "Jun 2026", "day": 7, "actual": 14279, "rr": 16011, "base": 14519, "base_lo": 11571, "base_hi": 19011, "cal": 14867, "cal_lo": 12344, "cal_hi": 18258, "tuned": 14694, "tuned_lo": 11739, "tuned_hi": 18249, "shops": 16196}, {"month": "Jun 2026", "day": 10, "actual": 14279, "rr": 15435, "base": 14165, "base_lo": 11984, "base_hi": 17327, "cal": 14545, "cal_lo": 12598, "cal_hi": 17235, "tuned": 14557, "tuned_lo": 12192, "tuned_hi": 17430, "shops": 15691}, {"month": "Jun 2026", "day": 15, "actual": 14279, "rr": 14674, "base": 14029, "base_lo": 12167, "base_hi": 16549, "cal": 14603, "cal_lo": 13265, "cal_hi": 16536, "tuned": 14185, "tuned_lo": 12534, "tuned_hi": 16660, "shops": 15157}, {"month": "Jun 2026", "day": 20, "actual": 14279, "rr": 14752, "base": 14343, "base_lo": 13170, "base_hi": 15871, "cal": 14794, "cal_lo": 13910, "cal_hi": 15968, "tuned": 14045, "tuned_lo": 12927, "tuned_hi": 15419, "shops": 14416}, {"month": "Jun 2026", "day": 25, "actual": 14279, "rr": 13909, "base": 14043, "base_lo": 13398, "base_hi": 14839, "cal": 14128, "cal_lo": 13463, "cal_hi": 15192, "tuned": 13966, "tuned_lo": 13438, "tuned_hi": 14771, "shops": 14119}, {"month": "Jul 2026", "day": 3, "actual": 16780, "rr": 19933, "base": 15666, "base_lo": 12578, "base_hi": 20302, "cal": 15550, "cal_lo": 12736, "cal_hi": 19661, "tuned": 15357, "tuned_lo": 11616, "tuned_hi": 20851, "shops": 15348}, {"month": "Jul 2026", "day": 7, "actual": 16780, "rr": 16426, "base": 15923, "base_lo": 13270, "base_hi": 19726, "cal": 15733, "cal_lo": 13178, "cal_hi": 19048, "tuned": 15039, "tuned_lo": 11755, "tuned_hi": 19125, "shops": 15030}, {"month": "Jul 2026", "day": 10, "actual": 16780, "rr": 17090, "base": 16104, "base_lo": 13763, "base_hi": 19887, "cal": 15825, "cal_lo": 13727, "cal_hi": 18890, "tuned": 15450, "tuned_lo": 12888, "tuned_hi": 19018, "shops": 15409}, {"month": "Jul 2026", "day": 15, "actual": 16780, "rr": 15917, "base": 16065, "base_lo": 14242, "base_hi": 18761, "cal": 16017, "cal_lo": 14345, "cal_hi": 18448, "tuned": 15400, "tuned_lo": 13207, "tuned_hi": 18324, "shops": 15397}, {"month": "Jul 2026", "day": 20, "actual": 16780, "rr": 15855, "base": 16667, "base_lo": 15389, "base_hi": 18579, "cal": 16490, "cal_lo": 15474, "cal_hi": 17884, "tuned": 16249, "tuned_lo": 14653, "tuned_hi": 18458, "shops": 16056}, {"month": "Jul 2026", "day": 25, "actual": 16780, "rr": 16125, "base": 16218, "base_lo": 15668, "base_hi": 17022, "cal": 16202, "cal_lo": 15705, "cal_hi": 16804, "tuned": 16231, "tuned_lo": 15461, "tuned_hi": 17098, "shops": 16073}, {"month": "Aug 2026", "day": 3, "actual": 17525, "rr": 16688, "base": 16506, "base_lo": 14224, "base_hi": 19493, "cal": 16475, "cal_lo": 14430, "cal_hi": 19363, "tuned": 15541, "tuned_lo": 11938, "tuned_hi": 20150, "shops": 15554}, {"month": "Aug 2026", "day": 7, "actual": 17525, "rr": 18268, "base": 16771, "base_lo": 14935, "base_hi": 19225, "cal": 16487, "cal_lo": 14500, "cal_hi": 19204, "tuned": 15828, "tuned_lo": 12928, "tuned_hi": 20108, "shops": 15882}, {"month": "Aug 2026", "day": 10, "actual": 17525, "rr": 17369, "base": 17057, "base_lo": 15428, "base_hi": 19420, "cal": 16633, "cal_lo": 14756, "cal_hi": 19267, "tuned": 16006, "tuned_lo": 13511, "tuned_hi": 19533, "shops": 16065}, {"month": "Aug 2026", "day": 15, "actual": 17525, "rr": 17726, "base": 17142, "base_lo": 15823, "base_hi": 19145, "cal": 16873, "cal_lo": 15611, "cal_hi": 18544, "tuned": 16373, "tuned_lo": 14021, "tuned_hi": 18941, "shops": 16385}, {"month": "Aug 2026", "day": 20, "actual": 17525, "rr": 17248, "base": 17683, "base_lo": 16854, "base_hi": 18910, "cal": 17784, "cal_lo": 16863, "cal_hi": 19180, "tuned": 16958, "tuned_lo": 15471, "tuned_hi": 19353, "shops": 17136}, {"month": "Aug 2026", "day": 25, "actual": 17525, "rr": 17294, "base": 17652, "base_lo": 17271, "base_hi": 18150, "cal": 17708, "cal_lo": 17226, "cal_hi": 18395, "tuned": 17156, "tuned_lo": 16217, "tuned_hi": 18358, "shops": 17180}, {"month": "Sep 2026", "day": 3, "actual": 16354, "rr": 17820, "base": 15491, "base_lo": 13175, "base_hi": 18025, "cal": 15941, "cal_lo": 13902, "cal_hi": 18493, "tuned": 15022, "tuned_lo": 11842, "tuned_hi": 19203, "shops": 15553}, {"month": "Sep 2026", "day": 7, "actual": 16354, "rr": 16963, "base": 15976, "base_lo": 14108, "base_hi": 18151, "cal": 16150, "cal_lo": 14396, "cal_hi": 18390, "tuned": 15514, "tuned_lo": 12896, "tuned_hi": 18812, "shops": 15775}, {"month": "Sep 2026", "day": 10, "actual": 16354, "rr": 17310, "base": 16529, "base_lo": 14794, "base_hi": 18588, "cal": 16504, "cal_lo": 14885, "cal_hi": 18560, "tuned": 15561, "tuned_lo": 13298, "tuned_hi": 19017, "shops": 15803}, {"month": "Sep 2026", "day": 15, "actual": 16354, "rr": 16538, "base": 16750, "base_lo": 15447, "base_hi": 18270, "cal": 16736, "cal_lo": 15637, "cal_hi": 18083, "tuned": 15459, "tuned_lo": 13510, "tuned_hi": 18220, "shops": 15683}, {"month": "Sep 2026", "day": 20, "actual": 16354, "rr": 16202, "base": 16793, "base_lo": 15933, "base_hi": 17823, "cal": 16750, "cal_lo": 15977, "cal_hi": 17772, "tuned": 16110, "tuned_lo": 14909, "tuned_hi": 17738, "shops": 16104}, {"month": "Sep 2026", "day": 25, "actual": 16354, "rr": 16426, "base": 16505, "base_lo": 16147, "base_hi": 16967, "cal": 16519, "cal_lo": 16122, "cal_hi": 17007, "tuned": 16355, "tuned_lo": 15854, "tuned_hi": 17203, "shops": 16372}], "shops": [{"shop": "HILTON", "so_far": 1808, "last_month": 3586, "med": 4172, "lo": 3304, "hi": 5211}, {"shop": "KTDA Shop", "so_far": 622, "last_month": 1800, "med": 1764, "lo": 1424, "hi": 2173}, {"shop": "STARMALL", "so_far": 357, "last_month": 1108, "med": 1121, "lo": 799, "hi": 1476}, {"shop": "WEBSITE SALES", "so_far": 405, "last_month": 1279, "med": 1114, "lo": 801, "hi": 1501}, {"shop": "MOMBASA", "so_far": 334, "last_month": 1038, "med": 948, "lo": 719, "hi": 1241}, {"shop": "HAZINA", "so_far": 322, "last_month": 879, "med": 878, "lo": 671, "hi": 1121}, {"shop": "NAKURU", "so_far": 263, "last_month": 754, "med": 807, "lo": 576, "hi": 1034}, {"shop": "ELDORET", "so_far": 298, "last_month": 752, "med": 801, "lo": 589, "hi": 1054}, {"shop": "KISUMU", "so_far": 404, "last_month": 675, "med": 801, "lo": 626, "hi": 1002}, {"shop": "THIKA", "so_far": 281, "last_month": 664, "med": 751, "lo": 560, "hi": 986}, {"shop": "KISII", "so_far": 184, "last_month": 500, "med": 531, "lo": 370, "hi": 712}, {"shop": "MERU", "so_far": 171, "last_month": 536, "med": 494, "lo": 342, "hi": 684}, {"shop": "DAR-ES-ALAM", "so_far": 145, "last_month": 545, "med": 395, "lo": 250, "hi": 612}, {"shop": "KITENGELA", "so_far": 133, "last_month": 570, "med": 384, "lo": 264, "hi": 526}, {"shop": "RONGAI", "so_far": 117, "last_month": 356, "med": 351, "lo": 236, "hi": 480}, {"shop": "KAKAMEGA", "so_far": 117, "last_month": 390, "med": 350, "lo": 243, "hi": 484}, {"shop": "NANYUKI", "so_far": 103, "last_month": 297, "med": 299, "lo": 200, "hi": 424}, {"shop": "BUSIA", "so_far": 90, "last_month": 222, "med": 258, "lo": 174, "hi": 357}, {"shop": "UGANDA", "so_far": 71, "last_month": 324, "med": 236, "lo": 151, "hi": 365}], "fit": {"finetune_mode": "lora", "learning_rate": 5e-05, "num_steps": 150, "batch_size": 8, "context_length": 512}, "minutes": 87.9};</script>
+<!-- CHRONOS_TRAIN_END -->
+
+<div class="section" id="train-section" style="display:none">
+  <div class="section-header">
+    <span class="pill pill-train">Training test</span>
+    <h2>Does teaching it more make it better?</h2>
+  </div>
+  <div class="date-line" id="train-date"></div>
+
+  <div class="panel">
+    <h3>The five ways of projecting the month</h3>
+    <ul class="notes">
+      <li><b class="sw" style="background:#94a3b8"></b><strong>Straight line</strong>: today's method.</li>
+      <li><b class="sw" style="background:#3b82f6"></b><strong>Chronos as downloaded</strong>: only sees past daily sales.</li>
+      <li><b class="sw" style="background:#a78bfa"></b><strong>+ Calendar</strong>: also told in advance about the Black Friday run-up, the Christmas run-up, Kenyan public holidays and payday days (the version above).</li>
+      <li><b class="sw" style="background:#22d3ee"></b><strong>+ Trained on Denri</strong>: the calendar version, fine-tuned on every shop's daily sales. It was retrained each quarter on sales from <em>before</em> that quarter only, so it never saw the months it was tested on.</li>
+      <li><b class="sw" style="background:#f59e0b"></b><strong>Shops added up</strong>: the trained model forecasts each shop separately and the forecasts are added together.</li>
+    </ul>
+  </div>
+
+  <div class="verdict" id="train-verdict"></div>
+
+  <div class="panel">
+    <h3>Average miss on the month-end total</h3>
+    <div class="hint">Lower is better. Same 12 months and same check days as the track record above.</div>
+    <div class="chart-box" style="height:300px"><canvas id="train-err-chart"></canvas></div>
+    <div class="table-wrap" style="margin-top:1.2rem"><table id="train-sum-table"></table></div>
+  </div>
+
+  <div class="panel">
+    <h3>Month by month</h3>
+    <div class="hint">Pick the day the projection was made. The closest method each month is highlighted.</div>
+    <div class="seg" id="train-seg"></div>
+    <div class="table-wrap"><table id="train-month-table"></table></div>
+  </div>
+
+  <div class="panel">
+    <h3 id="train-now-title">This month, every method</h3>
+    <div class="hint">Where each method thinks this month will finish, from the same sales so far.</div>
+    <div class="card-grid" id="train-now" style="margin-bottom:0"></div>
+  </div>
+
+  <div class="panel">
+    <h3>Each shop this month</h3>
+    <div class="hint">The trained model's forecast for every till with at least 4 months of history. These shop forecasts are what Laya would explain next ("why is Nakuru up?").</div>
+    <div class="table-wrap"><table id="shop-table"></table></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const D = CHRONOS;
+  if (!D) { document.getElementById('date-line').textContent = 'No data yet. Run chronos_preview.py.'; return; }
+  const c = D.current;
+  const fmt = n => Math.round(n).toLocaleString('en-US');
+  const set = (id, v) => { document.getElementById(id).textContent = v; };
+
+  document.getElementById('title').textContent = 'Chronos Month-End Forecast · ' + c.month_label;
+  document.getElementById('date-line').innerHTML =
+    'Till sales to <span>' + c.data_to + '</span> · day <span>' + c.day + ' of ' + c.dim +
+    '</span> · built <span>' + D.generated + '</span>';
+  set('k-sofar', fmt(c.so_far));
+  set('k-sofar-sub', 'Bags through the tills in ' + c.day + ' of ' + c.dim + ' days.');
+  set('k-rr', fmt(c.runrate));
+  set('k-ch', fmt(c.med));
+  const gap = c.med - c.runrate;
+  document.getElementById('k-ch-sub').innerHTML =
+    '<strong>' + (gap >= 0 ? '+' : '−') + fmt(Math.abs(gap)) + '</strong> vs the straight line. Learns paydays, weekends and month-end from history.';
+  set('k-range', fmt(c.lo) + ' – ' + fmt(c.hi));
+
+  Chart.defaults.color = '#94a3b8';
+  Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+  const grid = { color: 'rgba(45,49,72,0.6)' };
+  const tooltip = { backgroundColor: '#151823', borderColor: '#2d3148', borderWidth: 1, padding: 10,
+                    callbacks: { label: x => ' ' + x.dataset.label + ': ' + fmt(x.parsed.y) } };
+  const days = Array.from({ length: c.dim }, (_, i) => i + 1);
+
+  // ── Cumulative ──
+  const cumActual = [], cumMed = [], cumLo = [], cumHi = [], cumRR = [];
+  let run = 0;
+  days.forEach(d => {
+    if (d <= c.day) { run += c.actual_daily[d - 1]; cumActual.push(run); } else cumActual.push(null);
+  });
+  let m = c.so_far, l = c.so_far, h = c.so_far;
+  const pace = c.so_far / c.day;
+  days.forEach(d => {
+    if (d < c.day) { cumMed.push(null); cumLo.push(null); cumHi.push(null); cumRR.push(null); return; }
+    if (d > c.day) { const i = d - c.day - 1; m += c.fc_daily.med[i]; l += c.fc_daily.lo[i]; h += c.fc_daily.hi[i]; }
+    cumMed.push(m); cumLo.push(l); cumHi.push(h); cumRR.push(c.so_far + pace * (d - c.day));
+  });
+  new Chart(document.getElementById('cum-chart'), {
+    type: 'line',
+    data: { labels: days, datasets: [
+      { label: 'Range high', data: cumHi, borderWidth: 0, pointRadius: 0, fill: '+1', backgroundColor: 'rgba(6,182,212,0.18)' },
+      { label: 'Range low', data: cumLo, borderWidth: 0, pointRadius: 0, fill: false },
+      { label: 'Chronos', data: cumMed, borderColor: '#06b6d4', borderWidth: 2.5, pointRadius: 0, tension: 0.2 },
+      { label: 'Straight line', data: cumRR, borderColor: '#94a3b8', borderDash: [6, 4], borderWidth: 2, pointRadius: 0 },
+      { label: 'Sold so far', data: cumActual, borderColor: '#6366f1', backgroundColor: '#6366f1', borderWidth: 3, pointRadius: 0, tension: 0.2 },
+    ]},
+    options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, tooltip: { ...tooltip, filter: x => x.parsed.y != null,
+        callbacks: { title: x => 'Day ' + x[0].label, label: tooltip.callbacks.label } } },
+      scales: { x: { grid: { display: false }, title: { display: true, text: 'Day of month' } },
+                y: { grid, ticks: { callback: v => fmt(v) } } } }
+  });
+
+  // ── Daily ──
+  const actualBars = days.map(d => d <= c.day ? c.actual_daily[d - 1] : null);
+  const fcBars = days.map(d => d > c.day ? c.fc_daily.med[d - c.day - 1] : null);
+  new Chart(document.getElementById('day-chart'), {
+    data: { labels: days, datasets: [
+      { type: 'bar', label: 'Actual', data: actualBars, backgroundColor: '#6366f1', borderRadius: 3, stack: 's' },
+      { type: 'bar', label: 'Chronos expected', data: fcBars, backgroundColor: 'rgba(6,182,212,0.55)', borderRadius: 3, stack: 's' },
+      { type: 'line', label: 'Straight-line pace', data: days.map(() => pace), borderColor: '#94a3b8', borderDash: [6, 4], borderWidth: 1.5, pointRadius: 0 },
+    ]},
+    options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, tooltip: { ...tooltip, filter: x => x.parsed.y != null,
+        callbacks: { title: x => 'Day ' + x[0].label, label: tooltip.callbacks.label } } },
+      scales: { x: { stacked: true, grid: { display: false } }, y: { grid, beginAtZero: true, ticks: { callback: v => fmt(v) } } } }
+  });
+
+  // ── Track record ──
+  const S = D.summary;
+  set('n-months', S[0].n);
+  const early = S.filter(s => s.day <= 10);
+  const avg = (a, k) => a.reduce((t, s) => t + s[k], 0) / a.length;
+  const totalWins = S.reduce((t, s) => t + s.wins, 0), totalN = S.reduce((t, s) => t + s.n, 0);
+  const hits = S.reduce((t, s) => t + s.hit, 0);
+  document.getElementById('verdict').innerHTML =
+    'In the first 10 days of the month, Chronos missed the final total by <strong>' + avg(early, 'ch').toFixed(1) +
+    '%</strong> on average, against <strong>' + avg(early, 'rr').toFixed(1) + '%</strong> for the straight line. ' +
+    'Across every check it was closer <strong>' + totalWins + ' times out of ' + totalN + '</strong>, and the real total landed inside its range <strong>' +
+    hits + ' times out of ' + totalN + '</strong>.';
+
+  new Chart(document.getElementById('err-chart'), {
+    type: 'bar',
+    data: { labels: S.map(s => 'Day ' + s.day), datasets: [
+      { label: 'Straight line', data: S.map(s => s.rr), backgroundColor: '#94a3b8', borderRadius: 3 },
+      { label: 'Chronos', data: S.map(s => s.ch), backgroundColor: '#06b6d4', borderRadius: 3 },
+    ]},
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { ...tooltip, callbacks: { label: x => ' ' + x.dataset.label + ': ' + x.parsed.y + '% off' } } },
+      scales: { x: { grid: { display: false } }, y: { grid, beginAtZero: true, ticks: { callback: v => v + '%' } } } }
+  });
+
+  document.getElementById('sum-table').innerHTML =
+    '<tr><th>Projection made on</th><th class="num">Straight line miss</th><th class="num">Chronos miss</th><th class="num">Chronos closer</th><th class="num">Inside range</th></tr>' +
+    S.map(s => '<tr><td>Day ' + s.day + '</td>' +
+      '<td class="num' + (s.rr < s.ch ? ' win' : '') + '">' + s.rr.toFixed(1) + '%</td>' +
+      '<td class="num' + (s.ch <= s.rr ? ' win' : '') + '">' + s.ch.toFixed(1) + '%</td>' +
+      '<td class="num">' + s.wins + ' of ' + s.n + '</td><td class="num">' + s.hit + ' of ' + s.n + '</td></tr>').join('');
+
+  const seg = document.getElementById('day-seg');
+  const pct = (p, a) => { const e = (p / a - 1) * 100; return '<span class="' + (e >= 0 ? 'miss-pos' : 'miss-neg') + '">' + (e >= 0 ? '+' : '−') + Math.abs(e).toFixed(0) + '%</span>'; };
+  function showDay(dn) {
+    [...seg.children].forEach(b => b.classList.toggle('on', +b.dataset.day === dn));
+    const rows = D.months.filter(r => r.day === dn);
+    document.getElementById('month-table').innerHTML =
+      '<tr><th>Month</th><th class="num">Actual</th><th class="num">Straight line</th><th class="num">Off by</th><th class="num">Chronos</th><th class="num">Off by</th><th class="num">Chronos range</th><th>Closer</th></tr>' +
+      rows.map(r => {
+        const chWins = Math.abs(r.ch - r.actual) < Math.abs(r.rr - r.actual);
+        const inside = r.actual >= r.lo && r.actual <= r.hi;
+        return '<tr><td>' + r.month + '</td><td class="num">' + fmt(r.actual) + '</td>' +
+          '<td class="num">' + fmt(r.rr) + '</td><td class="num">' + pct(r.rr, r.actual) + '</td>' +
+          '<td class="num">' + fmt(r.ch) + '</td><td class="num">' + pct(r.ch, r.actual) + '</td>' +
+          '<td class="num">' + fmt(r.lo) + ' – ' + fmt(r.hi) + ' <span class="tag ' + (inside ? 'in">✓' : 'out">✗') + '</span></td>' +
+          '<td><span class="tag ' + (chWins ? 'ch">Chronos' : 'rr">Straight line') + '</span></td></tr>';
+      }).join('');
+  }
+  S.forEach(s => {
+    const b = document.createElement('button');
+    b.textContent = 'Day ' + s.day; b.dataset.day = s.day;
+    b.onclick = () => showDay(s.day);
+    seg.appendChild(b);
+  });
+  showDay(7);
+})();
+
+// ── Training test ──
+(function () {
+  const T = CHRONOS_TRAIN;
+  if (!T) return;
+  document.getElementById('train-section').style.display = '';
+  const fmt = n => Math.round(n).toLocaleString('en-US');
+  const M = [
+    { k: 'rr',    name: 'Straight line',        color: '#94a3b8' },
+    { k: 'base',  name: 'Chronos as downloaded', color: '#3b82f6' },
+    { k: 'cal',   name: '+ Calendar',           color: '#a78bfa' },
+    { k: 'tuned', name: '+ Trained on Denri',   color: '#22d3ee' },
+    { k: 'shops', name: 'Shops added up',       color: '#f59e0b' },
+  ];
+  const S = T.summary;
+  const avg = (rows, k) => rows.reduce((t, s) => t + s[k], 0) / rows.length;
+  document.getElementById('train-date').innerHTML =
+    'Till sales to <span>' + T.data_to + '</span> · trained and tested in <span>' + T.minutes + ' min</span> · built <span>' + T.generated + '</span>';
+
+  const overall = M.map(m => ({ ...m, all: avg(S, m.k), early: avg(S.filter(s => s.day <= 10), m.k) }));
+  const best = overall.reduce((a, b) => (b.all < a.all ? b : a));
+  const by = k => overall.find(m => m.k === k);
+  const hits = S.reduce((t, s) => t + s.tuned_hit, 0), n = S.reduce((t, s) => t + s.n, 0);
+  document.getElementById('train-verdict').innerHTML =
+    'Averaged over every check day, the closest was <strong>' + best.name + '</strong> (' + best.all.toFixed(1) + '% off). ' +
+    'Chronos as downloaded: <strong>' + by('base').all.toFixed(1) + '%</strong> · + calendar: <strong>' + by('cal').all.toFixed(1) +
+    '%</strong> · + trained: <strong>' + by('tuned').all.toFixed(1) + '%</strong> · shops added up: <strong>' + by('shops').all.toFixed(1) +
+    '%</strong> · straight line: <strong>' + by('rr').all.toFixed(1) + '%</strong>. ' +
+    'The trained model\'s range held the real total <strong>' + hits + ' times out of ' + n + '</strong>.';
+
+  new Chart(document.getElementById('train-err-chart'), {
+    type: 'bar',
+    data: { labels: S.map(s => 'Day ' + s.day), datasets: M.map(m => ({ label: m.name, data: S.map(s => s[m.k]), backgroundColor: m.color, borderRadius: 3 })) },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', align: 'start', labels: { boxWidth: 10, boxHeight: 10, color: '#94a3b8' } },
+                 tooltip: { backgroundColor: '#151823', borderColor: '#2d3148', borderWidth: 1, padding: 10,
+                            callbacks: { label: x => ' ' + x.dataset.label + ': ' + x.parsed.y + '% off' } } },
+      scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(45,49,72,0.6)' }, beginAtZero: true, ticks: { callback: v => v + '%' } } } }
+  });
+
+  document.getElementById('train-sum-table').innerHTML =
+    '<tr><th>Projection made on</th>' + M.map(m => '<th class="num"><b class="sw" style="background:' + m.color + '"></b>' + m.name + '</th>').join('') + '</tr>' +
+    S.map(s => {
+      const lo = Math.min(...M.map(m => s[m.k]));
+      return '<tr><td>Day ' + s.day + '</td>' + M.map(m => '<td class="num' + (s[m.k] === lo ? ' best' : '') + '">' + s[m.k].toFixed(1) + '%</td>').join('') + '</tr>';
+    }).join('') +
+    '<tr><td><strong>All days</strong></td>' + overall.map(m => '<td class="num' + (m === best ? ' best' : '') + '">' + m.all.toFixed(1) + '%</td>').join('') + '</tr>';
+
+  const seg = document.getElementById('train-seg');
+  const off = (p, a) => { const e = (p / a - 1) * 100; return (e >= 0 ? '+' : '−') + Math.abs(e).toFixed(0) + '%'; };
+  function showDay(dn) {
+    [...seg.children].forEach(b => b.classList.toggle('on', +b.dataset.day === dn));
+    const rows = T.months.filter(r => r.day === dn);
+    document.getElementById('train-month-table').innerHTML =
+      '<tr><th>Month</th><th class="num">Actual</th>' + M.map(m => '<th class="num">' + m.name + '</th>').join('') + '</tr>' +
+      rows.map(r => {
+        const err = M.map(m => Math.abs(r[m.k] - r.actual)), lo = Math.min(...err);
+        return '<tr><td>' + r.month + '</td><td class="num">' + fmt(r.actual) + '</td>' +
+          M.map((m, i) => '<td class="num' + (err[i] === lo ? ' best' : '') + '">' + fmt(r[m.k]) +
+            ' <span style="color:#64748b;font-size:0.72rem">' + off(r[m.k], r.actual) + '</span></td>').join('') + '</tr>';
+      }).join('');
+  }
+  S.forEach(s => {
+    const b = document.createElement('button');
+    b.textContent = 'Day ' + s.day; b.dataset.day = s.day; b.onclick = () => showDay(s.day);
+    seg.appendChild(b);
+  });
+  showDay(S.some(s => s.day === 7) ? 7 : S[0].day);
+
+  const C = T.current;
+  document.getElementById('train-now-title').textContent = T.month_label + ': every method (' + fmt(T.so_far) + ' sold so far)';
+  document.getElementById('train-now').innerHTML = M.map(m =>
+    '<div class="card" style="border-top:3px solid ' + m.color + '"><div class="card-label">' + m.name + '</div>' +
+    '<div class="card-value sm">' + fmt(C[m.k]) + '</div>' +
+    (C[m.k + '_lo'] != null ? '<div class="card-sub">Range ' + fmt(C[m.k + '_lo']) + ' – ' + fmt(C[m.k + '_hi']) + '</div>' : '') +
+    '</div>').join('');
+
+  document.getElementById('shop-table').innerHTML =
+    '<tr><th>Shop</th><th class="num">Last month</th><th class="num">So far</th><th class="num">Projected</th><th class="num">Likely range</th><th class="num">vs last month</th></tr>' +
+    T.shops.map(s => {
+      const ch = s.last_month ? (s.med / s.last_month - 1) * 100 : null;
+      const cls = ch == null ? '' : ch >= 5 ? 'win' : ch <= -5 ? 'miss-neg' : '';
+      return '<tr><td>' + s.shop + '</td><td class="num">' + fmt(s.last_month) + '</td><td class="num">' + fmt(s.so_far) + '</td>' +
+        '<td class="num"><strong>' + fmt(s.med) + '</strong></td><td class="num">' + fmt(s.lo) + ' – ' + fmt(s.hi) + '</td>' +
+        '<td class="num ' + cls + '">' + (ch == null ? '–' : (ch >= 0 ? '+' : '−') + Math.abs(ch).toFixed(0) + '%') + '</td></tr>';
+    }).join('');
+})();
+</script>
+</body>
+</html>

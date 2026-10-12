@@ -820,7 +820,7 @@ if _rm:
                    "On the deployed app this means the DB secrets are missing or the "
                    "database is refusing the connection.")
     else:
-        st.success(f"✓ {_rm.get('how', 'Refreshed')} from Odoo at {_rm['when']}")
+        st.success(f"✓ {_rm.get('how', 'Refreshed')} at {_rm['when']}")
 
 # ── Custom period (per page), picked in the page's own Period dropdown ──
 # "Custom range…" in a Period dropdown (custom_range.js) reloads the app with ?page=<label>&crange=<key>:<from>:<to>
@@ -888,7 +888,7 @@ def _bg_watch(lbl, job_id):
         st.session_state.refresh_msg = _bg_done_msg(job)
         st.rerun(scope="app")
     kind = job.get("kind", "auto")
-    what = job.get("title") or {"manual": "Refreshing from Odoo"}.get(kind, "Updating from Odoo")
+    what = job.get("title") or {"manual": "Refreshing"}.get(kind, "Updating")
     el = time.time() - job.get("pass_started", job["started"])
     exp = job.get("expected")
     if exp:
