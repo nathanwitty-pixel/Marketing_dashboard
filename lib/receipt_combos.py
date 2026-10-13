@@ -14,8 +14,9 @@ import os
 
 from . import db
 
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OFFERS_CSV = os.path.join(BASE, "offers_monthly.csv")
+from lib import paths
+
+OFFERS_CSV = paths.data("offers_monthly.csv")
 BULK_MIN = 5
 TILLS = {"sinza": ("sinza", "dar-es-alam"), "uganda": ("uganda",)}
 _SKIP = ("DELIVERY", "GIFT BAG", "DISCOUNT", "CUSTOMI", "STRAP")

@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="darkreader-lock" /><!-- the dashboard has its own light/dark theme: stop the Dark Reader extension re-darkening it -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Timed Offer</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { overflow-y: scroll; }
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track { background: #0f1117; }
+    ::-webkit-scrollbar-thumb { background: #2d3148; border-radius: 6px; border: 3px solid #0f1117; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1117; color: #e2e8f0;
+           min-height: 100vh; padding: 2rem; }
+    .wrap { width: 100%; max-width: 960px; margin: 0 auto; }
+    .head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.4rem; flex-wrap: wrap; }
+    .pill { color: #fff; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+            padding: 0.3rem 0.75rem; border-radius: 999px; background: #f59e0b; }
+    .head h1 { font-size: 1.5rem; font-weight: 800; color: #f8fafc; letter-spacing: 0.01em; }
+    .sub { font-size: 0.82rem; color: #64748b; margin-bottom: 1.6rem; line-height: 1.5; }
+    .sub b { color: #94a3b8; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.6rem; }
+    .card { background: #1e2130; border: 1px solid #2d3148; border-radius: 10px; padding: 1.2rem 1.4rem;
+            position: relative; overflow: hidden; }
+    .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+                    background: #f59e0b; }
+    .card.g::before { background: #10b981; }
+    .card.c::before { background: #06b6d4; }
+    .card.v::before { background: #8b5cf6; }
+    .k-lbl { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #94a3b8; margin-bottom: 0.5rem; }
+    .k-val { font-size: 2rem; font-weight: 800; color: #f8fafc; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .k-val.green { color: #34d399; } .k-val.cyan { color: #22d3ee; } .k-val.violet { color: #a78bfa; }
+    .k-sub { font-size: 0.76rem; color: #64748b; margin-top: 0.35rem; line-height: 1.4; }
+
+    .panel { background: #1e2130; border: 1px solid #2d3148; border-radius: 10px; padding: 1.3rem 1.4rem; margin-bottom: 1.6rem; }
+    .panel h2 { font-size: 0.95rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.2rem; }
+    .panel .cap { font-size: 0.76rem; color: #64748b; margin-bottom: 1rem; }
+    .chart-wrap { position: relative; height: 320px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+    thead th { text-align: left; padding: 0.6rem 0.75rem; font-size: 0.68rem; font-weight: 700;
+               letter-spacing: 0.08em; text-transform: uppercase; color: #64748b; border-bottom: 1px solid #2d3148; }
+    thead th.r, tbody td.r { text-align: right; }
+    tbody td { padding: 0.6rem 0.75rem; border-top: 1px solid #262a3d; color: #cbd5e1; }
+    tbody tr:hover { background: #252840; }
+    tbody td.name { color: #f1f5f9; font-weight: 600; }
+    .zero { color: #f87171; font-weight: 700; }
+    /* "Why these bags?" — scrollable body (~first 10 rows) with the TOTAL pinned on top,
+       the column header pinned just below it. */
+    .why-scroll { max-height: 26rem; overflow: auto; border: 1px solid #262a3d; border-radius: 8px; }
+    .why-scroll table { border-collapse: separate; border-spacing: 0; }
+    .why-scroll thead tr.tot td { position: sticky; top: 0; z-index: 3; background: #14161f;
+        padding: 0.55rem 0.75rem; line-height: 1.2; font-weight: 800; color: #f1f5f9;
+        text-transform: none; letter-spacing: normal; font-size: 0.86rem; border-bottom: 1px solid #2d3148; }
+    .why-scroll thead tr.tot td.r { text-align: right; }
+    .why-scroll thead tr.hdr th { position: sticky; top: 2.25rem; z-index: 2; background: #12131c; }
+    .why-scroll tbody td { border-top: 1px solid #262a3d; }
+    .note { font-size: 0.78rem; color: #94a3b8; line-height: 1.55; }
+    .note b { color: #cbd5e1; }
+    @media (prefers-reduced-motion: reduce){
+      *,*::before,*::after{ transition-duration:.12s!important; transition-property:opacity!important;
+        animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; }
+    }
+  
+    /* Spectral Edge — aura backdrop (decorative; fixed, behind all content). */
+    body{ background-color:#100e0b; }
+    .aura-layer-1,.aura-layer-2,.aura-layer-3{ position:fixed; inset:0; z-index:-1;
+      pointer-events:none; transform:translateZ(0); will-change:transform; }
+    .aura-layer-1{ mix-blend-mode:screen; filter:blur(108px);
+      background:linear-gradient(90deg, transparent 0%, rgba(59,130,246,0.04) 32%, rgba(6,182,212,0.12) 45%, rgba(34,197,94,0.13) 51%, rgba(250,204,21,0.12) 57%, rgba(244,63,94,0.11) 64%, transparent 82%); }
+    .aura-layer-2{ mix-blend-mode:screen; filter:blur(58px); opacity:0.24;
+      background:linear-gradient(102deg, transparent 38%, rgba(255,255,255,0.08) 46%, rgba(125,211,252,0.06) 51%, transparent 60%); }
+    .aura-layer-3{ mix-blend-mode:screen; filter:blur(126px); opacity:0.55;
+      background:radial-gradient(ellipse 25% 65% at 92% 50%, rgba(139,92,246,0.16) 0%, transparent 78%); }
+    @media (max-width:640px){
+      .aura-layer-1{ filter:blur(75px); } .aura-layer-2{ filter:blur(40px); } .aura-layer-3{ filter:blur(88px); }
+    }
+
+    /* Frosted-glass card surfaces — the aura shows through (matches the Offer-Type look). */
+    .card, .panel, .kpi, .sec, .exec, .mini{
+      background-color: rgba(24,27,40,0.52) !important;
+      background-image: none !important;
+      backdrop-filter: blur(14px) saturate(1.08);
+      -webkit-backdrop-filter: blur(14px) saturate(1.08);
+    }
+    @media (prefers-reduced-transparency: reduce){
+      .card, .panel, .kpi, .sec, .exec, .mini{
+        background-color:#141824 !important; backdrop-filter:none; -webkit-backdrop-filter:none; }
+    }
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="../assets/chart_switcher.js"></script>
+</head>
+<body>
+<div class="aura-layer-1" aria-hidden="true"></div>
+<div class="aura-layer-2" aria-hidden="true"></div>
+<div class="aura-layer-3" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="head">
+      <span class="pill">Timed Offers</span>
+      <h1 id="page-title">Timed Offers</h1>
+    </div>
+    <div class="sub" id="page-sub"></div>
+
+    <div id="to-offers"></div>
+
+    <div class="panel" id="to-empty" style="display:none">
+      <div class="note">No active timed offers this month. Add offers to
+      <b>timed_offers_config.json</b> (the <code>offers</code> list) and refresh —
+      they stack here, and roll over to Supabase automatically at month end.</div>
+    </div>
+  </div>
+
+  <!-- One offer's card stack — cloned per offer in TO_LIST. Data hooks use
+       data-el="…" (not id) so several offers can render on one page. -->
+  <template id="to-offer-tpl">
+    <section class="offer">
+      <div class="head">
+        <span class="pill">Timed Offer</span>
+        <h1 data-el="title">Timed Offer</h1>
+      </div>
+      <div class="sub" data-el="sub"></div>
+
+      <div class="grid" data-el="kpis"></div>
+
+      <div class="panel" data-el="lift-panel" style="display:none">
+        <h2>Did the offer lift sales?</h2>
+        <div class="cap" data-el="lift-cap"></div>
+        <div class="grid" data-el="lift-kpis" style="margin-bottom:1rem"></div>
+        <div class="chart-wrap"><canvas data-el="lift-chart"></canvas></div>
+      </div>
+
+      <div class="panel" data-el="weekly-panel" style="display:none">
+        <h2>Week by week — the offer bags</h2>
+        <div class="cap" data-el="weekly-cap"></div>
+        <div class="chart-wrap"><canvas data-el="weekly-chart"></canvas></div>
+      </div>
+
+      <div class="panel" data-el="why-panel" style="display:none">
+        <h2>Why these bags — and was it a good move?</h2>
+        <div class="cap"><b>Price was</b> = the product's Odoo Sales Price incl. tax; <b>Price now</b> = the offer pricelist price incl. tax — both pulled live from Odoo (not typed, not an average). <b>Discount</b> = the real cut. <b>Sales lift</b> = the bag's own units/day during vs before the offer.</div>
+        <div data-el="why-filter" style="display:none"></div>
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:0.5rem;margin:0.2rem 0 0.6rem">
+          <label style="font-size:0.72rem;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.04em">Sort</label>
+          <select data-el="why-sort" style="background:#161824;color:#e2e8f0;border:1px solid #2d3148;border-radius:6px;padding:0.3rem 0.5rem;font-size:0.8rem">
+            <option value="sold-desc">Sold — largest to smallest</option>
+            <option value="sold-asc">Sold — smallest to largest</option>
+            <option value="stock-desc">In stock — largest to smallest</option>
+            <option value="stock-asc">In stock — smallest to largest</option>
+            <option value="disc-desc">Discount — largest to smallest</option>
+          </select>
+        </div>
+        <div class="why-scroll">
+          <table>
+            <thead>
+              <tr class="tot" data-el="why-total-row"></tr>
+              <tr class="hdr" data-el="why-head-row">
+                <th>Bag</th><th class="r">Sold</th><th class="r">In stock</th>
+                <th class="r">Price was</th><th class="r">Price now</th><th class="r">Discount</th><th class="r">Sales lift</th><th>Category</th>
+              </tr>
+            </thead>
+            <tbody data-el="why-tbody"></tbody>
+          </table>
+        </div>
+        <div data-el="why-insights" style="margin-top:1rem"></div>
+        <div data-el="why-verdict" style="margin-top:0.9rem;padding:0.9rem 1rem;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.28);border-radius:10px;font-size:0.9rem;color:#e2e8f0;line-height:1.55"></div>
+      </div>
+
+      <div class="panel" data-el="clearance-panel" style="display:none">
+        <h2>Clearance rate — how much of each is cleared</h2>
+        <div class="cap"><b>% cleared</b> = units sold &divide; (sold + stock on hand). A bag near 100% is nearly gone; a low % means lots of stock is still sitting. Switch between <b>bag type</b> (all colours together, e.g. every Prime colour as one) and <b>category</b>.</div>
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:0.5rem;margin:0.2rem 0 0.6rem">
+          <label style="font-size:0.72rem;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.04em">Group by</label>
+          <select data-el="clearance-mode" style="background:#161824;color:#e2e8f0;border:1px solid #2d3148;border-radius:6px;padding:0.3rem 0.5rem;font-size:0.8rem">
+            <option value="product">Bag type (all colours)</option>
+            <option value="category">Category</option>
+          </select>
+        </div>
+        <div class="chart-wrap" data-el="clearance-wrap"><canvas data-el="clearance-chart"></canvas></div>
+      </div>
+
+      <div class="panel">
+        <h2>Bags sold per bag</h2>
+        <div class="cap" data-el="chart-cap">Kenya POS · offer window</div>
+        <div class="chart-wrap"><canvas data-el="chart"></canvas></div>
+      </div>
+
+      <div class="panel">
+        <div class="note" data-el="note"></div>
+      </div>
+    </section>
+  </template>
+
+<!-- TIMED_DATA_START -->
+<script>
+const TO_DATA = {"month": "2026-10", "offers": [{"name": "9–10 Oct · Up to KES 1,400 Off (Kenya)", "market": "Kenya", "shops": [], "scopeLabel": "Kenya", "startDate": "2026-10-09", "endDate": "2026-10-10", "timeLabel": "", "windowLabel": "9–10 Oct 2026", "lift": {"baseStart": "2026-10-01", "baseEnd": "2026-10-08", "baseDays": 8, "baseTotal": 1008, "basePerDay": 126.0, "offerDays": 2, "offerTotal": 376, "offerPerDay": 188.0, "liftPct": 49, "daily": [{"date": "2026-10-01", "bags": 63, "normal": 0, "off": false}, {"date": "2026-10-02", "bags": 122, "normal": 0, "off": false}, {"date": "2026-10-03", "bags": 84, "normal": 0, "off": false}, {"date": "2026-10-04", "bags": 20, "normal": 0, "off": false}, {"date": "2026-10-05", "bags": 513, "normal": 0, "off": false}, {"date": "2026-10-06", "bags": 58, "normal": 0, "off": false}, {"date": "2026-10-07", "bags": 70, "normal": 0, "off": false}, {"date": "2026-10-08", "bags": 78, "normal": 0, "off": false}, {"date": "2026-10-09", "bags": 233, "normal": 0, "off": true}, {"date": "2026-10-10", "bags": 143, "normal": 0, "off": true}], "weekly": [{"label": "Wk 1", "start": "2026-10-01", "end": "2026-10-03", "total": 269, "days": 3, "perDay": 89.7, "off": false}, {"label": "Wk 2", "start": "2026-10-04", "end": "2026-10-10", "total": 1115, "days": 7, "perDay": 159.3, "off": true}], "clearanceStart": "", "bulkBase": 440, "bulkOffer": 0, "basePerDayExBulk": 71.0, "offerPerDayExBulk": 188.0, "liftPctExBulk": 165}, "bulkLineQty": 10, "why": {"totalStock": 2012, "categories": ["BACKPACK", "HANDBAG", "MAN BAG", "SLING", "SPORT", "TRAVEL"], "allCut": true, "bags": [{"name": "Mini Zuri", "sold": 88, "posts": 15, "stock": 122, "priceWas": 2600, "priceNow": 1600, "discountKes": 1000, "discountPct": -38, "discounted": true, "soldAt": 1611, "prePerDay": 1.8, "offerPerDay": 44.0, "bagLift": 2344, "bulk": [], "bagLiftExBulk": null, "category": "HANDBAG", "isOther": false}, {"name": "Fabela", "sold": 55, "posts": 0, "stock": 362, "priceWas": 2400, "priceNow": 2000, "discountKes": 400, "discountPct": -17, "discounted": true, "soldAt": 1891, "prePerDay": 71.1, "offerPerDay": 27.5, "bagLift": -61, "bulk": [{"bag": "FABELA", "date": "2026-10-05", "order": "HILTON/99665", "till": "HILTON", "product": "Fabela Grey", "qty": 440, "value": 1012001, "window": "before"}], "bagLiftExBulk": 71, "category": "TRAVEL", "isOther": false}, {"name": "Aurora", "sold": 49, "posts": 0, "stock": 208, "priceWas": 2100, "priceNow": 1500, "discountKes": 600, "discountPct": -29, "discounted": true, "soldAt": 1537, "prePerDay": 10.1, "offerPerDay": 24.5, "bagLift": 143, "bulk": [], "bagLiftExBulk": null, "category": "HANDBAG", "isOther": false}, {"name": "Big Man Bag", "sold": 41, "posts": 0, "stock": 238, "priceWas": 2100, "priceNow": 1500, "discountKes": 600, "discountPct": -29, "discounted": true, "soldAt": 1559, "prePerDay": 14.8, "offerPerDay": 20.5, "bagLift": 39, "bulk": [], "bagLiftExBulk": null, "category": "MAN BAG", "isOther": false}, {"name": "Zuri", "sold": 35, "posts": 10, "stock": 118, "priceWas": 3600, "priceNow": 2200, "discountKes": 1400, "discountPct": -39, "discounted": true, "soldAt": 2240, "prePerDay": 1.1, "offerPerDay": 17.5, "bagLift": 1491, "bulk": [], "bagLiftExBulk": null, "category": "HANDBAG", "isOther": false}, {"name": "Avana HB", "sold": 29, "posts": 0, "stock": 87, "priceWas": 2100, "priceNow": 1500, "discountKes": 600, "discountPct": -29, "discounted": true, "soldAt": 1562, "prePerDay": 0.9, "offerPerDay": 14.5, "bagLift": 1511, "bulk": [], "bagLiftExBulk": null, "category": "SLING", "isOther": false}, {"name": "Neo Man", "sold": 29, "posts": 20, "stock": 193, "priceWas": 1600, "priceNow": 1200, "discountKes": 400, "discountPct": -25, "discounted": true, "soldAt": 1200, "prePerDay": 9.6, "offerPerDay": 14.5, "bagLift": 51, "bulk": [], "bagLiftExBulk": null, "category": "MAN BAG", "isOther": false}, {"name": "Gym Bag", "sold": 18, "posts": 0, "stock": 209, "priceWas": 2600, "priceNow": 2000, "discountKes": 600, "discountPct": -23, "discounted": true, "soldAt": 2111, "prePerDay": 7.4, "offerPerDay": 9.0, "bagLift": 22, "bulk": [], "bagLiftExBulk": null, "category": "SPORT", "isOther": false}, {"name": "Double Press", "sold": 17, "posts": 0, "stock": 228, "priceWas": 2600, "priceNow": 2000, "discountKes": 600, "discountPct": -23, "discounted": true, "soldAt": 1871, "prePerDay": 3.8, "offerPerDay": 8.5, "bagLift": 124, "bulk": [], "bagLiftExBulk": null, "category": "BACKPACK", "isOther": false}, {"name": "Pioneer", "sold": 15, "posts": 11, "stock": 247, "priceWas": 2600, "priceNow": 2200, "discountKes": 400, "discountPct": -15, "discounted": true, "soldAt": 2227, "prePerDay": 5.5, "offerPerDay": 7.5, "bagLift": 36, "bulk": [], "bagLiftExBulk": null, "category": "BACKPACK", "isOther": false}], "insights": [{"tag": "On offer?", "text": "<b>All six were genuinely on offer</b> — real list-price cuts of KES 400–1,400 (15–39% off): Mini Zuri −1,000 (-38%), Fabela −400 (-17%), Aurora −600 (-29%), Big Man Bag −600 (-29%), Zuri −1,400 (-39%), Avana HB −600 (-29%), Neo Man −400 (-25%), Gym Bag −600 (-23%), Double Press −600 (-23%), Pioneer −400 (-15%)."}, {"tag": "Discount vs demand", "text": "Because <b>every bag was cut</b>, the discount and back-to-school timing can't be fully separated — both applied at once. But <b>discount depth didn't decide the winners</b>: the deepest cut, Zuri (-39%), sold only 35, while Mini Zuri led with 88 on a shallower -38% cut. The cut opened the door, but <b>demand — which bags people wanted for school — chose what actually moved</b>."}, {"tag": "Stock", "text": "Real inventory behind them — <b>2,012 still in stock</b> (led by Fabela at 362). The offer draws down a genuine stock position, not a token one."}, {"tag": "Season", "text": "All six sit in <b>Backpack, Handbag, Man Bag, Sling, Sport, Travel</b> — school categories — and the step-up landed in the offer week as schools opened. Fabela and Aurora even sold on zero marketing posts (pure demand). The timing fits the sales pattern as much as the price cut does."}, {"tag": "Corporate order", "text": "<b>Fabela</b> shows <b>-61%</b> because of a bulk / corporate order: <b>440 × Fabela Grey</b> (HILTON/99665, HILTON, 2026-10-05, KES 1,012,001) before the offer — it inflated the before-offer pace, so the offer looks worse than it was. <b>Without it, Fabela did +71%</b> (walk-in pace only)."}], "verdict": "<b>Good move.</b> All six ran a real <b>15–39% cut</b> and daily sales rose <b>+49%</b> during back-to-school. The catch: <b>discount depth didn't pick the winners</b> — the deepest cut (Zuri, -39%) sold least, while the popular school lines led. Repeat the timing; you can likely <b>trim the deepest cuts</b> on the slow movers without losing volume.", "variants": [], "priceWeeks": {"weeks": [{"label": "Wk 1", "start": "2026-10-01", "end": "2026-10-03", "off": false}, {"label": "Wk 2", "start": "2026-10-04", "end": "2026-10-10", "off": true}], "bags": [{"name": "Mini Zuri", "was": 2600, "now": 1600, "cells": [{"avg": 2556, "qty": 9}, {"avg": 1660, "qty": 93}]}, {"name": "Fabela", "was": 2400, "now": 2000, "cells": [{"avg": 2040, "qty": 53}, {"avg": 2216, "qty": 571}]}, {"name": "Aurora", "was": 2100, "now": 1500, "cells": [{"avg": 1710, "qty": 42}, {"avg": 1609, "qty": 88}]}, {"name": "Big Man Bag", "was": 2100, "now": 1500, "cells": [{"avg": 1779, "qty": 56}, {"avg": 1664, "qty": 103}]}, {"name": "Zuri", "was": 3600, "now": 2200, "cells": [{"avg": 3300, "qty": 4}, {"avg": 2290, "qty": 40}]}, {"name": "Avana HB", "was": 2100, "now": 1500, "cells": [{"avg": 2100, "qty": 3}, {"avg": 1618, "qty": 33}]}, {"name": "Neo Man", "was": 1600, "now": 1200, "cells": [{"avg": 1392, "qty": 40}, {"avg": 1267, "qty": 66}]}, {"name": "Gym Bag", "was": 2600, "now": 2000, "cells": [{"avg": 2197, "qty": 31}, {"avg": 2226, "qty": 46}]}, {"name": "Double Press", "was": 2600, "now": 2000, "cells": [{"avg": 2160, "qty": 10}, {"avg": 2078, "qty": 37}]}, {"name": "Pioneer", "was": 2600, "now": 2200, "cells": [{"avg": 2305, "qty": 21}, {"avg": 2184, "qty": 38}]}]}}, "salesLive": true, "bags": [{"name": "Mini Zuri", "sold": 88, "posts": 15, "perPost": 5.9}, {"name": "Fabela", "sold": 55, "posts": 0, "perPost": null}, {"name": "Aurora", "sold": 49, "posts": 0, "perPost": null}, {"name": "Big Man Bag", "sold": 41, "posts": 0, "perPost": null}, {"name": "Zuri", "sold": 35, "posts": 10, "perPost": 3.5}, {"name": "Avana HB", "sold": 29, "posts": 0, "perPost": null}, {"name": "Neo Man", "sold": 29, "posts": 20, "perPost": 1.4}, {"name": "Gym Bag", "sold": 18, "posts": 0, "perPost": null}, {"name": "Double Press", "sold": 17, "posts": 0, "perPost": null}, {"name": "Pioneer", "sold": 15, "posts": 11, "perPost": 1.4}], "totalSold": 376, "totalPosts": 56, "perPost": 6.7, "bestName": "Mini Zuri", "bestSold": 88, "mostPName": "Neo Man", "mostPosts": 20}]};
+const TO_LIST = TO_DATA.offers;
+const TO = TO_LIST[0] || null;
+</script>
+<!-- TIMED_DATA_END -->
+
+<script>
+/* Reusable table filter bar (Colour / Category / Product / Bag Type, or any dims).
+   DenriTableFilter.attach({bar, rows, dims, onChange}) renders the bar into `bar`, filters
+   `rows`, and calls onChange(filtered) on every change / reset. A dimension whose rows carry
+   no values is skipped. Matches the New Products filter look; drop-in on any page/table. */
+(function(){
+  if (window.DenriTableFilter) return;
+  if (!document.getElementById('dtf-css')) {
+    var st = document.createElement('style'); st.id = 'dtf-css';
+    st.textContent =
+      '.dtf-bar{display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;padding:0.6rem 0.9rem;'
+      + 'background:#13151f;border:1px solid #2d3148;border-radius:8px;margin:0.3rem 0 0.6rem}'
+      + '.dtf-bar label{font-size:0.66rem;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.07em}'
+      + '.dtf-bar select{background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.3rem 0.6rem;'
+      + 'border-radius:6px;font-size:0.78rem;cursor:pointer;outline:none}'
+      + '.dtf-bar select:focus{border-color:#10b981}'
+      + '.dtf-bar .dtf-reset{margin-left:auto;background:none;border:1px solid #374151;color:#94a3b8;'
+      + 'padding:0.3rem 0.65rem;border-radius:6px;font-size:0.74rem;cursor:pointer}'
+      + '.dtf-bar .dtf-reset:hover{border-color:#6b7280;color:#e2e8f0}';
+    document.head.appendChild(st);
+  }
+  function uniq(rows, key){
+    var seen={}, out=[];
+    rows.forEach(function(r){ var v=(r[key]==null?'':String(r[key])); if(v && !seen[v]){seen[v]=1;out.push(v);} });
+    return out.sort();
+  }
+  window.DenriTableFilter = { attach: function(opts){
+    var bar = opts.bar, rows = opts.rows||[], dims = opts.dims||[], onChange = opts.onChange||function(){};
+    bar.classList.add('dtf-bar'); bar.innerHTML=''; var sels = {};
+    dims.forEach(function(d){
+      var vals = uniq(rows, d.key); if (!vals.length) return;   // no data for this dimension
+      var lab = document.createElement('label'); lab.textContent = d.label; bar.appendChild(lab);
+      var s = document.createElement('select');
+      s.innerHTML = '<option value="">'+ (d.all || ('All '+d.label)) +'</option>';
+      vals.forEach(function(v){ var o=document.createElement('option'); o.value=v; o.textContent=v; s.appendChild(o); });
+      bar.appendChild(s); sels[d.key]=s; s.addEventListener('change', apply);
+    });
+    var reset = document.createElement('button'); reset.className='dtf-reset'; reset.textContent='Reset Filters';
+    reset.addEventListener('click', function(){ Object.keys(sels).forEach(function(k){ sels[k].value=''; }); apply(); });
+    bar.appendChild(reset);
+    function getFiltered(){
+      return rows.filter(function(r){
+        return Object.keys(sels).every(function(k){ var v=sels[k].value; return !v || String(r[k]==null?'':r[k])===v; });
+      });
+    }
+    function apply(){ onChange(getFiltered()); }
+    apply();
+    return { getFiltered: getFiltered, apply: apply };
+  }};
+})();
+</script>
+
+<script>
+(function(){
+  var fmt = function(n){ return Number(n||0).toLocaleString(); };
+
+  function renderOffer(TO, root){
+    var set = function(sel, txt){ var el = root.querySelector('[data-el="'+sel+'"]'); if (el) el.textContent = txt; };
+
+
+
+    set('title', TO.name || 'Timed Offer');
+    var sub = root.querySelector('[data-el="sub"]');
+    if (sub) sub.innerHTML = '<b>' + (TO.windowLabel || '') + '</b> · ' + TO.bags.length + ' bags · <b>'
+      + (TO.scopeLabel || TO.market || 'Kenya') + '</b> · sales <b>live from Odoo POS</b> for the exact window · '
+      + 'posting = <b>last week (Kenya)</b>'
+      + (TO.salesLive ? '' : ' · <span style="color:#f87171">DB unreachable — sales showing 0</span>');
+    var cap = root.querySelector('[data-el="chart-cap"]');
+    if (cap) cap.textContent = 'Kenya POS · ' + (TO.windowLabel || 'offer window');
+
+    // ── KPI cards ──
+    var perPost = TO.perPost != null ? TO.perPost.toFixed(1) : '—';
+    // Revenue actually taken on the bags sold (realised incl-tax) — for the reject clearance this
+    // comes from the per-variant rows; shown as a hover on the Bags Sold figure.
+    var _rev = (TO.why && (TO.why.variants || []).length)
+      ? (TO.why.variants || []).reduce(function (a, v) { return a + (v.rev || 0); }, 0) : null;
+    var _revTip = (_rev != null)
+      ? ('Revenue from these ' + fmt(TO.totalSold) + ' bags sold: KES ' + fmt(_rev)
+         + ' (actual realised, incl. tax).').replace(/"/g, '&quot;') : '';
+    var kpis = [
+      ['g', 'Bags Sold',       'green',  fmt(TO.totalSold),  'across ' + TO.bags.length + ' bags, ' + (TO.shops && TO.shops.length ? 'Nairobi CBD' : (TO.market||'Kenya')) + (_rev != null ? ' · hover for revenue' : ''), _revTip],
+      ['c', 'Marketing Posts', 'cyan',   fmt(TO.totalPosts), 'last week, Kenya side'],
+      ['v', 'Bags per Post',   'violet', perPost,            'sales ÷ posts'],
+      ['',  'Top Seller',      '',       TO.bestName || '—', fmt(TO.bestSold) + ' bags sold']
+    ];
+    var kg = root.querySelector('[data-el="kpis"]');
+    if (kg) kg.innerHTML = kpis.map(function(k){
+      return '<div class="card ' + k[0] + '"' + (k[5] ? ' title="' + k[5] + '" style="cursor:help"' : '') + '><div class="k-lbl">' + k[1] + '</div>'
+           + '<div class="k-val ' + k[2] + '">' + k[3] + '</div>'
+           + '<div class="k-sub">' + k[4] + '</div></div>';
+    }).join('');
+
+    // ── Lift: did the offer improve sales? (before vs during) ──
+    var L = TO.lift;
+    if (L && L.basePerDay != null) {
+      var panel = root.querySelector('[data-el="lift-panel"]');
+      if (panel) panel.style.display = '';
+      var up = (L.liftPct || 0) >= 0;
+      var _clr = L.clearanceStart, _cmp = L.cmpNormal;
+      set('lift-cap', _cmp
+        ? ('Normal (full-price) sales of these bag types at ' + (TO.market || 'Kenya') + ' vs the reject clearance, '
+           + L.winStart + ' → ' + L.winEnd + ' (' + L.winDays + ' days), per day — how the clearance moved rejects compared with normal selling of the same bags.')
+        : (_clr
+          ? ('The clearance started ' + _clr + '. Comparing the days before it this month ('
+             + L.baseStart + ' → ' + L.baseEnd + ', ' + L.baseDays + ' days) against the '
+             + L.offerDays + ' clearance days (' + _clr + ' → offer end), per day.')
+          : ('Same bags, ' + (TO.market || 'Kenya') + ' · offer window (' + L.offerDays + ' days) vs the '
+             + L.baseDays + ' pre-offer days this month (' + L.baseStart + ' → ' + L.baseEnd + '), per day.')));
+      var lk = _cmp
+        ? [
+            ['', 'Clearance vs Normal', '', (L.normalPerDay > 0 ? Math.round(L.clearancePerDay / L.normalPerDay * 100) + '%' : '—'), 'clearance ÷ normal, per day'],
+            ['c', 'Normal / day', 'cyan',  (L.normalPerDay).toFixed(1),  fmt(L.normalTotal) + ' full-price over ' + L.winDays + ' days'],
+            ['g', 'Clearance / day', 'green', (L.clearancePerDay).toFixed(1), fmt(L.clearanceTotal) + ' rejects over ' + L.winDays + ' days']
+          ]
+        : [
+            ['', 'Sales Lift', (up ? 'green' : ''), (L.liftPct != null ? (up ? '+' : '') + L.liftPct + '%' : 'n/a'),
+              _clr ? 'clearance vs before, per day' : 'offer vs pre-offer, per day'],
+            ['c', _clr ? 'Before clearance / day' : 'Before (per day)', 'cyan',  (L.basePerDay).toFixed(1),  L.baseTotal + ' over ' + L.baseDays + ' days'],
+            ['g', _clr ? 'During clearance / day' : 'During (per day)', 'green', (L.offerPerDay).toFixed(1), L.offerTotal + ' over ' + L.offerDays + ' days']
+          ];
+      // Bulk / corporate orders in either window → also show the lift without them.
+      if (!_cmp && L.liftPctExBulk !== undefined) {
+        var _xu = (L.liftPctExBulk || 0) >= 0;
+        lk.push(['', 'Without corporate orders', (_xu ? 'green' : ''),
+          (L.liftPctExBulk != null ? (_xu ? '+' : '') + L.liftPctExBulk + '%' : 'n/a'),
+          L.basePerDayExBulk.toFixed(1) + ' → ' + L.offerPerDayExBulk.toFixed(1) + '/day · excl. '
+            + fmt(L.bulkBase + L.bulkOffer) + ' bulk units (lines of ' + (TO.bulkLineQty || 10) + '+)']);
+      }
+      var lg = root.querySelector('[data-el="lift-kpis"]');
+      if (lg) lg.innerHTML = lk.map(function(k){
+        return '<div class="card ' + k[0] + '"><div class="k-lbl">' + k[1] + '</div>'
+             + '<div class="k-val ' + k[2] + '">' + k[3] + '</div><div class="k-sub">' + k[4] + '</div></div>';
+      }).join('');
+
+      var lel = root.querySelector('[data-el="lift-chart"]');
+      if (lel && typeof Chart !== 'undefined' && (L.daily || []).length) {
+        var dd = L.daily;
+        // dashed baseline (pre-offer per-day average) to see the jump
+        var BASE = { id:'baseline', afterDatasetsDraw:function(ch){
+          var y = ch.scales.y.getPixelForValue(L.basePerDay); if (!isFinite(y)) return;
+          var c = ch.ctx, a = ch.chartArea; c.save();
+          c.strokeStyle='#f59e0b'; c.setLineDash([5,4]); c.lineWidth=1.5;
+          c.beginPath(); c.moveTo(a.left,y); c.lineTo(a.right,y); c.stroke();
+          c.setLineDash([]); c.fillStyle='#fbbf24'; c.font='700 0.62rem "Segoe UI",system-ui,sans-serif';
+          c.textAlign='right'; c.fillText('pre-offer avg ' + L.basePerDay.toFixed(0) + '/day', a.right-4, y-6);
+          c.restore();
+        }};
+        var _ds = [{ label: _cmp ? 'Clearance (rejects)' : 'Bags sold', data: dd.map(function(x){ return x.bags; }),
+              backgroundColor: dd.map(function(x){ return x.off ? '#10b981' : '#3b4256'; }),
+              borderRadius:3 }];
+        if (_cmp) _ds.unshift({ label:'Normal (full price)', data: dd.map(function(x){ return x.normal || 0; }),
+              backgroundColor:'#38bdf8', borderRadius:3 });
+        new Chart(lel, { type:'bar', plugins: _cmp ? [] : [BASE],
+          data:{ labels: dd.map(function(x){ return x.date.slice(8); }),   // day-of-month
+            datasets: _ds },
+          options:{ responsive:true, maintainAspectRatio:false,
+            plugins:{ legend:{ display: _cmp, labels:{ color:'#94a3b8', boxWidth:12 } },
+              tooltip:{ backgroundColor:'#1e2130', borderColor:'#2d3148', borderWidth:1,
+                titleColor:'#f8fafc', bodyColor:'#94a3b8', padding:10, cornerRadius:6,
+                callbacks:{ title:function(t){ return dd[t[0].dataIndex].date; },
+                  label:function(c){ var x = dd[c.dataIndex];
+                    if (_cmp) return (c.datasetIndex === 0 ? (x.normal || 0) + ' normal (full price)' : x.bags + ' clearance');
+                    return x.bags + ' bags' + (x.off ? '  · OFFER' : '  · pre-offer'); } } } },
+            scales:{ x:{ grid:{ display:false }, ticks:{ color:'#94a3b8', font:{ size:10 } },
+                         title:{ display:true, text:'Day of ' + (L.baseStart.slice(0,7) || 'month'), color:'#64748b', font:{ size:10 } } },
+                     y:{ beginAtZero:true, grid:{ color:'rgba(45,49,72,0.55)' }, ticks:{ color:'#94a3b8' } } } } });
+      }
+
+      // ── Week by week ──
+      var wk = L.weekly || [];
+      if (wk.length) {
+        var wp = root.querySelector('[data-el="weekly-panel"]'); if (wp) wp.style.display = '';
+        set('weekly-cap', 'Bags/day for the 6 bags, week by week (offer week in green). Steady ≈'
+          + (L.basePerDay).toFixed(0) + '/day, then the offer week jumps.');
+        var wel = root.querySelector('[data-el="weekly-chart"]');
+        if (wel && typeof Chart !== 'undefined') {
+          new Chart(wel, { type:'bar',
+            data:{ labels: wk.map(function(w){ return w.label; }),
+              datasets:[{ label:'Bags/day', data: wk.map(function(w){ return w.perDay; }),
+                backgroundColor: wk.map(function(w){ return w.off ? '#10b981' : '#3b4256'; }), borderRadius:4 }] },
+            options:{ responsive:true, maintainAspectRatio:false,
+              plugins:{ legend:{ display:false },
+                tooltip:{ backgroundColor:'#1e2130', borderColor:'#2d3148', borderWidth:1, titleColor:'#f8fafc', bodyColor:'#94a3b8', padding:10, cornerRadius:6,
+                  callbacks:{ title:function(t){ var w=wk[t[0].dataIndex]; return w.label+' ('+w.start+' → '+w.end+')'; },
+                    label:function(c){ var w=wk[c.dataIndex]; return [w.perDay+' bags/day', w.total+' bags over '+w.days+' days'+(w.off?' · OFFER week':'')]; } } } },
+              scales:{ x:{ grid:{ display:false }, ticks:{ color:'#94a3b8' } },
+                       y:{ beginAtZero:true, grid:{ color:'rgba(45,49,72,0.55)' }, ticks:{ color:'#94a3b8' },
+                           title:{ display:true, text:'bags / day', color:'#64748b', font:{ size:10 } } } } } });
+        }
+      }
+    }
+
+    // ── Why these bags? (stock · price · season · discount check) ──
+    var W = TO.why;
+    if (W && (W.bags || []).length) {
+      var wpn = root.querySelector('[data-el="why-panel"]'); if (wpn) wpn.style.display = '';
+      var wtb = root.querySelector('[data-el="why-tbody"]');
+      if (wtb) {
+        var _flt = root.querySelector('[data-el="why-filter"]');
+        var _headRow = root.querySelector('[data-el="why-head-row"]');
+        var _totRow = root.querySelector('[data-el="why-total-row"]');
+        var _sortSel = root.querySelector('[data-el="why-sort"]');
+        // Per-variant rows (reject clearance) → filterable by Colour / Category / Product / Bag Type.
+        var _variants = (W.variants || []).filter(function (v) { return (v.sold || 0) > 0 || (v.stock || 0) > 0; });
+        if (_variants.length) {
+          if (_headRow) _headRow.innerHTML =
+            '<th>Product</th><th>Colour</th><th>Bag Type</th>'
+            + '<th class="r">Sold</th><th class="r">In stock</th><th class="r">Price was</th>'
+            + '<th class="r">Price now</th><th class="r">Discount</th><th>Category</th>';
+          var _vRow = function (v) {
+            var was = v.priceWas != null ? 'KES ' + fmt(v.priceWas) : '<span style="color:#64748b">—</span>';
+            var now = v.priceNow != null ? 'KES ' + fmt(v.priceNow) : '<span style="color:#64748b">—</span>';
+            var disc = (v.discountKes != null && v.discountKes > 0)
+              ? '<span style="color:#34d399;font-weight:700">−' + fmt(v.discountKes) + '</span> <span style="color:#94a3b8;font-size:0.74rem">(' + v.discountPct + '%)</span>'
+              : '<span style="color:#64748b">—</span>';
+            return '<tr><td class="name">' + (v.product || '') + '</td>'
+              + '<td>' + (v.colour || '<span style="color:#64748b">—</span>') + '</td>'
+              + '<td>' + (v.bagType || '') + '</td>'
+              + '<td class="r">' + fmt(v.sold) + '</td>'
+              + '<td class="r">' + fmt(v.stock) + '</td>'
+              + '<td class="r">' + was + '</td>'
+              + '<td class="r">' + now + '</td>'
+              + '<td class="r">' + disc + '</td>'
+              + '<td>' + (v.category || '') + '</td></tr>';
+          };
+          var _renderVars = function (list, sortV) {
+            var m = String(sortV || 'sold-desc').replace(/-(desc|asc)$/, '');
+            var asc = /-asc$/.test(sortV || '');
+            var key = function (x) { return m === 'stock' ? (x.stock || 0) : (m === 'disc' ? (x.discountKes || 0) : (x.sold || 0)); };
+            var sorted = list.slice().sort(function (a, b) { var d = key(a) - key(b); return asc ? d : -d; });
+            wtb.innerHTML = sorted.map(_vRow).join('') || '<tr><td colspan="9" style="color:#64748b;padding:0.8rem">No rows match these filters.</td></tr>';
+            // Totals recompute over the (filtered) list.
+            var tSold = 0, tStock = 0, revWas = 0, revNow = 0;
+            list.forEach(function (x) {
+              tSold += (x.sold || 0); tStock += (x.stock || 0);
+              var w = (x.priceWas != null) ? x.priceWas : x.priceNow, nw = (x.priceNow != null) ? x.priceNow : x.priceWas;
+              if (w != null) { revWas += (x.sold || 0) * w; revNow += (x.sold || 0) * Math.min(nw != null ? nw : w, w); }
+            });
+            var cleared = (tSold + tStock) > 0 ? Math.round(tSold / (tSold + tStock) * 100) : 0;
+            var discTot = Math.max(0, Math.round(revWas - revNow));
+            var tip = ('Totals (current filter) — ' + fmt(tSold) + ' sold · ' + fmt(tStock) + ' still in stock · '
+              + cleared + '% of the clearance sold (sold ÷ sold+stock). Revenue: was KES ' + fmt(Math.round(revWas))
+              + ' → now KES ' + fmt(Math.round(revNow)) + ' · discount given KES ' + fmt(discTot) + '.').replace(/"/g, '&quot;');
+            if (_totRow) {
+              _totRow.innerHTML = '<td class="name">TOTAL <span style="color:#64748b;font-weight:400">ⓘ</span></td>'
+                + '<td></td><td></td>'
+                + '<td class="r">' + fmt(tSold) + '</td>'
+                + '<td class="r">' + fmt(tStock) + '</td>'
+                + '<td class="r">KES ' + fmt(Math.round(revWas)) + '</td>'
+                + '<td class="r">KES ' + fmt(Math.round(revNow)) + '</td>'
+                + '<td class="r" style="color:#34d399">−' + fmt(discTot) + '</td>'
+                + '<td class="r" style="color:#fbbf24">' + cleared + '% cleared</td>';
+              _totRow.style.cursor = 'help'; _totRow.title = tip;
+            }
+          };
+          var _curVars = _variants.slice();
+          if (_flt && window.DenriTableFilter) {
+            _flt.style.display = '';
+            window.DenriTableFilter.attach({
+              bar: _flt, rows: _variants,
+              dims: [{ key: 'colour', label: 'Colour' }, { key: 'category', label: 'Category' },
+                     { key: 'product', label: 'Product' }, { key: 'bagType', label: 'Bag Type' }],
+              onChange: function (f) { _curVars = f; _renderVars(_curVars, _sortSel ? _sortSel.value : 'sold-desc'); }
+            });
+          } else {
+            _renderVars(_curVars, 'sold-desc');
+          }
+          if (_sortSel) _sortSel.addEventListener('change', function () { _renderVars(_curVars, this.value); });
+        } else {
+        if (_flt) _flt.style.display = 'none';
+        // Only bags with real activity (sold or still in stock) — for the Kitengela offer these
+        // are the reject bags; drops the noise of zero rows.
+        var _wb = (W.bags || []).filter(function (b) { return (b.sold || 0) > 0 || (b.stock || 0) > 0; });
+        var _rowHtml = function (b) {
+          var was = b.priceWas != null ? 'KES ' + fmt(b.priceWas) : '—';
+          var now = b.priceNow != null ? 'KES ' + fmt(b.priceNow) : '—';
+          var disc = (b.discountKes != null && b.discountKes > 0)
+            ? '<span style="color:#34d399;font-weight:700">−' + fmt(b.discountKes) + '</span> <span style="color:#94a3b8;font-size:0.74rem">(' + b.discountPct + '%)</span>'
+            : '<span style="color:#64748b">—</span>';
+          // Sales lift — the bag's own pace change (green up / red down)
+          var lift;
+          if (b.bagLift == null) lift = '<span style="color:#64748b">—</span>';
+          else { var up = b.bagLift >= 0;
+            lift = '<span style="color:' + (up ? '#34d399' : '#f87171') + ';font-weight:700">' + (up ? '+' : '') + b.bagLift + '%</span>'; }
+          // Bulk / corporate order behind the lift: flag it, say which order, and show the
+          // walk-in lift without it underneath.
+          if (b.bulk && b.bulk.length) {
+            var _btip = 'Corporate / bulk order' + (b.bulk.length > 1 ? 's' : '') + ' in this lift:\n'
+              + b.bulk.map(function (x) {
+                  return '• ' + fmt(x.qty) + ' × ' + x.product + ' — ' + x.order + ' (' + x.till + '), ' + x.date
+                    + ', KES ' + fmt(x.value) + ' — ' + (x.window === 'before' ? 'BEFORE the offer (inflates the baseline)' : 'DURING the offer (inflates the offer pace)');
+                }).join('\n')
+              + '\n\nWithout it: ' + (b.bagLiftExBulk == null ? 'n/a' : (b.bagLiftExBulk >= 0 ? '+' : '') + b.bagLiftExBulk + '%') + ' (walk-in pace only).';
+            var _exUp = (b.bagLiftExBulk || 0) >= 0;
+            lift = '<span title="' + _btip.replace(/"/g, '&quot;') + '" style="cursor:help">' + lift
+              + ' <span style="color:#fbbf24">⚠</span>'
+              + '<div style="font-size:0.7rem;color:#94a3b8;font-weight:400;white-space:nowrap">'
+              + (b.bagLiftExBulk == null ? 'n/a' : '<b style="color:' + (_exUp ? '#34d399' : '#f87171') + '">' + (_exUp ? '+' : '') + b.bagLiftExBulk + '%</b>')
+              + ' without corporate order</div></span>';
+          }
+          // "Other rejects" = [REJECT] units whose product name didn't map to a listed bag
+          // (colour/plural variants); shown italic with a hint so the total stays honest.
+          var nameCell = b.isOther
+            ? '<span style="font-style:italic;color:#cbd5e1" title="Reject units sold whose Odoo product name doesn&#39;t match a listed reject bag (colour/condition or plural spellings, e.g. Moon Bag vs Moon Bags, Mega vs Mega Bagpack, Standard Travel vs Travel). Counted so the total reflects every reject sold.">' + b.name + ' <span style="color:#64748b;font-weight:400">ⓘ</span></span>'
+            : b.name;
+          return '<tr><td class="name">' + nameCell + '</td>'
+            + '<td class="r">' + fmt(b.sold) + '</td>'
+            + '<td class="r">' + fmt(b.stock) + '</td>'
+            + '<td class="r">' + was + '</td>'
+            + '<td class="r">' + now + '</td>'
+            + '<td class="r">' + disc + '</td>'
+            + '<td class="r">' + lift + '</td>'
+            + '<td>' + (b.category || '') + '</td></tr>';
+        };
+        // Totals row + hover: units, stock, revenue was→now, discount given, and % cleared.
+        var tSold = 0, tStock = 0, revWas = 0, revNow = 0;
+        _wb.forEach(function (b) {
+          tSold += (b.sold || 0); tStock += (b.stock || 0);
+          var w = (b.priceWas != null) ? b.priceWas : b.priceNow;
+          var nw = (b.priceNow != null) ? b.priceNow : b.priceWas;
+          // Guard against stray pricelist values: a clearance "now" can't exceed the "was".
+          if (w != null) { revWas += (b.sold || 0) * w; revNow += (b.sold || 0) * Math.min(nw != null ? nw : w, w); }
+        });
+        var cleared = (tSold + tStock) > 0 ? Math.round(tSold / (tSold + tStock) * 100) : 0;
+        var discTot = Math.max(0, Math.round(revWas - revNow));
+        var totTip = ('Totals — ' + fmt(tSold) + ' sold · ' + fmt(tStock) + ' still in stock · '
+          + cleared + '% of the clearance sold (sold ÷ sold+stock). Revenue: was KES ' + fmt(Math.round(revWas))
+          + ' (full price of the units sold) → now KES ' + fmt(Math.round(revNow)) + ' (clearance) · discount given KES '
+          + fmt(discTot) + '.').replace(/"/g, '&quot;');
+        // TOTAL row lives in the (sticky) thead so it stays pinned on top while the body scrolls.
+        var _totCells = '<td class="name">TOTAL <span style="color:#64748b;font-weight:400">ⓘ</span></td>'
+          + '<td class="r">' + fmt(tSold) + '</td>'
+          + '<td class="r">' + fmt(tStock) + '</td>'
+          + '<td class="r">KES ' + fmt(Math.round(revWas)) + '</td>'
+          + '<td class="r">KES ' + fmt(Math.round(revNow)) + '</td>'
+          + '<td class="r" style="color:#34d399">−' + fmt(discTot) + '</td>'
+          + '<td class="r" style="color:#fbbf24">' + cleared + '% cleared</td>'
+          + '<td></td>';
+        var _totRow = root.querySelector('[data-el="why-total-row"]');
+        if (_totRow) { _totRow.innerHTML = _totCells; _totRow.style.cursor = 'help'; _totRow.title = totTip; }
+        // Sort the body rows by the chosen key; "Other rejects" always sinks to the bottom
+        // (it's a catch-all, not a real bag).
+        var _renderWhy = function (sortV) {
+          var m = String(sortV || 'sold-desc').replace(/-(desc|asc)$/, '');
+          var asc = /-asc$/.test(sortV || '');
+          var val = function (b) {
+            if (m === 'stock') return b.stock || 0;
+            if (m === 'disc') return b.discountKes || 0;
+            return b.sold || 0;
+          };
+          var sorted = _wb.slice().sort(function (a, b) {
+            if (!!a.isOther !== !!b.isOther) return a.isOther ? 1 : -1;   // Other last
+            var d = val(a) - val(b);
+            return asc ? d : -d;
+          });
+          wtb.innerHTML = sorted.map(_rowHtml).join('');
+        };
+        if (_sortSel) _sortSel.addEventListener('change', function () { _renderWhy(this.value); });
+        _renderWhy(_sortSel ? _sortSel.value : 'sold-desc');
+        }
+      }
+      var ins = root.querySelector('[data-el="why-insights"]');
+      if (ins) ins.innerHTML = (W.insights || []).map(function(x){
+        return '<div style="display:flex;gap:0.6rem;align-items:flex-start;padding:0.55rem 0;border-top:1px solid #262a3d">'
+          + '<span style="flex-shrink:0;font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;'
+          + 'color:#fbbf24;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:5px;padding:0.12rem 0.5rem">'
+          + x.tag + '</span><span style="font-size:0.86rem;color:#cbd5e1;line-height:1.55">' + x.text + '</span></div>';
+      }).join('');
+      var vd = root.querySelector('[data-el="why-verdict"]');
+      if (vd) vd.innerHTML = W.verdict || '';
+    }
+
+    // ── Clearance rate — % cleared per bag type / category (sold ÷ sold+stock) ──
+    var CV = (W && W.variants) || [];
+    if (CV.length) {
+      var cpn = root.querySelector('[data-el="clearance-panel"]'); if (cpn) cpn.style.display = '';
+      var _ccChart = null;
+      var drawClearance = function (mode) {
+        var gkey = (mode === 'category') ? 'category' : 'bagType';
+        var agg = {};
+        CV.forEach(function (v) {
+          var g = (v[gkey] || '—');
+          var e = agg[g] || (agg[g] = { sold: 0, stock: 0 });
+          e.sold += (v.sold || 0); e.stock += (v.stock || 0);
+        });
+        var rows = Object.keys(agg).map(function (g) {
+          var e = agg[g], tot = e.sold + e.stock;
+          return { g: g, pct: tot ? Math.round(e.sold / tot * 100) : 0, sold: e.sold, stock: e.stock, tot: tot };
+        }).filter(function (r) { return r.tot > 0; }).sort(function (a, b) { return b.pct - a.pct; });
+        var el = root.querySelector('[data-el="clearance-chart"]');
+        var wrap = root.querySelector('[data-el="clearance-wrap"]');
+        if (!el || typeof Chart === 'undefined') return;
+        if (wrap) wrap.style.height = Math.max(220, rows.length * 26 + 30) + 'px';
+        if (_ccChart) _ccChart.destroy();
+        _ccChart = new Chart(el, {
+          type: 'bar',
+          data: { labels: rows.map(function (r) { return r.g; }),
+            datasets: [{ label: '% cleared', data: rows.map(function (r) { return r.pct; }),
+              backgroundColor: rows.map(function (r) { return r.pct >= 80 ? '#34d399' : (r.pct >= 50 ? '#fbbf24' : '#f87171'); }),
+              borderRadius: 4, barThickness: 'flex', maxBarThickness: 18 }] },
+          options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            scales: { x: { min: 0, max: 100, ticks: { callback: function (v) { return v + '%'; }, color: '#64748b' }, grid: { color: '#20242f' } },
+                      y: { ticks: { color: '#cbd5e1', font: { size: 11 } }, grid: { display: false } } },
+            plugins: { legend: { display: false },
+              tooltip: { callbacks: { label: function (c) { var r = rows[c.dataIndex];
+                return r.pct + '% cleared — ' + fmt(r.sold) + ' sold of ' + fmt(r.tot) + ' (' + fmt(r.stock) + ' still in stock)'; } } } } },
+          plugins: [{ id: 'pctlabel', afterDatasetsDraw: function (ch) {
+            var c = ch.ctx, meta = ch.getDatasetMeta(0);
+            c.save(); c.font = '700 11px "Segoe UI", system-ui, sans-serif'; c.textBaseline = 'middle'; c.textAlign = 'left';
+            meta.data.forEach(function (bar, i) {
+              var r = rows[i]; c.fillStyle = r.pct >= 80 ? '#34d399' : (r.pct >= 50 ? '#fbbf24' : '#f87171');
+              c.fillText(r.pct + '%', bar.x + 6, bar.y);
+            });
+            c.restore();
+          } }]
+        });
+      };
+      var _cmSel = root.querySelector('[data-el="clearance-mode"]');
+      if (_cmSel) _cmSel.addEventListener('change', function () { drawClearance(this.value); });
+      drawClearance(_cmSel ? _cmSel.value : 'product');
+    }
+
+    // ── Price week by week (realised avg vs list/offer) ──
+    var PW = W && W.priceWeeks;
+    if (PW && (PW.bags || []).length && (PW.weeks || []).length) {
+      var pwp = root.querySelector('[data-el="priceweeks-panel"]'); if (pwp) pwp.style.display = '';
+      var offCol = 'background:rgba(16,185,129,0.10)';
+      var head = root.querySelector('[data-el="pw-head"]');
+      if (head) head.innerHTML = '<tr><th>Bag</th>'
+        + PW.weeks.map(function(w){ return '<th class="r" title="' + w.start + ' → ' + w.end + '"'
+            + (w.off ? ' style="' + offCol + ';color:#34d399"' : '') + '>' + w.label + (w.off ? ' ·offer' : '') + '</th>'; }).join('')
+        + '<th class="r">Was</th><th class="r">Now</th></tr>';
+      var body = root.querySelector('[data-el="pw-body"]');
+      if (body) body.innerHTML = PW.bags.map(function(b){
+        var cells = b.cells.map(function(c, i){
+          var off = PW.weeks[i] && PW.weeks[i].off;
+          if (c.avg == null) return '<td class="r"' + (off ? ' style="' + offCol + '"' : '') + '><span style="color:#475569">—</span></td>';
+          var col = '#94a3b8';                                   // ~full price
+          if (b.now && c.avg <= b.now * 1.03) col = '#34d399';   // at/below offer
+          else if (b.was && c.avg < b.was * 0.97) col = '#fbbf24'; // part-way
+          return '<td class="r"' + (off ? ' style="' + offCol + '"' : '') + '>'
+            + '<span style="color:' + col + ';font-weight:700">' + fmt(c.avg) + '</span>'
+            + ' <span style="color:#64748b;font-size:0.72rem">(' + fmt(c.qty) + ')</span></td>';
+        }).join('');
+        return '<tr><td class="name">' + b.name + '</td>' + cells
+          + '<td class="r" style="color:#94a3b8">' + (b.was != null ? fmt(b.was) : '—') + '</td>'
+          + '<td class="r" style="color:#34d399">' + (b.now != null ? fmt(b.now) : '—') + '</td></tr>';
+      }).join('');
+    }
+
+    // ── Table ──
+    var tb = root.querySelector('[data-el="tbody"]');
+    if (tb) tb.innerHTML = TO.bags.map(function(b){
+      var pp = b.perPost != null ? b.perPost.toFixed(1) : '—';
+      var postsCell = b.posts > 0 ? fmt(b.posts) : '<span class="zero">0</span>';
+      return '<tr><td class="name">' + b.name + '</td>'
+           + '<td class="r">' + fmt(b.sold) + '</td>'
+           + '<td class="r">' + postsCell + '</td>'
+           + '<td class="r">' + pp + '</td></tr>';
+    }).join('') + '<tr style="border-top:2px solid #2d3148"><td class="name">Total</td>'
+      + '<td class="r" style="font-weight:800;color:#f8fafc">' + fmt(TO.totalSold) + '</td>'
+      + '<td class="r" style="font-weight:800;color:#f8fafc">' + fmt(TO.totalPosts) + '</td>'
+      + '<td class="r">' + perPost + '</td></tr>';
+
+    // ── Note ──
+    var zeros = TO.bags.filter(function(b){ return b.posts === 0 && b.sold > 0; }).map(function(b){ return b.name; });
+    var note = root.querySelector('[data-el="note"]');
+    if (note) {
+      var msg = '<b>Reading it:</b> ' + fmt(TO.totalSold) + ' bags moved on ' + fmt(TO.totalPosts)
+        + ' Kenya posts (' + perPost + ' bags per post). ';
+      if (zeros.length) msg += '<b>' + zeros.join(' and ') + '</b> sold with <b>0 recorded posts</b> — moving without marketing. ';
+      msg += 'Sales are the exact ' + (TO.windowLabel || 'window') + ' from Odoo (Sinza/Uganda tills excluded, combos/delivery/samples filtered). '
+        + 'Posting is the last week’s Kenya figure from the marketing sheet — the closest available, since posts aren’t stored per day.';
+      note.innerHTML = msg;
+    }
+
+    // ── Chart: bags sold per bag (single series, direct labels) ──
+    var el = root.querySelector('[data-el="chart"]');
+    if (el && typeof Chart !== 'undefined' && TO.bags.length) {
+      var rows = TO.bags.slice();   // already sorted by sold desc
+      var VAL = { id:'v', afterDatasetsDraw:function(ch){
+        var c = ch.ctx, m = ch.getDatasetMeta(0); c.save();
+        c.font='700 0.66rem "Segoe UI", system-ui, sans-serif'; c.fillStyle='#f8fafc';
+        c.textAlign='left'; c.textBaseline='middle';
+        m.data.forEach(function(bar,i){ var v = rows[i].sold; if (v==null) return;
+          c.fillText(fmt(v), bar.x + 6, bar.y); });
+        c.restore();
+      }};
+      new Chart(el, { type:'bar', plugins:[VAL],
+        data:{ labels: rows.map(function(r){ return r.name; }),
+          datasets:[{ label:'Bags sold', data: rows.map(function(r){ return r.sold; }),
+            backgroundColor:'#10b981', borderRadius:4, maxBarThickness:34 }] },
+        options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+          layout:{ padding:{ right: 42 } },
+          interaction:{ mode:'index', axis:'y', intersect:false },
+          plugins:{ legend:{ display:false },
+            tooltip:{ backgroundColor:'#1e2130', borderColor:'#2d3148', borderWidth:1,
+              titleColor:'#f8fafc', bodyColor:'#94a3b8', padding:10, cornerRadius:6,
+              callbacks:{ label:function(c){ var r = rows[c.dataIndex];
+                return [ fmt(r.sold) + ' bags sold',
+                         (r.posts>0 ? r.posts + ' posts · ' + (r.perPost!=null?r.perPost.toFixed(1):'—') + ' sold/post'
+                                    : '0 posts — sold without marketing') ]; } } } },
+          scales:{ x:{ beginAtZero:true, grid:{ color:'rgba(45,49,72,0.55)' }, ticks:{ color:'#94a3b8' } },
+                   y:{ grid:{ display:false }, ticks:{ color:'#cbd5e1', font:{ size:12 } } } } } });
+    }
+
+  }
+
+  // ── Driver: stack every offer in the month ──
+  var LIST = (typeof TO_LIST !== 'undefined' && TO_LIST) ? TO_LIST
+           : ((typeof TO !== 'undefined' && TO) ? [TO] : []);
+  var month = (typeof TO_DATA !== 'undefined' && TO_DATA && TO_DATA.month) ? TO_DATA.month : '';
+  var monthLbl = '';
+  if (month) { var dp = new Date(month + '-01T00:00:00');
+    if (!isNaN(dp)) monthLbl = dp.toLocaleDateString(undefined, {month:'long', year:'numeric'}); }
+  var pt = document.getElementById('page-title');
+  if (pt) pt.textContent = 'Timed Offers' + (monthLbl ? ' \u2014 ' + monthLbl : '');
+  var ps = document.getElementById('page-sub');
+  if (ps) ps.innerHTML = LIST.length
+    ? '<b>' + LIST.length + '</b> offer' + (LIST.length > 1 ? 's' : '') + ' this month \u00b7 sales <b>live from Odoo POS</b> for each exact window \u00b7 stacked below'
+    : '';
+  var cont = document.getElementById('to-offers');
+  var tpl  = document.getElementById('to-offer-tpl');
+  if (!LIST.length) {
+    var emp = document.getElementById('to-empty'); if (emp) emp.style.display = '';
+  } else if (cont && tpl) {
+    LIST.forEach(function(offer){
+      if (!offer) return;
+      var node = tpl.content.firstElementChild.cloneNode(true);
+      cont.appendChild(node);
+      renderOffer(offer, node);
+    });
+  }
+})();
+</script>
+
+<!-- Page sidebar (page_sidebar.js): each offer, with its panels underneath, and scroll-spy -->
+<script src="../assets/page_sidebar.js"></script>
+<script>
+  PageSidebar.init({
+    content: 'body > .wrap',
+    label: 'Timed Offers navigation',
+    collapseSubs: true,
+    sections: function () {
+      var out = [], cols = ['#f59e0b', '#22d3ee', '#a78bfa', '#34d399', '#f472b6'];
+      document.querySelectorAll('#to-offers > .offer').forEach(function (offer, i) {
+        var t = offer.querySelector('[data-el="title"]');
+        var col = cols[i % cols.length];
+        // 'KES 300 Off — Bags Not On Offer (CBD)' → 'KES 300 Off (CBD)': short, but still tells offers apart
+        var full = (t ? t.textContent : 'Offer ' + (i + 1)).trim(), tag = full.match(/\(([^)]*)\)\s*$/);
+        out.push({ el: offer, num: String(i + 1), color: col, name: full.split(' — ')[0].trim() + (tag && full.indexOf(' — ') > 0 ? ' (' + tag[1] + ')' : '') });
+        offer.querySelectorAll('.panel > h2').forEach(function (h) {
+          if (h.parentElement.offsetParent === null) return;   // panels this offer doesn't use stay hidden
+          out.push({ el: h.parentElement, num: '·', sub: true, color: '#475569', name: h.textContent.split(' — ')[0].trim() });
+        });
+      });
+      return out;
+    }
+  });
+</script>
+</body>
+</html>

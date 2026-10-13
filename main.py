@@ -21,6 +21,8 @@ from datetime import date
 from urllib.parse import urlparse, parse_qs
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE_DIR)
+from lib import paths   # noqa: E402  (generators/, html/, data/ — see lib/paths.py)
 PORT     = 8765
 
 SCRIPTS = [
@@ -35,7 +37,7 @@ SCRIPTS = [
     ("Self Made Combos",       "self_made_combos.py"),
     # Reads bags_offer_source.json that self_made_combos.py just wrote — keep it right after.
     ("Bags On vs Off Offer",   "bags_on_offer.py"),
-    ("Posting Yields",         "POSTING (SALES YIELDS FROM ACCURATE POSTING).py"),
+    ("Posting Yields",         "posting_yields.py"),
     # Live dispatch/receiving from Odoo — shops_efficiency.py reads its JSON.
     ("Shops Dispatch (Postgres)", "shops_dispatch.py"),
     ("Shops Efficiency",       "shops_efficiency.py"),
@@ -103,7 +105,7 @@ def _is_transient(result):
 def run_scripts():
     print("\n  Refreshing dashboards... (each can take up to 2 minutes — please wait)\n", flush=True)
     for i, (label, script) in enumerate(SCRIPTS):
-        path = os.path.join(BASE_DIR, script)
+        path = paths.generator(script)
         if not os.path.exists(path):
             print(f"    - {label:32s} (script not found, skipped)")
             continue
@@ -143,7 +145,7 @@ def _offer_active_today():
     """True if ANY timed-offer window is set and today falls inside it.
     Handles the multi-offer config ({"offers": [...]}) and the legacy single-offer
     file ({"startDate", "endDate"})."""
-    cfg_path = os.path.join(BASE_DIR, "timed_offers_config.json")
+    cfg_path = paths.data("timed_offers_config.json")
     try:
         with open(cfg_path, "r", encoding="utf-8") as f:
             raw = json.load(f)
@@ -165,7 +167,7 @@ def start_daily_snapshot():
     timed_offers.py so it records that day's shop-scoped snapshot. Runs in the
     background for as long as the dashboard server is up (records only on days
     the dashboard is left running — see SETUP.md for the always-on option)."""
-    to_py = os.path.join(BASE_DIR, "timed_offers.py")
+    to_py = paths.generator("timed_offers.py")
     last_date = date.today()   # startup run_scripts() already recorded today
     while True:
         time.sleep(1800)       # check twice an hour so a day-rollover is caught promptly
@@ -198,7 +200,7 @@ SCRIPT_MAP = {
     "self_made_combos.html":                                ["self_made_combos.py"],
     "bags_on_offer.html":                                   ["self_made_combos.py",
                                                              "bags_on_offer.py"],
-    "POSTING (SALES YIELDS FROM ACCURATE POSTING).html":   ["POSTING (SALES YIELDS FROM ACCURATE POSTING).py"],
+    "posting_yields.html":                                  ["posting_yields.py"],
     "shops_efficiency.html":                                ["shops_dispatch.py",
                                                              "shops_efficiency.py"],
     "push_planner.html":                                    ["push_planner.py"],
@@ -259,7 +261,7 @@ def start_server():
             """GET (no params) → return the current timed-offer config.
             GET with save=1&shops=..&start=..&end=.. → write it + re-run the
             generator so the page reflects the new shops/window immediately."""
-            cfg_path = os.path.join(BASE_DIR, "timed_offers_config.json")
+            cfg_path = paths.data("timed_offers_config.json")
             if params.get("save"):
                 shops_raw = params.get("shops", ["ALL"])[0].strip()
                 start = params.get("start", [""])[0].strip()
@@ -289,7 +291,7 @@ def start_server():
                     self._json(500, {"ok": False, "error": str(exc)})
                     return
                 # Re-run the generator so the injected data + snapshot update now.
-                to_py = os.path.join(BASE_DIR, "timed_offers.py")
+                to_py = paths.generator("timed_offers.py")
                 try:
                     result = subprocess.run(
                         [sys.executable, to_py], cwd=BASE_DIR, timeout=90,
@@ -336,7 +338,7 @@ def start_server():
                 return
 
             for script in scripts:
-                script_path = os.path.join(BASE_DIR, script)
+                script_path = paths.generator(script)
                 if not os.path.exists(script_path):
                     self._json(404, {"ok": False, "error": f"Script not found: {script}"})
                     return
@@ -471,14 +473,14 @@ if __name__ == "__main__":
         # Record a timed-offer snapshot once a day while the server is running
         threading.Thread(target=start_daily_snapshot, daemon=True).start()
 
-        url = f"http://127.0.0.1:{PORT}/shell.html"
+        url = f"http://127.0.0.1:{PORT}/html/shell.html"
         print(f"  Server running at {url}")
 
         # Network sharing: show the URL colleagues on the same LAN can open
         lan_ip = get_lan_ip()
         if lan_ip:
             fw_ok = ensure_firewall_rule()
-            print(f"  Share on your network: http://{lan_ip}:{PORT}/shell.html")
+            print(f"  Share on your network: http://{lan_ip}:{PORT}/html/shell.html")
             if not fw_ok:
                 print("    (if others can't connect, allow Python through the")
                 print("     Windows Firewall prompt, or run this once as admin:")

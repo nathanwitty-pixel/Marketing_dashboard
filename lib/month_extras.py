@@ -5,7 +5,7 @@ supabase_migration.py writes them to denri_mkt_monthly.extras (jsonb); history.h
 inside the month's own sections:
 
   deals        → section 3 (Offer Type): Power Deals vs Deal of the Week — Kenya   (self_made_combos.html · SMC.deals)
-  posting      → section 4 (Posting Yields): posting yield + dead stock clearance, per region (POSTING….html · PA)
+  posting      → section 4 (Posting Yields): posting yield + dead stock clearance, per region (posting_yields.html · PA)
   selfMadeMore → section 6 (Self-Made Combos): monetary implication, combos goal, combo button usage (SMC)
   bagsOnOffer  → section 7 (Bags On vs Off Offer)                                   (bags_on_offer.html · BOO)
 
@@ -19,7 +19,7 @@ import json
 import os
 import re
 
-POSTING_HTML = "POSTING (SALES YIELDS FROM ACCURATE POSTING).html"
+POSTING_HTML = "posting_yields.html"
 
 
 def _block(path: str, name: str):
@@ -128,7 +128,8 @@ def _bags_on_offer(boo: dict):
 
 
 def build_extras(base: str, month_name: str, year: int, warn=print) -> dict:
-    """Everything above for `month_name year` (e.g. "September", 2026). Pages for another month are skipped."""
+    """Everything above for `month_name year` (e.g. "September", 2026). Pages for another month are skipped.
+    `base` is the folder holding the built pages (paths.HTML)."""
     label = f"{month_name} {year}"
     smc = _block(os.path.join(base, "self_made_combos.html"), "SMC") or {}
     boo = _block(os.path.join(base, "bags_on_offer.html"), "BOO") or {}

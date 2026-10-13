@@ -95,8 +95,8 @@ Opening anniversaries from [shop-birthdays.md](shop-birthdays.md) (shown from 30
 ## Regenerate
 
 ```
-python shops_dispatch.py          # refresh dispatch/receiving/sold from Odoo
-python shops_efficiency.py
+python generators/shops_dispatch.py          # refresh dispatch/receiving/sold from Odoo
+python generators/shops_efficiency.py
 ```
 </content>
 </invoke>

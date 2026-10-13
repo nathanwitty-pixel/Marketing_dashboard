@@ -305,7 +305,7 @@ Period dropdown. Data: `NP.shopSales[period].colours = {PRODUCT: {CODE: [[colour
 ## Regenerate
 
 ```
-python new_products.py            # DENRI_LAUNCHER=1 to skip the browser tab
+python generators/new_products.py            # DENRI_LAUNCHER=1 to skip the browser tab
 ```
 Console prints the sold + lifetime match per product (watch for "(no Odoo match)").
 </content>

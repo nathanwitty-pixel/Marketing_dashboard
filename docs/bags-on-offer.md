@@ -56,8 +56,8 @@ From / To picker (quick picks: last 7 / 30 days, last month, this month). Apply 
 **Custom (dd Mon – dd Mon)** and selects it. (The separate date bar above the page was removed Oct 2026 —
 [README › Custom range](README.md#custom-range-oct-2026).)
 The range stays (auto-refresh keeps rebuilding it) until a new one is applied or **Clear** is
-pressed (deletes the file). Locally: `python bags_on_offer.py 2026-09-15 2026-10-03` (or
-`python bags_on_offer.py clear`). Days of any month whose offer list is archived
+pressed (deletes the file). Locally: `python generators/bags_on_offer.py 2026-09-15 2026-10-03` (or
+`python generators/bags_on_offer.py clear`). Days of any month whose offer list is archived
 (`bags_offer_source_<YYYY-MM>.json`) use that month's list; other months fall back to the
 current month's list (the build log says which). The Offer type › weekly split stays Monthly-only.
 
@@ -422,8 +422,8 @@ bulk: {receipts, bags, revenue}}`. Built by `receipt_combos.offer_split()`, a pu
 ## Regenerate
 
 ```
-python self_made_combos.py    # writes bags_offer_source.json (on-offer set + not-on-offer list)
-python bags_on_offer.py       # DENRI_LAUNCHER=1 to skip the browser tab
+python generators/self_made_combos.py    # writes bags_offer_source.json (on-offer set + not-on-offer list)
+python generators/bags_on_offer.py       # DENRI_LAUNCHER=1 to skip the browser tab
 ```
 If `bags_offer_source.json` is missing or older than 15 minutes, `bags_on_offer.py` rebuilds it
 live by running `self_made_combos.fetch()`.

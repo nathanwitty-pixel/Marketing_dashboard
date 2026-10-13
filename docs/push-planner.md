@@ -148,9 +148,9 @@ Opening anniversaries from [shop-birthdays.md](shop-birthdays.md) (shown from 30
 ## Regenerate
 
 ```
-python push_planner.py              # build the page (~20–35 s once Laya's answers are cached)
-python push_planner.py --dry-run    # print the summary, write nothing
-python push_planner.py --no-laya    # skip Laya
+python generators/push_planner.py              # build the page (~20–35 s once Laya's answers are cached)
+python generators/push_planner.py --dry-run    # print the summary, write nothing
+python generators/push_planner.py --no-laya    # skip Laya
 python -m pytest tests/test_push_planner.py -q
 python -m lib.laya --selftest
 ```

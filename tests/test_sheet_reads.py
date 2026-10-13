@@ -1,6 +1,6 @@
 """Guard: the dashboard reads ONLY three Google-Sheet tabs — MONTHLY_TARGET, MONTHLY_MARKETING_POST,
 WEEKLY_MARKETING_POST — of the main spreadsheet (docs/README.md › Where the data comes from).
-Fails if live code (not export/, tests/) reads another tab, a range of another tab, or another sheet.
+Fails if live code (not export/, archive/, tests/) reads another tab, a range of another tab, or another sheet.
     python -m pytest tests/test_sheet_reads.py -q
 """
 import os
@@ -9,7 +9,7 @@ import re
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ALLOWED_TABS = {"MONTHLY_TARGET", "MONTHLY_MARKETING_POST", "WEEKLY_MARKETING_POST"}
 MAIN_SHEET = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
-SKIP = ("export", "tests", "graphify-out", ".git", "__pycache__", ".claude")
+SKIP = ("export", "archive", "tests", "graphify-out", ".git", "__pycache__", ".claude")
 
 
 def _sources():

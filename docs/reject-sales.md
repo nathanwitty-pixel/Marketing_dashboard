@@ -83,7 +83,7 @@ Briefcase, Chest Bag, Lunch Bag, Waist Bag, Baby Bag, Messenger, Sport, Washbag.
 
 ## Regenerating
 
-`python reject_sales.py` (NAV entry **Products → Reject Sale**, dependency
+`python generators/reject_sales.py` (NAV entry **Products → Reject Sale**, dependency
 `["reject_sales.py"]`). Prints the tier split, projected revenue/margin and the flagged bags.
 `reject_sales.py` imports `offer_picking` only for its BOM helpers (no DB work at import).
 

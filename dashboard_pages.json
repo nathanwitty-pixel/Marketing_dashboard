@@ -109,10 +109,10 @@
       "order": 8,
       "section": "Marketing",
       "label": "Posting Yields",
-      "html": "POSTING (SALES YIELDS FROM ACCURATE POSTING).html",
+      "html": "posting_yields.html",
       "title": "Posting – Sales Yields from Accurate Posting",
       "scripts": [
-        "POSTING (SALES YIELDS FROM ACCURATE POSTING).py"
+        "posting_yields.py"
       ],
       "icon": "campaign",
       "purpose": "Sales yield earned from accurate marketing posting",

@@ -184,6 +184,6 @@ multi-offer editing is done in the file.)
 ## Regenerate
 
 ```
-python timed_offers.py            # DENRI_LAUNCHER=1 to skip the browser tab
+python generators/timed_offers.py            # DENRI_LAUNCHER=1 to skip the browser tab
 ```
 `main.py` also re-runs this daily so it records that day's shop-scoped snapshot.

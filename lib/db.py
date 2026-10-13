@@ -28,6 +28,8 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import URL, Engine
 
+from lib import paths
+
 load_dotenv()
 
 # A per-thread reused connection. Every run_query reuses one connection for the life
@@ -165,7 +167,7 @@ def run_query(sql: str, params: dict | None = None) -> pd.DataFrame | None:
 # served from disk instead of re-hitting the high-latency pooler. Persists across the
 # short-lived generator subprocesses. A manual Refresh sets DENRI_FORCE_FRESH=1 to bypass
 # the read and repopulate; if the DB is unreachable, a stale cached copy is returned.
-_CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".odoo_cache")
+_CACHE_DIR = paths.root(".odoo_cache")
 
 
 def _cache_path(sql: str, params: dict | None) -> str:

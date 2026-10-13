@@ -50,7 +50,7 @@ The dashboard people use is the **Streamlit app** (`streamlit_app.py`) — see
 each page into an iframe.
 Every Chart.js chart on every page gets a chart-type menu from the shared
 `chart_switcher.js` — see [chart-switcher.md](chart-switcher.md).
-`build_all.py` re-bakes every page headlessly (no server, no browser tab).
+`scripts/build_all.py` re-bakes every page headlessly (no server, no browser tab).
 Every menu page also gets the shared **page sidebar** from `page_sidebar.js` — see
 [Page sidebar](#page-sidebar) below.
 
@@ -129,7 +129,7 @@ What each piece reads, so a change lands everywhere at once:
    are newer than GitHub's, and its code is only as new as the last push.
 
 **Publishing (local → GitHub → Streamlit Cloud):** double-click `publish.bat` (or
-`python publish.py "what changed"`). It refuses secrets (`.env*`, credentials, `*.pem`, …),
+`python scripts/publish.py "what changed"`). It refuses secrets (`.env*`, credentials, `*.pem`, …),
 runs the checks (every `.py` compiles, every `.js` and every page's inline scripts pass
 `node --check`, every `*_DATA_START/END` pair exactly once, `dashboard_pages.json` loads and its
 pages exist), refuses if GitHub is ahead (pull first), shows the changes grouped
@@ -172,6 +172,10 @@ inside), and the Combos "shares …" CSS popover (it sits flush on its chip).
 every page as a pill tab (a `?page=` link, so reloads and shared links keep the page and theme), the
 Light/Dark switch, contact and the owner card. The tab track scrolls left ↔ right (`top_nav.js`); below
 1340px the tabs get their own full-width row. Page sidebars sit just below the bar.
+A plain click on a tab does **not** reload the browser: it presses that page's hidden button
+(`pgnav_<n>`), so Streamlit reruns in place. The clicked tab lights up at once, the current page dims
+while the next one is built, hides when its frame is swapped, then fades + rises in once it has drawn
+(`EMBED_FIX` → `__dashReveal`). Ctrl/middle-click still opens the `?page=` link in a new tab.
 
 **Embedding details:** Streamlit shows each page in a component iframe stretched to the page's
 full height (EMBED_FIX), so the Streamlit page scrolls, not the page — `page_sidebar.js` detects
@@ -199,7 +203,7 @@ Reject Sale); this table is the per-menu spec index.
 | 3 | Timed Offers Analytics | [timed-offers.md](timed-offers.md) | `timed_offers.py` | `timed_offers.html` |
 | 4 | Self made combos vs running combos | [self-made-combos.md](self-made-combos.md) | `self_made_combos.py` (+ `offer_data.py`) | `self_made_combos.html` |
 | 5 | Bags on offer vs not on offer | [bags-on-offer.md](bags-on-offer.md) | `bags_on_offer.py` (reads `bags_offer_source.json` from `self_made_combos.py`) | `bags_on_offer.html` |
-| 6 | Posting – Sales Yields from Accurate Posting | [posting-yields.md](posting-yields.md) | `POSTING (SALES YIELDS FROM ACCURATE POSTING).py` | `POSTING (SALES YIELDS FROM ACCURATE POSTING).html` |
+| 6 | Posting – Sales Yields from Accurate Posting | [posting-yields.md](posting-yields.md) | `posting_yields.py` | `posting_yields.html` |
 | 7 | Shops Efficiency Tracking | [shops-efficiency.md](shops-efficiency.md) | `shops_dispatch.py` → `shops_efficiency.py` | `shops_efficiency.html` |
 | 7a | Shop Launch (a new shop from its first sale · Nyeri, Oct 2026) | [shop-launch.md](shop-launch.md) | `shop_launch.py` (config `shop_launch_config.json`) | `shop_launch.html` |
 | 7b | Push Planner (what to push, where, why bags aren't moving · Laya second opinion) | [push-planner.md](push-planner.md) | `push_planner.py` | `push_planner.html` |
@@ -224,14 +228,14 @@ Report, History) **must run last**. The ordered list:
 3. `new_products.py`
 4. `timed_offers.py`
 5. `self_made_combos.py` → `bags_on_offer.py`
-6. `POSTING (SALES YIELDS FROM ACCURATE POSTING).py`
+6. `posting_yields.py`
 7. `shops_dispatch.py` → `shops_efficiency.py`
 8. ~~`generate_insights.py`~~ — not run any more (Insights menu removed Oct 2026)
 9. `monthly_report.py` (reads the pages above)
 10. `push_to_supabase.py` → `history.py`
 
-Regenerate everything headlessly: `python build_all.py`
-Regenerate one page: `python <generator>.py` (set `DENRI_LAUNCHER=1` to suppress the
+Regenerate everything headlessly: `python scripts/build_all.py`
+Regenerate one page: `python generators/<generator>.py` (set `DENRI_LAUNCHER=1` to suppress the
 browser tab).
 
 ## Custom range (Oct 2026)
@@ -260,7 +264,7 @@ Pages whose **Period** dropdowns can take any From – To window get a **Custom*
   **Clear**. The page frame's sandbox can't navigate the app itself, so the picker schedules the navigation
   on the (same-origin) app window. Opened as a plain file, the picker shows the command to run instead.
   Tested end to end 6 Oct 2026 (Apply 08–14 Sep and Clear on New Products in a local app).
-- **Locally:** `python new_products.py 2026-09-01 2026-09-30` sets it, `python new_products.py clear`
+- **Locally:** `python generators/new_products.py 2026-09-01 2026-09-30` sets it, `python generators/new_products.py clear`
   drops it (same for the Posting Yields script). Helper: `lib/custom_range.py` (`load / save / block`,
   up to 366 days, a future To date is pulled back to today).
 - **Posts:** marketing posts exist only as monthly / weekly sheet totals, so a custom range never has a

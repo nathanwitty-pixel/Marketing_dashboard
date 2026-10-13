@@ -16,7 +16,7 @@ in **Testing** mode (Google expires those tokens every ~7 days).
 
 ### Quick fix (re-login) — 30 seconds
 ```
-python reauth.py        # opens a browser, sign in, saves a fresh token
+python scripts/reauth.py        # opens a browser, sign in, saves a fresh token
 python main.py          # dashboards refresh normally
 ```
 

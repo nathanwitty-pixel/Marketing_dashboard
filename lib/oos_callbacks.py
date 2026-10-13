@@ -30,11 +30,10 @@ import os
 import re
 import datetime
 
-from . import db, report_month
+from . import db, paths, report_month
 
-_SQL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sql")
-_SQL_PATH = os.path.join(_SQL_DIR, "oos_callbacks.sql")
-_WALKIN_SQL_PATH = os.path.join(_SQL_DIR, "oos_walkin.sql")
+_SQL_PATH = paths.sql("oos_callbacks.sql")
+_WALKIN_SQL_PATH = paths.sql("oos_walkin.sql")
 PERIODS = ("lifetime", "monthly", "weekly", "lastweek", "current")
 CHANNELS = ("online", "walkin")
 

@@ -142,11 +142,11 @@ the other dashboards. `projMonth` (from the PROJ block) names it.
 ## Regenerate
 
 ```
-python weekly_sales.py
-python monthly_sales.py
-python current_performance.py
-python forward_projections.py
+python generators/weekly_sales.py
+python generators/monthly_sales.py
+python generators/current_performance.py
+python generators/forward_projections.py
 ```
-(Or just `python build_all.py` for the whole set in the right order.)
+(Or just `python scripts/build_all.py` for the whole set in the right order.)
 </content>
 </invoke>

@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="darkreader-lock" /><!-- the dashboard has its own light/dark theme: stop the Dark Reader extension re-darkening it -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { overflow-y: scroll; }
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track { background: #0f1117; }
+    ::-webkit-scrollbar-thumb { background: #2d3148; border-radius: 6px; border: 3px solid #0f1117; }
+    ::-webkit-scrollbar-thumb:hover { background: #3d4a5c; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      gap: 3rem;
+    }
+
+    /* ── Section wrapper ──────────────────────────────────── */
+    .section {
+      width: 100%;
+      max-width: 960px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-header .pill {
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+    }
+
+    .pill-live     { background: #6366f1; }
+    .pill-forecast { background: #0ea5e9; }
+
+    .section-header h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: 0.02em;
+    }
+
+    .date-line {
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-bottom: 1.5rem;
+      padding-left: 0.1rem;
+    }
+    .date-line span { color: #94a3b8; font-weight: 600; }
+
+    /* ── Card grid ────────────────────────────────────────── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: #1e2130;
+      border: 1px solid #2d3148;
+      border-radius: 10px;
+      padding: 1.2rem 1.4rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
+                  border-color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(16,185,129,0.25);
+    }
+
+    /* Primary KPI — the headline metric reads larger than the rest */
+    .card.primary { grid-column: span 2; }
+    .card.primary .card-value { font-size: 2.6rem; }
+
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .card-reveal {
+      animation: card-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation-delay: var(--reveal-delay, 0ms);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+
+    /* Current Performance colours */
+    .card.red::before    { background: #ef4444; }
+    .card.amber::before  { background: #f59e0b; }
+    .card.blue::before   { background: #3b82f6; }
+    .card.purple::before { background: #8b5cf6; }
+    .card.green::before  { background: #10b981; }
+    .card.rose::before   { background: #f43f5e; }
+
+    /* Forward Projections colours */
+    .card.cyan::before   { background: #06b6d4; }
+    .card.indigo::before { background: #6366f1; }
+    .card.orange::before { background: #f97316; }
+
+    .card-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-bottom: 0.6rem;
+      line-height: 1.4;
+    }
+
+    .card-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #f8fafc;
+      line-height: 1.1;
+      margin-bottom: 0.5rem;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
+    }
+
+    .card-value.pct    { color: #facc15; }
+    .card-value.cyan   { color: #22d3ee; }
+    .card-value.indigo { color: #818cf8; }
+    .card-value.orange { color: #fb923c; }
+    .card-value.rose   { color: #fb7185; }
+    .card-value.amber  { color: #fbbf24; }
+
+    .card-interpretation {
+      font-size: 0.78rem;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .card-sub {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-top: 0.25rem;
+      margin-bottom: 0.35rem;
+      min-height: 1.1rem;
+    }
+
+    /* ── Summary table ────────────────────────────────────── */
+    .table-wrap {
+      background: #1e2130;
+      border: 1px solid #2d3148;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .table-title {
+      padding: 1rem 1.5rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      border-bottom: 1px solid #2d3148;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      background: #161824;
+      padding: 0.75rem 1.5rem;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    tbody tr {
+      border-top: 1px solid #2d3148;
+      transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    tbody tr:hover { background: #252840; }
+
+    tbody td {
+      padding: 0.95rem 1.5rem;
+      font-size: 0.88rem;
+      vertical-align: middle;
+    }
+
+    td.metric { font-weight: 700; color: #e2e8f0; }
+    td.type   { font-weight: 700; color: #e2e8f0; }
+
+    td.value  { font-weight: 800; font-size: 1rem; color: #f8fafc; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    td.basis  { color: #94a3b8; font-size: 0.82rem; line-height: 1.5; }
+    td.interp { color: #94a3b8; font-size: 0.82rem; line-height: 1.5; }
+
+    td.value.yellow { color: #facc15; }
+    td.value.red    { color: #f87171; }
+    td.value.blue   { color: #60a5fa; }
+    td.value.rose   { color: #fb7185; }
+    td.value.cyan   { color: #22d3ee; }
+    td.value.indigo { color: #818cf8; }
+    td.value.orange { color: #fb923c; }
+    td.value.amber  { color: #fbbf24; }
+
+    .tbl-sub {
+      font-size: 0.75rem;
+      color: #475569;
+      font-weight: 500;
+      margin-top: 0.2rem;
+      min-height: 1rem;
+    }
+
+    /* ── Sales → target hover popover ─────────────────────── */
+    #sales-card, #weekly-card, #remaining-card { cursor: pointer; }
+    .sales-popover {
+      position: fixed;
+      width: 320px; max-width: 92vw;
+      background: #1e2130; border: 1px solid #2d3148; border-radius: 12px;
+      padding: 0.9rem 1rem;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.55);
+      opacity: 0; visibility: hidden; transform: translateY(-6px);
+      transform-origin: top center;
+      transition: opacity 180ms cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+                  visibility 180ms cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 100; pointer-events: none;
+    }
+    /* When shown, allow the mouse into the popover to read chart tooltips */
+    .sales-popover.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+    /* Sales popover: target donut on the left, "Corporate by client" beside it on the right */
+    #sales-popover .sp-wrap { display: flex; gap: 1.2rem; align-items: stretch; }
+    #sales-popover .sp-main { flex: 0 0 300px; min-width: 0; }
+    #sales-popover.has-corp { width: 780px; }
+    #sales-popover #corp-clients { flex: 1 1 auto; min-width: 0; border-left: 1px solid #2d3148; padding-left: 1.2rem; }
+    /* Corporate by client: table + notes scroll as one box; the header (with totals) stays pinned. */
+    #corp-clients .corp-scroll { max-height: 300px; overflow-y: auto; overscroll-behavior: contain; padding-right: 0.35rem; }
+    #corp-clients thead th { position: sticky; top: 0; z-index: 1; background: #1e2130; vertical-align: bottom;
+      box-shadow: inset 0 -1px 0 #2d3148; }
+    #corp-clients thead .ct { display: block; color: #e2e8f0; font-weight: 800; font-size: 0.74rem; }
+    /* Tabs: Corporate app | Shop corporate */
+    #corp-clients .corp-tabs { display: flex; gap: 0.3rem; margin-bottom: 0.55rem; }
+    #corp-clients .corp-tabs button { font: inherit; font-size: 0.68rem; font-weight: 600; cursor: pointer; color: #94a3b8;
+      background: transparent; border: 1px solid #334155; border-radius: 999px; padding: 0.15rem 0.65rem; }
+    #corp-clients .corp-tabs button.on { color: #e2e8f0; background: rgba(99,102,241,0.18); border-color: #6366f1; }
+    #sales-popover.has-corp.sc-on { width: 900px; }
+    /* Shop corporate tab */
+    #corp-clients .sc-strip { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; margin: -0.1rem 0 0.45rem; padding: 0.4rem 0.55rem;
+      border-radius: 8px; background: rgba(99,102,241,0.08); border: 1px solid #2d3148; font-size: 0.68rem; }
+    #corp-clients .sc-strip b { color: #e2e8f0; }
+    #corp-clients .sc-shops { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.5rem; }
+    #corp-clients .sc-box { border: 1px solid #2d3148; border-radius: 7px; padding: 0.2rem 0.45rem; font-size: 0.64rem; line-height: 1.35; }
+    #corp-clients .sc-box b { display: block; color: #e2e8f0; font-size: 0.7rem; }
+    #corp-clients .sc-box.corp { border-color: rgba(168,85,247,0.55); }
+    #corp-clients .sc-chip { display: inline-block; font-size: 0.6rem; font-weight: 600; padding: 0 0.35rem; border-radius: 999px;
+      border: 1px solid rgba(59,130,246,0.6); color: #93c5fd; white-space: nowrap; }
+    #corp-clients .sc-chip.corp { border-color: rgba(168,85,247,0.65); color: #d8b4fe; }
+    #corp-clients .sc-sub { display: block; font-size: 0.6rem; font-weight: 500; color: #64748b; margin-top: 0.05rem; }
+    #corp-clients .sc-flag { color: #fbbf24; }
+    #corp-clients .sc-grp td { padding-top: 0.5rem; font-size: 0.6rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+    #corp-clients .sc-left { margin-top: 0.5rem; padding: 0.35rem 0.5rem; border: 1px dashed #334155; border-radius: 7px; font-size: 0.64rem; }
+    @media (max-width: 840px) {
+      #sales-popover .sp-wrap { flex-direction: column; gap: 0; }
+      #sales-popover .sp-main { flex-basis: auto; }
+      #sales-popover.has-corp, #sales-popover.has-corp.sc-on { width: 380px; }
+      #sales-popover #corp-clients { border-left: 0; padding-left: 0; border-top: 1px solid #2d3148; margin-top: 0.6rem; padding-top: 0.6rem; }
+    }
+
+    /* ── Section divider ──────────────────────────────────── */
+    .section-divider {
+      display: flex; align-items: center; gap: 1rem;
+      margin: 2.5rem 0 1.5rem;
+    }
+    .section-divider .div-line { flex: 1; height: 1px; background: #2d3148; }
+    .section-divider .div-label {
+      font-size: 0.58rem; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: #475569; white-space: nowrap;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *,*::before,*::after{ transition-duration:.12s!important; transition-property:opacity!important;
+        animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; }
+    }
+  
+    /* Spectral Edge — aura backdrop (decorative; fixed, behind all content). */
+    body{ background-color:#100e0b; }
+    .aura-layer-1,.aura-layer-2,.aura-layer-3{ position:fixed; inset:0; z-index:-1;
+      pointer-events:none; transform:translateZ(0); will-change:transform; }
+    .aura-layer-1{ mix-blend-mode:screen; filter:blur(108px);
+      background:linear-gradient(90deg, transparent 0%, rgba(59,130,246,0.04) 32%, rgba(6,182,212,0.12) 45%, rgba(34,197,94,0.13) 51%, rgba(250,204,21,0.12) 57%, rgba(244,63,94,0.11) 64%, transparent 82%); }
+    .aura-layer-2{ mix-blend-mode:screen; filter:blur(58px); opacity:0.24;
+      background:linear-gradient(102deg, transparent 38%, rgba(255,255,255,0.08) 46%, rgba(125,211,252,0.06) 51%, transparent 60%); }
+    .aura-layer-3{ mix-blend-mode:screen; filter:blur(126px); opacity:0.55;
+      background:radial-gradient(ellipse 25% 65% at 92% 50%, rgba(139,92,246,0.16) 0%, transparent 78%); }
+    @media (max-width:640px){
+      .aura-layer-1{ filter:blur(75px); } .aura-layer-2{ filter:blur(40px); } .aura-layer-3{ filter:blur(88px); }
+    }
+
+    /* Frosted-glass card surfaces — the aura shows through (matches the Offer-Type look). */
+    .card, .panel, .kpi, .sec, .exec, .mini{
+      background-color: rgba(24,27,40,0.52) !important;
+      background-image: none !important;
+      backdrop-filter: blur(14px) saturate(1.08);
+      -webkit-backdrop-filter: blur(14px) saturate(1.08);
+    }
+    @media (prefers-reduced-transparency: reduce){
+      .card, .panel, .kpi, .sec, .exec, .mini{
+        background-color:#141824 !important; backdrop-filter:none; -webkit-backdrop-filter:none; }
+    }
+
+    /* Card header that carries a control on the right (ported from shops_efficiency) */
+    .cp-card-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; border-bottom: 1px solid #2d3148; padding-right: 1.5rem; }
+    .cp-card-head .table-title { border-bottom: none; flex: 1 1 auto; }
+
+    /* Chart-type segmented toggle */
+    .cp-seg-wrap { display: inline-flex; border: 1px solid #2d3148; border-radius: 9px; overflow: hidden; flex: 0 0 auto; }
+    .cp-seg { background: #161824; color: #94a3b8; border: none; padding: 0.38rem 0.95rem; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; cursor: pointer; text-transform: uppercase; transition: background-color 160ms cubic-bezier(0.16,1,0.3,1), color 160ms cubic-bezier(0.16,1,0.3,1); }
+    .cp-seg + .cp-seg { border-left: 1px solid #2d3148; }
+    .cp-seg:hover:not(.active) { color: #e2e8f0; background: #1c1f2e; }
+    .cp-seg.active { background: #10b981; color: #06281d; }
+    @media (max-width: 560px) { .cp-card-head { padding-right: 1rem; } .cp-seg { padding: 0.38rem 0.7rem; } }
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="../assets/chart_switcher.js"></script>
+</head>
+<body>
+<div class="aura-layer-1" aria-hidden="true"></div>
+<div class="aura-layer-2" aria-hidden="true"></div>
+<div class="aura-layer-3" aria-hidden="true"></div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION 1 — Current Performance                           -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section">
+
+  <div class="section-header">
+    <span class="pill pill-live">Live</span>
+    <h2>Current Performance</h2>
+  </div>
+
+  <div class="card-grid">
+
+    <div class="card blue primary" id="sales-card">
+      <div class="card-label">Sales <span style="font-size:0.58rem;font-weight:800;letter-spacing:0.05em;color:#22d3ee;border:1px solid rgba(34,211,238,0.4);border-radius:5px;padding:0.06rem 0.36rem;margin-left:0.35rem;vertical-align:middle">ODOO · THIS MONTH</span></div>
+      <div class="card-value" id="kpi-sales"></div>
+      <div id="sales-breakdown" style="font-size:0.72rem;color:#94a3b8;margin-top:-0.15rem;margin-bottom:0.2rem"></div>
+      <div class="card-interpretation">Shop tills (POS) + corporate bags paid for this month. Refunds netted; straps, delivery and customisation not counted. Remaining = Odoo target − these sales. Hover for the target and corporate by client.</div>
+    </div>
+
+    <div class="card blue" id="weekly-card">
+      <div class="card-label">Weekly Sales</div>
+      <div class="card-value" id="kpi-weekly-sales"></div>
+      <div class="card-sub" id="weekly-carryover-sub"></div>
+      <div class="card-interpretation">Total bags sold this week (Sun–Sat).</div>
+    </div>
+
+    <div class="card red" id="remaining-card">
+      <div class="card-label">Remaining Target</div>
+      <div class="card-value" id="kpi-remaining"></div>
+      <div class="card-interpretation">Bags still required to meet the full target.</div>
+    </div>
+
+  </div>
+
+  <!-- Weekly performance snapshot — Week 1 → latest -->
+  <div class="card-grid">
+    <div class="card" style="grid-column:1/-1;padding:0;overflow:hidden;">
+      <div class="cp-card-head">
+        <div class="table-title">Weekly Performance — Week 1 to Latest</div>
+        <div class="cp-seg-wrap" id="cp-wp-type" role="group" aria-label="Chart type">
+          <button type="button" class="cp-seg active" data-type="area"  aria-pressed="true">Area</button>
+          <button type="button" class="cp-seg"        data-type="line"  aria-pressed="false">Line</button>
+          <button type="button" class="cp-seg"        data-type="bar"   aria-pressed="false">Bar</button>
+          <button type="button" class="cp-seg"        data-type="radar" aria-pressed="false">Radar</button>
+        </div>
+      </div>
+      <div id="weekly-perf-chart-wrap" style="padding:1rem 1.4rem 0;display:none">
+        <div style="position:relative;height:210px"><canvas id="chart-weekly-perf"></canvas></div>
+        <div id="cp-weekly-stats" style="display:flex;flex-wrap:wrap;gap:0.35rem 2rem;justify-content:center;font-size:0.78rem;color:#94a3b8;padding:0.55rem 0 0.3rem"></div>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="weekly-perf-table" style="width:100%;border-collapse:collapse;font-size:0.85rem;white-space:nowrap">
+          <thead><tr>
+            <th style="text-align:left">Week</th>
+            <th style="text-align:right">Sales % Achieved</th>
+            <th style="text-align:right">Sales Bags</th>
+            <th style="text-align:right">Target to Beat</th>
+            <th style="text-align:right">Declined By</th>
+          </tr></thead>
+          <tbody id="weekly-perf-tbody"></tbody>
+        </table>
+      </div>
+      <div style="padding:0.7rem 1.5rem 1.1rem;font-size:0.72rem;color:#64748b;border-top:1px solid #2d3148">
+        <span style="color:#34d399">▲ green</span> = the week cleared its <strong style="color:#94a3b8">target to beat</strong> (the bare-minimum floor);
+        <span style="color:#f87171">red</span> = it fell short. Beat the floor every week and August's
+        <strong style="color:#e2e8f0">Forward Projection</strong> lifts with it — each week above the line pulls the month past target.
+      </div>
+    </div>
+  </div>
+
+  <!-- Sales vs Monthly Target — pops up when hovering the Sales card -->
+  <div class="sales-popover" id="sales-popover">
+   <div class="sp-wrap">
+    <div class="sp-main">
+    <div class="card-label">Sales vs Monthly Target</div>
+    <div style="position:relative;height:200px"><canvas id="chart-progress-donut"></canvas></div>
+    <div style="border-top:1px solid #2d3148;margin-top:0.6rem;padding-top:0.6rem;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:0.72rem;color:#94a3b8">Growth % towards achieved monthly sales</span>
+      <strong id="sales-pop-growth" style="font-size:0.95rem;color:#facc15;font-variant-numeric:tabular-nums"></strong>
+    </div>
+    <div style="margin-top:0.4rem;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:0.72rem;color:#94a3b8">Previous sales % achieved</span>
+      <strong id="sales-pop-prev" style="font-size:0.95rem;color:#facc15;font-variant-numeric:tabular-nums"></strong>
+    </div>
+    </div>
+    <div id="corp-clients" hidden style="font-size:0.72rem;color:#94a3b8">
+      <div class="corp-tabs" hidden>
+        <button type="button" data-tab="app" title="Corporate app (denri_corporate): quotations, invoices and payments">Corporate app</button>
+        <button type="button" data-tab="shop" title="Odoo Sales quotes paid at the shop tills: balance owed and which shop hunted the client">Shop corporate</button>
+      </div>
+      <div class="corp-pane" data-pane="app">
+      <div class="corp-head card-label" style="margin-bottom:0.45rem"></div>
+      <div class="corp-target" hidden style="display:flex;flex-wrap:wrap;gap:0.35rem 0.9rem;margin:-0.1rem 0 0.55rem;padding:0.4rem 0.55rem;border-radius:8px;background:rgba(99,102,241,0.08);border:1px solid #2d3148;font-size:0.68rem;color:#94a3b8"></div>
+      <div class="corp-scroll">
+        <table style="width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums">
+          <thead><tr style="color:#64748b;text-align:right">
+            <th style="text-align:left;font-weight:600;padding:0.15rem 0.3rem 0.15rem 0">Client</th>
+            <th style="font-weight:600;padding:0.15rem 0.3rem" title="Bags on quotations dated this month (declined / cancelled left out). The total counts only bags still to invoice; the tag under each number says what became of the quote — hover it for details.">Quoted<span class="ct" data-t="quoted"></span></th>
+            <th style="font-weight:600;padding:0.15rem 0.3rem" title="Bags on invoices raised this month, plus older invoices paid this month">Invoiced<span class="ct" data-t="invoiced"></span></th>
+            <th style="font-weight:600;padding:0.15rem 0.3rem" title="Paid so far ÷ agreed amount (after WHT) — the total is all paid ÷ all agreed">Paid<span class="ct" data-t="paid"></span></th>
+            <th style="font-weight:600;padding:0.15rem 0 0.15rem 0.3rem" title="Bags × share of the money received this month — what goes into Sales">Sold<span class="ct" data-t="sold"></span></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      <div class="corp-why" hidden style="margin-top:0.55rem;padding:0.45rem 0.55rem;border-radius:8px;background:rgba(100,116,139,0.10);border:1px solid #2d3148;font-size:0.68rem;line-height:1.5;color:#94a3b8"></div>
+      <div style="margin-top:0.45rem;font-size:0.66rem;line-height:1.45;color:#64748b">
+        <b style="color:#94a3b8">Sold</b> = bags × share of the money received this month.
+        <b style="color:#94a3b8">Invoiced</b> covers invoices raised this month plus older ones paid this month;
+        a month tag (e.g. <span style="border:1px solid #334155;border-radius:4px;padding:0 0.2rem">Sep</span>) means the invoice
+        was raised then and only the money came in now. <b style="color:#94a3b8">Paid</b> = paid so far ÷ agreed amount (after WHT).
+        <b style="color:#94a3b8">Quoted</b> = bags on quotations raised this month; the tag under it says what became of
+        each quote (invoiced, or its status and how many bags are still to invoice). The Quoted total counts only bags
+        still to invoice.
+        <b style="color:#94a3b8">–</b> = none yet, e.g. a quotation not invoiced.
+      </div>
+      </div>
+      </div>
+      <!-- Shop corporate: Odoo Sales quotes (S0…) paid at the shop tills — see lib/shop_corporate.py -->
+      <div class="corp-pane" data-pane="shop" hidden>
+        <div class="sc-head card-label" style="margin-bottom:0.45rem"></div>
+        <div class="sc-strip"></div>
+        <div class="sc-shops"></div>
+        <div class="corp-scroll">
+          <table style="width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums">
+            <thead><tr style="color:#64748b;text-align:right">
+              <th style="text-align:left;font-weight:600;padding:0.15rem 0.3rem 0.15rem 0">Client</th>
+              <th style="text-align:left;font-weight:600;padding:0.15rem 0.3rem" title="The shop that brought the client in — see the rules below">Hunted by</th>
+              <th style="font-weight:600;padding:0.15rem 0.3rem" title="KES on the client's Odoo Sales quotes (repeat versions of one order count once)">Quoted<span class="ct" data-t="quoted"></span></th>
+              <th style="font-weight:600;padding:0.15rem 0.3rem" title="KES paid at the shop tills (refunded receipts left out), with % of the quote">Paid<span class="ct" data-t="paid"></span></th>
+              <th style="font-weight:600;padding:0.15rem 0.3rem" title="Quoted − paid">Balance<span class="ct" data-t="balance"></span></th>
+              <th style="font-weight:600;padding:0.15rem 0 0.15rem 0.3rem" title="Bags on the till receipts">Bags<span class="ct" data-t="bags"></span></th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+          <div class="sc-left" hidden></div>
+          <div style="margin-top:0.45rem;font-size:0.66rem;line-height:1.45;color:#64748b">
+            <b style="color:#94a3b8">Hunted by</b>: a client with a quote or invoice in the Corporate app is left out here (counted there);
+            a <b style="color:#94a3b8">lead</b> in the Corporate app → Corporate, even if a shop took the money;
+            paid / part-paid → the shop whose till took the money; not paid yet → the shop named on the quote note,
+            else the shop where the client bought before (same customer, phone or email), else the client's town;
+            none of these → <b style="color:#c4b5fd">Corporate</b> (not in any shop's totals).
+            Repeat quotes within 25% of each other count once. Hover a row for its receipts.
+          </div>
+        </div>
+      </div>
+    </div>
+   </div>
+  </div>
+
+  <!-- Week-over-week — pops up when hovering the Weekly Sales card -->
+  <div class="sales-popover" id="weekly-popover">
+    <div class="card-label">Week-over-Week Sales</div>
+    <div style="position:relative;height:170px"><canvas id="chart-wow"></canvas></div>
+    <div id="wow-pop-note" style="text-align:center;font-weight:800;font-size:0.9rem;margin-top:0.5rem"></div>
+  </div>
+
+  <!-- Bare minimum — pops up when hovering the Remaining Target card -->
+  <div class="sales-popover" id="remaining-popover">
+    <div class="card-label">Bare Minimum (Bags &amp; Growth %)</div>
+    <div style="position:relative;height:190px"><canvas id="chart-bare-min"></canvas></div>
+    <div id="bare-min-note" style="text-align:center;font-size:0.78rem;color:#94a3b8;margin-top:0.5rem"></div>
+    <div id="bare-min-declined" style="text-align:center;font-size:0.8rem;margin-top:0.4rem;border-top:1px solid #2d3148;padding-top:0.5rem"></div>
+  </div>
+
+</div><!-- /.section -->
+
+<div class="section-divider">
+  <div class="div-line"></div>
+  <span class="div-label">Forward Projections</span>
+  <div class="div-line"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION 2 — Forward Projections                           -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section">
+
+  <div class="section-header">
+    <span class="pill pill-forecast">Forecast</span>
+    <h2>Forward Projections</h2>
+  </div>
+  <div class="date-line" id="date-line">Loading...</div>
+
+  <div class="card-grid">
+
+    <div class="card cyan">
+      <div class="card-label">Standard Projection<br/><span style="font-size:0.65rem;color:#475569;">% of Total Target</span></div>
+      <div class="card-value cyan" id="kpi-standard"></div>
+      <div class="card-sub" id="kpi-standard-sub"></div>
+      <div class="card-interpretation">Based on maintaining the current sales velocity and product mix.</div>
+    </div>
+
+    <div class="card indigo">
+      <div class="card-label">Forecasted Projection<br/><span style="font-size:0.65rem;color:#475569;">% of Total Target</span></div>
+      <div class="card-value indigo" id="kpi-forecasted"></div>
+      <div class="card-sub" id="kpi-forecasted-sub"></div>
+      <div class="card-interpretation">Based on maintaining the current sales velocity and product mix with corporate in mind.</div>
+    </div>
+
+  </div>
+
+</div><!-- /.section -->
+
+<!-- PERF_DATA_START -->
+<script>
+const PERF = {
+  cpPrevWeekly:       [{"label": "Wk 1", "pct": 11.82}, {"label": "Wk 2", "pct": 14.24}, {"label": "Wk 3", "pct": 12.98}, {"label": "Wk 4", "pct": 13.89}, {"label": "Wk 5", "pct": 7.17}],
+  cpPrevLabel:        "September 2026",
+  cpCurLabel:         "October 2026",
+  remainingTarget:    "20,219",
+  salesPctAchieved:   "27.82%",
+  sales:              "7,794",
+  salesPos:           "7,469",
+  corporateBags:      "325",
+  corporateClients:   [{"client": "CIArb KENYA", "quoted": 0, "invoiced": 250, "agreedKes": 301000, "paidKes": 225750, "receivedKes": 225750, "sold": 187, "earlier": "Sep", "earlierPaidOn": "1 Oct", "quotes": [], "invMonths": [{"m": "Sep", "cur": false}]}, {"client": "safarilink", "quoted": 100, "invoiced": 200, "agreedKes": 805000, "paidKes": 399000, "receivedKes": 399000, "sold": 100, "earlier": "Aug", "earlierPaidOn": "5 Oct", "quotes": [{"no": "QUO-00064", "status": "accepted", "on": "5 Oct", "until": "31 Oct", "bags": "100", "kes": "406000", "invoice": "INV-00140 sent 5 Oct"}], "invMonths": [{"m": "Aug", "cur": false}, {"m": "Oct", "cur": true}]}, {"client": "Greenlight Planet Kenya Ltd", "quoted": 0, "invoiced": 13, "agreedKes": 69996, "paidKes": 69996, "receivedKes": 69996, "sold": 13, "earlier": "Sep", "earlierPaidOn": "2 Oct", "quotes": [], "invMonths": [{"m": "Sep", "cur": false}]}, {"client": "Zakale", "quoted": 10, "invoiced": 10, "agreedKes": 37000, "paidKes": 37000, "receivedKes": 37000, "sold": 10, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00062", "status": "accepted", "on": "2 Oct", "until": "1 Nov", "bags": "10", "kes": "37000", "invoice": "INV-00134 paid 2 Oct"}], "invMonths": [{"m": "Oct", "cur": true}]}, {"client": "George Eshuchi", "quoted": 10, "invoiced": 10, "agreedKes": 28790, "paidKes": 28790, "receivedKes": 28790, "sold": 10, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00066", "status": "accepted", "on": "7 Oct", "until": "6 Nov", "bags": "10", "kes": "28790", "invoice": "INV-00135 paid 7 Oct"}], "invMonths": [{"m": "Oct", "cur": true}]}, {"client": "Software Technologies Ltd", "quoted": 3, "invoiced": 3, "agreedKes": 13920, "paidKes": 10440, "receivedKes": 10440, "sold": 2, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00069", "status": "accepted", "on": "12 Oct", "until": "31 Oct", "bags": "3", "kes": "13920", "invoice": "INV-00141 partial 12 Oct"}], "invMonths": [{"m": "Oct", "cur": true}]}, {"client": "Mirror Arts Designs Limited", "quoted": 2, "invoiced": 2, "agreedKes": 5900, "paidKes": 5900, "receivedKes": 5900, "sold": 2, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00063", "status": "accepted", "on": "4 Oct", "until": "3 Nov", "bags": "2", "kes": "5900", "invoice": "INV-00133 paid 4 Oct"}], "invMonths": [{"m": "Oct", "cur": true}]}, {"client": "H.k", "quoted": 1, "invoiced": 1, "agreedKes": 6000, "paidKes": 6000, "receivedKes": 6000, "sold": 1, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00067", "status": "accepted", "on": "8 Oct", "until": "7 Nov", "bags": "1", "kes": "6000", "invoice": "INV-00136 paid 8 Oct"}], "invMonths": [{"m": "Oct", "cur": true}]}, {"client": "Buhler Limited", "quoted": 60, "invoiced": 0, "agreedKes": 0, "paidKes": 0, "receivedKes": 0, "sold": 0, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00068", "status": "draft", "on": "9 Oct", "until": "31 Oct", "bags": "60", "kes": "208800", "invoice": ""}], "invMonths": []}],
+  corporateTarget:    {"bags": 1163, "kes": 2325368},
+  shopCorporate:      {"rows": [{"client": "ESK COMPANY", "quotes": [{"no": "S00801", "on": "23 Sep", "kes": 1699998, "state": "draft", "by": "Rosemary Njoki"}], "merged": ["S00797", "S00798"], "quotedKes": 1699998, "quotedBags": 500, "paidKes": 1707197, "bags": 502, "balance": 0, "status": "paid", "payments": [{"receipt": "HAZINA/29613", "on": "26 Sep", "shop": "Hazina", "kes": 7200, "by": "BAGWARE EQUITY PDQ", "cashier": "Joyce Obure", "cust": "ESK COMPANY"}, {"receipt": "HAZINA/29958", "on": "12 Oct", "shop": "Hazina", "kes": 1699997, "by": "Bank", "cashier": "Faith Dawe", "cust": "ESK COMPANY"}], "hunted": "Corporate", "how": "Corporate app lead 17 Sep \u00b7 Scola Mithiri", "paidAt": "Hazina", "age": null, "flags": []}, {"client": "KENNEDY KALAA", "quotes": [{"no": "S00789", "on": "8 Sep", "kes": 1012000, "state": "draft", "by": "Rosemary Njoki"}], "merged": [], "quotedKes": 1012000, "quotedBags": 440, "paidKes": 1012001, "bags": 440, "balance": 0, "status": "paid", "payments": [{"receipt": "HILTON/99665", "on": "5 Oct", "shop": "Hilton", "kes": 1012001, "by": "Till No. Hilton", "cashier": "Doreen Omondi", "cust": "Kennedy corporate"}], "hunted": "Hilton", "how": "paid there \u00b7 Doreen Omondi", "paidAt": "", "age": null, "flags": ["matched by amount (till: \"Kennedy corporate\")"]}, {"client": "Sospeter Okumu", "quotes": [], "merged": [], "quotedKes": 0, "quotedBags": 0, "paidKes": 320000, "bags": 200, "balance": 0, "status": "paid", "payments": [{"receipt": "KISUMU/16272", "on": "9 Oct", "shop": "Kisumu", "kes": 320000, "by": "Bank", "cashier": "Olgha Anyango", "cust": "Sospeter Okumu"}], "hunted": "Kisumu", "how": "paid there \u00b7 Olgha Anyango", "paidAt": "", "age": null, "flags": ["no quote in Odoo"]}, {"client": "KENYA FLOWER COUNCIL", "quotes": [{"no": "S00811", "on": "2 Oct", "kes": 124000, "state": "draft", "by": "Rosemary Njoki"}], "merged": ["S00806"], "quotedKes": 124000, "quotedBags": 20, "paidKes": 126800, "bags": 40, "balance": 0, "status": "paid", "payments": [{"receipt": "HILTON/100347", "on": "12 Oct", "shop": "Hilton", "kes": 124200, "by": "Bank", "cashier": "Doreen Omondi", "cust": "KENYA FLOWER COUNCIL"}, {"receipt": "HILTON/100348", "on": "12 Oct", "shop": "Hilton", "kes": 2600, "by": "Bank", "cashier": "Doreen Omondi", "cust": "KENYA FLOWER COUNCIL"}], "hunted": "Hilton", "how": "paid there \u00b7 Doreen Omondi", "paidAt": "", "age": null, "flags": []}, {"client": "SENRI LTD", "quotes": [{"no": "S00790", "on": "10 Sep", "kes": 14000, "state": "draft", "by": "Rosemary Njoki"}], "merged": [], "quotedKes": 14000, "quotedBags": 4, "paidKes": 14000, "bags": 4, "balance": 0, "status": "paid", "payments": [{"receipt": "WEBSITE SALES/29008", "on": "10 Sep", "shop": "Website", "kes": 14000, "by": "Till No. Website", "cashier": "Peace Simon", "cust": "SENRI LTD"}], "hunted": "Website", "how": "paid there \u00b7 Peace Simon", "paidAt": "", "age": null, "flags": []}, {"client": "RUTH CHEPKOPUS", "quotes": [{"no": "S00785", "on": "4 Sep", "kes": 134400, "state": "sale", "by": "Rosemary Njoki"}], "merged": ["S00791"], "quotedKes": 134400, "quotedBags": 84, "paidKes": 60800, "bags": 38, "balance": 73600, "status": "part", "payments": [{"receipt": "WEBSITE SALES/29039", "on": "10 Sep", "shop": "Website", "kes": 19200, "by": "Till No. Website", "cashier": "Peace Simon", "cust": "ELITE TRAVEL"}, {"receipt": "WEBSITE SALES/29213", "on": "16 Sep", "shop": "Website", "kes": 35200, "by": "BAGWARE EQUITY PDQ", "cashier": "Peace Simon", "cust": "ELITE TRAVEL"}, {"receipt": "WEBSITE SALES/29233", "on": "16 Sep", "shop": "Website", "kes": 6400, "by": "Pesapal Sales", "cashier": "Peace Simon", "cust": "ELITE TRAVEL"}], "hunted": "Website", "how": "paid there \u00b7 Peace Simon", "paidAt": "", "age": null, "flags": []}, {"client": "Adevia Africa Limited", "quotes": [{"no": "S00773", "on": "14 Sep", "kes": 62000, "state": "sale", "by": "Administrator"}], "merged": [], "quotedKes": 62000, "quotedBags": 20, "paidKes": 55500, "bags": 18, "balance": 6500, "status": "part", "payments": [{"receipt": "HAZINA/29159", "on": "4 Sep", "shop": "Hazina", "kes": 9000, "by": "Till No. Hazina", "cashier": "Faith Dawe", "cust": "LUCY MURUNGA"}, {"receipt": "HAZINA/29235", "on": "8 Sep", "shop": "Hazina", "kes": 46500, "by": "BAGWARE EQUITY PDQ", "cashier": "Faith Dawe", "cust": "LUCY MURUNGA"}], "hunted": "Hazina", "how": "paid there \u00b7 Faith Dawe", "paidAt": "", "age": null, "flags": []}, {"client": "TEXT BOOK CENTER", "quotes": [{"no": "S00788", "on": "7 Sep", "kes": 735000, "state": "draft", "by": "Rosemary Njoki"}], "merged": [], "quotedKes": 735000, "quotedBags": 350, "paidKes": 0, "bags": 0, "balance": 735000, "status": "unpaid", "payments": [], "hunted": "Website", "how": "bought there before (same phone)", "paidAt": "", "age": 36, "flags": []}, {"client": "Nyanza Reproductive Health Society", "quotes": [{"no": "S00804", "on": "25 Sep", "kes": 267200, "state": "draft", "by": "Ann Tracy Kimani"}], "merged": [], "quotedKes": 267200, "quotedBags": 167, "paidKes": 0, "bags": 0, "balance": 267200, "status": "unpaid", "payments": [], "hunted": "Kisumu", "how": "client's town", "paidAt": "", "age": 18, "flags": []}, {"client": "OXYGENE MARKETING COMMUNICATION", "quotes": [{"no": "S00814", "on": "8 Oct", "kes": 192400, "state": "draft", "by": "Rosemary Njoki"}], "merged": [], "quotedKes": 192400, "quotedBags": 74, "paidKes": 0, "bags": 0, "balance": 192400, "status": "unpaid", "payments": [], "hunted": "Corporate", "how": "Corporate app lead 12 Jul \u00b7 Administrator", "paidAt": "", "age": 5, "flags": []}, {"client": "MORINGA SCHOOL", "quotes": [{"no": "S00784", "on": "3 Sep", "kes": 190000, "state": "draft", "by": "Rosemary Njoki"}], "merged": [], "quotedKes": 190000, "quotedBags": 100, "paidKes": 0, "bags": 0, "balance": 190000, "status": "unpaid", "payments": [], "hunted": "Corporate", "how": "no shop link", "paidAt": "", "age": 40, "flags": []}, {"client": "BENARD", "quotes": [{"no": "S00776", "on": "10 Sep", "kes": 54000, "state": "sale", "by": "Rosemary Njoki"}], "merged": [], "quotedKes": 54000, "quotedBags": 30, "paidKes": 0, "bags": 0, "balance": 54000, "status": "unpaid", "payments": [], "hunted": "Corporate", "how": "no shop link", "paidAt": "", "age": 33, "flags": []}, {"client": "PREMIER HOSPITAL", "quotes": [{"no": "S00802", "on": "24 Sep", "kes": 43100, "state": "draft", "by": "Ann Tracy Kimani"}, {"no": "S00803", "on": "24 Sep", "kes": 2500, "state": "draft", "by": "Rosemary Njoki"}], "merged": [], "quotedKes": 45600, "quotedBags": 16, "paidKes": 0, "bags": 0, "balance": 45600, "status": "unpaid", "payments": [], "hunted": "Corporate", "how": "no shop link", "paidAt": "", "age": 19, "flags": []}, {"client": "PENTA PRISM MEDICAL AFRICA", "quotes": [{"no": "S00786", "on": "7 Sep", "kes": 10672, "state": "draft", "by": "Administrator"}, {"no": "S00787", "on": "7 Sep", "kes": 33640, "state": "draft", "by": "Administrator"}], "merged": [], "quotedKes": 44312, "quotedBags": 10, "paidKes": 0, "bags": 0, "balance": 44312, "status": "unpaid", "payments": [], "hunted": "Corporate", "how": "no shop link", "paidAt": "", "age": 36, "flags": []}, {"client": "MBEWE DALITSO", "quotes": [{"no": "S00815", "on": "9 Oct", "kes": 35600, "state": "draft", "by": "Rosemary Njoki"}], "merged": [], "quotedKes": 35600, "quotedBags": 14, "paidKes": 0, "bags": 0, "balance": 35600, "status": "unpaid", "payments": [], "hunted": "Corporate", "how": "no shop link", "paidAt": "", "age": 4, "flags": []}, {"client": "The Life Ministry Kenya", "quotes": [{"no": "S00792", "on": "10 Sep", "kes": 22800, "state": "draft", "by": "Ann Tracy Kimani"}], "merged": [], "quotedKes": 22800, "quotedBags": 6, "paidKes": 0, "bags": 0, "balance": 22800, "status": "unpaid", "payments": [], "hunted": "Corporate", "how": "no shop link", "paidAt": "", "age": 33, "flags": []}, {"client": "KE0410 VLI NAUDO CYDC", "quotes": [{"no": "S00805", "on": "28 Sep", "kes": 12798, "state": "draft", "by": "Ann Tracy Kimani"}, {"no": "S00796", "on": "8 Oct", "kes": 4600, "state": "sale", "by": "Collins Oduor"}], "merged": [], "quotedKes": 17398, "quotedBags": 6, "paidKes": 0, "bags": 0, "balance": 17398, "status": "unpaid", "payments": [], "hunted": "Corporate", "how": "no shop link", "paidAt": "", "age": 5, "flags": []}, {"client": "Childcare Worldwide", "quotes": [{"no": "S00793", "on": "15 Sep", "kes": 16100, "state": "sale", "by": "Eric Mwangangi"}], "merged": ["S00812"], "quotedKes": 16100, "quotedBags": 6, "paidKes": 0, "bags": 0, "balance": 16100, "status": "unpaid", "payments": [], "hunted": "Nakuru", "how": "named on the quote note", "paidAt": "", "age": 28, "flags": []}, {"client": "MIC/EHS", "quotes": [{"no": "S00809", "on": "2 Oct", "kes": 9000, "state": "draft", "by": "Rosemary Njoki"}], "merged": [], "quotedKes": 9000, "quotedBags": 3, "paidKes": 0, "bags": 0, "balance": 9000, "status": "unpaid", "payments": [], "hunted": "Corporate", "how": "no shop link", "paidAt": "", "age": 11, "flags": []}, {"client": "Isabella soila", "quotes": [{"no": "S00810", "on": "2 Oct", "kes": 8700, "state": "draft", "by": "Rosemary Njoki"}], "merged": ["S00807"], "quotedKes": 8700, "quotedBags": 3, "paidKes": 0, "bags": 0, "balance": 8700, "status": "unpaid", "payments": [], "hunted": "Corporate", "how": "no shop link", "paidAt": "", "age": 11, "flags": []}, {"client": "Eldama Technologies Limited", "quotes": [{"no": "S00799", "on": "22 Sep", "kes": 7800, "state": "draft", "by": "Rosemary Njoki"}], "merged": [], "quotedKes": 7800, "quotedBags": 3, "paidKes": 0, "bags": 0, "balance": 7800, "status": "unpaid", "payments": [], "hunted": "Website", "how": "bought there before (same phone)", "paidAt": "", "age": 21, "flags": []}, {"client": "GATSBY AFRICA", "quotes": [{"no": "S00808", "on": "2 Oct", "kes": 4200, "state": "draft", "by": "Rosemary Njoki"}], "merged": [], "quotedKes": 4200, "quotedBags": 1, "paidKes": 0, "bags": 0, "balance": 4200, "status": "unpaid", "payments": [], "hunted": "Corporate", "how": "no shop link", "paidAt": "", "age": 11, "flags": []}, {"client": "JOSHUA KIMULU", "quotes": [{"no": "S00813", "on": "8 Oct", "kes": 3100, "state": "draft", "by": "Rosemary Njoki"}], "merged": [], "quotedKes": 3100, "quotedBags": 1, "paidKes": 0, "bags": 0, "balance": 3100, "status": "unpaid", "payments": [], "hunted": "Corporate", "how": "no shop link", "paidAt": "", "age": 5, "flags": []}, {"client": "FINTON LOGISTICS", "quotes": [{"no": "S00816", "on": "13 Oct", "kes": 3100, "state": "draft", "by": "Rosemary Njoki"}], "merged": [], "quotedKes": 3100, "quotedBags": 1, "paidKes": 0, "bags": 0, "balance": 3100, "status": "unpaid", "payments": [], "hunted": "Corporate", "how": "no shop link", "paidAt": "", "age": 0, "flags": []}, {"client": "Rodi kenya", "quotes": [{"no": "S00783", "on": "2 Sep", "kes": 3000, "state": "draft", "by": "Rosemary Njoki"}], "merged": [], "quotedKes": 3000, "quotedBags": 1, "paidKes": 0, "bags": 0, "balance": 3000, "status": "unpaid", "payments": [], "hunted": "Corporate", "how": "no shop link", "paidAt": "", "age": 41, "flags": []}, {"client": "ALLIANCE FRANCAISE NAIROBI", "quotes": [{"no": "S00794", "on": "16 Sep", "kes": 3000, "state": "draft", "by": "Rosemary Njoki"}], "merged": [], "quotedKes": 3000, "quotedBags": 1, "paidKes": 0, "bags": 0, "balance": 3000, "status": "unpaid", "payments": [], "hunted": "Corporate", "how": "no shop link", "paidAt": "", "age": 27, "flags": []}], "shops": [{"shop": "Hilton", "paid": 1138801, "bags": 480, "owed": 0, "clients": 2}, {"shop": "Website", "paid": 74800, "bags": 42, "owed": 816400, "clients": 4}, {"shop": "Kisumu", "paid": 320000, "bags": 200, "owed": 267200, "clients": 2}, {"shop": "Hazina", "paid": 55500, "bags": 18, "owed": 6500, "clients": 1}, {"shop": "Nakuru", "paid": 0, "bags": 0, "owed": 16100, "clients": 1}, {"shop": "Corporate", "paid": 1707197, "bags": 502, "owed": 636210, "clients": 16}], "leftOut": [{"client": "EQUITY BANK KENYA LIMITED(EBKL)", "quotes": ["S00795"], "kes": 1000000, "ref": "QUO-00054 (Equity Bank Kenya Ltd)"}], "period": "Sep\u2013Oct", "asOf": "13 Oct"},
+  rejectBags:        "0",
+  rejectPct:          "0.00%",
+  giftBags:           "123",
+  giftPct:            "1.65%",
+  samples:            "1",
+  customBags:         "0",
+  customFees:         "3",
+  previousSalesPct:   "23.46%",
+  previousSalesBags:  "197",
+  wowSalesPct:        "+519.80%",
+  wowSalesBags:       "+1,024",
+  weeklySalesTotal:   "1,221",
+  weeklySalesPct:     "4.36%",
+  growthHistory:      [{"date": "2026-07-27", "growth": 14.52}, {"date": "2026-07-28", "growth": 14.52}, {"date": "2026-07-30", "growth": 14.52}, {"date": "2026-07-31", "growth": 14.52}, {"date": "2026-08-01", "growth": 14.52}, {"date": "2026-08-02", "growth": 19.73}, {"date": "2026-08-03", "growth": 71.8}, {"date": "2026-08-04", "growth": 2.9}, {"date": "2026-08-05", "growth": 2.9}, {"date": "2026-08-06", "growth": 7.2}, {"date": "2026-08-07", "growth": 7.2}, {"date": "2026-08-08", "growth": 13.65}, {"date": "2026-08-10", "growth": 1.01}, {"date": "2026-08-11", "growth": 3.59}, {"date": "2026-08-13", "growth": 9.34}, {"date": "2026-08-14", "growth": 11.67}, {"date": "2026-08-16", "growth": 0.84}, {"date": "2026-08-17", "growth": 1.28}, {"date": "2026-08-20", "growth": 8.17}, {"date": "2026-08-21", "growth": 11.23}, {"date": "2026-08-22", "growth": 14.12}, {"date": "2026-08-23", "growth": 1.02}, {"date": "2026-08-24", "growth": 1.18}, {"date": "2026-08-26", "growth": 9.32}, {"date": "2026-08-27", "growth": 9.43}, {"date": "2026-08-28", "growth": 12.4}, {"date": "2026-08-31", "growth": 3.11}, {"date": "2026-09-01", "growth": 4.24}, {"date": "2026-09-02", "growth": 8.84}, {"date": "2026-09-03", "growth": 9.13}, {"date": "2026-09-04", "growth": 11.66}, {"date": "2026-09-06", "growth": 0.49}, {"date": "2026-09-07", "growth": 0.69}, {"date": "2026-09-08", "growth": 8.49}, {"date": "2026-09-09", "growth": 8.55}, {"date": "2026-09-10", "growth": 13.61}, {"date": "2026-09-12", "growth": 15.64}, {"date": "2026-09-13", "growth": 0.71}, {"date": "2026-09-14", "growth": 0.87}, {"date": "2026-09-17", "growth": 7.9}, {"date": "2026-09-18", "growth": 11.43}, {"date": "2026-09-19", "growth": 12.29}, {"date": "2026-09-20", "growth": 0.57}, {"date": "2026-09-21", "growth": 1.46}, {"date": "2026-09-22", "growth": 3.25}, {"date": "2026-09-23", "growth": 4.64}, {"date": "2026-09-24", "growth": 7.33}, {"date": "2026-09-25", "growth": 8.68}, {"date": "2026-09-27", "growth": 0.37}, {"date": "2026-09-28", "growth": 0.76}, {"date": "2026-09-29", "growth": 3.25}, {"date": "2026-09-30", "growth": 5.64}, {"date": "2026-10-01", "growth": 9.42}, {"date": "2026-10-02", "growth": 9.42}, {"date": "2026-10-04", "growth": 0.66}, {"date": "2026-10-05", "growth": 0.96}, {"date": "2026-10-06", "growth": 4.3}, {"date": "2026-10-07", "growth": 6.48}, {"date": "2026-10-08", "growth": 8.18}, {"date": "2026-10-09", "growth": 9.83}, {"date": "2026-10-10", "growth": 13.95}, {"date": "2026-10-11", "growth": 0.7}, {"date": "2026-10-12", "growth": 0.78}, {"date": "2026-10-13", "growth": 4.36}],
+  weeklyThisMonth:    "1,221",
+  weeklyThisMonthDays: 0,
+  prevMonthDays:      0,
+  weeklyCarryover:    "",
+  carryoverMonth:     "",
+  carryoverDate:      "",
+  prevMonthWeekly:    "1,530",
+  prevMonthLabel:     "September",
+  momWeeklyBags:      "-309",
+  momWeeklyPct:       "-20.20%",
+  bareMinimum:        "",
+  declinedBy:         ""
+};
+</script>
+<!-- PERF_DATA_END -->
+
+<!-- PROJ_DATA_START -->
+<script>
+const PROJ = {
+  currentDay:               12,
+  daysInMonth:              31,
+  projMonth:                "October",
+  velocityFactor:           "2.58x",
+  totalTarget:              "28,013",
+  totalSales:               "7,469",
+  standardProjection:       "68.88%",
+  forecastedProjection:     "71.88%",
+  corporateBags:            "325",
+  bareMinimum:              "7,003",
+  bareMinimumGrowthPct:     "25.00%",
+  declinedBy:               "-5,782",
+  weeklySalesTotal:         "1,221",
+  weeklyHistory:            [{"weekStart": "2026-10-01", "label": "Wk 1", "month": "Oct", "salesPct": 7.24, "salesBags": 2027, "prevSalesPct": 0.0, "prevSalesBags": 0, "weeklySales": 2027, "declinedBy": -4976}, {"weekStart": "2026-10-04", "label": "Wk 2", "month": "Oct", "salesPct": 22.3, "salesBags": 6248, "prevSalesPct": 7.24, "prevSalesBags": 2027, "weeklySales": 4221, "declinedBy": -2782}, {"weekStart": "2026-10-11", "label": "Wk 3", "month": "Oct", "salesPct": 26.67, "salesBags": 7470, "prevSalesPct": 22.3, "prevSalesBags": 6248, "weeklySales": 1222, "declinedBy": -5781}]
+};
+</script>
+<!-- PROJ_DATA_END -->
+
+<script>
+  /* ── Helpers ─────────────────────────────────────────────── */
+  function setText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  function setSub(id, val) {
+    const el = document.getElementById(id);
+    if (el && val) el.textContent = val;
+  }
+
+  function setBags(cardId, tblId, val) {
+    if (!val) return;
+    const label = val + ' bags';
+    setText(cardId, label);
+    setText(tblId, label);
+  }
+
+  /* ── Section 1: Current Performance ─────────────────────── */
+  setText('kpi-remaining',    PERF.remainingTarget);
+  setText('kpi-sales',        PERF.sales);
+  // Sales card breakdown: POS + corporate (only shown when corporate > 0)
+  (function(){
+    var el = document.getElementById('sales-breakdown');
+    if (!el) return;
+    var corp = parseInt(String(PERF.corporateBags || '0').replace(/[^0-9]/g, '')) || 0;
+    var base = (corp > 0)
+      ? PERF.salesPos + ' POS <span style="color:#64748b">+</span> ' + PERF.corporateBags + ' corporate'
+      : PERF.salesPos + ' POS · corporate 0';
+    // Split out the reject-clearance bags (a subset of the POS total), when any sold.
+    var rej = parseInt(String(PERF.rejectBags || '0').replace(/[^0-9]/g, '')) || 0;
+    var rejNote = rej > 0
+      ? ' <span style="color:#64748b">·</span> <span style="color:#fca5a5" title="Of the bags sold, these were Kitengela reject-clearance items ([REJECT]-tagged products). The rest are normal stock.">'
+        + PERF.rejectBags + ' rejects' + (PERF.rejectPct ? ' (' + PERF.rejectPct + ')' : '') + '</span>'
+      : '';
+    // …and the gift bags (also part of the POS total).
+    var gift = parseInt(String(PERF.giftBags || '0').replace(/[^0-9]/g, '')) || 0;
+    var giftNote = gift > 0
+      ? ' <span style="color:#64748b">·</span> <span style="color:#f0abfc" title="Of the bags sold, these were gift bags (Gift Bag A3 / A4 / A5 and colours).">'
+        + PERF.giftBags + ' gift bags' + (PERF.giftPct ? ' (' + PERF.giftPct + ')' : '') + '</span>'
+      : '';
+    // Samples + customisation sold. Samples and customisation charges are NOT in Sales;
+    // customised bags are (they're bags).
+    var num = function (v) { return parseInt(String(v || '0').replace(/[^0-9-]/g, '')) || 0; };
+    var smp = num(PERF.samples), cBags = num(PERF.customBags), cFees = num(PERF.customFees);
+    var smpNote = smp
+      ? ' <span style="color:#64748b">·</span> <span style="color:#fcd34d" title="Sample units sold this month. Not counted in Sales.">'
+        + PERF.samples + ' sample' + (smp === 1 ? '' : 's') + ' <span style="color:#64748b">(not in Sales)</span></span>'
+      : '';
+    var cusNote = (cBags + cFees)
+      ? ' <span style="color:#64748b">·</span> <span style="color:#93c5fd" title="' + cBags + ' customised bag' + (cBags === 1 ? '' : 's')
+        + ' (counted in Sales) + ' + cFees + ' customisation charge' + (cFees === 1 ? '' : 's') + ' (not in Sales).">'
+        + (cBags + cFees).toLocaleString() + ' customisation</span>'
+      : '';
+    el.innerHTML = base + rejNote + giftNote + smpNote + cusNote;
+  })();
+  // Corporate by client: quotations, invoices and payments this month, top-ups summed per client.
+  (function(){
+    var box = document.getElementById('corp-clients');
+    var rows = PERF.corporateClients || [];
+    if (!box || !rows.length) return;
+    var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) {
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+    var n = function (v) { return v ? Number(v).toLocaleString() : '<span style="color:#475569">–</span>'; };
+    var td = 'padding:0.15rem 0.3rem;border-top:1px solid rgba(100,116,139,0.18);text-align:right';
+    // Bags on this month's quotes that haven't become an invoice yet (the Quoted total counts only these).
+    var toInvoice = function (r) {
+      return (r.quotes || []).reduce(function (a, x) { return a + (x.invoice ? 0 : (Number(x.bags) || 0)); }, 0);
+    };
+    var fmt = function (v) { return Number(v || 0).toLocaleString(); };
+    // Quoted: what became of each quote — a small tag ("invoiced 2 Oct" / "sent · not invoiced"), details on hover.
+    var quoteTag = function (r) {
+      var q = r.quotes || [];
+      if (!q.length) return '';
+      var done = q.filter(function (x) { return x.invoice; }).length, open = q.length - done, last = q[q.length - 1];
+      var txt = q.length === 1
+        ? (last.invoice ? 'invoiced ' + esc(last.invoice.split(' ').slice(2).join(' ')) : esc(last.status) + ' · ' + fmt(toInvoice(r)) + ' to invoice')
+        : (done ? done + ' invoiced' : '') + (done && open ? ' · ' : '') + (open ? fmt(toInvoice(r)) + ' to invoice' : '');
+      return '<span style="display:block;font-size:0.6rem;font-weight:500;white-space:nowrap;color:'
+        + (open ? '#94a3b8' : '#6ee7b7') + '">' + txt + '</span>';
+    };
+    var quoteTip = function (r) {
+      var q = r.quotes || [];
+      if (!q.length) return '';
+      var more = toInvoice(r);
+      return ' title="' + q.map(function (x) {
+        var inv = x.invoice ? x.invoice.split(' ') : null;
+        return esc(x.no) + ' (' + esc(x.status) + '), quoted ' + esc(x.on) + ': ' + Number(x.bags).toLocaleString() + ' bags · KES '
+          + Number(x.kes).toLocaleString() + (inv ? ' → invoiced as ' + esc(inv[0]) + ' (' + esc(inv[1]) + ') on ' + esc(inv.slice(2).join(' '))
+            : ' → not invoiced yet, valid until ' + esc(x.until));
+      }).join('&#10;')
+        // A client already invoiced this month with a new open quote: it's MORE, not the same order.
+        + (more && r.invoiced ? '&#10;If accepted: ' + fmt(more) + ' more bags to invoice, on top of the ' + fmt(r.invoiced) + ' already invoiced.' : '')
+        + '"';
+    };
+    box.querySelector('tbody').innerHTML = rows.map(function (r) {
+      var pct = r.agreedKes ? Math.round(r.paidKes / r.agreedKes * 100) : null;
+      var pctCol = pct === null ? '#475569' : (pct >= 100 ? '#34d399' : (pct > 0 ? '#fbbf24' : '#f87171'));
+      return '<tr><td style="' + td + ';text-align:left;padding-left:0">' + esc(r.client) + '</td>'
+        + '<td style="' + td + '"' + quoteTip(r) + '>' + n(r.quoted) + quoteTag(r) + '</td>'
+        + '<td style="' + td + '">' + n(r.invoiced)
+        + (r.invMonths || []).map(function (m) {      // month(s) the client converted (invoiced)
+            return ' <span style="font-size:0.62rem;border-radius:4px;padding:0 0.2rem;'
+              + (m.cur ? 'color:#34d399;border:1px solid rgba(52,211,153,0.45)" title="Invoiced in ' + esc(m.m) + ' (this month)"'
+                       : 'color:#94a3b8;border:1px solid #334155" title="Invoice raised in ' + esc(m.m) + ' — the money came in this month"')
+              + '>' + esc(m.m) + '</span>';
+          }).join('')
+        + '</td>'
+        + '<td style="' + td + ';color:' + pctCol + '">' + (pct === null ? '–' : pct + '%') + '</td>'
+        + '<td style="' + td + ';padding-right:0;color:#e2e8f0;font-weight:600">' + n(r.sold) + '</td></tr>';
+    }).join('');
+    var quoted = rows.reduce(function (a, r) { return a + (r.quoted || 0); }, 0);
+    // Totals in the pinned header, beside each column name.
+    var sum = function (k) { return rows.reduce(function (a, r) { return a + (Number(r[k]) || 0); }, 0); };
+    var agreed = sum('agreedKes'), tPct = agreed ? Math.round(sum('paidKes') / agreed * 100) : null;
+    var tot = { quoted: n(rows.reduce(function (a, r) { return a + toInvoice(r); }, 0)) + '<span style="display:block;font-size:0.58rem;font-weight:500;color:#94a3b8">to invoice</span>', invoiced: n(sum('invoiced')), sold: n(Math.round(sum('sold'))),
+                paid: tPct === null ? '–' : '<span style="color:' + (tPct >= 100 ? '#34d399' : (tPct > 0 ? '#fbbf24' : '#f87171')) + '">' + tPct + '%</span>' };
+    Array.prototype.forEach.call(box.querySelectorAll('thead .ct'), function (el) { el.innerHTML = tot[el.getAttribute('data-t')] || ''; });
+    // Target strip: the month against the Odoo corporate target — bags sold, KES received, month gone, pipeline.
+    var T = PERF.corporateTarget, strip = box.querySelector('.corp-target');
+    if (T && strip && (T.bags || T.kes)) {
+      var now = new Date(), dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      var gone = Math.round(now.getDate() / dim * 100);
+      var pct = function (a, b) { return b ? Math.round(a / b * 100) : null; };
+      var badge = function (p) {
+        return p === null ? '–' : '<b style="color:' + (p >= gone ? '#34d399' : '#fbbf24') + '">' + p + '%</b>';
+      };
+      var soldB = Math.round(sum('sold')), recv = sum('receivedKes'), pipe = rows.reduce(function (a, r) { return a + toInvoice(r); }, 0);
+      strip.innerHTML =
+        '<span title="Odoo corporate target for the month (sales_pos_target)"><b style="color:#e2e8f0">Target</b> ' + fmt(T.bags) + ' bags · KES ' + fmt(T.kes) + '</span>'
+        + '<span title="Bags sold this month (Sold total) ÷ target bags">Bags <b style="color:#e2e8f0">' + fmt(soldB) + '</b> · ' + badge(pct(soldB, T.bags)) + '</span>'
+        + '<span title="Money received this month ÷ target KES">Received <b style="color:#e2e8f0">KES ' + fmt(recv) + '</b> · ' + badge(pct(recv, T.kes)) + '</span>'
+        + '<span title="Share of the month gone — green = at or ahead of it">Month gone <b style="color:#e2e8f0">' + gone + '%</b> (day ' + now.getDate() + ' of ' + dim + ')</span>'
+        + (pipe ? '<span title="Bags on this month\'s quotes not invoiced yet">Pipeline <b style="color:#e2e8f0">' + fmt(pipe) + '</b> to invoice</span>' : '');
+      strip.hidden = false;
+    }
+    box.querySelector('.corp-head').textContent = 'Corporate by client (' + rows.length + ')'
+      + (quoted ? ' · ' + quoted.toLocaleString() + ' bags quoted' : '');
+    box.hidden = false;
+    // Why older months (Aug / Sep) show up: the invoice is old, the money is this month's.
+    var month = String(PERF.cpCurLabel || '').split(' ')[0] || 'this month';
+    var olds = rows.filter(function (r) { return r.earlier; });
+    var why = box.querySelector('.corp-why');
+    if (why && olds.length) {
+      why.innerHTML = '<b style="color:#cbd5e1">Why ' + olds.map(function (r) { return esc(r.earlier); })
+          .filter(function (m, i, a) { return a.indexOf(m) === i; }).join(' / ') + ' invoices are here:</b> '
+        + 'bags count in the month the client <b>pays</b>, not the month the invoice was raised. '
+        + 'These were invoiced earlier and paid in ' + esc(month) + ', so their bags are ' + esc(month) + ' sales:'
+        + '<ul style="margin:0.25rem 0 0;padding-left:1rem">'
+        + olds.map(function (r) {
+            var pct = r.agreedKes ? Math.round(r.paidKes / r.agreedKes * 100) : 0;
+            var left = Math.max((r.invoiced || 0) - (r.sold || 0), 0);
+            return '<li><b style="color:#e2e8f0">' + esc(r.client) + '</b> — ' + esc(r.earlier) + ' invoice'
+              + (r.earlierPaidOn ? ', paid ' + esc(r.earlierPaidOn) : '') + ' → '
+              + (pct >= 100 ? 'fully paid, all ' + Number(r.sold).toLocaleString() + ' bags'
+                 : pct + '% paid, so ' + Number(r.sold).toLocaleString() + ' of ' + Number(r.invoiced).toLocaleString()
+                   + ' bags; the other ' + left.toLocaleString() + ' count when the balance is paid')
+              + '</li>';
+          }).join('') + '</ul>';
+      why.hidden = false;
+    }
+    var pop = document.getElementById('sales-popover');
+    if (pop) pop.classList.add('has-corp');   // widen so the list sits beside the donut
+  })();
+  // Shop corporate: Odoo Sales quotes paid at the shop tills — paid when / where, balance owed,
+  // which shop hunted the client (rules in lib/shop_corporate.py). A tab beside "Corporate app".
+  (function(){
+    var box = document.getElementById('corp-clients');
+    var S = PERF.shopCorporate;
+    if (!box || !S || !(S.rows || []).length) return;
+    var pane = box.querySelector('[data-pane="shop"]'), tabs = box.querySelector('.corp-tabs');
+    var pop = document.getElementById('sales-popover');
+    var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+    var fmt = function (v) { return Number(v || 0).toLocaleString(); };
+    var dash = '<span style="color:#475569">–</span>';
+    var td = 'padding:0.2rem 0.3rem;border-top:1px solid rgba(100,116,139,0.18);text-align:right;vertical-align:top';
+    var chip = function (shop) { return '<span class="sc-chip' + (shop === 'Corporate' ? ' corp' : '') + '">' + esc(shop) + '</span>'; };
+    var rows = S.rows, shops = S.shops || [];
+
+    // Strip: paid / owed split between the shops and Corporate.
+    var sh = shops.filter(function (s) { return s.shop !== 'Corporate'; });
+    var co = shops.filter(function (s) { return s.shop === 'Corporate'; })[0] || {paid: 0, bags: 0, owed: 0};
+    var tot = function (a, k) { return a.reduce(function (x, s) { return x + (s[k] || 0); }, 0); };
+    var noQuote = rows.filter(function (r) { return !(r.quotes || []).length; }).length;
+    pane.querySelector('.sc-strip').innerHTML =
+      '<span>Paid at tills <b>KES ' + fmt(tot(shops, 'paid')) + '</b> · <b>' + fmt(tot(shops, 'bags')) + '</b> bags'
+        + ' (shops ' + fmt(tot(sh, 'paid')) + ' · Corporate ' + fmt(co.paid) + ')</span>'
+      + '<span>Shops owed <b style="color:#f87171">KES ' + fmt(tot(sh, 'owed')) + '</b> · Corporate owed <b style="color:#f87171">' + fmt(co.owed) + '</b></span>'
+      + (noQuote ? '<span class="sc-flag">' + noQuote + ' paid with no quote in Odoo</span>' : '');
+
+    // One box per hunting shop (Corporate last, kept out of the shop totals).
+    pane.querySelector('.sc-shops').innerHTML = shops.map(function (s) {
+      return '<div class="sc-box' + (s.shop === 'Corporate' ? ' corp' : '') + '" title="' + s.clients + ' client' + (s.clients === 1 ? '' : 's')
+        + (s.shop === 'Corporate' ? ' · not in any shop\'s totals' : '') + '">' + chip(s.shop)
+        + '<b>' + fmt(s.paid) + ' paid</b>' + (s.bags ? fmt(s.bags) + ' bags · ' : '')
+        + (s.owed ? '<span style="color:#f87171">' + fmt(s.owed) + ' owed</span>' : '0 owed') + '</div>';
+    }).join('');
+
+    var groups = [['paid', 'Paid'], ['part', 'Part-paid'], ['unpaid', 'Not paid yet']];
+    pane.querySelector('tbody').innerHTML = groups.map(function (g) {
+      var list = rows.filter(function (r) { return r.status === g[0]; });
+      if (!list.length) return '';
+      return '<tr class="sc-grp"><td colspan="6" style="text-align:left">' + g[1] + ' (' + list.length + ')</td></tr>'
+        + list.map(function (r) {
+          var q = r.quotes || [];
+          var qTxt = q.length ? q.map(function (x) { return esc(x.no); }).join(' + ') + ' · ' + esc(q[q.length - 1].on)
+                     + (q.some(function (x) { return x.state === 'sale'; }) ? ' · confirmed' : '') : '';
+          var flags = (r.flags || []).concat(r.merged && r.merged.length ? ['also ' + r.merged.join(', ') + ' (earlier versions)'] : [])
+                      .concat(r.age != null && r.age >= 30 ? [r.age + ' days old'] : []);
+          var tip = (r.payments || []).map(function (p) {
+            return p.receipt + ' · ' + p.on + ' · ' + p.shop + ' · KES ' + fmt(p.kes) + (p.by ? ' · ' + p.by : '')
+              + (p.cashier ? ' · ' + p.cashier : '') + (p.cust && p.cust.toLowerCase() !== r.client.toLowerCase() ? ' · till name "' + p.cust + '"' : '');
+          }).concat(q.map(function (x) { return x.no + ' quoted ' + x.on + ' · KES ' + fmt(x.kes) + (x.by ? ' · ' + x.by : '') + ' (' + x.state + ')'; }));
+          var pays = r.payments || [];
+          var when = pays.map(function (p) { return p.on; }).filter(function (v, i, a) { return a.indexOf(v) === i; });
+          var pct = r.quotedKes ? Math.min(Math.round(r.paidKes / r.quotedKes * 100), 100) : (r.paidKes ? 100 : 0);
+          var pctCol = pct >= 100 ? '#34d399' : (pct > 0 ? '#fbbf24' : '#f87171');
+          return '<tr title="' + esc(tip.join('\n')) + '">'
+            + '<td style="' + td + ';text-align:left;padding-left:0;color:#e2e8f0;font-weight:600">' + esc(r.client)
+              + '<span class="sc-sub">' + (qTxt || '') + (flags.length ? (qTxt ? ' · ' : '') + '<span class="sc-flag">' + esc(flags.join(' · ')) + '</span>' : '') + '</span></td>'
+            + '<td style="' + td + ';text-align:left">' + chip(r.hunted)
+              + '<span class="sc-sub">' + esc(r.how) + (r.paidAt ? '<br>paid at ' + esc(r.paidAt) : '') + '</span></td>'
+            + '<td style="' + td + '">' + (r.quotedKes ? fmt(r.quotedKes) : dash) + '</td>'
+            + '<td style="' + td + '">' + (r.paidKes ? fmt(r.paidKes) : dash)
+              + '<span class="sc-sub"><span style="color:' + pctCol + '">' + pct + '%</span>' + (when.length ? ' · ' + esc(when.join(', ')) : '') + '</span></td>'
+            + '<td style="' + td + ';color:' + (r.balance ? '#f87171' : '#64748b') + '">' + fmt(r.balance) + '</td>'
+            + '<td style="' + td + ';padding-right:0;color:#e2e8f0;font-weight:600">' + (r.bags ? fmt(r.bags) : dash) + '</td></tr>';
+        }).join('');
+    }).join('');
+    var sum = function (k) { return rows.reduce(function (a, r) { return a + (Number(r[k]) || 0); }, 0); };
+    var T = {quoted: fmt(sum('quotedKes')), paid: fmt(sum('paidKes')),
+             balance: '<span style="color:#f87171">' + fmt(sum('balance')) + '</span>', bags: fmt(sum('bags'))};
+    Array.prototype.forEach.call(pane.querySelectorAll('thead .ct'), function (el) { el.innerHTML = T[el.getAttribute('data-t')] || ''; });
+    pane.querySelector('.sc-head').textContent = 'Shop corporate orders (' + (S.period || '') + ') · ' + rows.length + ' clients';
+    var left = S.leftOut || [], lb = pane.querySelector('.sc-left');
+    if (left.length) {
+      lb.innerHTML = '<b style="color:#cbd5e1">Left out (already in the Corporate app):</b> ' + left.map(function (l) {
+        return esc(l.client) + ' (' + esc((l.quotes || []).join(', ')) + ', KES ' + fmt(l.kes) + ' → ' + esc(l.ref) + ')';
+      }).join('; ');
+      lb.hidden = false;
+    }
+
+    // Tabs — remembered per viewer.
+    var appRows = (PERF.corporateClients || []).length;
+    var show = function (t) {
+      Array.prototype.forEach.call(box.querySelectorAll('.corp-pane'), function (p) { p.hidden = p.getAttribute('data-pane') !== t; });
+      Array.prototype.forEach.call(tabs.querySelectorAll('button'), function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === t); });
+      if (pop) pop.classList.toggle('sc-on', t === 'shop');
+      try { localStorage.setItem('corpTab', t); } catch (e) {}
+    };
+    tabs.querySelector('[data-tab="shop"]').textContent = 'Shop corporate (' + rows.length + ')';
+    if (appRows) tabs.querySelector('[data-tab="app"]').textContent = 'Corporate app (' + appRows + ')';
+    else tabs.querySelector('[data-tab="app"]').hidden = true;
+    Array.prototype.forEach.call(tabs.querySelectorAll('button'), function (b) {
+      b.addEventListener('click', function () { show(b.getAttribute('data-tab')); });
+    });
+    var saved = null;
+    try { saved = localStorage.getItem('corpTab'); } catch (e) {}
+    show(appRows ? (saved === 'shop' ? 'shop' : 'app') : 'shop');
+    tabs.hidden = false;
+    box.hidden = false;
+    if (pop) pop.classList.add('has-corp');
+  })();
+  setText('kpi-weekly-sales', PERF.weeklySalesTotal);
+  // Shown in the Sales hover popover
+  setText('sales-pop-growth', PERF.weeklySalesPct);
+  setText('sales-pop-prev',   PERF.previousSalesPct + ' (' + PERF.previousSalesBags + ' bags)');
+
+  var _tmw    = parseInt(String(PERF.weeklyThisMonth).replace(/[^0-9]/g, '')) || 0;   // this month's slice (e.g. Aug 1)
+  var _wk     = parseInt(String(PERF.weeklySalesTotal).replace(/[^0-9]/g, '')) || 0;  // whole Sun–Sat week
+  var _tmDays = Number(PERF.weeklyThisMonthDays) || 0;                                // days of this month with data
+  var _thisMon = new Date().toLocaleDateString('en-US', { month: 'short' });          // "Aug" in the viewer's clock
+  var _salesTotal = parseInt(String(PERF.sales).replace(/[^0-9]/g, '')) || 0;
+  var _carry = parseInt(String(PERF.weeklyCarryover).replace(/[^0-9]/g, '')) || 0;   // last month's part of this week
+  var _thisWkSlice = Math.max(_wk - _carry, 0);                                        // this month's part of this week
+  // This Sun–Sat week CROSSES the month boundary when part of it belongs to last
+  // month (e.g. Aug 30–31 sitting inside the Aug 30 → Sep 5 week). The weekly total
+  // then legitimately exceeds the tiny new-month total — that's a real straddle, not
+  // stale data. Only treat it as "whole month" when there's no such split.
+  var _weeklyStraddle   = _carry > 0 && _carry < _wk;
+  var _weeklyIsWholeMonth = !_weeklyStraddle && _salesTotal > 0 && _wk >= _salesTotal;
+
+  // Weekly Sales card: show how this week splits across the month change.
+  if (_weeklyStraddle) {
+    setText('weekly-carryover-sub',
+      _thisWkSlice.toLocaleString() + ' from ' + _thisMon + ' so far · ' +
+      _carry.toLocaleString() + ' from ' + PERF.carryoverMonth +
+      ' — this week crosses the month change.');
+  } else if (_weeklyIsWholeMonth) {
+    setText('weekly-carryover-sub', 'Matches the month total — the new week has no data of its own yet.');
+  } else if (PERF.weeklyCarryover) {
+    var _pctOfWeek = _wk ? (_tmw / _wk * 100) : 0;
+    var _sub = PERF.weeklyThisMonth + ' this month (' + _pctOfWeek.toFixed(1) + '% of ' + PERF.weeklySalesTotal + ') · ' +
+               PERF.weeklyCarryover + ' from ' + PERF.carryoverMonth;
+    if (_tmDays > 0 && _tmw > 0) {
+      var _augPerDay = _tmw / _tmDays;
+      var _projWeek  = _augPerDay * 7;
+      _sub += ' · ' + Math.round(_augPerDay).toLocaleString() + '/day → a full week at this pace ≈ ' +
+              Math.round(_projWeek).toLocaleString() + ' bags';
+    }
+    setText('weekly-carryover-sub', _sub);
+  }
+
+  // Previous-sales % consistent with Previous-sales bags: bags ÷ (same week's target).
+  // target = salesBags ÷ (salesPct/100)  →  prevPct = prevSalesBags × salesPct ÷ salesBags
+  function prevPctOf(w) {
+    var sb = Number(w.salesBags) || 0, sp = Number(w.salesPct) || 0, pb = Number(w.prevSalesBags) || 0;
+    return (sb > 0 && sp > 0) ? (pb * sp / sb) : (Number(w.prevSalesPct) || 0);
+  }
+
+  // ── Weekly performance snapshot table (Week 1 → latest) ───
+  (function () {
+    var tb = document.getElementById('weekly-perf-tbody');
+    if (!tb) return;
+    var weeks = (PROJ.weeklyHistory || []);
+    if (!weeks.length) {
+      tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#475569;padding:1.2rem">' +
+        'No weeks recorded yet — this fills in each week from now on.</td></tr>';
+      return;
+    }
+    function cell(v, align, color) {
+      return '<td style="padding:0.6rem 1.5rem;border-top:1px solid #2d3148;text-align:' + align +
+        ';font-variant-numeric:tabular-nums' + (color ? ';color:' + color : '') + '">' + v + '</td>';
+    }
+    // Cumulative % achieved by end of each week is stored directly in salesPct.
+    function cumPct(x) { return Number(x.salesPct) || 0; }
+    tb.innerHTML = weeks.map(function (w, i) {
+      // Each week shows what it added on its own: this week's cumulative − last week's.
+      var pctV  = cumPct(w) - (i > 0 ? cumPct(weeks[i - 1]) : 0);
+      // Bags: each week's own Weekly Sales contribution.
+      var bagsV = Number(w.weeklySales) || 0;
+      var d = w.declinedBy || 0;
+      // Target to beat = the bare-minimum that week had to clear = its sales + the shortfall.
+      var targetV = bagsV - d;
+      var beat = bagsV >= targetV;
+      var dTxt = (d > 0 ? '+' : '') + d.toLocaleString();
+      var dCol = d < 0 ? '#f87171' : '#34d399';
+      var pp = pctV.toFixed(2) + '%';
+      var pb = bagsV.toLocaleString() + ' bags';
+      var tb2 = targetV.toLocaleString() + ' bags';
+      return '<tr>' +
+        cell('<strong style="color:#e2e8f0">' + w.label + '</strong> <span style="color:#64748b">' + (w.month || '') + '</span>', 'left', '') +
+        cell(pp, 'right', '#facc15') +
+        cell((beat ? '▲ ' : '') + pb, 'right', beat ? '#34d399' : '#f87171') +
+        cell(tb2, 'right', '#94a3b8') +
+        cell(dTxt, 'right', dCol) +
+      '</tr>';
+    }).join('');
+  })();
+
+
+  /* ── Section 2: Forward Projections ─────────────────────── */
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const today  = new Date();
+  document.getElementById('date-line').innerHTML =
+    'As of <span>day ' + PROJ.currentDay + '</span> of ' + (PROJ.projMonth || months[today.getMonth()]) +
+    ' &mdash; projecting over <span>' + PROJ.daysInMonth + ' days</span> at <span>' + PROJ.velocityFactor + '</span> current pace';
+
+  setText('kpi-standard', PROJ.standardProjection);
+  setSub('kpi-standard-sub', 'at ' + PROJ.velocityFactor + ' of current pace');
+
+  setText('kpi-forecasted', PROJ.forecastedProjection);
+  if (PROJ.corporateBags && PROJ.corporateBags !== "0")
+    setSub('kpi-forecasted-sub', 'incl. ' + PROJ.corporateBags + ' corporate bags');
+</script>
+
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+  var C = {
+    green:'#10b981', greenDim:'rgba(16,185,129,0.15)',
+    amber:'#f59e0b', amberDim:'rgba(245,158,11,0.15)',
+    cyan:'#06b6d4',  cyanDim:'rgba(6,182,212,0.15)',
+    purple:'#a78bfa',purpleDim:'rgba(167,139,250,0.15)',
+    red:'#ef4444',   redDim:'rgba(239,68,68,0.15)',
+    border:'#2d3148', text:'#94a3b8', surface:'#1e2130'
+  };
+
+  Chart.defaults.color = C.text;
+  Chart.defaults.borderColor = C.border;
+  Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+
+  var ttDefaults = {
+    backgroundColor: C.surface,
+    borderColor: C.border,
+    borderWidth: 1,
+    titleColor: '#f8fafc',
+    bodyColor: C.text,
+    padding: 10,
+    cornerRadius: 6
+  };
+
+  function parseNum(s) { return parseInt(String(s).replace(/[^0-9]/g,'')) || 0; }
+  function parsePct(s) { return parseFloat(String(s).replace('%','')) || 0; }
+
+  // ── Chart A: Sales Progress Donut ──────────────────────────
+  var salesVal     = parseNum(PERF.sales);
+  var remainingVal = parseNum(PERF.remainingTarget);
+  var pctLabel     = PERF.salesPctAchieved;
+
+  var centerLabelPlugin = {
+    id: 'centerLabelPerf',
+    afterDraw: function(chart) {
+      if (chart.config.type !== 'doughnut') return;
+      var ca = chart.chartArea;
+      var cx = ca.left + (ca.right - ca.left) / 2;
+      var cy = ca.top  + (ca.bottom - ca.top) / 2;
+      var ctx = chart.ctx;
+      ctx.save();
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle    = '#ffffff';
+      ctx.font         = 'bold 1.4rem "Segoe UI", system-ui, sans-serif';
+      ctx.fillText(pctLabel, cx, cy);
+      ctx.restore();
+    }
+  };
+
+  if (window._chartProgressDonut) window._chartProgressDonut.destroy();
+  window._chartProgressDonut = new Chart(
+    document.getElementById('chart-progress-donut'),
+    {
+      type: 'doughnut',
+      data: {
+        labels: ['Sold', 'Remaining'],
+        datasets: [{
+          data: [salesVal, remainingVal],
+          backgroundColor: [C.greenDim, 'rgba(45,49,72,0.5)'],
+          borderColor:     [C.green,    C.border],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        cutout: '70%',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: C.text, padding: 16, boxWidth: 12 }
+          },
+          tooltip: Object.assign({}, ttDefaults)
+        }
+      },
+      plugins: [centerLabelPlugin]
+    }
+  );
+
+  // ── Reusable hover popover (card → floating diagram) ──────
+  function attachPopover(cardId, popId) {
+    var card = document.getElementById(cardId);
+    var pop  = document.getElementById(popId);
+    if (!card || !pop) return;
+    var hideTimer = null;
+    function place() {
+      var r = card.getBoundingClientRect();
+      var w = pop.offsetWidth || 320;
+      var h = pop.offsetHeight || 0;
+      pop.style.left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8)) + 'px';
+      // Auto-flip: open upward when opening below would overflow the viewport bottom.
+      if (h && (r.bottom + 6 + h) > (window.innerHeight - 8) && (r.top - h - 6) > 8) {
+        pop.style.top = (r.top - h - 6) + 'px';
+        pop.style.transformOrigin = 'bottom center';
+      } else {
+        pop.style.top = (r.bottom + 6) + 'px';
+        pop.style.transformOrigin = 'top center';
+      }
+    }
+    function show() { clearTimeout(hideTimer); place(); pop.classList.add('show'); }
+    function scheduleHide() { hideTimer = setTimeout(function () { pop.classList.remove('show'); }, 220); }
+    // Card hover opens it; leaving the card starts a short grace timer
+    card.addEventListener('mouseenter', show);
+    card.addEventListener('mouseleave', scheduleHide);
+    // Moving the mouse INTO the popover keeps it open so you can read tooltips
+    pop.addEventListener('mouseenter', function () { clearTimeout(hideTimer); });
+    pop.addEventListener('mouseleave', scheduleHide);
+    window.addEventListener('resize', function () { if (pop.classList.contains('show')) place(); });
+  }
+  attachPopover('sales-card',     'sales-popover');
+  attachPopover('weekly-card',    'weekly-popover');
+  attachPopover('remaining-card', 'remaining-popover');
+
+  // ── WoW diagram (in the Weekly Sales popover) ─────────────
+  (function () {
+    var ctx = document.getElementById('chart-wow');
+    if (!ctx) return;
+    // Each bar is a week's OWN sales (weeklySales) — NOT the running month total
+    // (salesBags/prevSalesBags are cumulative and made "this week" look like ~8k).
+    var hist = ((typeof PROJ !== 'undefined' && PROJ.weeklyHistory) ? PROJ.weeklyHistory : [])
+                 .filter(function (w) { return w && w.label; });
+
+    // Sunday (YYYY-MM-DD) that starts the week containing today = the in-progress week.
+    var _t = new Date(); _t.setHours(0, 0, 0, 0);
+    _t.setDate(_t.getDate() - _t.getDay());   // getDay(): Sunday = 0
+    var todaySun = _t.getFullYear() + '-' + String(_t.getMonth() + 1).padStart(2, '0')
+                   + '-' + String(_t.getDate()).padStart(2, '0');
+
+    // Compare the two most recent COMPLETE weeks — drop the current, still-running
+    // week so a day-old week can't distort the comparison.
+    var complete = hist.filter(function (w) { return w.weekStart !== todaySun; });
+    var use = (complete.length >= 2) ? complete : hist;
+    var prevEntry = use[use.length - 2] || {};
+    var lastEntry = use[use.length - 1] || {};
+    var lastWk = Number(prevEntry.weeklySales) || parseNum(PERF.previousSalesBags);
+    var thisWk = Number(lastEntry.weeklySales) || parseNum(PERF.weeklySalesTotal);
+    var lastLabel = prevEntry.label || 'Last week';
+    var thisLabel = lastEntry.label || 'This week';
+
+    var wowDelta = thisWk - lastWk;
+    var wowPct   = lastWk > 0 ? (wowDelta / lastWk * 100) : 0;
+    var up = wowDelta >= 0;
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: [lastLabel, thisLabel],
+        datasets: [{
+          data: [lastWk, thisWk],
+          backgroundColor: ['rgba(148,163,184,0.5)', up ? C.green : C.red],
+          borderRadius: 4, borderSkipped: false, barThickness: 46,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: Object.assign({}, ttDefaults, {
+            callbacks: { label: function(c){ return c.parsed.y.toLocaleString() + ' bags'; } }
+          })
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: C.text } },
+          y: { grid: { color: 'rgba(45,49,72,0.5)' }, ticks: { color: C.text }, beginAtZero: true }
+        }
+      }
+    });
+    var note = document.getElementById('wow-pop-note');
+    if (note) {
+      note.textContent = (up ? '+' : '') + wowPct.toFixed(1) + '%  (' + (up ? '+' : '') + wowDelta.toLocaleString() + ' bags)';
+      note.style.color = up ? '#34d399' : '#f87171';
+    }
+  })();
+
+  // ── Bare-minimum diagram (in the Remaining Target popover) ─
+  (function () {
+    var ctx = document.getElementById('chart-bare-min');
+    if (!ctx) return;
+    var bareMinPct = parsePct(PROJ.bareMinimumGrowthPct);   // % of total target
+    var bareMinBags = PROJ.bareMinimum || '—';
+    var rest = Math.max(100 - bareMinPct, 0);
+
+    var centerPlugin = {
+      id: 'bareMinCenter',
+      afterDraw: function(chart) {
+        var ca = chart.chartArea, ctx2 = chart.ctx;
+        ctx2.save();
+        ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+        ctx2.fillStyle = '#fbbf24';
+        ctx2.font = 'bold 1.3rem "Segoe UI", system-ui, sans-serif';
+        ctx2.fillText(PROJ.bareMinimumGrowthPct, (ca.left+ca.right)/2, (ca.top+ca.bottom)/2 - 6);
+        ctx2.fillStyle = '#94a3b8';
+        ctx2.font = '600 0.6rem "Segoe UI", system-ui, sans-serif';
+        ctx2.fillText('of target', (ca.left+ca.right)/2, (ca.top+ca.bottom)/2 + 12);
+        ctx2.restore();
+      }
+    };
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Bare minimum', 'Rest of target'],
+        datasets: [{
+          data: [bareMinPct, rest],
+          backgroundColor: [C.amber, 'rgba(45,49,72,0.5)'],
+          borderColor: [C.amber, C.border], borderWidth: 2
+        }]
+      },
+      options: {
+        cutout: '70%', responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: C.text, padding: 12, boxWidth: 10, font: { size: 10 } } },
+          tooltip: Object.assign({}, ttDefaults, {
+            callbacks: { label: function(c){ return c.label + ': ' + c.parsed.toFixed(2) + '%'; } }
+          })
+        }
+      },
+      plugins: [centerPlugin]
+    });
+    var note = document.getElementById('bare-min-note');
+    if (note) note.innerHTML = 'Bare minimum: <strong style="color:#fbbf24">' + bareMinBags +
+      ' bags</strong> to be sold this week';
+
+    // Declined By — how far this week's sales fell short of the bare minimum
+    var dnote = document.getElementById('bare-min-declined');
+    if (dnote && PROJ.declinedBy) {
+      var short = PROJ.declinedBy.trim().charAt(0) === '-';
+      dnote.innerHTML = 'Declined by <strong style="color:' + (short ? '#f87171' : '#34d399') + '">' +
+        PROJ.declinedBy + ' bags</strong> ' +
+        '<span style="color:#64748b">(' + PROJ.weeklySalesTotal + ' sold vs ' + PROJ.bareMinimum + ' minimum)</span>';
+    }
+  })();
+
+  // ── Weekly performance: the climb to the monthly target ──────
+  (function () {
+    var weeks = (PROJ.weeklyHistory || []);
+    var wrap  = document.getElementById('weekly-perf-chart-wrap');
+    var ctx   = document.getElementById('chart-weekly-perf');
+    if (!wrap || !ctx || !weeks.length) return;
+    wrap.style.display = 'block';
+    // Cumulative % achieved by end of each week is stored directly in salesPct.
+    function cumPct(w) { return Number(w.salesPct) || 0; }
+    // Each week's OWN contribution = its cumulative − the previous week's cumulative.
+    var series = weeks.map(function(w, i) { return cumPct(w) - (i > 0 ? cumPct(weeks[i - 1]) : 0); });
+    // Bags: each week's own Weekly Sales contribution.
+    var bagsSeries = weeks.map(function(w) { return Number(w.weeklySales) || 0; });
+    // Running cumulative (for tooltip / total badge).
+    var cumSeries = []; series.reduce(function(a, v, i) { return (cumSeries[i] = a + v); }, 0);
+    var cx = ctx.getContext('2d');
+    var grad = cx.createLinearGradient(0, 0, 0, 210);
+    grad.addColorStop(0, 'rgba(245,158,11,0.32)'); grad.addColorStop(1, 'rgba(245,158,11,0.02)');
+
+    // Previous month's per-week % of target — the dashed comparison line.
+    var prevW = (typeof PERF !== 'undefined' && PERF.cpPrevWeekly) ? PERF.cpPrevWeekly : [];
+    var hasPrev = prevW.length > 0;
+    var curLabel  = (typeof PERF !== 'undefined' && PERF.cpCurLabel)  ? PERF.cpCurLabel  : 'This month';
+    var prevLabel = (typeof PERF !== 'undefined' && PERF.cpPrevLabel) ? PERF.cpPrevLabel : 'Last month';
+    // X-axis spans the longer of the two months (last month usually has more weeks).
+    var labels = weeks.map(function(w){ return w.label; });
+    if (prevW.length > labels.length) labels = prevW.map(function(x){ return x.label; });
+
+    // Value label above each of THIS month's points.
+    var ptLabels = { id: 'wpPts', afterDatasetsDraw: function(ch) {
+      var c = ch.ctx, m = ch.getDatasetMeta(0);
+      c.save(); c.font = '700 0.72rem "Segoe UI", system-ui, sans-serif'; c.fillStyle = '#fde68a';
+      c.textAlign = 'center'; c.textBaseline = 'bottom'; c.shadowColor = 'rgba(0,0,0,0.6)'; c.shadowBlur = 3;
+      m.data.forEach(function(pt, i) { if (series[i] == null) return; c.fillText(series[i].toFixed(1) + '%', pt.x, pt.y - 8); });
+      c.restore();
+    } };
+
+    // Datasets per shape. Same numbers every time — only the styling changes.
+    function buildDatasets(type) {
+      var isBar = (type === 'bar'), isRadar = (type === 'radar');
+      var cur = { label: curLabel, data: series, borderColor: C.amber, order: 1 };
+      if (isBar) {
+        cur.backgroundColor = C.amber; cur.borderWidth = 0; cur.borderRadius = 4; cur.borderSkipped = false;
+      } else if (isRadar) {
+        cur.backgroundColor = 'rgba(245,158,11,0.18)'; cur.fill = true; cur.borderWidth = 2;
+        cur.pointRadius = 3; cur.pointHoverRadius = 6; cur.pointBackgroundColor = C.amber;
+        cur.pointBorderColor = '#0b0d16'; cur.pointBorderWidth = 2;
+      } else {
+        cur.backgroundColor = grad; cur.fill = (type === 'area'); cur.borderWidth = 3; cur.tension = 0.35;
+        cur.pointRadius = 5; cur.pointHoverRadius = 8; cur.pointBackgroundColor = C.amber;
+        cur.pointBorderColor = '#0b0d16'; cur.pointBorderWidth = 2;
+      }
+      var dsets = [cur];
+      if (!hasPrev) return dsets;
+      var prev = { label: prevLabel, data: prevW.map(function(x){ return x.pct; }),
+                   borderColor: 'rgba(148,163,184,0.9)', order: 2 };
+      if (isBar) {
+        // Dashes mean nothing on a bar — flat grey reads as "last month" just as well.
+        prev.backgroundColor = 'rgba(148,163,184,0.55)'; prev.borderWidth = 0; prev.borderRadius = 4; prev.borderSkipped = false;
+      } else {
+        prev.backgroundColor = 'transparent'; prev.fill = false; prev.borderWidth = 2; prev.borderDash = [5, 4];
+        prev.pointHoverRadius = 6; prev.pointBackgroundColor = '#94a3b8';
+        prev.pointBorderColor = '#0b0d16'; prev.pointBorderWidth = 1;
+        if (isRadar) { prev.pointRadius = 2; } else { prev.tension = 0.35; prev.pointRadius = 3; }
+      }
+      dsets.push(prev);
+      return dsets;
+    }
+
+    // Defined once, shared by all four types — a type switch must never lose these.
+    var wpTooltip = Object.assign({}, ttDefaults, {
+      callbacks: {
+        title: function(items) { return items[0].label; },
+        label: function(c) { return c.dataset.label + ': ' + Number(c.raw).toFixed(2) + '% of target'; },
+        afterBody: function(items) {
+          if (!items.length || items[0].datasetIndex !== 0) return '';
+          var i = items[0].dataIndex;
+          var lines = ['Weekly sales: ' + Math.round(bagsSeries[i] || 0).toLocaleString() + ' bags',
+                       'Cumulative to date: ' + (cumSeries[i] || 0).toFixed(1) + '% of target'];
+          if (i > 0) { var d = series[i] - series[i - 1]; lines.push((d >= 0 ? '▲ +' : '▼ ') + d.toFixed(1) + ' pts vs ' + weeks[i - 1].label); }
+          return lines;
+        }
+      }
+    });
+    var pctTick = function(v) { return Number(v).toFixed(0) + '%'; };
+    var wpScales = {
+      x: { grid: { display: false }, ticks: { color: C.text } },
+      y: { beginAtZero: true, grid: { color: 'rgba(45,49,72,0.5)' },
+           ticks: { color: C.text, callback: pctTick } }
+    };
+    var wpRadarScales = {
+      r: { beginAtZero: true,
+           grid: { color: 'rgba(45,49,72,0.5)' }, angleLines: { color: 'rgba(45,49,72,0.5)' },
+           pointLabels: { color: C.text },
+           ticks: { color: C.text, backdropColor: 'transparent', callback: pctTick } }
+    };
+
+    function buildConfig(type) {
+      var isRadar = (type === 'radar');
+      return {
+        type: (type === 'bar') ? 'bar' : (isRadar ? 'radar' : 'line'),
+        data: { labels: labels, datasets: buildDatasets(type) },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          layout: { padding: { top: 22 } },
+          plugins: {
+            legend: { display: hasPrev, labels: { usePointStyle: true, boxWidth: 8, color: C.text } },
+            tooltip: wpTooltip
+          },
+          scales: isRadar ? wpRadarScales : wpScales
+        },
+        // wpPts writes each label at pt.y - 8, which lands wrong on radar's polar points.
+        plugins: isRadar ? [] : [ptLabels]
+      };
+    }
+
+    function render(type) {
+      if (window._chartWeeklyPerf) window._chartWeeklyPerf.destroy();
+      window._chartWeeklyPerf = new Chart(ctx, buildConfig(type));
+    }
+
+    // ── Chart-type filter — same data, four shapes. Choice survives a reload. ──
+    var WP_TYPES = ['area', 'line', 'bar', 'radar'];
+    var seg = document.getElementById('cp-wp-type');
+    var saved = null;
+    try { saved = localStorage.getItem('cp_wp_chart_type'); } catch (e) {}
+    var initial = WP_TYPES.indexOf(saved) > -1 ? saved : 'area';
+
+    function syncSeg(type) {
+      if (!seg) return;
+      Array.prototype.forEach.call(seg.querySelectorAll('.cp-seg'), function(b) {
+        var on = b.getAttribute('data-type') === type;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+    if (seg) seg.addEventListener('click', function(ev) {
+      var btn = ev.target && ev.target.closest ? ev.target.closest('.cp-seg') : null;
+      if (!btn) return;
+      var type = btn.getAttribute('data-type');
+      if (WP_TYPES.indexOf(type) < 0) return;
+      try { localStorage.setItem('cp_wp_chart_type', type); } catch (e) {}
+      syncSeg(type);
+      render(type);
+    });
+
+    syncSeg(initial);
+    render(initial);
+
+    // Footer stats — growth toward monthly sales + last month's achieved % (image-2 style).
+    var statsEl = document.getElementById('cp-weekly-stats');
+    if (statsEl && typeof PERF !== 'undefined') {
+      var gPct = PERF.weeklySalesPct || '', pPct = PERF.previousSalesPct || '', pBags = PERF.previousSalesBags || '';
+      statsEl.innerHTML =
+        '<span>Growth % towards achieved monthly sales: <b style="color:#fbbf24">' + gPct + '</b></span>'
+        + (pPct ? '<span>Previous sales % achieved: <b style="color:#fbbf24">' + pPct + (pBags ? ' (' + pBags + ' bags)' : '') + '</b></span>' : '');
+    }
+  })();
+});
+</script>
+
+<script>
+  document.querySelectorAll('.card').forEach(function(el, i) {
+    el.classList.add('card-reveal');
+    el.style.setProperty('--reveal-delay', (i * 40) + 'ms');
+  });
+</script>
+
+<!-- Page sidebar (page_sidebar.js): "In this report" with scroll-spy -->
+<script src="../assets/page_sidebar.js"></script>
+<script>
+  PageSidebar.init({
+    content: 'body > .section, body > .section-divider',
+    label: 'Current Performance navigation',
+    sections: function () {
+      var out = [];
+      document.querySelectorAll('.psb-main > .section').forEach(function (sec, i) {
+        var h = sec.querySelector('.section-header h2');
+        if (!h) return;
+        out.push({ el: sec, num: String(i + 1), color: i ? '#22d3ee' : '#facc15', name: h.textContent.trim() });
+        sec.querySelectorAll('.table-title').forEach(function (t) {   // e.g. Weekly Performance
+          var box = t.closest('.card') || t;
+          if (box.offsetParent !== null) out.push({ el: box, num: '·', sub: true, color: '#94a3b8', name: t.textContent.split(' — ')[0].trim() });
+        });
+      });
+      return out;
+    }
+  });
+</script>
+
+</body>
+</html>
