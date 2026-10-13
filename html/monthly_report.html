@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="darkreader-lock" /><!-- the dashboard has its own light/dark theme: stop the Dark Reader extension re-darkening it -->
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>October 2026 — Monthly Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1117; color: #e2e8f0; padding: 2rem; line-height: 1.55; }
+  .wrap { width: 100%; max-width: 900px; margin: 0 auto; }
+  .rpt-head { margin-bottom: 1.6rem; }
+  .rpt-pill { display: inline-block; background: linear-gradient(135deg,#8b5cf6,#6366f1); color: #fff; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.3rem 0.8rem; border-radius: 999px; margin-bottom: 0.7rem; }
+  .rpt-head h1 { font-size: 1.9rem; font-weight: 800; color: #f8fafc; letter-spacing: -0.01em; }
+  .rpt-head .dek { font-size: 0.9rem; color: #94a3b8; margin-top: 0.35rem; }
+  .exec { background: linear-gradient(160deg, #1b2333, #171a27); border: 1px solid #2d3148; border-left: 4px solid #34d399; border-radius: 16px; padding: 1.5rem 1.6rem; margin-bottom: 2rem; }
+  .exec .lbl { font-size: 0.66rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: #6ee7b7; margin-bottom: 0.5rem; }
+  .exec .headline { font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.9rem; }
+  .exec .headline b { color: #facc15; }
+  .exec ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+  .exec li { font-size: 0.9rem; color: #cbd5e1; padding-left: 1.2rem; position: relative; }
+  .exec li::before { content: '\25B8'; position: absolute; left: 0; color: #34d399; }
+  .exec li b { color: #f8fafc; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 0.8rem; margin-bottom: 2rem; }
+  .kpi { background: #1e2130; border: 1px solid #2d3148; border-radius: 12px; padding: 0.9rem 1rem; }
+  .kpi .k-lbl { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #64748b; }
+  .kpi .k-val { font-size: 1.6rem; font-weight: 800; color: #f8fafc; line-height: 1.1; margin-top: 0.2rem; font-variant-numeric: tabular-nums; }
+  .kpi .k-sub { font-size: 0.72rem; color: #94a3b8; margin-top: 0.2rem; }
+  .k-val.amber { color: #fbbf24; } .k-val.red { color: #f87171; } .k-val.green { color: #34d399; } .k-val.cyan { color: #22d3ee; }
+  /* Response-ladder tag — the single appropriate response for a metric (Update … Collaborate),
+     with its one-line action. */
+  .lstrip { display: flex; flex-wrap: wrap; align-items: center; gap: 0.28rem; margin: 0.45rem 0 0.1rem; }
+  .lstep { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+           padding: 0.12rem 0.48rem; border-radius: 11px; border: 1px solid #262b3a; background: #14161f; color: #475569; }
+  .lstep.on { color: #cbd5e1; border-color: #3a3f52; background: #252a3a; }
+  .lstep.peak { color: #fcd34d; border-color: #7c5e12; background: #2a2410; }
+  .laction { font-size: 0.72rem; color: #94a3b8; margin-left: 0.15rem; }
+  .laction b { color: #e2e8f0; }
+  .sec { background: #1e2130; border: 1px solid #2d3148; border-radius: 16px; padding: 1.5rem 1.6rem; margin-bottom: 1.5rem; }
+  .sec-head { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 1rem; }
+  .sec-num { width: 30px; height: 30px; flex-shrink: 0; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; color: #0b0d16; }
+  .sec-head h2 { font-size: 1.15rem; font-weight: 700; color: #f8fafc; }
+  .row { margin-bottom: 1rem; } .row:last-child { margin-bottom: 0; }
+  .row .tag { font-size: 0.64rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.3rem; }
+  .tag.bottom { color: #facc15; } .tag.insight { color: #22d3ee; } .tag.rec { color: #a78bfa; } .tag.impact { color: #34d399; }
+  .row p { font-size: 0.9rem; color: #cbd5e1; } .row p b { color: #f8fafc; }
+  .recs { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.4rem; }
+  .rec-item { display: flex; align-items: baseline; gap: 0.6rem; font-size: 0.88rem; color: #cbd5e1; }
+  .badge { flex-shrink: 0; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.18rem 0.5rem; border-radius: 5px; }
+  .badge.stop  { background: rgba(248,113,113,0.16); color: #fca5a5; border: 1px solid rgba(248,113,113,0.35); }
+  .badge.start { background: rgba(52,211,153,0.16); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.35); }
+  .badge.test  { background: rgba(34,211,238,0.16); color: #67e8f9; border: 1px solid rgba(34,211,238,0.35); }
+  .impact { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); border-radius: 10px; padding: 0.7rem 0.9rem; margin-top: 0.4rem; }
+  .impact p { font-size: 0.88rem; color: #d1fae5; } .impact b { color: #6ee7b7; }
+  .assump { font-size: 0.72rem; color: #64748b; margin-top: 0.35rem; font-style: italic; }
+  .foot { font-size: 0.72rem; color: #475569; text-align: center; margin-top: 1.5rem; }
+  .chart-wrap { position: relative; height: 240px; margin: 0.2rem 0 1.2rem; }
+  .chart-cap { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; margin: 0 0 0.5rem; font-weight: 700; }
+
+  /* ── Consistency with the other pages: reduced-motion, flat accent, glass, aura ── */
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{ transition-duration:.12s!important; transition-property:opacity!important;
+      animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; }
+  }
+  .rpt-pill{ background:#8b5cf6 !important; }              /* flat accent (was a gradient) */
+  .exec, .kpi, .sec{ border-radius:10px !important; }
+  /* Frosted-glass card surfaces — the aura shows through */
+  .exec, .kpi, .sec, .mini{
+    background-color:rgba(24,27,40,0.52) !important; background-image:none !important;
+    backdrop-filter:blur(14px) saturate(1.08); -webkit-backdrop-filter:blur(14px) saturate(1.08); }
+  @media (prefers-reduced-transparency: reduce){
+    .exec, .kpi, .sec, .mini{ background-color:#141824 !important; backdrop-filter:none; -webkit-backdrop-filter:none; } }
+  /* Spectral Edge aura backdrop (decorative, fixed, behind all content) */
+  body{ background-color:#100e0b; }
+  .aura-layer-1,.aura-layer-2,.aura-layer-3{ position:fixed; inset:0; z-index:-1; pointer-events:none; transform:translateZ(0); will-change:transform; }
+  .aura-layer-1{ mix-blend-mode:screen; filter:blur(108px); background:linear-gradient(90deg, transparent 0%, rgba(59,130,246,0.04) 32%, rgba(6,182,212,0.12) 45%, rgba(34,197,94,0.13) 51%, rgba(250,204,21,0.12) 57%, rgba(244,63,94,0.11) 64%, transparent 82%); }
+  .aura-layer-2{ mix-blend-mode:screen; filter:blur(58px); opacity:0.24; background:linear-gradient(102deg, transparent 38%, rgba(255,255,255,0.08) 46%, rgba(125,211,252,0.06) 51%, transparent 60%); }
+  .aura-layer-3{ mix-blend-mode:screen; filter:blur(126px); opacity:0.55; background:radial-gradient(ellipse 25% 65% at 92% 50%, rgba(139,92,246,0.16) 0%, transparent 78%); }
+  @media (max-width:640px){ .aura-layer-1{ filter:blur(75px);} .aura-layer-2{ filter:blur(40px);} .aura-layer-3{ filter:blur(88px);} }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="../assets/chart_switcher.js"></script>
+</head>
+<body>
+<div class="aura-layer-1" aria-hidden="true"></div>
+<div class="aura-layer-2" aria-hidden="true"></div>
+<div class="aura-layer-3" aria-hidden="true"></div>
+<div class="wrap">
+
+  <div class="rpt-head">
+    <span class="rpt-pill">Monthly Report</span>
+    <h1>October 2026 — How the Month Is Going So Far</h1>
+    <div class="dek">Current Performance · New Products · Offer Type Analysis · Self-Made Combos · Posting Yields · Remaining Stock</div>
+  </div>
+
+  <div class="exec">
+    <div class="lbl">The Bottom Line</div>
+    <div class="headline">
+      October is at <b>23.0% of target</b> so far — 6,439 of 28,013 bags, <b>21,574 bags</b> still to go. Unposted stock (6,383 bags) explains only <b>29.6%</b> of that — <b>the rest is sales pace</b>.
+    </div>
+    <div class="lstrip" title="Response ladder — the appropriate response at 23.0%"><span class="lstep on peak">Collaborate</span><span class="laction">&rarr; <b>Collaborate:</b> Own the 21,574-bag miss vs the 28,013 target — unposted stock is only 29.6% of it; lift the weekly sales pace.</span></div>
+    <ul>
+      <li><b>61.2% of Kenya stock (6,383 bags) was never posted</b> — yet posted bags sold at 39.8% of expectation. Marketing is the lever, and much of it went unused.<div class="lstrip" title="Response ladder — the appropriate response at 38.8%"><span class="lstep on peak">Collaborate</span><span class="laction">&rarr; <b>Collaborate:</b> Post the <b>61.2%</b> of Kenya stock left unmarketed — posted bags already sell at 39.8% of expectation.</span></div></li>
+      <li><b>Weekly output (~2,146 bags) ran below the 7,003/week floor</b> needed to hit target — the problem is consistency, not a bad month.<div class="lstrip" title="Response ladder — the appropriate response at 30.6%"><span class="lstep on peak">Collaborate</span><span class="laction">&rarr; <b>Collaborate:</b> Hold a hard <b>7,003/wk</b> commit reviewed every Monday; recover ~2,428/wk to close the gap.</span></div></li>
+      <li><b>Regions are uneven:</b> Kenya posts at 39.8% sales-achieved, Sinza 31.3%, Uganda 18.8%. The Kenya playbook isn't being run elsewhere.<div class="lstrip" title="Response ladder — the appropriate response at 18.8%"><span class="lstep on peak">Collaborate</span><span class="laction">&rarr; <b>Collaborate:</b> Run the Kenya playbook (39.8%) in Uganda (18.8%) — same posting discipline everywhere.</span></div></li>
+      <li><b>Why stock isn't moving, and how to sell it in the 21 days left:</b> 6,383 units were never posted (not seen) and 319 posted units sold under half their expected (seen, not bought). Posting at ~22/day can still move ~406 bags this month — see section 5.<div class="lstrip" title="Response ladder — the appropriate response at 38.8%"><span class="lstep on peak">Collaborate</span><span class="laction">&rarr; <b>Collaborate:</b> Post the biggest never-posted lines first; move the non-converters onto an offer; plan the rest for November.</span></div></li>
+    </ul>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi" style="align-items:stretch"><div class="k-lbl">Sales vs Monthly Target</div><div style="position:relative;height:150px;margin-top:0.35rem"><canvas id="kpi-target-donut"></canvas></div><div class="k-sub" style="text-align:center">6,439 / 28,013 bags</div></div>
+    <div class="kpi"><div class="k-lbl">Missed By</div><div class="k-val red">21,574</div><div class="k-sub">bags short of target</div></div>
+    <div class="kpi"><div class="k-lbl">Unmarketed Stock</div><div class="k-val red">6,383</div><div class="k-sub">61.2% of Kenya stock not posted &middot; 216 posts made this month</div></div>
+    <div class="kpi"><div class="k-lbl">Posting Sales-Achieved</div><div class="k-val green">39.8%</div><div class="k-sub">Kenya 39.8% &middot; Sinza 31.3% &middot; Uganda 18.8% (of expected)</div></div>
+    <div class="kpi"><div class="k-lbl">Net Bags Sold &middot; Catalogue</div><div class="k-val cyan">6,371</div><div class="k-sub">net of refunds &middot; master-list products only</div></div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.4rem 1rem;margin:0 0 1.4rem;padding:0.6rem 0.85rem;border-radius:10px;background:rgba(236,72,153,0.08);border:1px solid rgba(236,72,153,0.28);font-size:0.82rem;color:#e2e8f0">
+    <span style="font-size:0.68rem;font-weight:700;color:#f9a8d4;text-transform:uppercase;letter-spacing:0.08em">🎂 Shop birthdays in October</span>
+    <span><b>Kisumu</b> 6th birthday &middot; October</span><span><b>Nanyuki</b> 3rd birthday &middot; 2 Oct</span>
+    <span style="color:#94a3b8;font-size:0.74rem">— plan a birthday offer + posts for these shops</span>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><div class="sec-num" style="background:#facc15">1</div><h2>Current Performance</h2></div>
+    <div class="chart-cap">Weekly performance — Week 1 to latest (each week's % of target)</div>
+    <div class="chart-wrap" style="height:240px"><canvas id="cp-chart"></canvas></div>
+    <div style="display:flex;flex-wrap:wrap;gap:0.35rem 2rem;justify-content:center;font-size:0.8rem;color:#94a3b8;margin:0 0 1.1rem">
+      <span>Growth % towards achieved monthly sales: <b style="color:#fbbf24">0.69%</b></span>
+      <span>Previous sales % achieved: <b style="color:#fbbf24">23.45% (186 bags)</b></span>
+    </div>
+    <div class="row"><div class="tag bottom">The Bottom Line</div>
+      <p>So far in October we're at <b>23.0% of target (6,439 bags)</b>, <b>21,574 bags</b> still to go. Weekly output has averaged about <b>2,146 bags</b> — under the <b>7,003-bag weekly floor</b> the target requires.</p></div>
+    <div class="row"><div class="tag insight">The Insight</div>
+      <p>Weekly output ran <b>below the bare minimum</b> needed to reach target most weeks. The shortfall is one of <b>throughput and consistency</b>, not demand — corporate orders (323 bags) only nudged the forecast to 74.83%.</p></div>
+    <div class="row"><div class="tag rec">Recommendation</div>
+      <div class="recs">
+        <div class="rec-item"><span class="badge start">Start</span><span>Managing to a <b>hard 7,003-bag weekly commit</b>, reviewed every Monday — not a single monthly number reconciled at month-end.</span></div>
+        <div class="rec-item"><span class="badge stop">Stop</span><span>Treating the ~4,857-bag weekly gap as normal. Each missed week is unrecoverable against a fixed monthly target.</span></div>
+      </div></div>
+    <div class="row"><div class="tag impact">Business Impact</div>
+      <div class="impact"><p>Closing even <b>half the weekly gap (~2,428 bags/week)</b> across the month adds <b>~9,713 bags</b> — lifting achievement from 23.0% to <b>~57.7%</b>.</p></div>
+      <div class="assump">Assumes ~2,428 bags/week recovered × 4 weeks; at ~KES 2,500/bag that is ≈ KES 24,283,333 of recovered sales.</div></div>
+    <div class="lstrip" title="Response ladder — the appropriate response at 23.0%"><span class="lstep on peak">Collaborate</span><span class="laction">&rarr; <b>Collaborate:</b> Recover ~<b>2,428/wk</b> to lift 23.0% toward ~57.7%; own the 21,574-bag gap.</span></div>
+    
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><div class="sec-num" style="background:#22d3ee">2</div><h2>New Products</h2></div>
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:0.45rem;margin:0 0 0.5rem;font-size:0.72rem;color:#64748b">
+      <span style="text-transform:uppercase;letter-spacing:0.06em">Sort</span>
+      <select id="np-sort" style="background:#1e2130;border:1px solid #2d3148;color:#e2e8f0;padding:0.28rem 0.55rem;border-radius:6px;font-size:0.75rem;cursor:pointer;outline:none">
+        <option value="sold-desc">Sold — high to low</option>
+        <option value="sold-asc">Sold — low to high</option>
+        <option value="remaining-desc">Still needed — high to low</option>
+        <option value="stock-desc">Stock — high to low</option>
+        <option value="posts-desc">Posts — high to low</option>
+      </select>
+    </div>
+    <div class="chart-cap">Each new product — sold vs remaining to target</div>
+    <div class="chart-wrap"><canvas id="np-chart"></canvas></div>
+    <div class="chart-cap">Each new product — posts done vs current stock (the dead-stock read)</div>
+    <div class="chart-wrap"><canvas id="np-stock-chart"></canvas></div>
+    <div class="row"><div class="tag bottom">The Bottom Line</div>
+      <p>The 9 new products (LOOP BP, ZULA, LAMORA, TAJI, IMANI, NALA, AMORA, VOYAGE, LAFEMME) reached only <b>18.2% of their 848-bag target (154 sold)</b> — a <b>694-bag deficit</b>.</p></div>
+    <div class="row"><div class="tag insight">The Insight</div>
+      <p>New products received <b>242 marketing posts</b> but converted just 154 bags, and <b>almost all of it (153 of 154) was Kenya</b> — outside-Kenya is effectively <b>untested (1 bags)</b>. Awareness is being created; conversion and distribution are the bottleneck.</p></div>
+    <div class="row"><div class="tag rec">Recommendation</div>
+      <div class="recs">
+        <div class="rec-item"><span class="badge start">Start</span><span>A concentrated push on the <b>weakest launches</b> with price/offer support to clear the 694-bag deficit.</span></div>
+        <div class="rec-item"><span class="badge test">Start testing</span><span><b>Outside-Kenya distribution</b> for the best-performing new lines — 1 bags sold there all month is an untested market, not a dead one.</span></div>
+      </div></div>
+    <div class="row"><div class="tag impact">Business Impact</div>
+      <div class="impact"><p>Recovering <b>half the deficit (~347 bags)</b> is realistic within one cycle; a working outside-Kenya channel would add a comparable second stream.</p></div>
+      <div class="assump">Assumes weak-launch recovery of 50% of the 694-bag deficit; outside-Kenya upside sized off the 242-post base.</div></div>
+    <div class="lstrip" title="Response ladder — the appropriate response at 18.2%"><span class="lstep on peak">Collaborate</span><span class="laction">&rarr; <b>Collaborate:</b> New products at <b>18.2%</b> of target — 694 bags to go; push the launched lines with posting.</span></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><div class="sec-num" style="background:#f59e0b">★</div><h2>Timed Offers</h2></div>
+    <div style="font-size:1.05rem;font-weight:700;color:#fbbf24;margin:0.2rem 0 0.15rem">9–10 Oct · Up to KES 1,400 Off (Kenya)</div>
+    <div class="chart-cap">9–10 Oct 2026 · Kenya · sales from Odoo (exact window) · posting = last week (Kenya)</div>
+    <div style="display:flex;gap:1.6rem;flex-wrap:wrap;margin:0 0 0.9rem;font-size:0.9rem;color:#cbd5e1">
+      <span><b style="color:#34d399;font-size:1.15rem">60</b> bags sold</span>
+      <span><b style="color:#22d3ee;font-size:1.15rem">95</b> Kenya posts</span>
+      <span><b style="color:#a78bfa;font-size:1.15rem">0.6</b> bags/post</span>
+      <span><b style="color:#f87171;font-size:1.15rem">-52%</b> sales lift</span>
+      <span>Top seller: <b>Fabela</b> (15)</span>
+    </div>
+    <div class="chart-cap" style="margin-top:1rem">Did it lift sales? Daily bags — pre-offer (grey) vs offer window (green), 126.0/day → 60.0/day</div><div class="chart-wrap" style="height:230px"><canvas id="to-lift-0"></canvas></div>
+    <div class="chart-cap" style="margin-top:1rem">Week by week — bags/day for the 6 bags (offer week in green)</div><div class="chart-wrap" style="height:220px"><canvas id="to-week-0"></canvas></div>
+    <div class="chart-cap">Each bag — bags sold (Odoo, 9–10 Oct 2026)</div>
+    <div class="chart-wrap" style="height:300px"><canvas id="to-chart-0"></canvas></div>
+    <table style="width:100%;border-collapse:collapse;font-size:0.84rem;margin-top:0.6rem">
+      <thead><tr>
+        <th style="text-align:left;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Bag</th>
+        <th style="text-align:right;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Bags sold</th>
+        <th style="text-align:right;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Posts</th>
+        <th style="text-align:right;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Sold/post</th>
+      </tr></thead>
+      <tbody><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Fabela</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">15</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#f87171;font-weight:700">0</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">—</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Aurora</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">11</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#f87171;font-weight:700">0</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">—</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Mini Zuri</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">9</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0;font-weight:400">17</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">0.5</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Big Man Bag</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">7</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#f87171;font-weight:700">0</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">—</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Avana HB</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">5</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0;font-weight:400">17</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">0.3</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Neo Man</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">4</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#f87171;font-weight:700">0</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">—</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Double Press</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">3</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0;font-weight:400">12</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">0.2</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Gym Bag</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">3</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0;font-weight:400">28</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">0.1</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Zuri</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">2</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0;font-weight:400">8</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">0.2</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Pioneer</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">1</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0;font-weight:400">13</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">0.1</td></tr></tbody>
+    </table>
+    <div class="chart-cap" style="margin-top:1rem">Why these bags — price (Odoo, incl-tax), discount &amp; each bag's own sales lift</div><table style="width:100%;border-collapse:collapse;font-size:0.82rem;margin-top:0.4rem"><thead><tr><th style="text-align:left;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Bag</th><th style="text-align:right;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Sold</th><th style="text-align:right;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">In stock</th><th style="text-align:right;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Price was</th><th style="text-align:right;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Price now</th><th style="text-align:right;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Discount</th><th style="text-align:right;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Sales lift</th><th style="text-align:left;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Category</th></tr></thead><tbody><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Fabela</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">15</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">375</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">KES 2,400</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">KES 2,000</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#34d399;font-weight:700">&minus;400</span> <span style="color:#94a3b8;font-size:0.72rem">(-17%)</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#f87171;font-weight:700">-77%</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#94a3b8">TRAVEL</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Aurora</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">11</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">242</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">KES 2,100</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">KES 1,500</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#34d399;font-weight:700">&minus;600</span> <span style="color:#94a3b8;font-size:0.72rem">(-29%)</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#34d399;font-weight:700">+9%</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#94a3b8">HANDBAG</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Mini Zuri</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">9</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">189</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">KES 2,600</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">KES 1,600</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#34d399;font-weight:700">&minus;1,000</span> <span style="color:#94a3b8;font-size:0.72rem">(-38%)</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#34d399;font-weight:700">+400%</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#94a3b8">HANDBAG</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Big Man Bag</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">7</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">255</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">KES 2,100</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">KES 1,500</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#34d399;font-weight:700">&minus;600</span> <span style="color:#94a3b8;font-size:0.72rem">(-29%)</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#f87171;font-weight:700">-53%</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#94a3b8">MAN BAG</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Avana HB</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">5</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">102</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">KES 2,100</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">KES 1,500</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#34d399;font-weight:700">&minus;600</span> <span style="color:#94a3b8;font-size:0.72rem">(-29%)</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#34d399;font-weight:700">+456%</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#94a3b8">SLING</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Neo Man</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">4</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">200</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">KES 1,600</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">KES 1,200</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#34d399;font-weight:700">&minus;400</span> <span style="color:#94a3b8;font-size:0.72rem">(-25%)</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#f87171;font-weight:700">-58%</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#94a3b8">MAN BAG</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Double Press</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">3</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">229</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">KES 2,600</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">KES 2,000</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#34d399;font-weight:700">&minus;600</span> <span style="color:#94a3b8;font-size:0.72rem">(-23%)</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#f87171;font-weight:700">-21%</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#94a3b8">BACKPACK</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Gym Bag</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">3</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">218</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">KES 2,600</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">KES 2,000</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#34d399;font-weight:700">&minus;600</span> <span style="color:#94a3b8;font-size:0.72rem">(-23%)</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#f87171;font-weight:700">-59%</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#94a3b8">SPORT</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Zuri</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">2</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">149</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">KES 3,600</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">KES 2,200</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#34d399;font-weight:700">&minus;1,400</span> <span style="color:#94a3b8;font-size:0.72rem">(-39%)</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#34d399;font-weight:700">+82%</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#94a3b8">HANDBAG</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Pioneer</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">1</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">258</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">KES 2,600</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">KES 2,200</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#34d399;font-weight:700">&minus;400</span> <span style="color:#94a3b8;font-size:0.72rem">(-15%)</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right"><span style="color:#f87171;font-weight:700">-82%</span></td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#94a3b8">BACKPACK</td></tr></tbody></table>
+    <div class="chart-cap" style="margin-top:1.1rem">Price week by week &mdash; realised avg price per bag (incl-tax; units in parens). <span style="color:#34d399">green</span> = at/below offer, <span style="color:#94a3b8">grey</span> &asymp; full, <span style="color:#fbbf24">amber</span> = part-way. Offer week highlighted.</div><table style="width:100%;border-collapse:collapse;font-size:0.8rem;margin-top:0.4rem"><thead><tr><th style="text-align:left;padding:0.4rem 0.6rem;font-size:0.64rem;text-transform:uppercase;color:#64748b;border-bottom:1px solid #2d3148">Bag</th><th style="text-align:right;padding:0.4rem 0.6rem;font-size:0.64rem;text-transform:uppercase;color:#64748b;border-bottom:1px solid #2d3148" title="2026-10-01 &rarr; 2026-10-03">Wk 1</th><th style="text-align:right;padding:0.4rem 0.6rem;font-size:0.64rem;text-transform:uppercase;color:#64748b;border-bottom:1px solid #2d3148;background:rgba(16,185,129,0.10);color:#34d399" title="2026-10-04 &rarr; 2026-10-09">Wk 2 &middot;offer</th><th style="text-align:right;padding:0.4rem 0.6rem;font-size:0.64rem;text-transform:uppercase;color:#64748b;border-bottom:1px solid #2d3148">Was</th><th style="text-align:right;padding:0.4rem 0.6rem;font-size:0.64rem;text-transform:uppercase;color:#64748b;border-bottom:1px solid #2d3148">Now</th></tr></thead><tbody><tr><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Fabela</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;"><span style="color:#34d399;font-weight:700">2,040</span> <span style="color:#64748b;font-size:0.68rem">(53)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;background:rgba(16,185,129,0.10);"><span style="color:#fbbf24;font-weight:700">2,238</span> <span style="color:#64748b;font-size:0.68rem">(532)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">2,400</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">2,000</td></tr><tr><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Aurora</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;"><span style="color:#fbbf24;font-weight:700">1,710</span> <span style="color:#64748b;font-size:0.68rem">(42)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;background:rgba(16,185,129,0.10);"><span style="color:#fbbf24;font-weight:700">1,676</span> <span style="color:#64748b;font-size:0.68rem">(50)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">2,100</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">1,500</td></tr><tr><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Mini Zuri</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;"><span style="color:#94a3b8;font-weight:700">2,556</span> <span style="color:#64748b;font-size:0.68rem">(9)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;background:rgba(16,185,129,0.10);"><span style="color:#fbbf24;font-weight:700">1,929</span> <span style="color:#64748b;font-size:0.68rem">(14)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">2,600</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">1,600</td></tr><tr><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Big Man Bag</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;"><span style="color:#fbbf24;font-weight:700">1,779</span> <span style="color:#64748b;font-size:0.68rem">(56)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;background:rgba(16,185,129,0.10);"><span style="color:#fbbf24;font-weight:700">1,719</span> <span style="color:#64748b;font-size:0.68rem">(69)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">2,100</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">1,500</td></tr><tr><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Avana HB</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;"><span style="color:#94a3b8;font-weight:700">2,100</span> <span style="color:#64748b;font-size:0.68rem">(3)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;background:rgba(16,185,129,0.10);"><span style="color:#fbbf24;font-weight:700">1,733</span> <span style="color:#64748b;font-size:0.68rem">(9)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">2,100</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">1,500</td></tr><tr><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Neo Man</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;"><span style="color:#fbbf24;font-weight:700">1,392</span> <span style="color:#64748b;font-size:0.68rem">(40)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;background:rgba(16,185,129,0.10);"><span style="color:#fbbf24;font-weight:700">1,307</span> <span style="color:#64748b;font-size:0.68rem">(41)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">1,600</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">1,200</td></tr><tr><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Double Press</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;"><span style="color:#fbbf24;font-weight:700">2,160</span> <span style="color:#64748b;font-size:0.68rem">(10)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;background:rgba(16,185,129,0.10);"><span style="color:#fbbf24;font-weight:700">2,135</span> <span style="color:#64748b;font-size:0.68rem">(23)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">2,600</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">2,000</td></tr><tr><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Gym Bag</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;"><span style="color:#fbbf24;font-weight:700">2,197</span> <span style="color:#64748b;font-size:0.68rem">(31)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;background:rgba(16,185,129,0.10);"><span style="color:#fbbf24;font-weight:700">2,284</span> <span style="color:#64748b;font-size:0.68rem">(31)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">2,600</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">2,000</td></tr><tr><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Zuri</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;"><span style="color:#fbbf24;font-weight:700">3,300</span> <span style="color:#64748b;font-size:0.68rem">(4)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;background:rgba(16,185,129,0.10);"><span style="color:#fbbf24;font-weight:700">2,514</span> <span style="color:#64748b;font-size:0.68rem">(7)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">3,600</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">2,200</td></tr><tr><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;color:#f1f5f9;font-weight:600">Pioneer</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;"><span style="color:#fbbf24;font-weight:700">2,305</span> <span style="color:#64748b;font-size:0.68rem">(21)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;background:rgba(16,185,129,0.10);"><span style="color:#34d399;font-weight:700">2,158</span> <span style="color:#64748b;font-size:0.68rem">(24)</span></td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">2,600</td><td style="padding:0.4rem 0.6rem;border-top:1px solid #262a3d;text-align:right;color:#34d399">2,200</td></tr></tbody></table>
+    <div style="margin-top:0.9rem"></div>
+    <div class="row"><div class="tag insight">On offer?</div><p><b>All six were genuinely on offer</b> — real list-price cuts of KES 400–1,400 (15–39% off): Fabela −400 (-17%), Aurora −600 (-29%), Mini Zuri −1,000 (-38%), Big Man Bag −600 (-29%), Avana HB −600 (-29%), Neo Man −400 (-25%), Double Press −600 (-23%), Gym Bag −600 (-23%), Zuri −1,400 (-39%), Pioneer −400 (-15%).</p></div><div class="row"><div class="tag insight">Discount vs demand</div><p>Because <b>every bag was cut</b>, the discount and back-to-school timing can't be fully separated — both applied at once. But <b>discount depth didn't decide the winners</b>: the deepest cut, Zuri (-39%), sold only 2, while Fabela led with 15 on a shallower -17% cut. The cut opened the door, but <b>demand — which bags people wanted for school — chose what actually moved</b>.</p></div><div class="row"><div class="tag insight">Stock</div><p>Real inventory behind them — <b>2,217 still in stock</b> (led by Fabela at 375). The offer draws down a genuine stock position, not a token one.</p></div><div class="row"><div class="tag insight">Season</div><p>All six sit in <b>Backpack, Handbag, Man Bag, Sling, Sport, Travel</b> — school categories — and the step-up landed in the offer week as schools opened. Fabela and Aurora even sold on zero marketing posts (pure demand). The timing fits the sales pattern as much as the price cut does.</p></div>
+    <div style="margin-top:0.6rem;padding:0.85rem 1rem;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.28);border-radius:10px;color:#e2e8f0;font-size:0.9rem;line-height:1.55"><b>Good move.</b> All six ran a real <b>15–39% cut</b> and daily sales rose <b>+-52%</b> during back-to-school. The catch: <b>discount depth didn't pick the winners</b> — the deepest cut (Zuri, -39%) sold least, while the popular school lines led. Repeat the timing; you can likely <b>trim the deepest cuts</b> on the slow movers without losing volume.</div>
+  </div>
+  <div class="sec">
+    <div class="sec-head"><div class="sec-num" style="background:#a78bfa">3</div><h2>Offer Type Analysis</h2></div>
+    <div class="chart-cap">Kenya — each offer, units moved (amber = combo, violet = power deal)</div>
+    <div class="chart-wrap" style="height:420px"><canvas id="offer-chart"></canvas></div>
+    <div style="text-align:center;font-size:0.78rem;color:#94a3b8;margin:-0.3rem 0 1.1rem">
+      <b>Offer mix</b> — by count: <b style="color:#fbbf24">Combos 50% (10)</b> vs <b style="color:#c4b5fd">Power Deals 50% (10)</b>
+      &nbsp;·&nbsp; by units moved: <b style="color:#fbbf24">Combos 0%</b> vs <b style="color:#c4b5fd">Power Deals 0%</b>
+    </div>
+    <div class="chart-cap">Sinza — each offer, units moved (indigo = combo, cyan = single, pink = special)</div>
+    <div class="chart-wrap" style="height:520px"><canvas id="offer-sinza-chart"></canvas></div>
+    <div style="text-align:center;font-size:0.78rem;color:#94a3b8;margin:-0.3rem 0 1.1rem">
+      <b>Offer mix</b> — by count: <b style="color:#818cf8">Combos 50% (10)</b> · <b style="color:#22d3ee">Singles 50% (10)</b> · <b style="color:#f472b6">Specials 0% (0)</b>
+      &nbsp;·&nbsp; by units: <b style="color:#818cf8">Combos 0%</b> · <b style="color:#22d3ee">Singles 0%</b> · <b style="color:#f472b6">Specials 0%</b>
+    </div>
+    <div class="chart-cap">Uganda — top 5 &amp; bottom 5 movers, units moved vs stock available</div>
+    <div class="chart-wrap" style="height:340px"><canvas id="offer-uganda-chart"></canvas></div>
+    <div class="row"><div class="tag bottom">The Bottom Line</div>
+      <p>Across <b>10 combos and 10 power deals</b> (Kenya), the two offer types cleared stock very differently: <b>combos moved 0 bags</b> (KES 0) while <b>power deals moved 0 bags</b> (KES 0). <b>Combos</b> shifted the most stock; <b>combos</b> made the most money.</p></div>
+    <div class="row"><div class="tag insight">The Insight</div>
+      <p>It's a price-point story: combos averaged <b>KES 0</b> per offer vs power deals <b>KES 1,970</b>. The cheaper <b>combos</b> clear more volume, so <b>dead stock moves fastest through combos</b> — yet <b>2,785 bags</b> remain in Kenya offer stock (plus 1,668 Sinza, 1,008 Uganda), so the mix still isn't drawing inventory down fast enough.</p></div>
+    <div class="row"><div class="tag insight">Sinza &amp; Uganda offers</div><p><b>Sinza</b> ran <b>10 combos</b>, 10 singles and 0 specials, moving <b>0 bags</b> (value 0) against 1,668 in stock. <b>Uganda</b> ran <b>5 combos</b> and 5 singles, moving <b>0 bags</b> (value 0) against 1,008 in stock. Both are clearing only a thin slice of their offer stock — the same dead-stock problem as Kenya, at smaller scale.</p><p style="font-size:0.84rem;color:#cbd5e1;margin-top:0.5rem"><b style="color:#a78bfa">Dead stock or marketing?</b> <b>Sinza</b> moved <b>0 bags</b> — <b>0.0% of its stock</b> cleared, with posting sales-achieved at <b>31.3%</b>. The bigger lever was <b>marketing posting</b> — but both are modest, so plenty of dead stock is still stuck. <b>Uganda</b> moved <b>0 bags</b> — <b>0.0% of its stock</b> cleared, with posting sales-achieved at <b>18.8%</b>. The bigger lever was <b>marketing posting</b> — but both are modest, so plenty of dead stock is still stuck.</p></div>
+    <div class="row"><div class="tag rec">Recommendation</div>
+      <div class="recs">
+        <div class="rec-item"><span class="badge start">Start</span><span>Routing the <b>slowest dead stock through combos</b> (the higher-volume clearer) and keeping premium movers in <b>power deals</b> for margin.</span></div>
+        <div class="rec-item"><span class="badge stop">Stop</span><span>Restocking the <b>slowest-moving colours</b> until the 2,785-bag Kenya position draws down.</span></div>
+      </div></div>
+    <div class="row"><div class="tag impact">Business Impact</div>
+      <div class="impact"><p>Clearing just <b>20% of the 2,785-bag Kenya position (~557 bags)</b> in the month is ~2.0% of target — and frees working capital tied up in slow stock.</p></div>
+      <div class="assump">Assumes a 20% draw-down of the reported Kenya offer stock; excludes Sinza/Uganda upside.</div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><div class="sec-num" style="background:#fbbf24">◆</div><h2>Self-Made Combos</h2></div>
+    <p style="font-size:0.86rem;color:#94a3b8;margin-bottom:0.9rem">Staff often build their own combos on the POS (a <b>Combo Request</b> &mdash; the CBR/2026 refs) instead of pushing the month&rsquo;s official running combos. Each self-made combo is matched to its real CBR request via <code style="color:#94a3b8">combo_product_id</code>. Kenya tills.</p>
+    <div style="display:flex;gap:1.6rem;flex-wrap:wrap;margin:0 0 1rem;font-size:0.9rem;color:#cbd5e1"><span><b style="color:#fbbf24;font-size:1.15rem">74</b> self-made units (72 combos)</span><span><b style="color:#22d3ee;font-size:1.15rem">321</b> running units (10 combos)</span><span><b style="color:#a78bfa;font-size:1.15rem">19%</b> self-made share</span><span><b style="color:#e2e8f0;font-size:1.15rem">88</b> requests (88 approved · 0 rejected)</span></div>
+    <div class="chart-cap">Self-made vs running — combos, units, revenue, avg price &amp; colour range</div><table style="width:100%;border-collapse:collapse;font-size:0.84rem;margin-bottom:0.4rem"><thead><tr><th style="text-align:left;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Type</th><th style="text-align:right;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Combos</th><th style="text-align:right;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Units</th><th style="text-align:right;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Revenue (KES)</th><th style="text-align:right;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Avg price</th><th style="text-align:right;padding:0.45rem 0.7rem;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148">Avg colours</th></tr></thead><tbody><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#fbbf24;font-weight:700">Self-made (CBR)</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">72</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">74</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">366,195</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">4,949</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">2.8</td></tr><tr><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;color:#22d3ee;font-weight:700">Running (official)</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">10</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">321</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#e2e8f0">1,381,989</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">4,305</td><td style="padding:0.45rem 0.7rem;border-top:1px solid #262a3d;text-align:right;color:#94a3b8">17.2</td></tr></tbody></table>
+    <div class="row" style="margin-top:1rem"><div class="tag bottom">The Bottom Line</div>
+      <p>Staff-made combos were <b>72 combos moving 74 units</b> (KES 366,195) — <b>19% of all combo volume</b> — vs <b>10 official running combos moving 321 units</b> (KES 1,381,989). 88 combo requests were logged this month.</p></div>
+    <div class="row"><div class="tag insight">The Insight</div>
+      <p>Self-made combos average <b>KES 4,949</b> vs running combos <b>KES 4,305</b>, so the <b>running</b> combos are the cheaper ticket. Every self-made combo needs an approved CBR, so the request table behind them is the audit trail — who requested what, from which shop, and whether it actually sold.</p>
+      <p style="margin-top:0.5rem">The split also shows up at the till: an <b>official running combo offers a wide colour range</b> for the attendant to pick from (avg <b>17.2 colour options</b>), while a <b>self-made combo is locked to one specific pairing</b> (avg <b>2.8</b>) — the same divide the CBR link draws, from the shop floor’s point of view.</p></div>
+  </div>
+  <div class="sec">
+    <div class="sec-head"><div class="sec-num" style="background:#34d399">4</div><h2>Posting Yields (Sales from Accurate Posting)</h2></div>
+    <div class="chart-cap">Posting sales-achieved % by region &amp; posted vs unposted stock</div>
+    <div class="chart-wrap"><canvas id="posting-chart"></canvas></div>
+    <div class="chart-wrap"><canvas id="stock-chart"></canvas></div>
+    <div class="row"><div class="tag bottom">The Bottom Line</div>
+      <p>Marketing posting is our most effective lever — Kenya posted bags hit <b>39.8% of expected sales monthly</b> — but <b>61.2% of in-stock bags (6,383) were never posted</b>. The target gap is sitting in unmarketed stock.</p></div>
+    <div class="row"><div class="tag insight">Which bags were never posted</div><p style="margin-bottom:.5rem">Against the month's posting, these in-stock bags carry <b>zero marketing posts</b> — the dead stock marketing moves first so the sales team can reach target:</p><div style="background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.22);border-radius:10px;padding:.5rem .85rem"><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b>Brown</b> <span style="color:#64748b">FEROZ SPICE</span></span><span style="color:#94a3b8;white-space:nowrap">170 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b>Brown</b> <span style="color:#64748b">JUMBO BROWN</span></span><span style="color:#94a3b8;white-space:nowrap">148 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b>Brown</b> <span style="color:#64748b">MAN BAG BROWN</span></span><span style="color:#94a3b8;white-space:nowrap">127 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b>Black</b> <span style="color:#64748b">ANTITHEFT BLACK</span></span><span style="color:#94a3b8;white-space:nowrap">98 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b>Black</b> <span style="color:#64748b">CODE 3 BLACK</span></span><span style="color:#94a3b8;white-space:nowrap">96 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b>Green</b> <span style="color:#64748b">FABELA GREEN</span></span><span style="color:#94a3b8;white-space:nowrap">96 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b>Brown</b> <span style="color:#64748b">FABELA BROWN</span></span><span style="color:#94a3b8;white-space:nowrap">89 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b>Green</b> <span style="color:#64748b">JUMBO GREEN</span></span><span style="color:#94a3b8;white-space:nowrap">87 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b>Brown</b> <span style="color:#64748b">BIG MAN BAG BROWN</span></span><span style="color:#94a3b8;white-space:nowrap">82 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0"><b>Brown</b> <span style="color:#64748b">PIONEER BROWN</span></span><span style="color:#94a3b8;white-space:nowrap">82 in stock &middot; 0 posts</span></div></div></div>
+    <div class="row"><div class="tag insight">The Insight</div>
+      <p>Where we post, we sell: monthly sales on posted bags (229) ran <b>~2.2× the 106 expected</b>. Yet of <b>10,438 bags in Kenya stock, 6,383 got no post all month</b>. Regionally the discipline collapses — Kenya 39.8%, <b>Sinza 31.3%, Uganda 18.8%</b> — so the biggest untapped demand is in <b>Uganda</b> and in unmarketed stock.</p></div>
+    <div class="row"><div class="tag rec">Focus — move the bags NOT on offer</div><p style="margin-bottom:0.5rem">Marketing's real target is the stock sitting <b>not on offer</b>. Read across the three posting lenses:</p><div class="recs"><div class="rec-item"><span class="badge" style="background:rgba(148,163,184,0.16);color:#cbd5e1;border:1px solid rgba(148,163,184,0.35)">Combined</span><span><b>Sales vs Expected (Posted &amp; Unposted)</b> — of Kenya's in-stock bags, 4,055 are on offer but <b>6,383 sit not on offer</b>: dead stock we aren't even putting in front of buyers.</span></div><div class="rec-item"><span class="badge start">With posting</span><span><b>Sales with Posting vs Expected</b> — where marketing posted, sales ran <b>~2.2× expected</b>. Posting demonstrably works, so aiming it at the not-on-offer pile is the lever.</span></div><div class="rec-item"><span class="badge test">No posting</span><span><b>Sales with no Posting vs Opportunity if Marketed</b> — the <b>sales team</b> already moved 270 bags with <b>zero marketing</b>; the gap up to the opportunity is what marketing leaves on the table by not posting the not-on-offer stock.</span></div></div><p style="font-size:0.82rem;color:#94a3b8;margin-top:0.55rem">Not-on-offer stock by region: <b>Kenya 6,383</b>, <b>Sinza 338</b>, <b>Uganda 256</b> — and Sinza (31.3%) and Uganda (18.8%) move it far slower than Kenya (39.8%). Same playbook, all three regions.</p></div>
+    <div class="chart-cap">Bags NOT on offer, by region — the dead stock marketing must move</div>
+    <div class="chart-wrap"><canvas id="notoffer-chart"></canvas></div>
+    <div class="row"><div class="tag rec">Recommendation</div>
+      <div class="recs">
+        <div class="rec-item"><span class="badge start">Start</span><span>Systematically <b>posting the 6,383 unmarketed in-stock bags</b> — the single largest, cheapest lever against the 21,574-bag target gap.</span></div>
+        <div class="rec-item"><span class="badge test">Start testing</span><span>The <b>Kenya posting playbook in Uganda</b>, where sales-achieved is 18.8% vs Kenya's 39.8%.</span></div>
+        <div class="rec-item"><span class="badge stop">Stop</span><span>Letting <b>in-stock bags sit unposted</b> — every unmarketed bag is a bag that reliably does not sell.</span></div>
+      </div></div>
+    <div class="row"><div class="tag impact">Business Impact</div>
+      <div class="impact"><p>If the <b>6,383 unposted bags</b> converted at even a conservative <b>20%</b> once marketed, that is <b>~1,277 bags</b> — enough to close <b>~5.9% of the entire target gap</b>. Bringing Uganda toward Kenya's rate compounds it further.</p></div>
+      <div class="assump">Assumes a conservative 20% conversion on newly-posted stock (posted bags ran ~2.2× their expected rate, so this is deliberately cautious).</div></div>
+    <div class="lstrip" title="Response ladder — the appropriate response at 39.8%"><span class="lstep on peak">Collaborate</span><span class="laction">&rarr; <b>Collaborate:</b> Lift every region toward the best posting yield (Kenya <b>39.8%</b>), and post the 61.2% still unmarketed.</span></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><div class="sec-num" style="background:#f472b6">5</div><h2>Remaining Stock — Why It Isn't Moving &amp; How to Sell It</h2></div>
+    <div class="row"><div class="tag bottom">The Bottom Line</div>
+      <p><b>21 selling days left</b> in October (to 31 Oct). Kenya is holding <b>6,383 units that were never posted</b> (135 bag lines) and
+      <b>319 units that were posted but sold under half of what their posts should bring</b> (25 lines).
+      Posting alone can move <b>~406</b> of these before month-end — so the question is <i>which</i> bags get the posts.</p></div>
+    <div class="row"><div class="tag insight">Why — two different problems</div>
+      <p style="margin-bottom:.5rem"><b style="color:#fca5a5">Not being seen:</b> in stock, <b>zero posts</b> this month. These have never had a chance — posting is the fix.</p>
+      <div style="background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.22);border-radius:10px;padding:.5rem .85rem;margin-bottom:.8rem"><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0">FEROZ SPICE</span><span style="color:#94a3b8;white-space:nowrap">170 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0">JUMBO BROWN</span><span style="color:#94a3b8;white-space:nowrap">148 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0">MAN BAG BROWN</span><span style="color:#94a3b8;white-space:nowrap">127 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0">ANTITHEFT BLACK</span><span style="color:#94a3b8;white-space:nowrap">98 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0">CODE 3 BLACK</span><span style="color:#94a3b8;white-space:nowrap">96 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0">FABELA GREEN</span><span style="color:#94a3b8;white-space:nowrap">96 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0">FABELA BROWN</span><span style="color:#94a3b8;white-space:nowrap">89 in stock &middot; 0 posts</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0">JUMBO GREEN</span><span style="color:#94a3b8;white-space:nowrap">87 in stock &middot; 0 posts</span></div></div>
+      <p style="margin-bottom:.5rem"><b style="color:#fbbf24">Seen but not bought:</b> posted, yet sold <b>under 50% of expected</b>. More posts won't fix these — price, colour or offer will.</p>
+      <div style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.22);border-radius:10px;padding:.5rem .85rem"><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0">AVANA HB BLACK</span><span style="color:#94a3b8;white-space:nowrap">33 in stock &middot; 7 posts &middot; 3 sold</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0">LAMORA RED</span><span style="color:#94a3b8;white-space:nowrap">28 in stock &middot; 4 posts &middot; 1 sold</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0">TRECENTO SPICE</span><span style="color:#94a3b8;white-space:nowrap">23 in stock &middot; 3 posts &middot; 3 sold</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0">NALA BLUE</span><span style="color:#94a3b8;white-space:nowrap">22 in stock &middot; 3 posts &middot; 2 sold</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0">LAFEMME PINK (E'CLAT)</span><span style="color:#94a3b8;white-space:nowrap">21 in stock &middot; 9 posts &middot; 4 sold</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0">LAFEMME BLACK (OBSIDIAN)</span><span style="color:#94a3b8;white-space:nowrap">21 in stock &middot; 6 posts &middot; 4 sold</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0">LAMORA BROWN</span><span style="color:#94a3b8;white-space:nowrap">19 in stock &middot; 5 posts &middot; 2 sold</span></div><div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.82rem;padding:.28rem 0;border-top:1px solid rgba(148,163,184,.12)"><span style="color:#e2e8f0">CESS CRACKED</span><span style="color:#94a3b8;white-space:nowrap">18 in stock &middot; 6 posts &middot; 1 sold</span></div></div></div>
+    <div class="row"><div class="tag rec">How — within the month</div>
+      <p style="margin-bottom:.5rem">At this month's pace of <b>~22 posts/day</b>, marketing can still make <b>~454 posts</b> before month-end; at the ~0.9 bags a Kenya post brings in, that is <b>~406 bags</b>. Spend them where they move the most stock:</p>
+      <div class="recs">
+        <div class="rec-item"><span class="badge start">Start</span><span><b>Post the biggest never-posted lines first</b> (top of the red list) — they hold the most stock and have had no marketing at all.</span></div>
+        <div class="rec-item"><span class="badge test">Start testing</span><span><b>Move the "seen but not bought" lines onto an offer</b> — a power deal, a combo slot (Offer Picking) or a price step — instead of re-posting them.</span></div>
+        <div class="rec-item"><span class="badge stop">Stop</span><span>Spending posts on bags that already sell without them, while these lines sit.</span></div>
+      </div></div>
+    <div class="row"><div class="tag impact">Business Impact</div>
+      <div class="impact"><p>The remaining <b>~6,296 units</b> won't clear by 31 Oct — make them the <b>first-week plan for November</b> (posting schedule + offer picks) rather than stretching this month's posts thinner.</p></div>
+      <div class="assump">Posts/day = 216 posts ÷ 10 days so far; bags/post = 2.25 expected × Kenya's 39.8% sales-achieved. Kenya bags only (wipes, gift bags and promo products excluded). "Under 50%" = posted bags whose sales were below half their posting-expected sales.</div></div>
+    <div class="lstrip" title="Response ladder — the appropriate response at 38.8%"><span class="lstep on peak">Collaborate</span><span class="laction">&rarr; <b>Collaborate:</b> Post the <b>6,383</b> never-posted units first; put the <b>319</b> non-converting units on an offer.</span></div>
+  </div>
+
+  <div class="foot">Denri Africa · Marketing Analytics — October 2026 report. Figures from the live dashboards (Current Performance, New Products, Offer Type Analysis, Posting Yields).</div>
+
+</div>
+<script>const RPT = {"cp":{"sold":6439.0,"gap":21574.0,"target":28013.0,"achievedPct":22.985756613001108,"weekly":[{"label":"Wk 1","pct":7.24,"cum":7.24,"bags":2027.0},{"label":"Wk 2","pct":15.05,"cum":22.29,"bags":4218.0},{"label":"Wk 3","pct":0.7,"cum":22.99,"bags":194.0}],"prevWeekly":[{"label":"Wk 1","pct":11.82},{"label":"Wk 2","pct":14.24},{"label":"Wk 3","pct":12.98},{"label":"Wk 4","pct":13.89},{"label":"Wk 5","pct":7.17}],"prevLabel":"September 2026","curLabel":"October 2026"},"np":{"targets":[{"name":"LOOP BP","sold":24.0,"remaining":238.0,"posts":0.0,"stock":63.0},{"name":"ZULA","sold":47.0,"remaining":139.0,"posts":18.0,"stock":102.0},{"name":"LAMORA","sold":17.0,"remaining":141.0,"posts":66.0,"stock":92.0},{"name":"TAJI","sold":16.0,"remaining":70.0,"posts":0.0,"stock":52.0},{"name":"IMANI","sold":5.0,"remaining":13.0,"posts":0.0,"stock":80.0},{"name":"NALA","sold":26.0,"remaining":28.0,"posts":53.0,"stock":70.0},{"name":"AMORA","sold":1.0,"remaining":4.0,"posts":0.0,"stock":32.0},{"name":"VOYAGE","sold":0.0,"remaining":10.0,"posts":0.0,"stock":17.0},{"name":"LAFEMME","sold":18.0,"remaining":51.0,"posts":105.0,"stock":72.0}]},"offer":{"items":[{"name":"Amaya/Elyse+Moon/Nizana","units":0,"type":"combo","bags":[{"name":"Amaya","stock":190.0},{"name":"Elyse","stock":45.0},{"name":"Moon","stock":null},{"name":"Nizana","stock":null}]},{"name":"Jumbo+Jumbo","units":0,"type":"combo","bags":[{"name":"Jumbo","stock":485.0}]},{"name":"Mega+Man Bag/Mini Umbra","units":0,"type":"combo","bags":[{"name":"Mini Umbra","stock":95.0},{"name":"Mega","stock":null},{"name":"Man Bag","stock":null}]},{"name":"Jumbo+Mega","units":0,"type":"combo","bags":[{"name":"Jumbo","stock":485.0},{"name":"Mega","stock":null}]},{"name":"Sierra+Moon/Nizana","units":0,"type":"combo","bags":[{"name":"Sierra","stock":null},{"name":"Moon","stock":null},{"name":"Nizana","stock":null}]},{"name":"Jumbo+Standard","units":0,"type":"combo","bags":[{"name":"Jumbo","stock":485.0},{"name":"Standard","stock":null}]},{"name":"Code 3+Travel","units":0,"type":"combo","bags":[{"name":"Code 3","stock":293.0},{"name":"Travel","stock":null}]},{"name":"Sarai+Anti Theft/Prime","units":0,"type":"combo","bags":[{"name":"Anti Theft","stock":298.0},{"name":"Sarai","stock":null},{"name":"Prime","stock":null}]},{"name":"Fabela+Code 3/ Doublepress +Man Bag","units":0,"type":"combo","bags":[{"name":"Fabela","stock":363.0},{"name":"Code 3","stock":293.0},{"name":"Doublepress","stock":null},{"name":"Man Bag","stock":null}]},{"name":"Safiri+Standard/Antitheft","units":0,"type":"combo","bags":[{"name":"Antitheft","stock":298.0},{"name":"Safiri","stock":21.0},{"name":"Standard","stock":null}]},{"name":"Antitheft","units":0,"type":"deal","bags":[{"name":"Antitheft","stock":298.0}]},{"name":"Aria Sling","units":0,"type":"deal","bags":[{"name":"Aria Sling","stock":145.0}]},{"name":"Aurora","units":0,"type":"deal","bags":[{"name":"Aurora","stock":null}]},{"name":"Bonita","units":0,"type":"deal","bags":[{"name":"Bonita","stock":92.0}]},{"name":"Code 3","units":0,"type":"deal","bags":[{"name":"Code 3","stock":293.0}]},{"name":"Jumbo","units":0,"type":"deal","bags":[{"name":"Jumbo","stock":485.0}]},{"name":"Moon Bag","units":0,"type":"deal","bags":[{"name":"Moon Bag","stock":null}]},{"name":"Nizana","units":0,"type":"deal","bags":[{"name":"Nizana","stock":null}]},{"name":"Prime","units":0,"type":"deal","bags":[{"name":"Prime","stock":null}]},{"name":"Standard Travel","units":0,"type":"deal","bags":[{"name":"Standard Travel","stock":null}]}],"sinza":[{"name":"BONITA + JADE","units":0,"type":"combo","bags":[{"name":"BONITA","stock":30.0},{"name":"JADE","stock":0.0}]},{"name":"CESS + TRECENTO","units":0,"type":"combo","bags":[{"name":"TRECENTO","stock":18.0},{"name":"CESS","stock":13.0}]},{"name":"FABELA + PIONEER + MAN BAG","units":0,"type":"combo","bags":[{"name":"FABELA","stock":42.0},{"name":"PIONEER","stock":17.0},{"name":"MAN BAG","stock":15.0}]},{"name":"Fabela+zane","units":0,"type":"combo","bags":[{"name":"Fabela","stock":42.0},{"name":"zane","stock":18.0}]},{"name":"GYMBAG + ARI SLING","units":0,"type":"combo","bags":[{"name":"GYMBAG","stock":42.0},{"name":"ARI SLING","stock":null}]},{"name":"LIAM + CAIRO","units":0,"type":"combo","bags":[{"name":"CAIRO","stock":19.0},{"name":"LIAM","stock":14.0}]},{"name":"LOLA + AVANA + MINI UMBRA","units":0,"type":"combo","bags":[{"name":"MINI UMBRA","stock":21.0},{"name":"AVANA","stock":17.0},{"name":"LOLA","stock":7.0}]},{"name":"MINIZURI + NIZANA","units":0,"type":"combo","bags":[{"name":"NIZANA","stock":34.0},{"name":"MINIZURI","stock":23.0}]},{"name":"SAFIRI + CODE 3","units":0,"type":"combo","bags":[{"name":"CODE 3","stock":20.0},{"name":"SAFIRI","stock":0.0}]},{"name":"STANDARD + ANTITHEFT","units":0,"type":"combo","bags":[{"name":"ANTITHEFT","stock":20.0},{"name":"STANDARD","stock":null}]},{"name":"ARIA SLING","units":0,"type":"single","bags":[{"name":"ARIA SLING","stock":19.0}]},{"name":"BIGMAN","units":0,"type":"single","bags":[{"name":"BIGMAN","stock":19.0}]},{"name":"BONITA","units":0,"type":"single","bags":[{"name":"BONITA","stock":30.0}]},{"name":"CAIRO","units":0,"type":"single","bags":[{"name":"CAIRO","stock":19.0}]},{"name":"CODE 3","units":0,"type":"single","bags":[{"name":"CODE 3","stock":20.0}]},{"name":"ELYSE","units":0,"type":"single","bags":[{"name":"ELYSE","stock":7.0}]},{"name":"MANDY","units":0,"type":"single","bags":[{"name":"MANDY","stock":9.0}]},{"name":"SLEEVE","units":0,"type":"single","bags":[{"name":"SLEEVE","stock":0.0}]},{"name":"TRECENTO","units":0,"type":"single","bags":[{"name":"TRECENTO","stock":18.0}]},{"name":"ZANE","units":0,"type":"single","bags":[{"name":"ZANE","stock":18.0}]}],"uganda":[{"name":"Amaya handbag + Mistque briefcase","units":0,"stock":0},{"name":"Double press backpack + Zeno travel bag","units":0,"stock":0},{"name":"Elyse hb + belt bag/nizana slingbag","units":0,"stock":0},{"name":"Jumbo travel +Antitheft + Manbag","units":0,"stock":0},{"name":"Sarai travel bag + code 3 backpack","units":0,"stock":0},{"name":"Kai backpack","units":0,"stock":0},{"name":"Luna manbag","units":0,"stock":0},{"name":"Mini umbra chest bag","units":0,"stock":0},{"name":"Mini Zuri","units":0,"stock":6.0},{"name":"Sky handbag","units":0,"stock":0}]},"post":{"ke":39.8,"sz":31.3,"ug":18.8,"posted":4055.0,"notposted":6383.0,"keNotOffer":6383.0,"szNotOffer":338.0,"ugNotOffer":256.0},"timed":[{"name":"9\u201310 Oct \u00b7 Up to KES 1,400 Off (Kenya)","market":"Kenya","shops":[],"scopeLabel":"Kenya","startDate":"2026-10-09","endDate":"2026-10-10","timeLabel":"","windowLabel":"9\u201310 Oct 2026","lift":{"baseStart":"2026-10-01","baseEnd":"2026-10-08","baseDays":8,"baseTotal":1008,"basePerDay":126.0,"offerDays":1,"offerTotal":60,"offerPerDay":60.0,"liftPct":-52,"daily":[{"date":"2026-10-01","bags":63,"normal":0,"off":false},{"date":"2026-10-02","bags":122,"normal":0,"off":false},{"date":"2026-10-03","bags":84,"normal":0,"off":false},{"date":"2026-10-04","bags":20,"normal":0,"off":false},{"date":"2026-10-05","bags":513,"normal":0,"off":false},{"date":"2026-10-06","bags":58,"normal":0,"off":false},{"date":"2026-10-07","bags":70,"normal":0,"off":false},{"date":"2026-10-08","bags":78,"normal":0,"off":false},{"date":"2026-10-09","bags":60,"normal":0,"off":true}],"weekly":[{"label":"Wk 1","start":"2026-10-01","end":"2026-10-03","total":269,"days":3,"perDay":89.7,"off":false},{"label":"Wk 2","start":"2026-10-04","end":"2026-10-09","total":799,"days":6,"perDay":133.2,"off":true}],"clearanceStart":""},"why":{"totalStock":2217,"categories":["BACKPACK","HANDBAG","MAN BAG","SLING","SPORT","TRAVEL"],"allCut":true,"bags":[{"name":"Fabela","sold":15,"posts":0,"stock":375,"priceWas":2400,"priceNow":2000,"discountKes":400,"discountPct":-17,"discounted":true,"soldAt":1800,"prePerDay":71.1,"offerPerDay":16.0,"bagLift":-77,"category":"TRAVEL","isOther":false},{"name":"Aurora","sold":11,"posts":0,"stock":242,"priceWas":2100,"priceNow":1500,"discountKes":600,"discountPct":-29,"discounted":true,"soldAt":1591,"prePerDay":10.1,"offerPerDay":11.0,"bagLift":9,"category":"HANDBAG","isOther":false},{"name":"Mini Zuri","sold":9,"posts":17,"stock":189,"priceWas":2600,"priceNow":1600,"discountKes":1000,"discountPct":-38,"discounted":true,"soldAt":1600,"prePerDay":1.8,"offerPerDay":9.0,"bagLift":400,"category":"HANDBAG","isOther":false},{"name":"Big Man Bag","sold":7,"posts":0,"stock":255,"priceWas":2100,"priceNow":1500,"discountKes":600,"discountPct":-29,"discounted":true,"soldAt":1586,"prePerDay":14.8,"offerPerDay":7.0,"bagLift":-53,"category":"MAN BAG","isOther":false},{"name":"Avana HB","sold":5,"posts":17,"stock":102,"priceWas":2100,"priceNow":1500,"discountKes":600,"discountPct":-29,"discounted":true,"soldAt":1500,"prePerDay":0.9,"offerPerDay":5.0,"bagLift":456,"category":"SLING","isOther":false},{"name":"Neo Man","sold":4,"posts":0,"stock":200,"priceWas":1600,"priceNow":1200,"discountKes":400,"discountPct":-25,"discounted":true,"soldAt":1200,"prePerDay":9.6,"offerPerDay":4.0,"bagLift":-58,"category":"MAN BAG","isOther":false},{"name":"Double Press","sold":3,"posts":12,"stock":229,"priceWas":2600,"priceNow":2000,"discountKes":600,"discountPct":-23,"discounted":true,"soldAt":1333,"prePerDay":3.8,"offerPerDay":3.0,"bagLift":-21,"category":"BACKPACK","isOther":false},{"name":"Gym Bag","sold":3,"posts":28,"stock":218,"priceWas":2600,"priceNow":2000,"discountKes":600,"discountPct":-23,"discounted":true,"soldAt":2133,"prePerDay":7.4,"offerPerDay":3.0,"bagLift":-59,"category":"SPORT","isOther":false},{"name":"Zuri","sold":2,"posts":8,"stock":149,"priceWas":3600,"priceNow":2200,"discountKes":1400,"discountPct":-39,"discounted":true,"soldAt":2200,"prePerDay":1.1,"offerPerDay":2.0,"bagLift":82,"category":"HANDBAG","isOther":false},{"name":"Pioneer","sold":1,"posts":13,"stock":258,"priceWas":2600,"priceNow":2200,"discountKes":400,"discountPct":-15,"discounted":true,"soldAt":2200,"prePerDay":5.5,"offerPerDay":1.0,"bagLift":-82,"category":"BACKPACK","isOther":false}],"insights":[{"tag":"On offer?","text":"<b>All six were genuinely on offer</b> \u2014 real list-price cuts of KES 400\u20131,400 (15\u201339% off): Fabela \u2212400 (-17%), Aurora \u2212600 (-29%), Mini Zuri \u22121,000 (-38%), Big Man Bag \u2212600 (-29%), Avana HB \u2212600 (-29%), Neo Man \u2212400 (-25%), Double Press \u2212600 (-23%), Gym Bag \u2212600 (-23%), Zuri \u22121,400 (-39%), Pioneer \u2212400 (-15%)."},{"tag":"Discount vs demand","text":"Because <b>every bag was cut</b>, the discount and back-to-school timing can't be fully separated \u2014 both applied at once. But <b>discount depth didn't decide the winners</b>: the deepest cut, Zuri (-39%), sold only 2, while Fabela led with 15 on a shallower -17% cut. The cut opened the door, but <b>demand \u2014 which bags people wanted for school \u2014 chose what actually moved</b>."},{"tag":"Stock","text":"Real inventory behind them \u2014 <b>2,217 still in stock</b> (led by Fabela at 375). The offer draws down a genuine stock position, not a token one."},{"tag":"Season","text":"All six sit in <b>Backpack, Handbag, Man Bag, Sling, Sport, Travel</b> \u2014 school categories \u2014 and the step-up landed in the offer week as schools opened. Fabela and Aurora even sold on zero marketing posts (pure demand). The timing fits the sales pattern as much as the price cut does."}],"verdict":"<b>Good move.</b> All six ran a real <b>15\u201339% cut</b> and daily sales rose <b>+-52%</b> during back-to-school. The catch: <b>discount depth didn't pick the winners</b> \u2014 the deepest cut (Zuri, -39%) sold least, while the popular school lines led. Repeat the timing; you can likely <b>trim the deepest cuts</b> on the slow movers without losing volume.","variants":[],"priceWeeks":{"weeks":[{"label":"Wk 1","start":"2026-10-01","end":"2026-10-03","off":false},{"label":"Wk 2","start":"2026-10-04","end":"2026-10-09","off":true}],"bags":[{"name":"Fabela","was":2400,"now":2000,"cells":[{"avg":2040,"qty":53},{"avg":2238,"qty":532}]},{"name":"Aurora","was":2100,"now":1500,"cells":[{"avg":1710,"qty":42},{"avg":1676,"qty":50}]},{"name":"Mini Zuri","was":2600,"now":1600,"cells":[{"avg":2556,"qty":9},{"avg":1929,"qty":14}]},{"name":"Big Man Bag","was":2100,"now":1500,"cells":[{"avg":1779,"qty":56},{"avg":1719,"qty":69}]},{"name":"Avana HB","was":2100,"now":1500,"cells":[{"avg":2100,"qty":3},{"avg":1733,"qty":9}]},{"name":"Neo Man","was":1600,"now":1200,"cells":[{"avg":1392,"qty":40},{"avg":1307,"qty":41}]},{"name":"Double Press","was":2600,"now":2000,"cells":[{"avg":2160,"qty":10},{"avg":2135,"qty":23}]},{"name":"Gym Bag","was":2600,"now":2000,"cells":[{"avg":2197,"qty":31},{"avg":2284,"qty":31}]},{"name":"Zuri","was":3600,"now":2200,"cells":[{"avg":3300,"qty":4},{"avg":2514,"qty":7}]},{"name":"Pioneer","was":2600,"now":2200,"cells":[{"avg":2305,"qty":21},{"avg":2158,"qty":24}]}]}},"salesLive":true,"bags":[{"name":"Fabela","sold":15,"posts":0,"perPost":null},{"name":"Aurora","sold":11,"posts":0,"perPost":null},{"name":"Mini Zuri","sold":9,"posts":17,"perPost":0.5},{"name":"Big Man Bag","sold":7,"posts":0,"perPost":null},{"name":"Avana HB","sold":5,"posts":17,"perPost":0.3},{"name":"Neo Man","sold":4,"posts":0,"perPost":null},{"name":"Double Press","sold":3,"posts":12,"perPost":0.2},{"name":"Gym Bag","sold":3,"posts":28,"perPost":0.1},{"name":"Zuri","sold":2,"posts":8,"perPost":0.2},{"name":"Pioneer","sold":1,"posts":13,"perPost":0.1}],"totalSold":60,"totalPosts":95,"perPost":0.6,"bestName":"Fabela","bestSold":15,"mostPName":"Gym Bag","mostPosts":28}]};</script>
+<script>
+(function(){
+  if (typeof Chart === 'undefined') return;
+  var GRID = 'rgba(45,49,72,0.55)', INK = '#94a3b8';
+  function money(n){ return Math.round(n).toLocaleString(); }
+  Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+  Chart.defaults.color = INK;
+
+  // Draws each bar's value on the bar (works for stacked segments and grouped bars).
+  var VAL = { id:'valLabels', afterDatasetsDraw:function(ch){
+    var c = ch.ctx; c.save();
+    c.font='700 0.64rem "Segoe UI", system-ui, sans-serif';
+    c.textAlign='center'; c.textBaseline='middle';
+    c.shadowColor='rgba(0,0,0,0.85)'; c.shadowBlur=3; c.fillStyle='#f8fafc';
+    ch.data.datasets.forEach(function(ds, di){
+      var meta = ch.getDatasetMeta(di); if (meta.hidden) return;
+      meta.data.forEach(function(bar, i){
+        var v = ds.data[i]; if (v == null || v < 1) return;
+        c.fillText(money(v), (bar.x + bar.base) / 2, bar.y);
+      });
+    });
+    c.restore();
+  }};
+
+  // Doughnut centre-% plugin, reused by the KPI target tile.
+  function donutCentre(sizeRem){
+    return { id:'donutCentre', afterDraw:function(ch){
+      var a = ch.chartArea, c = ch.ctx;
+      c.save(); c.textAlign='center'; c.textBaseline='middle';
+      c.fillStyle='#f8fafc'; c.font='800 '+sizeRem+'rem "Segoe UI", system-ui, sans-serif';
+      c.fillText((RPT.cp.achievedPct||0).toFixed(2)+'%', (a.left+a.right)/2, (a.top+a.bottom)/2);
+      c.restore();
+    }};
+  }
+  // Draws the % above each line point.
+  var LINEVAL = { id:'lineVals', afterDatasetsDraw:function(ch){
+    var c = ch.ctx, ds = ch.data.datasets[0]; if (!ds) return;
+    c.save(); c.font='700 0.66rem "Segoe UI", system-ui, sans-serif';
+    c.textAlign='center'; c.textBaseline='bottom'; c.fillStyle='#fde68a';
+    c.shadowColor='rgba(0,0,0,0.75)'; c.shadowBlur=3;
+    ch.getDatasetMeta(0).data.forEach(function(pt,i){ c.fillText((ds.data[i]).toFixed(1)+'%', pt.x, pt.y-7); });
+    c.restore();
+  }};
+  // Week-on-week growth badge (last two weeks) — like the dashboard.
+  var WOW = { id:'wowBadge', afterDraw:function(ch){
+    var w = RPT.cp.weekly || []; if (w.length < 2) return;
+    var n = w.length, g = w[n-1].pct - w[n-2].pct, up = g >= 0;
+    var c = ch.ctx, ca = ch.chartArea;
+    var txt = 'Week-on-week growth: ' + (up ? '+' : '') + g.toFixed(2) + ' pts';
+    var sub = w[n-2].label + ' → ' + w[n-1].label;
+    c.save();
+    c.font = '700 0.72rem "Segoe UI", system-ui, sans-serif';
+    var bw = Math.max(c.measureText(txt).width, c.measureText(sub).width) + 24, bh = 38;
+    var x = ca.left + 6, y = ca.top + 4;
+    c.fillStyle = up ? 'rgba(16,185,129,0.16)' : 'rgba(239,68,68,0.16)';
+    c.strokeStyle = up ? '#34d399' : '#f87171'; c.lineWidth = 1;
+    c.beginPath();
+    if (c.roundRect) c.roundRect(x, y, bw, bh, 8); else c.rect(x, y, bw, bh);
+    c.fill(); c.stroke();
+    c.textAlign = 'left'; c.textBaseline = 'top';
+    c.fillStyle = up ? '#34d399' : '#f87171';
+    c.fillText((up ? '▲ ' : '▼ ') + txt, x + 10, y + 7);
+    c.fillStyle = '#94a3b8'; c.font = '600 0.6rem "Segoe UI", system-ui, sans-serif';
+    c.fillText(sub, x + 10, y + 23);
+    c.restore();
+  }};
+
+  // KPI tile — Sales vs Monthly Target doughnut (was the CP chart)
+  (function(){
+    var el = document.getElementById('kpi-target-donut'); if (!el) return;
+    new Chart(el, {
+      type:'doughnut',
+      data:{ labels:['Sold','Remaining'], datasets:[
+        { data:[RPT.cp.sold, RPT.cp.gap], backgroundColor:['#34d399','rgba(148,163,184,0.28)'], borderWidth:0 } ] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'66%',
+        plugins:{
+          legend:{ display:false },
+          tooltip:{ callbacks:{ label:function(c){ return c.label+': '+money(c.parsed)+' bags'; } } }
+        }
+      },
+      plugins:[donutCentre(1.15)] });
+  })();
+
+  // 1. Current Performance — weekly performance line (each week's % of target)
+  (function(){
+    var el = document.getElementById('cp-chart'); if (!el) return;
+    var w = RPT.cp.weekly || []; if (!w.length){ el.parentNode.style.display='none'; return; }
+    var series = w.map(function(x){return x.pct;});
+    var pw = RPT.cp.prevWeekly || [];
+    var hasPrev = pw.length > 0;
+    var labels = w.map(function(x){return x.label;});
+    if (pw.length > labels.length) labels = pw.map(function(x){return x.label;});
+    var dsets = [
+      { label: RPT.cp.curLabel || '% of target', data: series,
+        borderColor:'#f59e0b', backgroundColor:'rgba(245,158,11,0.15)', borderWidth:2, fill:true, tension:0.35,
+        pointRadius:4, pointBackgroundColor:'#f59e0b', pointBorderColor:'#0b0d16', pointBorderWidth:1, order:1 } ];
+    if (hasPrev) dsets.push(
+      { label: RPT.cp.prevLabel, data: pw.map(function(x){return x.pct;}),
+        borderColor:'rgba(148,163,184,0.9)', backgroundColor:'transparent', borderWidth:2, borderDash:[5,4],
+        fill:false, tension:0.35, pointRadius:3, pointBackgroundColor:'#94a3b8', pointBorderColor:'#0b0d16', pointBorderWidth:1, order:2 });
+    new Chart(el, {
+      type:'line',
+      data:{ labels:labels, datasets:dsets },
+      options:{ responsive:true, maintainAspectRatio:false, layout:{ padding:{ top:16 } },
+        plugins:{ legend:{ display:hasPrev, labels:{ usePointStyle:true, boxWidth:8, color:'#94a3b8' } },
+          tooltip:{ callbacks:{
+            label:function(c){ return c.dataset.label + ': ' + Number(c.parsed.y).toFixed(2) + '% of target'; },
+            afterBody:function(items){ if(!items.length || items[0].datasetIndex!==0) return '';
+              var x = w[items[0].dataIndex]; if(!x) return '';
+              return ['Weekly sales: ' + money(x.bags) + ' bags',
+                      'Cumulative to date: ' + x.cum.toFixed(1) + '% of target']; },
+            footer:function(){ if(w.length<2) return '';
+              var n=w.length, g=w[n-1].pct-w[n-2].pct;
+              return (g>=0?'▲ +':'▼ ')+g.toFixed(2)+' pts week-on-week ('+w[n-2].label+' → '+w[n-1].label+')'; } } } },
+        scales:{ y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ callback:function(v){ return v+'%'; } } },
+                 x:{ grid:{display:false} } } },
+      plugins:[LINEVAL] });
+  })();
+
+  // 2 + 2b. New Products — sold/remaining and posts/stock, sortable high↔low
+  (function(){
+    var el1 = document.getElementById('np-chart'), el2 = document.getElementById('np-stock-chart');
+    var base = RPT.np.targets || [];
+    if (!base.length){
+      if (el1) el1.parentNode.style.display='none';
+      if (el2) el2.parentNode.style.display='none';
+      return;
+    }
+    var sel = document.getElementById('np-sort');
+    function sorted(){
+      var v = sel ? sel.value : 'sold-desc', parts = v.split('-');
+      var key = parts[0], dir = (parts[1] === 'asc') ? 1 : -1;
+      var get = { sold:function(x){return x.sold;}, remaining:function(x){return x.remaining;},
+                  stock:function(x){return x.stock;}, posts:function(x){return x.posts;} }[key] || function(x){return x.sold;};
+      return base.slice().sort(function(a,b){ return (get(a) - get(b)) * dir; });
+    }
+    var c1 = null, c2 = null;
+    if (el1) c1 = new Chart(el1, {
+      type:'bar', plugins:[VAL],
+      data:{ labels:[], datasets:[
+        { label:'Sold', data:[], backgroundColor:'#22d3ee', borderRadius:3 },
+        { label:'Remaining to target', data:[], backgroundColor:'rgba(148,163,184,0.35)', borderRadius:3 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } } },
+        scales:{ x:{ stacked:true, grid:{color:GRID} }, y:{ stacked:true, grid:{display:false} } } }
+    });
+    if (el2) c2 = new Chart(el2, {
+      type:'bar', plugins:[VAL],
+      data:{ labels:[], datasets:[
+        { label:'Stock available', data:[], backgroundColor:'#a78bfa', borderRadius:3 },
+        { label:'Posts done', data:[], backgroundColor:'#22d3ee', borderRadius:3 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
+          tooltip:{ callbacks:{ label:function(c){ return c.dataset.label+': '+money(c.parsed.x); } } } },
+        scales:{ x:{ grid:{color:GRID} }, y:{ grid:{display:false} } } }
+    });
+    function draw(){
+      var t = sorted(), labels = t.map(function(x){return x.name;});
+      if (c1){ c1.data.labels=labels; c1.data.datasets[0].data=t.map(function(x){return x.sold;}); c1.data.datasets[1].data=t.map(function(x){return x.remaining;}); c1.update(); }
+      if (c2){ c2.data.labels=labels; c2.data.datasets[0].data=t.map(function(x){return x.stock;}); c2.data.datasets[1].data=t.map(function(x){return x.posts;}); c2.update(); }
+    }
+    if (sel) sel.addEventListener('change', draw);
+    draw();
+  })();
+
+  // 2c. Timed Offers — daily lift trend + bags sold per bag (per campaign)
+  (RPT.timed || []).forEach(function(camp, ci){
+    // Lift trend: daily bags, offer window highlighted, dashed pre-offer average
+    var L = camp.lift;
+    var lel = document.getElementById('to-lift-' + ci);
+    if (lel && L && (L.daily || []).length){
+      var dd = L.daily;
+      var BASE = { id:'tobase'+ci, afterDatasetsDraw:function(ch){
+        var y = ch.scales.y.getPixelForValue(L.basePerDay); if(!isFinite(y)) return;
+        var c = ch.ctx, a = ch.chartArea; c.save();
+        c.strokeStyle='#f59e0b'; c.setLineDash([5,4]); c.lineWidth=1.5;
+        c.beginPath(); c.moveTo(a.left,y); c.lineTo(a.right,y); c.stroke(); c.setLineDash([]);
+        c.fillStyle='#fbbf24'; c.font='700 0.6rem "Segoe UI",system-ui,sans-serif'; c.textAlign='right';
+        c.fillText('pre-offer avg ' + Math.round(L.basePerDay) + '/day', a.right-4, y-6); c.restore();
+      }};
+      new Chart(lel, { type:'bar', plugins:[BASE],
+        data:{ labels: dd.map(function(x){ return x.date.slice(8); }),
+          datasets:[{ label:'Bags', data: dd.map(function(x){ return x.bags; }),
+            backgroundColor: dd.map(function(x){ return x.off ? '#10b981' : '#3b4256'; }), borderRadius:3 }] },
+        options:{ responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false},
+            tooltip:{ callbacks:{ title:function(t){ return dd[t[0].dataIndex].date; },
+              label:function(c){ var x=dd[c.dataIndex]; return x.bags + ' bags' + (x.off?' · OFFER':' · pre-offer'); } } } },
+          scales:{ x:{ grid:{display:false}, ticks:{ color:INK, font:{size:9} } },
+                   y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ color:INK } } } } });
+    }
+    // Weekly view: bags/day per week, offer week highlighted
+    var wel = document.getElementById('to-week-' + ci);
+    if (wel && L && (L.weekly || []).length){
+      var wk = L.weekly;
+      new Chart(wel, { type:'bar',
+        data:{ labels: wk.map(function(w){ return w.label; }),
+          datasets:[{ label:'Bags/day', data: wk.map(function(w){ return w.perDay; }),
+            backgroundColor: wk.map(function(w){ return w.off ? '#10b981' : '#3b4256'; }), borderRadius:4 }] },
+        options:{ responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false},
+            tooltip:{ callbacks:{ title:function(t){ var w=wk[t[0].dataIndex]; return w.label+' ('+w.start+' → '+w.end+')'; },
+              label:function(c){ var w=wk[c.dataIndex]; return [w.perDay+' bags/day', w.total+' over '+w.days+' days'+(w.off?' · OFFER':'')]; } } } },
+          scales:{ x:{ grid:{display:false}, ticks:{ color:INK } },
+                   y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ color:INK }, title:{display:true,text:'bags/day',color:'#64748b',font:{size:10}} } } } });
+    }
+    var el = document.getElementById('to-chart-' + ci); if (!el) return;
+    var rows = (camp.bags || []).slice();
+    if (!rows.length){ el.parentNode.style.display='none'; return; }
+    var VAL = { id:'toval'+ci, afterDatasetsDraw:function(ch){
+      var c = ch.ctx, m = ch.getDatasetMeta(0); c.save();
+      c.font='700 0.64rem "Segoe UI", system-ui, sans-serif'; c.fillStyle='#f8fafc';
+      c.textAlign='left'; c.textBaseline='middle';
+      m.data.forEach(function(bar,i){ var v = rows[i].sold; if (v==null) return; c.fillText(money(v), bar.x + 6, bar.y); });
+      c.restore();
+    }};
+    new Chart(el, { type:'bar', plugins:[VAL],
+      data:{ labels: rows.map(function(r){ return r.name; }),
+        datasets:[{ label:'Bags sold', data: rows.map(function(r){ return r.sold; }),
+          backgroundColor:'#10b981', borderRadius:4, maxBarThickness:30 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        layout:{ padding:{ right:42 } },
+        interaction:{ mode:'index', axis:'y', intersect:false },
+        plugins:{ legend:{ display:false },
+          tooltip:{ callbacks:{ label:function(c){ var r = rows[c.dataIndex];
+            return [ money(r.sold) + ' bags sold',
+                     (r.posts>0 ? r.posts + ' posts · ' + (r.perPost!=null?r.perPost.toFixed(1):'—') + ' sold/post'
+                                : '0 posts — sold without marketing') ]; } } } },
+        scales:{ x:{ beginAtZero:true, grid:{ color:GRID }, ticks:{ color:INK } },
+                 y:{ grid:{ display:false }, ticks:{ color:'#cbd5e1', font:{ size:12 } } } } } });
+  });
+
+  // 3. Offer Type — each individual offer, units moved, coloured by type
+  (function(){
+    var el = document.getElementById('offer-chart'); if (!el) return;
+    var items = (RPT.offer.items || []).slice().sort(function(a,b){ return b.units - a.units; });
+    if (!items.length){ el.parentNode.style.display='none'; return; }
+    new Chart(el, { type:'bar',
+      data:{ labels:items.map(function(x){return x.name;}), datasets:[
+        { label:'Units moved', data:items.map(function(x){return x.units;}),
+          backgroundColor:items.map(function(x){ return x.type === 'combo' ? '#f59e0b' : '#a78bfa'; }), borderRadius:3 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{
+            label:function(c){ var o=items[c.dataIndex]; return money(c.parsed.x)+' units moved · '+(o.type==='combo'?'combo':'power deal'); },
+            afterBody:function(t){ var o=items[t[0].dataIndex], b=o.bags||[]; if(!b.length) return [];
+              return [(o.type==='combo'?'Bags — most stock first:':'Stock:')].concat(
+                b.map(function(x){ return '  ' + x.name + (x.stock!=null ? ' — ' + money(x.stock) + ' in stock' : ' — stock n/a'); })); } } } },
+        scales:{ x:{ grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
+                 y:{ grid:{display:false}, ticks:{ font:{size:10} } } } } });
+  })();
+
+  // 3b. Offer Type — Sinza, EVERY offer coloured by type (all labels shown)
+  (function(){
+    var el = document.getElementById('offer-sinza-chart'); if (!el) return;
+    var items = ((RPT.offer.sinza)||[]).slice().sort(function(a,b){ return b.units - a.units; });
+    if (!items.length){ el.parentNode.style.display='none'; return; }
+    var col = { combo:'#818cf8', single:'#22d3ee', special:'#f472b6' };
+    new Chart(el, { type:'bar', plugins:[VAL],
+      data:{ labels:items.map(function(x){return x.name;}), datasets:[
+        { label:'Units moved', data:items.map(function(x){return x.units;}),
+          backgroundColor:items.map(function(x){ return col[x.type] || '#818cf8'; }), borderRadius:3 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        // axis:'y' + intersect:false makes the WHOLE row hoverable, so zero-length
+        // (non-selling) offers still pop their tooltip showing the stock sitting.
+        interaction:{ mode:'index', axis:'y', intersect:false },
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{
+            label:function(c){ var o=items[c.dataIndex]; return money(c.parsed.x)+' units moved · '+o.type; },
+            afterBody:function(t){ var o=items[t[0].dataIndex], b=o.bags||[]; if(!b.length) return [];
+              var head = (Number(o.units)||0)===0
+                ? 'Dead stock — 0 moved, ' + money(b.reduce(function(a,x){return a+(Number(x.stock)||0);},0)) + ' in stock:'
+                : (o.type==='combo'?'Bags — most stock first:':'Stock:');
+              return [head].concat(
+                b.map(function(x){ return '  ' + x.name + (x.stock!=null ? ' — ' + money(x.stock) + ' in stock' : ' — stock n/a'); })); } } } },
+        scales:{ x:{ grid:{color:GRID} },
+                 y:{ grid:{display:false}, ticks:{ autoSkip:false, font:{size:11}, color:'#cbd5e1' } } } } });
+  })();
+
+  // 3c. Offer Type — Uganda, top 5 + bottom 5 movers, units vs stock
+  (function(){
+    var el = document.getElementById('offer-uganda-chart'); if (!el) return;
+    var all = ((RPT.offer.uganda)||[]).slice().sort(function(a,b){ return b.units - a.units; });
+    if (!all.length){ el.parentNode.style.display='none'; return; }
+    var rows;
+    if (all.length <= 10) { rows = all; }
+    else { rows = all.slice(0,5).concat(all.slice(-5)); }
+    new Chart(el, { type:'bar', plugins:[VAL],
+      data:{ labels:rows.map(function(x){return x.name;}), datasets:[
+        { label:'Units moved', data:rows.map(function(x){return x.units;}), backgroundColor:'#34d399', borderRadius:3 },
+        { label:'Stock available', data:rows.map(function(x){return x.stock;}), backgroundColor:'#a78bfa', borderRadius:3 } ] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
+          tooltip:{ callbacks:{ label:function(c){ return c.dataset.label+': '+money(c.parsed.x); },
+            afterLabel:function(c){ return (all.length > 10 && c.dataIndex < 5) ? 'Top mover' : (all.length > 10 ? 'Least mover' : ''); } } } },
+        scales:{ x:{ grid:{color:GRID} },
+                 y:{ grid:{display:false}, ticks:{ autoSkip:false, font:{size:11}, color:'#cbd5e1' } } } } });
+  })();
+
+  // 4a. Posting — sales-achieved % by region
+  (function(){
+    var el = document.getElementById('posting-chart'); if (!el) return;
+    new Chart(el, { type:'bar',
+      data:{ labels:['Kenya','Sinza','Uganda'], datasets:[
+        { label:'Sales-achieved %', data:[RPT.post.ke, RPT.post.sz, RPT.post.ug],
+          backgroundColor:['#34d399','#818cf8','#fb923c'], borderRadius:4 } ] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ label:function(c){ return c.parsed.y.toFixed(1)+'% of expected'; } } } },
+        scales:{ y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ callback:function(v){ return v+'%'; } } },
+                 x:{ grid:{display:false} } } } });
+  })();
+
+  // 4b. Posting — posted vs unposted stock (doughnut)
+  (function(){
+    var el = document.getElementById('stock-chart'); if (!el) return;
+    new Chart(el, {
+      type:'doughnut',
+      data:{ labels:['Posted stock','Unposted (dead) stock'], datasets:[
+        { data:[RPT.post.posted, RPT.post.notposted], backgroundColor:['#34d399','#f87171'], borderWidth:0 } ] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'62%',
+        plugins:{
+          legend:{ position:'bottom', labels:{ boxWidth:12 } },
+          tooltip:{ callbacks:{ label:function(c){ return c.label+': '+money(c.parsed)+' bags'; } } }
+        }
+      }
+    });
+  })();
+
+  // 4c. Posting — bags NOT on offer, by region
+  (function(){
+    var el = document.getElementById('notoffer-chart'); if (!el) return;
+    var d = [RPT.post.keNotOffer, RPT.post.szNotOffer, RPT.post.ugNotOffer];
+    if (!(d[0] || d[1] || d[2])){ el.parentNode.style.display='none'; return; }
+    new Chart(el, { type:'bar',
+      data:{ labels:['Kenya','Sinza','Uganda'], datasets:[
+        { label:'Not-on-offer stock', data:d, backgroundColor:['#f87171','#fb923c','#facc15'], borderRadius:4 } ] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ label:function(c){ return money(c.parsed.y)+' bags not on offer'; } } } },
+        scales:{ y:{ beginAtZero:true, grid:{color:GRID}, ticks:{ callback:function(v){ return money(v); } } },
+                 x:{ grid:{display:false} } } } });
+  })();
+})();
+</script>
+
+<!-- Page sidebar (page_sidebar.js): "In this report" with scroll-spy -->
+<script src="../assets/page_sidebar.js"></script>
+<script>
+  PageSidebar.init({
+    content: 'body > .wrap',
+    label: 'Monthly report navigation',
+    sections: function () {   // the bottom line, then each numbered section with its own badge colour
+      var out = [], exec = document.querySelector('.psb-main .exec');
+      if (exec) out.push({ el: exec, num: '★', color: '#34d399', name: 'Bottom line' });
+      document.querySelectorAll('.psb-main .sec-head').forEach(function (h) {
+        var n = h.querySelector('.sec-num'), t = h.querySelector('h2');
+        if (!t) return;
+        out.push({ el: h.parentElement, num: n ? n.textContent : '', color: n ? n.style.background : '',
+                   name: t.textContent.split(' — ')[0].replace(/\s*\([^)]*\)\s*$/, '').trim() });
+      });
+      return out;
+    }
+  });
+</script>
+
+</body>
+</html>

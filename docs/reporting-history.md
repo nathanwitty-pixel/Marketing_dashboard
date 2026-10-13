@@ -39,8 +39,8 @@ month_end.py ──► push_to_supabase.py ──► Supabase (denri_mkt_* table
 ## Regenerate
 
 ```
-python push_to_supabase.py        # ensure months are written
-python history.py                 # read them back into the page
+python generators/push_to_supabase.py        # ensure months are written
+python generators/history.py                 # read them back into the page
 ```
 </content>
 </invoke>

@@ -16,7 +16,7 @@ import re
 
 from . import db, queries, report_month
 
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from lib import paths
 MIN_DAYS = 14
 
 POS_SALES_SQL = """
@@ -95,6 +95,9 @@ WHERE period = 'month' AND start_date = :m AND target_scope IN ('pos', 'corporat
 
 def bag_key_fn():
     """Product name → catalogue bag (colours folded); sleeves and not-yet-catalogued new products by name."""
+    import sys
+    if paths.GENERATORS not in sys.path:
+        sys.path.insert(0, paths.GENERATORS)   # self_made_combos is a generator
     import self_made_combos as smc
     infer, _ = smc.bag_classifier(set())
     try:
@@ -226,7 +229,7 @@ def build(month_start=None):
 def write_csv(month_start=None, sheet_targets=None):
     rows, total, start, end, months = build(month_start)
     month_start = month_start or report_month.live_month_window()[0]
-    path = os.path.join(BASE, "product_targets_%s.csv" % month_start.strftime("%Y-%m"))
+    path = paths.data("product_targets_%s.csv" % month_start.strftime("%Y-%m"))
     with open(path, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["Bag", "Launch (first sale)", "Days available"]
@@ -243,7 +246,7 @@ def load_targets(month_start=None, build_if_missing=True):
     """{BAG: target units} for the month from product_targets_<YYYY-MM>.csv (built from Odoo if missing),
     or {} when it can't be had."""
     month_start = month_start or report_month.live_month_window()[0]
-    path = os.path.join(BASE, "product_targets_%s.csv" % month_start.strftime("%Y-%m"))
+    path = paths.data("product_targets_%s.csv" % month_start.strftime("%Y-%m"))
     if not os.path.exists(path) and build_if_missing:
         try:
             write_csv(month_start, sheet_targets=_sheet_targets())
@@ -298,7 +301,7 @@ def monthly_target_rows(rows, month_start=None, targets=None, key=None):
 def _sheet_targets():
     """{BAG: col C} from MONTHLY_TARGET — for the comparison column only."""
     try:
-        from google_auth import get_gspread_client
+        from lib.google_auth import get_gspread_client
         mt = get_gspread_client().open_by_key("1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0").worksheet("MONTHLY_TARGET").get_all_values()
         return {re.sub(r"\s+", " ", r[0].strip().upper()): r[2] for r in mt[1:] if r and r[0].strip() and len(r) > 2}
     except Exception:                                        # noqa: BLE001

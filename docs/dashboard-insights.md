@@ -33,7 +33,7 @@ the source generator, then `generate_insights.py`.
 ## Regenerate
 
 ```
-python generate_insights.py       # run AFTER the data pages
+python generators/generate_insights.py       # run AFTER the data pages
 ```
 </content>
 </invoke>

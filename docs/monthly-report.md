@@ -73,7 +73,7 @@ Opening anniversaries from [shop-birthdays.md](shop-birthdays.md) (shown from 30
 ## Regenerate
 
 ```
-python monthly_report.py          # run AFTER the data pages
+python generators/monthly_report.py          # run AFTER the data pages
 ```
 </content>
 </invoke>

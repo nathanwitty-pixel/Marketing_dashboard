@@ -5,6 +5,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "generators"))
 
 import self_made_combos as smc   # noqa: E402
 
@@ -23,7 +24,7 @@ def test_october_comes_from_the_csv():
 
 
 def test_month_not_in_csv_has_no_deals_and_no_sheet_read(monkeypatch):
-    import google_auth
+    from lib import google_auth
 
     def boom():
         raise AssertionError("the deals sheet must not be read")

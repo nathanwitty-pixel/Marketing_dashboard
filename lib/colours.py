@@ -16,8 +16,9 @@ import os
 import re
 from collections import Counter, defaultdict
 
-_BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BAG_NAMES_FILE = os.path.join(_BASE, "bag_names.csv")
+from lib import paths
+
+BAG_NAMES_FILE = paths.data("bag_names.csv")
 
 _MAP = None          # NORM(product name) -> family
 _WORDS = None        # colour word -> family (learnt from the file, for names it doesn't list)

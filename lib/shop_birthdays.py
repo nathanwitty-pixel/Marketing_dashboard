@@ -15,7 +15,9 @@ import datetime
 import os
 import re
 
-DOC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "shop-birthdays.md")
+from lib import paths
+
+DOC = paths.doc("shop-birthdays.md")
 WINDOW_BEFORE, WINDOW_AFTER = 30, 1
 # Names the sheet / tills use for a dashboard shop.
 _ALIASES = {"NAIROBI": "STARMALL", "TANZANIA": "SINZA", "DAR-ES-ALAM": "SINZA", "KTDA SHOP": "KTDA",

@@ -19,7 +19,9 @@ migrate the rest of the dashboard.
 
 import os as _os
 
-_SQL_DIR = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "sql")
+from lib import paths as _paths
+
+_SQL_DIR = _paths.SQL
 
 
 def _load_sql(name):
@@ -30,7 +32,7 @@ def _load_sql(name):
 # Editable list of product names that are NOT counted as bag sales — see
 # sales_exclusions.txt at the project root. Maintained by the user; read fresh
 # each run so edits take effect on the next refresh.
-_EXCLUSIONS_FILE = _os.path.join(_os.path.dirname(_SQL_DIR), "sales_exclusions.txt")
+_EXCLUSIONS_FILE = _paths.data("sales_exclusions.txt")
 
 
 def excluded_products():
@@ -50,7 +52,7 @@ def excluded_products():
 
 import re as _re
 
-_MASTER_FILE = _os.path.join(_os.path.dirname(_SQL_DIR), "master_products.txt")
+_MASTER_FILE = _paths.data("master_products.txt")
 
 
 def _norm_name(s):

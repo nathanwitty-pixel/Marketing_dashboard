@@ -11,7 +11,7 @@ import json
 import os
 import sys
 
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from lib import paths
 MAX_DAYS = 366
 
 # page → its range file (bags_on_offer.py keeps its own boo_custom_range.json reader)
@@ -22,7 +22,7 @@ FILES = {
 
 
 def path(page):
-    return os.path.join(BASE, FILES[page])
+    return paths.data(FILES[page])
 
 
 def load(page):

@@ -1,7 +1,7 @@
 # Posting – Sales Yields from Accurate Posting
 
-- **Generator:** `POSTING (SALES YIELDS FROM ACCURATE POSTING).py`
-- **HTML:** `POSTING (SALES YIELDS FROM ACCURATE POSTING).html`
+- **Generator:** `posting_yields.py`
+- **HTML:** `posting_yields.html`
 - **Data marker:** `<!-- POST_DATA_START -->…<!-- POST_DATA_END -->` (const `PA`)
 
 ## What the page shows
@@ -113,7 +113,7 @@ items) is *not* the universe — that over-counted. Kenya lands ~654 (week) / ~7
 ## Regenerate
 
 ```
-python "POSTING (SALES YIELDS FROM ACCURATE POSTING).py"
+python "posting_yields.py"
 ```
 Run **after** `self_made_combos.py` (it reads that page's SMC block for the on-offer sets).
 Injects `alignment` (per region, `{monthly, weekly}`) and `postRelevance`.

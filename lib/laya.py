@@ -27,8 +27,9 @@ import threading
 import time
 
 MODEL_DIR = os.environ.get("LAYA_DIR") or os.path.join(os.path.expanduser("~"), "models", "laya-int4")
-_BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CACHE_FILE = os.path.join(_BASE, "laya_cache.json")
+from lib import paths
+
+CACHE_FILE = paths.data("laya_cache.json")
 
 OPT_TOKENS = 48            # tokens per option
 YES_NO = ["false: no, the statement does not hold", "true: yes, the statement holds"]

@@ -54,6 +54,8 @@ if not _under_streamlit():
     sys.exit(0)
 
 BASE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE)
+from lib import paths   # noqa: E402  (generators/, html/, assets/, data/ — see lib/paths.py)
 
 # Older Streamlit (< st.iframe, e.g. the local Anaconda 1.51) — fall back to components.html,
 # which renders an HTML string in a same-origin srcdoc frame just the same.
@@ -62,7 +64,7 @@ if not hasattr(st, "iframe"):
     st.iframe = lambda html, height=None: _components.html(html, height=height)
 
 
-# ── Secrets → environment, so lib/db.py and google_auth.py work unchanged ──
+# ── Secrets → environment, so lib/db.py and lib/google_auth.py work unchanged ──
 def _load_secrets_into_env():
     try:
         secrets = st.secrets
@@ -428,7 +430,7 @@ def _run_js(html):
 # An invisible frame: the script draws into the Streamlit page itself (same origin). It locks
 # out the Dark Reader extension every run and shows the welcome card once per browser session.
 try:
-    with open(os.path.join(BASE, "welcome_screen.js"), encoding="utf-8") as _fh:
+    with open(paths.asset("welcome_screen.js"), encoding="utf-8") as _fh:
         _welcome_js = _fh.read().replace("</script", "<\\/script")
     _dw_cfg = {"theme": THEME, "page": label, "owner": OWNER,
                "jumps": [l for l in ("Insights", "Monthly Report", "History") if any(it[0] == l for it in ALL_ITEMS)]}
@@ -476,7 +478,7 @@ st.markdown(
     unsafe_allow_html=True)
 # Sideways scrolling for the tab track: load top_nav.js into the Streamlit page (once) and attach it.
 try:
-    with open(os.path.join(BASE, "top_nav.js"), encoding="utf-8") as _fh:
+    with open(paths.asset("top_nav.js"), encoding="utf-8") as _fh:
         _topnav_js = _fh.read()
     _run_js(
         "<script>(function(){var P=window.parent,D;try{D=P.document;}catch(e){return;}"
@@ -488,7 +490,7 @@ try:
 except OSError:
     pass
 
-html_path = os.path.join(BASE, html_file)
+html_path = paths.html(html_file)
 
 # Just unlocked: save the token in this browser so later visits open without asking.
 _pw_save = st.session_state.pop("pw_save", None)
@@ -550,7 +552,7 @@ def run_scripts(script_list, force_fresh=False, on_step=None):
         if on_step:
             on_step(i)
         try:
-            r = subprocess.run([sys.executable, os.path.join(BASE, s)], cwd=BASE, env=env,
+            r = subprocess.run([sys.executable, paths.generator(s)], cwd=BASE, env=env,
                                capture_output=True, text=True, encoding="utf-8",
                                errors="replace", timeout=SCRIPT_TIMEOUT)
             logs.append((s, r.returncode, (r.stderr or r.stdout or "").strip()[-600:]))
@@ -659,7 +661,7 @@ def _bg_rebuild(lbl, script_list, kind="auto", title=""):
 # month_end.py freezes a finished month (numbers + report comments) into Supabase. It used to
 # rely on being run by hand, so a month could be missed. Now the first page view of a new month
 # checks Supabase and, if last month isn't there, starts month_end.py in the background, pinned
-# to last month. A lock file stops other viewers / reruns starting it twice. Spec: MONTH_END.md.
+# to last month. A lock file stops other viewers / reruns starting it twice. Spec: notes/MONTH_END.md.
 MONTH_END_LOCK = os.path.join(BASE, ".month_end.lock")
 MONTH_END_LOG = os.path.join(BASE, "month_end.log")
 
@@ -687,7 +689,7 @@ def _month_archived(key):
         except Exception:                                        # noqa: BLE001
             pass
     try:
-        with open(os.path.join(BASE, "monthly_report_history.json"), encoding="utf-8") as _fh:
+        with open(paths.data("monthly_report_history.json"), encoding="utf-8") as _fh:
             return key in _json.load(_fh)
     except (OSError, ValueError):
         return True
@@ -714,7 +716,7 @@ if not NO_AUTOREFRESH:
         _env = {**os.environ, "DENRI_REPORT_MONTH": _pm, "DENRI_MONTH_END_AUTO": "1",
                 "DENRI_LAUNCHER": "1", "PYTHONIOENCODING": "utf-8"}
         with open(MONTH_END_LOG, "a", encoding="utf-8") as _log:
-            subprocess.Popen([sys.executable, os.path.join(BASE, "month_end.py")], cwd=BASE, env=_env,
+            subprocess.Popen([sys.executable, paths.script("month_end.py")], cwd=BASE, env=_env,
                              stdout=_log, stderr=subprocess.STDOUT)
         _month_archived.clear()                                  # re-check once it has had time to finish
         st.info(f"{datetime.datetime.strptime(_pm, '%Y-%m'):%B %Y} wasn't in History yet — archiving it "
@@ -767,8 +769,8 @@ if NO_AUTOREFRESH:   # no idle-tab reload either
     CLOCK_HTML = re.sub(r"\n  setTimeout\(function\(\)\{ try\{ \(window\.top.*?\n", "\n", CLOCK_HTML)
 
 # The Reject Sale page also gets an Excel export button (bags · units · sale price).
-_rj_export = os.path.join(BASE, "reject_sales_export.xlsx")
-_rj_export_csv = os.path.join(BASE, "reject_sales_export.csv")
+_rj_export = paths.data("reject_sales_export.xlsx")
+_rj_export_csv = paths.data("reject_sales_export.csv")
 _show_export = (label == "Reject Sale") and (os.path.exists(_rj_export) or os.path.exists(_rj_export_csv))
 # How long ago this page's data was rebuilt — shown inside the clock chip (no separate caption line).
 if os.path.exists(html_path):
@@ -829,7 +831,7 @@ if _rm:
 CUSTOM_RANGE_KEYS = {
     "boo": ("boo_custom_range.json", ["bags_on_offer.py"]),
     "np":  ("np_custom_range.json", ["new_products.py"]),
-    "py":  ("py_custom_range.json", ["POSTING (SALES YIELDS FROM ACCURATE POSTING).py"]),
+    "py":  ("py_custom_range.json", ["posting_yields.py"]),
 }
 _qp_cr = st.query_params.get("crange")
 if _qp_cr:
@@ -844,12 +846,12 @@ if _qp_cr:
         except ValueError:
             _cr_ok = None
     if _cfg and _cr_ok:
-        with open(os.path.join(BASE, _cfg[0]), "w", encoding="utf-8") as _fh:
+        with open(paths.data(_cfg[0]), "w", encoding="utf-8") as _fh:
             _json.dump({"from": _cr_ok[0].isoformat(), "to": _cr_ok[1].isoformat()}, _fh)
         _bg_rebuild(label, _cfg[1], "range", f"Building {_cr_ok[0]:%d %b} – {_cr_ok[1]:%d %b}")
     elif _cfg and _parts[1:] == ["clear"]:
         try:
-            os.remove(os.path.join(BASE, _cfg[0]))
+            os.remove(paths.data(_cfg[0]))
         except OSError:
             pass
         _bg_rebuild(label, _cfg[1], "range", "Going back to the default period")
@@ -979,11 +981,11 @@ if os.path.exists(html_path):
     # inside the component frame) and apply the chosen theme once the page has built its charts.
     _v5_block, _v5_mtimes = "", []
     try:
-        with open(os.path.join(BASE, "v5_theme.css"), encoding="utf-8") as _fh:
+        with open(paths.asset("v5_theme.css"), encoding="utf-8") as _fh:
             _v5_css = _fh.read()
-        with open(os.path.join(BASE, "v5_theme.js"), encoding="utf-8") as _fh:
+        with open(paths.asset("v5_theme.js"), encoding="utf-8") as _fh:
             _v5_js = _fh.read().replace("</script", "<\\/script")
-        _v5_mtimes = [int(os.path.getmtime(os.path.join(BASE, f))) for f in ("v5_theme.css", "v5_theme.js")]
+        _v5_mtimes = [int(os.path.getmtime(paths.asset(f))) for f in ("v5_theme.css", "v5_theme.js")]
         _v5_block = ('<style id="v5-css" data-v5>' + _v5_css + '</style>'
                      '<script>/* v5_theme.js */\n' + _v5_js + '\n</script>'
                      '<script>(function(){var m="' + THEME + '";'
@@ -994,9 +996,9 @@ if os.path.exists(html_path):
         pass
     # Drag-to-reorder for every KPI, chart and panel (kpi_drag.js), on every page.
     try:
-        with open(os.path.join(BASE, "kpi_drag.js"), encoding="utf-8") as _fh:
+        with open(paths.asset("kpi_drag.js"), encoding="utf-8") as _fh:
             _v5_block += '<script>/* kpi_drag.js */\n' + _fh.read().replace("</script", "<\\/script") + '\n</script>'
-        _v5_mtimes.append(int(os.path.getmtime(os.path.join(BASE, "kpi_drag.js"))))
+        _v5_mtimes.append(int(os.path.getmtime(paths.asset("kpi_drag.js"))))
     except OSError:
         pass
     if "</body>" in html:

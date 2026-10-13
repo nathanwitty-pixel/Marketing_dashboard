@@ -39,9 +39,11 @@ from collections import Counter, defaultdict
 
 from . import db, queries, report_month
 
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CATALOG_FILE = os.path.join(BASE, "product_catalog.csv")
-ALIASES_FILE = os.path.join(BASE, "product_aliases.csv")
+from lib import paths
+
+BASE = paths.ROOT
+CATALOG_FILE = paths.data("product_catalog.csv")
+ALIASES_FILE = paths.data("product_aliases.csv")
 SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 
 TABS = ("WEEKLY_SALES", "MONTHLY_SALES", "STOCK_LEVELS", "WEEKLY_DISPATCH", "MONTHLY_DISPATCH")
@@ -220,7 +222,7 @@ def sales_by_product_shop(start, end):
 
 def dispatch_by_product_shop(start, end):
     """{NORM(product): {SHOP: bags distributed in}} from combined_distribution.sql's per-product rows."""
-    with open(os.path.join(BASE, "sql", "combined_distribution.sql"), encoding="utf-8") as f:
+    with open(paths.sql("combined_distribution.sql"), encoding="utf-8") as f:
         sql = f.read()
     df = db.run_query_cached(sql, {"start_date": str(start), "end_date": str(end)}, ttl_min=30)
     if df is None:
@@ -264,7 +266,7 @@ def offer_flags(sh=None):
     """{BAG TYPE: (kenya, sinza, uganda) on-offer bools} from MONTHLY_TARGET cols F/G/H."""
     if "flags" not in _MT_CACHE:
         if sh is None:
-            from google_auth import get_gspread_client
+            from lib.google_auth import get_gspread_client
             sh = get_gspread_client().open_by_key(SPREADSHEET_ID)
         prime_offer_flags(sh.worksheet("MONTHLY_TARGET").get_all_values())
     return _MT_CACHE.get("flags", {})

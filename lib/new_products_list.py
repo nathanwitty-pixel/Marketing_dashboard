@@ -6,7 +6,9 @@ empty, callers keep using those ticks.
 """
 import os as _os
 
-_FILE = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "new_products.txt")
+from lib import paths as _paths
+
+_FILE = _paths.data("new_products.txt")
 
 
 def names():

@@ -740,7 +740,7 @@ with monthly units/revenue, Kenya only, `qty <> 0` (nets returns). Detail + summ
 ## Regenerate
 
 ```
-python self_made_combos.py        # DENRI_LAUNCHER=1 to skip the browser tab
+python generators/self_made_combos.py        # DENRI_LAUNCHER=1 to skip the browser tab
 ```
 Reads Odoo + the deals/COMBOS sheets; rewrites the `SMC_DATA` and `OFFER_DATA` blocks.
 </content>
