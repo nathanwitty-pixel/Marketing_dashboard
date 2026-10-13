@@ -331,6 +331,20 @@ def corporate_target_from_db():
 
 
 corporate_target = corporate_target_from_db()
+
+
+def shop_corporate_from_db():
+    """Corporate orders the shops handle (Odoo Sales quotes paid at the tills) for the Sales
+    popover's "Shop corporate" tab — see lib/shop_corporate.py. None when the DB isn't reachable."""
+    try:
+        from lib import shop_corporate
+        return shop_corporate.build()
+    except Exception as e:                                   # noqa: BLE001
+        print(f"  Shop corporate: skipped ({e})")
+    return None
+
+
+shop_corporate = shop_corporate_from_db()
 sales_pos      = total_sales                    # POS-only (Weekly basis)
 total_sales    = total_sales + corporate_bags   # Sales card = POS + corporate
 
@@ -542,6 +556,7 @@ except (ValueError, OSError, KeyError, TypeError):
 # ── INJECT INTO HTML ──────────────────────────────────────────
 
 _corp_clients_js = json.dumps(corporate_clients).replace("</", "<\\/")   # client names can't close the <script>
+_shop_corp_js    = json.dumps(shop_corporate, default=str).replace("</", "<\\/")
 
 inline_script = (
     "<!-- PERF_DATA_START -->\n"
@@ -557,6 +572,7 @@ inline_script = (
     f'  corporateBags:      "{fmt_int(corporate_bags)}",\n'
     f'  corporateClients:   {_corp_clients_js},\n'
     f'  corporateTarget:    {json.dumps(corporate_target)},\n'
+    f'  shopCorporate:      {_shop_corp_js},\n'
     f'  rejectBags:        "{fmt_int(reject_bags)}",\n'
     f'  rejectPct:          "{fmt_pct(reject_pct)}",\n'
     f'  giftBags:           "{fmt_int(gift_bags)}",\n'
@@ -596,7 +612,7 @@ with open(html_path, "r", encoding="utf-8") as f:
 
 html = re.sub(
     r"<!-- PERF_DATA_START -->.*?<!-- PERF_DATA_END -->",
-    inline_script,
+    lambda _m: inline_script,      # literal: the JSON's \uXXXX escapes aren't regex templates
     html,
     flags=re.DOTALL
 )
@@ -609,6 +625,10 @@ print("current_performance.html updated.")
 print(f"  Total Target (bags)  : {fmt_int(total_target)}")
 print(f"  POS Sales    (Odoo)  : {fmt_int(sales_pos)}")
 print(f"  Corporate    (invoices): {fmt_int(corporate_bags)}")
+if shop_corporate:
+    print(f"  Shop corporate         : {len(shop_corporate['rows'])} clients · "
+          f"KES {sum(r['paidKes'] for r in shop_corporate['rows']):,} paid · "
+          f"KES {sum(r['balance'] for r in shop_corporate['rows']):,} owed")
 print(f"  Sales (POS+corp)     : {fmt_int(total_sales)}")
 print(f"  Sheet Deficit (col E): {fmt_int(total_deficit)}")
 print(f"  Remaining (tgt-sales): {fmt_int(remaining_target)}")
