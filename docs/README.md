@@ -172,6 +172,10 @@ inside), and the Combos "shares …" CSS popover (it sits flush on its chip).
 every page as a pill tab (a `?page=` link, so reloads and shared links keep the page and theme), the
 Light/Dark switch, contact and the owner card. The tab track scrolls left ↔ right (`top_nav.js`); below
 1340px the tabs get their own full-width row. Page sidebars sit just below the bar.
+A plain click on a tab does **not** reload the browser: it presses that page's hidden button
+(`pgnav_<n>`), so Streamlit reruns in place. The clicked tab lights up at once, the current page dims
+while the next one is built, hides when its frame is swapped, then fades + rises in once it has drawn
+(`EMBED_FIX` → `__dashReveal`). Ctrl/middle-click still opens the `?page=` link in a new tab.
 
 **Embedding details:** Streamlit shows each page in a component iframe stretched to the page's
 full height (EMBED_FIX), so the Streamlit page scrolls, not the page — `page_sidebar.js` detects
