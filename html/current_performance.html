@@ -274,6 +274,10 @@
     #corp-clients .sc-box { border: 1px solid #2d3148; border-radius: 7px; padding: 0.2rem 0.45rem; font-size: 0.64rem; line-height: 1.35; }
     #corp-clients .sc-box b { display: block; color: #e2e8f0; font-size: 0.7rem; }
     #corp-clients .sc-box.corp { border-color: rgba(168,85,247,0.55); }
+    #corp-clients .sc-box { cursor: pointer; }
+    #corp-clients .sc-box:hover { border-color: #6366f1; }
+    #corp-clients .sc-box.on { border-color: #6366f1; background: rgba(99,102,241,0.18); }
+    #corp-clients .sc-box.off { opacity: 0.45; }
     #corp-clients .sc-chip { display: inline-block; font-size: 0.6rem; font-weight: 600; padding: 0 0.35rem; border-radius: 999px;
       border: 1px solid rgba(59,130,246,0.6); color: #93c5fd; white-space: nowrap; }
     #corp-clients .sc-chip.corp { border-color: rgba(168,85,247,0.65); color: #d8b4fe; }
@@ -813,15 +817,18 @@ const PROJ = {
 
     // One box per hunting shop (Corporate last, kept out of the shop totals).
     pane.querySelector('.sc-shops').innerHTML = shops.map(function (s) {
-      return '<div class="sc-box' + (s.shop === 'Corporate' ? ' corp' : '') + '" title="' + s.clients + ' client' + (s.clients === 1 ? '' : 's')
+      return '<div class="sc-box' + (s.shop === 'Corporate' ? ' corp' : '') + '" data-shop="' + esc(s.shop) + '" title="Click to show only these clients · ' + s.clients + ' client' + (s.clients === 1 ? '' : 's')
         + (s.shop === 'Corporate' ? ' · not in any shop\'s totals' : '') + '">' + chip(s.shop)
         + '<b>' + fmt(s.paid) + ' paid</b>' + (s.bags ? fmt(s.bags) + ' bags · ' : '')
         + (s.owed ? '<span style="color:#f87171">' + fmt(s.owed) + ' owed</span>' : '0 owed') + '</div>';
     }).join('');
 
     var groups = [['paid', 'Paid'], ['part', 'Part-paid'], ['unpaid', 'Not paid yet']];
+    var only = null;                           // shop picked in the boxes above (null = all)
+    var render = function () {
+    var shown = rows.filter(function (r) { return !only || r.hunted === only; });
     pane.querySelector('tbody').innerHTML = groups.map(function (g) {
-      var list = rows.filter(function (r) { return r.status === g[0]; });
+      var list = shown.filter(function (r) { return r.status === g[0]; });
       if (!list.length) return '';
       return '<tr class="sc-grp"><td colspan="6" style="text-align:left">' + g[1] + ' (' + list.length + ')</td></tr>'
         + list.map(function (r) {
@@ -850,11 +857,26 @@ const PROJ = {
             + '<td style="' + td + ';padding-right:0;color:#e2e8f0;font-weight:600">' + (r.bags ? fmt(r.bags) : dash) + '</td></tr>';
         }).join('');
     }).join('');
-    var sum = function (k) { return rows.reduce(function (a, r) { return a + (Number(r[k]) || 0); }, 0); };
+    var sum = function (k) { return shown.reduce(function (a, r) { return a + (Number(r[k]) || 0); }, 0); };
     var T = {quoted: fmt(sum('quotedKes')), paid: fmt(sum('paidKes')),
              balance: '<span style="color:#f87171">' + fmt(sum('balance')) + '</span>', bags: fmt(sum('bags'))};
     Array.prototype.forEach.call(pane.querySelectorAll('thead .ct'), function (el) { el.innerHTML = T[el.getAttribute('data-t')] || ''; });
-    pane.querySelector('.sc-head').textContent = 'Shop corporate orders (' + (S.period || '') + ') · ' + rows.length + ' clients';
+    pane.querySelector('.sc-head').textContent = 'Shop corporate orders (' + (S.period || '') + ') · '
+      + (only ? only + ' · ' + shown.length + ' of ' + rows.length : rows.length) + ' clients';
+    Array.prototype.forEach.call(pane.querySelectorAll('.sc-box'), function (b) {
+      b.classList.toggle('on', b.getAttribute('data-shop') === only);
+      b.classList.toggle('off', !!only && b.getAttribute('data-shop') !== only);
+    });
+    };
+    render();
+    // Click a shop box to show only that shop's clients (Corporate box = Corporate only); click again for all.
+    Array.prototype.forEach.call(pane.querySelectorAll('.sc-box'), function (b) {
+      b.addEventListener('click', function () {
+        var k = b.getAttribute('data-shop');
+        only = only === k ? null : k;
+        render();
+      });
+    });
     var left = S.leftOut || [], lb = pane.querySelector('.sc-left');
     if (left.length) {
       lb.innerHTML = '<b style="color:#cbd5e1">Left out (already in the Corporate app):</b> ' + left.map(function (l) {
