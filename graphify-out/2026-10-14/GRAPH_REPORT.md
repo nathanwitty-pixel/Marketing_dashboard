@@ -1,22 +1,22 @@
 # Graph Report - Marketing_dashboard  (2026-10-14)
 
 ## Corpus Check
-- 192 files · ~787,596 words
+- 192 files · ~786,292 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 16 file(s) not represented in the graph (top: .csv 9, (none) 2, .toml 1)
 
 ## Summary
-- 2122 nodes · 4012 edges · 139 communities (104 shown, 35 thin omitted)
+- 2124 nodes · 4030 edges · 150 communities (114 shown, 36 thin omitted)
 - Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 156 edges (avg confidence: 0.87)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e8e221b5`
+- Built from commit: `53b826a6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- posting_yields.py
+- safe_int
 - laya.py
 - tests/test_receipt_combos.py
 - oos_chip.js
@@ -26,34 +26,34 @@
 - generators/self_made_combos.py
 - timed_offers.py
 - v5_theme.js
-- json
-- bare_minimum setting (weekly target floor)
 - product_targets.py
-- datetime
+- bare_minimum setting (weekly target floor)
+- bag_quant.py
+- custom_range.py
 - month_extras.py
 - stock.py
 - publish.py
-- forward_projections.py
+- os
 - build_payload
-- norm
+- fetch_posting_data
 - shop_corporate.py
 - push_planner.py
-- self_made_combos_bundle/self_made_combos.py
+- lib/db.py
 - Self-made combos vs running combos (doc)
 - shops_efficiency.py
 - signals
-- main.py
+- self_made_combos_bundle/lib/db.py
 - Dashboard Menu Docs (spec index)
-- reject_sales.py
+- posting_yields.py
 - _enrich_deals
-- bags_on_offer.py
+- fetch
 - insights.html
 - streamlit_app.py
 - current_performance.py
 - monthly_report.py
-- _combo_button_usage
+- _seasonality
 - chronos_train.py
-- offer_picking.py
+- reject_sales.py
 - build_payload
 - Shops Efficiency Tracking spec doc
 - shop_launch.py
@@ -67,86 +67,97 @@
 - CLAUDE.md
 - history.py (read months back)
 - Self-made combos vs Running combos portable bundle README
-- base_name
+- start_server
 - scripts/test_receipt_combos.py
-- new_products.py
+- fetch_new_products_data
 - algorithmic-art skill
 - dataviz-charts skill
 - bag_classifier
-- _combo_button_usage
+- bags_on_offer.py
 - _enrich_deals
 - High-End Visual Design skill
 - followup
 - test_sheet_reads.py
 - oos_callbacks.py
 - daydream skill (Vault Daydream)
-- os
+- sys
 - OOS call-back progress (Ralph loop log)
 - timed_offers.py (generator)
-- _build_sheet_slots
+- _alignment_region
 - TTL disk-cache rationale (.odoo_cache/)
 - welcome_screen.js
 - lib/report_month.py
+- _date
 - marketing_dashboard.sql
+- num
 - Bags on offer vs not on offer
 - shop_birthdays.py
-- _bags_not_on_offer
-- sys
+- _build_period
+- datetime
+- write_bags_offer_source
+- self_made_combos_bundle/lib/__init__.py
 - theme.py
 - push_laya.py
-- self_made_combos_bundle/lib/__init__.py
-- test_push_planner.py
+- main
+- facts
 - Push Planner (`push_planner.py` → `push_planner.html`, `PP`)
+- build_offer
 - Chart type switcher (every chart, every menu)
-- F
+- test_push_planner.py
+- update_np_weekly_history
 - test_stockout_demand.py
 - Out-of-stock demand — people, not requests
 - Denri Africa Dashboard Design System (skill)
 - push_rules.py
-- get_gspread_client
-- _bg_jobs
+- load_pages
+- reject_variants
+- get_engine
 - Product (bag) targets
 - _apply_receipt_offers
-- _matches_sheet
+- _combo_button_usage
 - Bag Signals — quant view of each bag (posting · stock · selling)
 - check_connection
 - current_performance.html
 - attach
 - self_made_combos.py generator (build_payload + SQL + injection)
+- corporate_clients_from_db
 - Pricing rule — two tiers (BAND cost cutoff) + hand pins
+- odoo_weekly_breakdown
+- kenya_stock_by_bag
 - Ralph task — only three sheet tabs left
+- _bag_stock
 - Bag targets October 2026_3acbad00.md
-- _bg_rebuild
+- _bag_tiers
 - Ralph task — deals from the posters (deals_kenya.csv)
 - perf_data.js
+- lib
 - reject_sales_export_302c9b30.md
 - PROFILE_README.md
 - previous_snapshot.json
 - reject_from_db() function
 - gstr(block, key) function (string field regex getter)
 - Key-rename / run-order gotcha (blanks or zeros)
-- _reveal_page
 - colours.py
 - NEW_PROD data block (New Products)
 - OFFER_DATA data block (Self Made Combos)
 - odoo_tabs.py
 - POST_DATA data block (Posting)
-- _month_archived
+- data
 - read_block(file, start, end) function
 - ambiguous_python_import_17686b6faac5
 - contextlib
-- lib/db.py
+- run_query
 - denri_mkt_timed_offer* Supabase tables
 - Shop Launch
 - generate_insights.py
 
 ## God Nodes (most connected - your core abstractions)
-1. `run_query()` - 50 edges
-2. `fetch_posting_data()` - 35 edges
-3. `fetch()` - 31 edges
+1. `run_query()` - 51 edges
+2. `fetch()` - 39 edges
+3. `fetch_posting_data()` - 35 edges
 4. `build_payload()` - 30 edges
-5. `check_connection()` - 28 edges
-6. `get_gspread_client()` - 27 edges
+5. `get_gspread_client()` - 29 edges
+6. `check_connection()` - 28 edges
 7. `data()` - 25 edges
 8. `build_payload()` - 24 edges
 9. `build_offer()` - 22 edges
@@ -171,15 +182,15 @@
 - **Self-made combos bundle: generator, Sheets auth, DB access, and dependency manifest working together to build the combos page** — export_self_made_combos_bundle_self_made_combos_py, export_self_made_combos_bundle_offer_data_py, export_self_made_combos_bundle_google_auth_py, export_self_made_combos_bundle_lib_db_py, export_self_made_combos_bundle_requirements [EXTRACTED 0.90]
 - **Multiple menus share product-matching.md as the canonical name-matching reference** — docs_product_matching_doc, docs_self_made_combos_doc, docs_new_products_doc, docs_offer_picking_doc [EXTRACTED 0.95]
 
-## Communities (139 total, 35 thin omitted)
+## Communities (150 total, 36 thin omitted)
 
-### Community 0 - "posting_yields.py"
-Cohesion: 0.05
-Nodes (74): _alignment_region(), _for(), _onoff(), _sold(), _stk(), _units(), _analyze_region(), _bt_on_offer() (+66 more)
+### Community 0 - "safe_int"
+Cohesion: 0.12
+Nodes (34): _analyze_region(), _build_no_convert(), _fetch_monthly_kenya(), _fetch_sinza_monthly(), _fetch_sinza_weekly(), _fetch_uganda_monthly(), _fetch_uganda_weekly(), _fetch_weekly_kenya() (+26 more)
 
 ### Community 1 - "laya.py"
 Cohesion: 0.09
-Nodes (27): add_laya(), Laya's second opinion (lib/push_laya) when the model is on this PC; else a…, hashlib, Answer, _ask(), ask_choice(), ask_yes_no(), available() (+19 more)
+Nodes (26): add_laya(), Laya's second opinion (lib/push_laya) when the model is on this PC; else a…, Answer, _ask(), ask_choice(), ask_yes_no(), available(), _bucket() (+18 more)
 
 ### Community 2 - "tests/test_receipt_combos.py"
 Cohesion: 0.09
@@ -198,64 +209,64 @@ Cohesion: 0.07
 Nodes (28): bom_costs.json (offline fallback mirror), build() function (writes xlsx export), _CAT_KEYWORDS fallback rule, offer_picking._read_bom_costs (BOM reader), offer_picking._read_offers (category source), Offline fallback pattern (mirror sheet data to local JSON), Reject Sale (doc: reject_sales.py -> reject_sales.html, RJ), reject_sales_export.csv (fallback export) (+20 more)
 
 ### Community 7 - "generators/self_made_combos.py"
-Cohesion: 0.13
-Nodes (18): _bag_sales_daily_sql(), _bag_sales_sql(), _bags_not_on_offer(), fetch(), fmt(), inject(), _load_shop_regions(), main() (+10 more)
+Cohesion: 0.12
+Nodes (19): _bag_sales_daily_sql(), _bag_sales_sql(), _bags_not_on_offer(), _dstr(), fetch(), fmt(), inject(), _load_shop_regions() (+11 more)
 
 ### Community 8 - "timed_offers.py"
-Cohesion: 0.07
-Nodes (38): _prices(), _bags_from_file(), build_offer(), _derive_month(), kenya_stock_by_bag(), load_config(), _name_sql(), _norm_offer() (+30 more)
+Cohesion: 0.20
+Nodes (12): _bags_from_file(), _derive_month(), load_config(), _name_sql(), _norm_offer(), timed_offers.py…, Multi-offer config: {"month": "YYYY-MM", "offers": [offer, ...]}. Back-compat:…, Bag list from a repo CSV's 'BAG TYPE' column — unique, order-preserving. Lets… (+4 more)
 
 ### Community 9 - "v5_theme.js"
 Cohesion: 0.19
 Nodes (25): apply(), contrastOnCanvas(), cutColor(), ensureLink(), fixChipText(), hsl(), hslToRgb(), luminance() (+17 more)
 
-### Community 10 - "json"
-Cohesion: 0.17
-Nodes (14): One-off: restore August's Offer Type figures into monthly_report_history.json…, bag_signals.py — the Bag Signals page: drift, volatility, reliability, trend,…, fetch_months(), bucket(), inject(), main(), _num(), history.py — build the dashboard History page from Supabase. Reads the… (+6 more)
+### Community 10 - "product_targets.py"
+Cohesion: 0.12
+Nodes (22): calendar, allocate(), available_days(), bag_key_fn(), key(), base_period(), build(), monthly_target_rows() (+14 more)
 
-### Community 12 - "product_targets.py"
-Cohesion: 0.05
-Nodes (57): collections, build(), _posts(), MONTHLY / WEEKLY_MARKETING_POST rows, or ([], []) if the sheet can't be read., Append last week's posts + sales per bag (one row per Sun–Sat week) — feeds the…, _save_history(), action(), bag_posts() (+49 more)
+### Community 12 - "bag_quant.py"
+Cohesion: 0.10
+Nodes (29): build(), _posts(), bag_signals.py — the Bag Signals page: drift, volatility, reliability, trend,…, MONTHLY / WEEKLY_MARKETING_POST rows, or ([], []) if the sheet can't be read., Append last week's posts + sales per bag (one row per Sun–Sat week) — feeds the…, _save_history(), action(), bag_posts() (+21 more)
 
-### Community 13 - "datetime"
-Cohesion: 0.15
-Nodes (17): calendar, datetime, lib/report_month.py — the single source of truth for "which month are we…, block(), from_argv(), label(), load(), month_share() (+9 more)
+### Community 13 - "custom_range.py"
+Cohesion: 0.14
+Nodes (18): block(), from_argv(), label(), load(), month_share(), path(), Per-page Custom period: the From – To dates a page was last built for. Each…, (from, to) dates for the page's Custom period, or None. Swapped if reversed;… (+10 more)
 
 ### Community 14 - "month_extras.py"
-Cohesion: 0.17
-Nodes (18): load_pages(), bag_of(), Posting (PA) + Self-made combos (SMC) + new products, per market and bag type.…, _bags_on_offer(), _block(), build_extras(), _deals(), _pick() (+10 more)
+Cohesion: 0.25
+Nodes (13): _bags_on_offer(), _block(), build_extras(), _deals(), _pick(), _posting(), _posting_block(), region() (+5 more)
 
 ### Community 15 - "stock.py"
-Cohesion: 0.18
-Nodes (17): load_data(), POS till name → the shop name used by STOCK_CODE_TO_SHOP ('KTDA SHOP' → 'KTDA')., Raw inputs rolled up to bag type. Returns a dict (see keys below) or None if…, _till_to_shop(), _codes_for(), _inlist(), odoo_stock_at_location(), odoo_stock_by_product() (+9 more)
+Cohesion: 0.20
+Nodes (14): lib — shared data-access for the marketing dashboard (Postgres migration).…, _codes_for(), _inlist(), odoo_stock_at_location(), odoo_stock_by_product(), odoo_stock_by_shop_code(), _ok(), _qty() (+6 more)
 
 ### Community 16 - "publish.py"
-Cohesion: 0.21
-Nodes (14): argparse, fnmatch, py_compile, changed_files(), git(), group(), is_secret(), main() (+6 more)
+Cohesion: 0.23
+Nodes (13): argparse, fnmatch, py_compile, changed_files(), git(), group(), is_secret(), main() (+5 more)
 
-### Community 17 - "forward_projections.py"
-Cohesion: 0.10
-Nodes (16): fetch_monthly_target(), fetch_sheet_data(), _live_bags(), odoo_weekly_breakdown(), _perfect_week_index(), forward_projections.py…, Ordinal of d's Sun–Sat week within the month, counting EVERY week that has at…, Current month's Weekly Performance, live from Odoo. Cuts the month into Sun–Sat… (+8 more)
+### Community 17 - "os"
+Cohesion: 0.07
+Nodes (20): fetch_sheet_data(), forward_projections.py…, _base_colour(), _merge_rows_by_base_colour(), new_products.py…, Upper-case, punctuation-normalised string with known qualifier tokens…, Canonical base-colour grouping key: 'Black 018'/'CN Black' -> 'Black'; 'Sky…, Group rows by (bagType upper, base-colour upper) and SUM numeric_fields across… (+12 more)
 
 ### Community 18 - "build_payload"
-Cohesion: 0.15
-Nodes (15): build_payload(), _anchor_sunday(), _combo_bags(), _fill_from_odoo(), _groups(), _match_bag(), _month_weekly(), _num2() (+7 more)
+Cohesion: 0.06
+Nodes (38): _bags_not_on_offer(), _infer(), _norm(), build_payload(), _anchor_sunday(), _combo_bags(), _fill_from_odoo(), _groups() (+30 more)
 
-### Community 19 - "norm"
-Cohesion: 0.21
-Nodes (10): _aliases(), _Deriver, norm(), odoo_name(), _products(), Name key shared by the catalogue and Odoo: upper-case, '.'→space, collapsed…, {NORM(odoo name): NORM(sheet name)} from product_aliases.csv — products Odoo…, Odoo's spelling of a catalogue name (the reverse of product_aliases.csv), for… (+2 more)
+### Community 19 - "fetch_posting_data"
+Cohesion: 0.13
+Nodes (14): _onoff(), _bt_on_offer(), _dead_clear(), fetch_posting_data(), _clear(), _yield(), _post_yield(), Marketing & Sales Alignment — posting yield, measured the way marketing… (+6 more)
 
 ### Community 20 - "shop_corporate.py"
 Cohesion: 0.17
 Nodes (21): Corporate orders the shops handle (Odoo Sales quotes paid at the tills) for the…, shop_corporate_from_db(), _acronym(), build(), _maybe(), owns(), _d(), _domain() (+13 more)
 
 ### Community 21 - "push_planner.py"
-Cohesion: 0.13
-Nodes (22): build_actions(), build_facts(), build_reasons(), _categories(), inject(), _kenya_target(), main(), month_progress() (+14 more)
+Cohesion: 0.12
+Nodes (24): build_actions(), build_facts(), build_reasons(), _categories(), inject(), _kenya_target(), load_data(), main() (+16 more)
 
-### Community 22 - "self_made_combos_bundle/self_made_combos.py"
-Cohesion: 0.20
-Nodes (11): fetch(), fmt(), inject(), _load_shop_regions(), main(), self_made_combos.py…, Read the Shop → Region table from docs/shop-regions.md so the mapping can be…, Pull the Kenya offer-sheet combos + bag targets + Kenya stock from the Offer… (+3 more)
+### Community 22 - "lib/db.py"
+Cohesion: 0.13
+Nodes (17): One-off: restore August's Offer Type figures into monthly_report_history.json…, fmt(), inject(), _load_shop_regions(), main(), self_made_combos.py…, Read the Shop → Region table from docs/shop-regions.md so the mapping can be…, offer_picking.py… (+9 more)
 
 ### Community 23 - "Self-made combos vs running combos (doc)"
 Cohesion: 0.06
@@ -263,59 +274,59 @@ Nodes (45): Data Sources table (PERF/PROJ, NP, OA, PA), Dashboard Insights skill
 
 ### Community 24 - "shops_efficiency.py"
 Cohesion: 0.05
-Nodes (41): build_period(), distributed_in(), main(), month_window(), _num(), shops_dispatch.py — live dispatch & receiving for Shops Efficiency, from Odoo.…, Per-shop bags SOLD from Odoo POS, Kenya shops only., Shops-efficiency week runs Wednesday → Tuesday (i.e. Wednesday-to-Wednesday).… (+33 more)
+Nodes (39): build_period(), distributed_in(), main(), month_window(), _num(), shops_dispatch.py — live dispatch & receiving for Shops Efficiency, from Odoo.…, Per-shop bags SOLD from Odoo POS, Kenya shops only., Shops-efficiency week runs Wednesday → Tuesday (i.e. Wednesday-to-Wednesday).… (+31 more)
 
 ### Community 25 - "signals"
 Cohesion: 0.09
 Nodes (29): action(), _mean(), _phi(), posting_beta(), bag_signals.py — quant signals per product from daily sales + stock (skill:…, The first rule that fits (docs/bag-signals.md › Action)., Pure. daily = {bag: [units per day, oldest first]} over the window (None = not…, Slope of weekly sales on weekly posts for a bag from bag_posts_history.json… (+21 more)
 
-### Community 26 - "main.py"
-Cohesion: 0.05
-Nodes (51): check_connection(), _drop_shared_conn(), _env(), get_engine(), DataFrame, Engine, lib/db.py — Postgres access for the marketing dashboard. Deliberately the SAME…, Run a read query and return a DataFrame, or None if the DB is unreachable.… (+43 more)
+### Community 26 - "self_made_combos_bundle/lib/db.py"
+Cohesion: 0.16
+Nodes (17): check_connection(), _drop_shared_conn(), _env(), get_engine(), DataFrame, Engine, lib/db.py — Postgres access for the marketing dashboard. Deliberately the SAME…, Run a read query and return a DataFrame, or None if the DB is unreachable.… (+9 more)
 
 ### Community 27 - "Dashboard Menu Docs (spec index)"
 Cohesion: 0.18
 Nodes (14): Menu 1: Current Performance, Menu 7: Dashboard Insights, Dashboard Menu Docs (spec index), domharness.js verification shim, Rule: correct the .md spec first, then make the code match it, Menu 8: Monthly Report, Menu 2: New Products Analytics, Odoo Stock Codes convention (shop-code locations vs WIP/holding codes) (+6 more)
 
-### Community 28 - "reject_sales.py"
-Cohesion: 0.22
-Nodes (11): _assign_price(), _bom_costs(), build(), reject_stock.csv → {BAG (upper): {units, colours:{COLOUR: units}}}., (price, flag) from BOM cost — two tiers. flag ∈ {'', 'thin', 'below', 'nobom'}., Write an Excel (xlsx, or CSV fallback) of EVERYTHING on the pricing board —…, Reject Sale pricing (Kitengela) → reject_sales.html (payload `RJ`). A…, {BAG (upper): cost} from bom_costs.json (via offer_picking._read_bom_costs).… (+3 more)
+### Community 28 - "posting_yields.py"
+Cohesion: 0.14
+Nodes (14): count_complete_weeks_in_month(), load_dead_thresholds(), _mkt_perfect_week_index(), _mkt_week_label(), _offer_bagtypes_by_region(), posting_yields.py…, Ordinal of d's Sun–Sat week within the month, counting every week that has at…, vals = {kenya,sinza,uganda} %; sig = [kenya_posts, sinza_posts, uganda_posts]. (+6 more)
 
 ### Community 29 - "_enrich_deals"
 Cohesion: 0.18
 Nodes (7): _enrich_deals(), _match(), _full(), _full_of(), _odoo_stock_by_shop(), {sheet-loc label: {UPPER(product name): on-hand units}} — live per-shop stock,…, Attach real Odoo sales (units + revenue), per-week sales, and Kenya stock to…
 
-### Community 30 - "bags_on_offer.py"
-Cohesion: 0.05
-Nodes (54): _archived_source(), _as_date(), _bag_tiers(), _base_windows(), _build_period(), _custom_range(), fetch(), cat_tier() (+46 more)
+### Community 30 - "fetch"
+Cohesion: 0.13
+Nodes (25): _archived_source(), _as_date(), fetch(), cat_tier(), classify(), classify_for(), combo_slots(), make_classifier() (+17 more)
 
 ### Community 32 - "streamlit_app.py"
-Cohesion: 0.10
-Nodes (11): SCRIPT_TIMEOUT = 600s config, html, streamlit, _load_secrets_into_env(), _month_end_running(), streamlit_app.py — Denri Marketing Dashboard on Streamlit. Serves the existing…, A Streamlit secret by name — top level, or pasted by mistake under a [table]…, A month_end run for `key` started in the last 3 hours (the lock holds… (+3 more)
+Cohesion: 0.07
+Nodes (24): cache_resource, SCRIPT_TIMEOUT = 600s config, fragment, html, streamlit, _bg_done_msg(), _bg_jobs(), _bg_rebuild() (+16 more)
 
 ### Community 33 - "current_performance.py"
-Cohesion: 0.12
-Nodes (13): corporate_clients_from_db(), _months(), current_performance.py…, Update the rolling snapshot. Returns (carryover_bags | None, captured_on,…, A text cell from a query row: '' for NULL / NaN., 2026-09,2026-10' → [{"m": "Sep", "cur": False}, {"m": "Oct", "cur": True}],…, Current month's corporate activity per client (quoted · invoiced · paid · sold)…, Sunday that starts the Sun–Sat sales week containing d. (+5 more)
+Cohesion: 0.08
+Nodes (20): fetch_monthly_target(), last_week_from_db(), current_performance.py…, Update the rolling snapshot. Returns (carryover_bags | None, captured_on,…, Bags sold in the previous complete Sun–Sat week, straight from Postgres (same…, Sunday that starts the Sun–Sat sales week containing d., Prefer the real current-week bags from Postgres (weekly_sales_db.json, written…, update_month_boundary() (+12 more)
 
 ### Community 34 - "monthly_report.py"
-Cohesion: 0.08
-Nodes (26): _bag_stock(), _cause(), _combo_bags(), esc(), fmt(), _garr_line(), gnum(), ladder_strip() (+18 more)
+Cohesion: 0.15
+Nodes (9): _cause(), esc(), fmt(), ladder_strip(), pct(), monthly_report.py…, _self_made_combos(), _smc_srow() (+1 more)
 
-### Community 35 - "_combo_button_usage"
-Cohesion: 0.22
-Nodes (8): _combo_button_usage(), _combo_norm_option(), combos_by_shop(), _norm(), _tokmatch(), Per running combo: units rung through the combo button (Odoo) vs the sheet's…, Per-shop view for Shops Efficiency, keyed by shop-location label (e.g.…, One combo slot-option → its distinctive bag token(s), colours/category words…
+### Community 35 - "_seasonality"
+Cohesion: 0.15
+Nodes (16): Per combo in the 2025 monthly calendar: planned months, actual sales by…, _region_of(), _seasonality(), best_match(), _build_sheet_slots(), _combo_norm_option(), _combo_odoo_slots(), _combo_sheet_slots() (+8 more)
 
 ### Community 36 - "chronos_train.py"
 Cohesion: 0.12
-Nodes (30): daily_bags(), inject(), inject_train(), main(), forecast(), chronos_preview.py…, Put `data` into the page as `const <name>` between the <marker>_START/END…, The latest chronos_train.py results, if it has been run. (+22 more)
+Nodes (29): daily_bags(), inject(), inject_train(), main(), forecast(), chronos_preview.py…, Put `data` into the page as `const <name>` between the <marker>_START/END…, The latest chronos_train.py results, if it has been run. (+21 more)
 
-### Community 37 - "offer_picking.py"
-Cohesion: 0.07
-Nodes (42): Offer type summary (matrix), _alt_cost(), _apply_alias(), build(), _build_catalog(), _combo_cost(), _combo_slots(), _is_full_price() (+34 more)
+### Community 37 - "reject_sales.py"
+Cohesion: 0.06
+Nodes (41): Offer type summary (matrix), _alt_cost(), _apply_alias(), build(), _build_catalog(), _combo_cost(), _combo_slots(), _is_full_price() (+33 more)
 
 ### Community 38 - "build_payload"
-Cohesion: 0.12
-Nodes (18): _self_made_combos(), build_payload(), _anchor_sunday(), _combo_bags(), _fill_from_odoo(), _groups(), _match_bag(), _month_weekly() (+10 more)
+Cohesion: 0.16
+Nodes (14): build_payload(), _anchor_sunday(), _combo_bags(), _fill_from_odoo(), _groups(), _match_bag(), _month_weekly(), _num2() (+6 more)
 
 ### Community 39 - "Shops Efficiency Tracking spec doc"
 Cohesion: 0.22
@@ -361,17 +372,17 @@ Nodes (7): denri_mkt_* Supabase tables, history.html page, history.py (read mont
 Cohesion: 0.25
 Nodes (8): shop-regions.md (editable Shop to Region table), Composition-based classification rationale (Running vs Self-made), _matches_sheet / _build_sheet_slots slot-aware matching functions, Self-made combos vs Running combos portable bundle README, Returns netting rationale (qty <> 0, returns subtract), docs/self-made-combos.md full spec for the menu, docs/shop-regions.md editable shop to region map, sql/self_made_vs_running_combos.sql (standalone pure-SQL classification)
 
-### Community 51 - "base_name"
-Cohesion: 0.33
-Nodes (7): base_name(), dispatch_by_product_shop(), _num(), The catalogue key for an Odoo product name: norm() without the "[REJECT]" tag…, {NORM(product): {SHOP: bags}} of POS bag sales in [start, end]; None if DB…, {NORM(product): {SHOP: bags distributed in}} from combined_distribution.sql's…, sales_by_product_shop()
+### Community 51 - "start_server"
+Cohesion: 0.18
+Nodes (16): _is_quota_error(), _is_transient(), A one-off network hiccup worth an immediate retry — a Google Sheets read…, _run_one(), run_scripts(), start_server(), copyfile(), do_GET() (+8 more)
 
 ### Community 52 - "scripts/test_receipt_combos.py"
 Cohesion: 0.08
 Nodes (42): combo_list_slots(), _combo_norm_option(), combo_till_slots(), match_offer(), opt_close(), name_match.py — match a till's combo product name to a combo on the offer list…, One combo slot-option → its distinctive bag token(s), colours/category words…, Offer-list label "AMAYA/ELYSE+MOON/NIZANA" → [ {AMAYA,ELYSE}, {MOON,NIZANA} ]. (+34 more)
 
-### Community 53 - "new_products.py"
-Cohesion: 0.09
-Nodes (32): _base_colour(), fetch_new_products_data(), _apply_stock(), _post_lookup(), is_checked(), _key(), _keyed(), _merge_rows_by_base_colour() (+24 more)
+### Community 53 - "fetch_new_products_data"
+Cohesion: 0.16
+Nodes (16): fetch_new_products_data(), _apply_stock(), _post_lookup(), is_checked(), _key(), _keyed(), _np_week_bags(), odoo_sales_window() (+8 more)
 
 ### Community 54 - "algorithmic-art skill"
 Cohesion: 0.47
@@ -385,9 +396,9 @@ Nodes (12): Chart.js 4.4.0 (CDN), Chart Recipes (bar, line/area, donut, sparklin
 Cohesion: 0.19
 Nodes (14): _add_noffer_posts(), per_bag(), _add_oos(), bag_classifier(), infer(), _norm(), _load_bag_prices(), _norm_combo() (+6 more)
 
-### Community 57 - "_combo_button_usage"
-Cohesion: 0.22
-Nodes (8): _combo_button_usage(), _combo_norm_option(), _combo_odoo_slots(), _matches_sheet(), One combo slot-option → its distinctive bag token(s), colours/category words…, Odoo name "Amaya Handbag or Elyse Handbag + Moon Bag or Nizana" → the same…, The sheet label this Odoo combo maps to (same slot count, every slot overlaps),…, Per running combo: units rung through the combo button (Odoo) vs the sheet's…
+### Community 57 - "bags_on_offer.py"
+Cohesion: 0.19
+Nodes (13): _base_windows(), _custom_range(), fmt(), inject(), main(), _new_products(), _previous_payload(), bags_on_offer.py… (+5 more)
 
 ### Community 58 - "_enrich_deals"
 Cohesion: 0.16
@@ -406,16 +417,16 @@ Cohesion: 0.60
 Nodes (4): Guard: the dashboard reads ONLY three Google-Sheet tabs — MONTHLY_TARGET,…, _sources(), test_only_the_main_spreadsheet(), test_only_three_tabs_are_read()
 
 ### Community 62 - "oos_callbacks.py"
-Cohesion: 0.05
-Nodes (62): Out of stock — call back, fixture, match_odoo_bags(), Sum Odoo bags whose product name is the new product's — matched by name prefix…, bag(), aggregate(), flat(), split() (+54 more)
+Cohesion: 0.06
+Nodes (58): Out of stock — call back, fixture, match_odoo_bags(), Sum Odoo bags whose product name is the new product's — matched by name prefix…, aggregate(), flat(), split(), attach_stock() (+50 more)
 
 ### Community 63 - "daydream skill (Vault Daydream)"
 Cohesion: 0.50
 Nodes (4): Daydream Architecture (orchestrator + Sonnet synthesis + Haiku critique), Gwern's LLM Daydreaming (inspiration source), history.json dedup tracking file, daydream skill (Vault Daydream)
 
-### Community 64 - "os"
-Cohesion: 0.11
-Nodes (16): lib/new_products_list.py — which bag types count as this month's NEW PRODUCTS.…, generator(), lib/paths.py — where every kind of file lives. Use these instead of building…, openpyxl, openpyxl_comments, openpyxl_styles, openpyxl_utils, os (+8 more)
+### Community 64 - "sys"
+Cohesion: 0.08
+Nodes (29): http_server, generator(), ensure_firewall_rule(), free_port(), get_lan_ip(), _offer_active_today(), True if ANY timed-offer window is set and today falls inside it. Handles the…, Once per calendar day, while an offer window is active, re-run timed_offers.py… (+21 more)
 
 ### Community 65 - "OOS call-back progress (Ralph loop log)"
 Cohesion: 0.15
@@ -425,65 +436,89 @@ Nodes (11): _local_deal_rows(), Sheet-shaped rows ([header] + [Tier, Month, Prod
 Cohesion: 0.09
 Nodes (22): month_end.py (rollover archiver), monthly_report_history.json, monthly_report.py._read_timed_offers(), renderOffer(TO, root) function, Timed Offers Analytics (doc), timed_offers_config.json (config), timed_offers.html (output), timed_offers.py (generator) (+14 more)
 
-### Community 67 - "_build_sheet_slots"
-Cohesion: 0.50
-Nodes (4): _build_sheet_slots(), _combo_sheet_slots(), Sheet label "AMAYA/ELYSE+MOON/NIZANA" → [ {AMAYA,ELYSE}, {MOON,NIZANA} ]., [(label, slots)] for each running combo on the offer sheet (skips the TOTAL…
+### Community 67 - "_alignment_region"
+Cohesion: 0.17
+Nodes (14): _alignment_region(), _for(), _sold(), _stk(), _units(), _dead_stock_region(), pct(), summarise() (+6 more)
 
 ### Community 68 - "TTL disk-cache rationale (.odoo_cache/)"
 Cohesion: 0.67
 Nodes (3): DENRI_FORCE_FRESH=1 env var, lib/db.run_query_cached() TTL disk cache, TTL disk-cache rationale (.odoo_cache/)
 
-### Community 71 - "lib/report_month.py"
-Cohesion: 0.08
-Nodes (38): anchor(), is_pinned(), live_anchor(), live_month_key(), live_month_window(), month_key(), month_name(), month_window() (+30 more)
+### Community 70 - "lib/report_month.py"
+Cohesion: 0.19
+Nodes (14): anchor(), is_pinned(), live_anchor(), live_month_key(), month_key(), month_name(), _pinned(), lib/report_month.py — the single source of truth for "which month are we… (+6 more)
+
+### Community 71 - "_date"
+Cohesion: 0.17
+Nodes (19): anchor(), is_pinned(), live_anchor(), live_month_key(), live_month_window(), month_key(), month_name(), month_window() (+11 more)
 
 ### Community 72 - "marketing_dashboard.sql"
 Cohesion: 0.32
 Nodes (11): denri_mkt_combo_requests, denri_mkt_combo_sales, denri_mkt_monthly, denri_mkt_new_products, denri_mkt_offers, denri_mkt_self_made_summary, denri_mkt_timed_offer_bags, denri_mkt_timed_offer_days (+3 more)
 
+### Community 73 - "num"
+Cohesion: 0.20
+Nodes (11): _garr_line(), gnum(), num(), _offers(), _parse_offers(), _units(), This month's timed-offer campaigns, flattened for storage. The live TO payload…, Greedy single-line array extractor — handles nested [[...],[...]] arrays. (+3 more)
+
 ### Community 74 - "Bags on offer vs not on offer"
-Cohesion: 0.13
-Nodes (15): Bags on offer vs not on offer, Buckets, Counted by how it was sold, Laptop sleeves are bags (27 Sep 2026), Layout (laptop / tablet / phone), Period selector (Monthly / Weekly / Last week / Custom), Regenerate, Shop birthdays (+7 more)
+Cohesion: 0.20
+Nodes (10): Bags on offer vs not on offer, Buckets, Laptop sleeves are bags (27 Sep 2026), Layout (laptop / tablet / phone), Period selector (Monthly / Weekly / Last week / Custom), Regenerate, Shop birthdays, Shop metrics (vs the Odoo revenue target) (+2 more)
 
 ### Community 75 - "shop_birthdays.py"
 Cohesion: 0.14
 Nodes (24): by_shop(), _entry(), for_shop(), in_month(), _key(), load(), next_up(), _on() (+16 more)
 
-### Community 78 - "_bags_not_on_offer"
-Cohesion: 0.33
-Nodes (6): _bags_not_on_offer(), _infer(), _norm(), _load_bag_prices(), {BAG_UPPER: original full price} from bag_original_prices.json — the baseline…, Bags with sales this month that are on NO offer — i.e. not a running-combo…
+### Community 76 - "_build_period"
+Cohesion: 0.20
+Nodes (6): _build_period(), _offer_types(), _pick_target(), Latest target row for `shop` with this period that overlaps [start, end]. A…, Matrix payload: rows, per-row category / tier cells, and the period's Top-5…, _region_of()
 
-### Community 79 - "sys"
-Cohesion: 0.17
-Nodes (13): dotenv, main(), push_to_supabase.py — run the marketing migration against Supabase. Regenerates…, main(), month_block(), num(), q(), supabase_migration.py — export the marketing dashboard's monthly data to a SQL… (+5 more)
+### Community 77 - "datetime"
+Cohesion: 0.22
+Nodes (7): datetime, monthly_sales.py — the current month's real bags sold, from Postgres. The…, openpyxl, openpyxl_comments, openpyxl_styles, openpyxl_utils, product_targets_workbook.py — the month's bag targets as an Excel workbook with…
+
+### Community 78 - "write_bags_offer_source"
+Cohesion: 0.22
+Nodes (9): Counted by how it was sold, _has_deals(), _load_source(), True when the on-offer source carries any Power Deal / Deal of the Week — a…, bags_offer_source.json if written in the last 15 min for this month (and it has…, dow_tier_weeks(), Kenya on-offer bag set (tagged by offer) + the not-on-offer list, for…, Sun-Sat week numbers a Deal-of-the-Week tier runs in: Tier 1 = Wk 1–2, Tier 2 =… (+1 more)
+
+### Community 79 - "self_made_combos_bundle/lib/__init__.py"
+Cohesion: 0.12
+Nodes (22): dotenv, lib — shared data-access for the marketing dashboard (Postgres migration).…, fetch_months(), bucket(), inject(), main(), _num(), history.py — build the dashboard History page from Supabase. Reads the… (+14 more)
 
 ### Community 80 - "theme.py"
 Cohesion: 0.20
 Nodes (9): css_variables(), gradient_css(), hex_to_rgba(), product_swatch(), lib/theme.py ─────────────────────────────────────────────────────────────────…, Return the display hex for a product colour NAME (case-insensitive)., #1e2130', 0.5 -> 'rgba(30, 33, 48, 0.5)'., gradient_css('green') -> 'linear-gradient(90deg, #10b981, #06b6d4)'. (+1 more)
 
 ### Community 81 - "push_laya.py"
-Cohesion: 0.13
-Nodes (20): baseline(), main_reason(), offer_check(), lib/push_laya.py — Laya's second opinion on the Push Planner (spec: docs/push-…, The bag's facts as short plain sentences — what Laya reads., agrees when yes ≥ max(0.5, baseline + 0.25); disagrees when yes ≤ baseline -…, Mean 'yes' Laya gives `statement` for up to n bags that are fine (None if it…, {"code", "label", "confidence", "verdict"} or None. Choice among the bag's own… (+12 more)
+Cohesion: 0.14
+Nodes (19): baseline(), main_reason(), offer_check(), lib/push_laya.py — Laya's second opinion on the Push Planner (spec: docs/push-…, The bag's facts as short plain sentences — what Laya reads., agrees when yes ≥ max(0.5, baseline + 0.25); disagrees when yes ≤ baseline -…, Mean 'yes' Laya gives `statement` for up to n bags that are fine (None if it…, {"code", "label", "confidence", "verdict"} or None. Choice among the bag's own… (+11 more)
 
-### Community 82 - "self_made_combos_bundle/lib/__init__.py"
-Cohesion: 0.16
-Nodes (11): lib — shared data-access for the marketing dashboard (Postgres migration).…, main(), month_window(), _query_ready(), monthly_sales.py — the current month's real bags sold, from Postgres. The…, First → last calendar day of the LIVE month (today's month; see…, master_products(), _norm_name() (+3 more)
+### Community 82 - "main"
+Cohesion: 0.40
+Nodes (4): main(), month_window(), _query_ready(), First → last calendar day of the LIVE month (today's month; see…
 
-### Community 83 - "test_push_planner.py"
-Cohesion: 0.17
-Nodes (19): Per bag × market: the facts (`push_rules.facts`, `add_peers`), add_peers(), _days_back(), facts(), The facts for one bag in one market. daily {iso date: units} over the last…, Adds peerPerDay / peerPrice / peerCount to every row: the median pace and price…, day(), Tests for lib/push_rules.py (the Push Planner's pure logic). Run: python -m… (+11 more)
+### Community 83 - "facts"
+Cohesion: 0.15
+Nodes (18): Per bag × market: the facts (`push_rules.facts`, `add_peers`), add_peers(), _days_back(), facts(), The facts for one bag in one market. daily {iso date: units} over the last…, Adds peerPerDay / peerPrice / peerCount to every row: the median pace and price…, day(), ISO date n days before END (0 = END). (+10 more)
 
 ### Community 84 - "Push Planner (`push_planner.py` → `push_planner.html`, `PP`)"
 Cohesion: 0.17
 Nodes (12): Did last week's calls work? (`push_rules.record_week`, `followup`), Inputs (read only — nothing is written to Odoo or the sheet), Laya model (`lib/laya.py`), Laya's second opinion (`lib/push_laya.py`), Push Planner (`push_planner.py` → `push_planner.html`, `PP`), Regenerate, Shop birthdays, The page (+4 more)
 
+### Community 85 - "build_offer"
+Cohesion: 0.22
+Nodes (3): build_offer(), Compute the full TO payload for a single offer dict. Rebinds the per-offer…, _time_sql()
+
 ### Community 86 - "Chart type switcher (every chart, every menu)"
 Cohesion: 0.29
 Nodes (6): Chart type switcher (every chart, every menu), Layout rules, Skipped charts, Types offered (only when the data suits them), Week change (9 Oct 2026), What it does
 
-### Community 87 - "F"
-Cohesion: 0.24
-Nodes (16): context(), What the reasons need beyond one row: Kenya pace per bag, the on-offer sellers…, Every reason that applies to a not-moving bag, each {code, label, text} with…, reasons(), codes(), F(), A facts row with sensible defaults, overridden by kw., test_fallback_slow_seller_or_overstocked() (+8 more)
+### Community 87 - "test_push_planner.py"
+Cohesion: 0.16
+Nodes (25): context(), What the reasons need beyond one row: Kenya pace per bag, the on-offer sellers…, Every reason that applies to a not-moving bag, each {code, label, text} with…, reasons(), codes(), F(), Tests for lib/push_rules.py (the Push Planner's pure logic). Run: python -m…, A facts row with sensible defaults, overridden by kw. (+17 more)
+
+### Community 88 - "update_np_weekly_history"
+Cohesion: 0.29
+Nodes (7): _np_complete_weeks_in_month(), _np_perfect_week_index(), _np_week_start(), Total perfect weeks in the month (Sun–Sat weeks with >=5 days in it)., Ordinal among the month's perfect weeks (>=5 days in month), so the first FULL…, Snapshot each Sun–Sat week (sales, Kenya/Outside posts) into…, update_np_weekly_history()
 
 ### Community 89 - "test_stockout_demand.py"
 Cohesion: 0.14
@@ -498,16 +533,20 @@ Cohesion: 0.06
 Nodes (36): Card component (base building block), Card entrance animation via CSS @keyframes + animation-fill-mode: both, dashboard-insights (related skill), Data Injection Block pattern (SECTION_DATA_START/END markers), Denri Africa Dashboard Design System (skill), design-taste-frontend (related skill), Design Tokens (colors, typography, spacing), Signature Element — Flowing Border (achievement cards) (+28 more)
 
 ### Community 92 - "push_rules.py"
-Cohesion: 0.10
-Nodes (21): action(), _cover_txt(), _kind(), _n(), not_moving(), posting_median(), lib/push_rules.py — the Push Planner's pure logic (spec: docs/push-planner.md).…, {market: median postsMonth of the bags that were posted at all} — the 'below… (+13 more)
+Cohesion: 0.13
+Nodes (17): action(), _cover_txt(), _kind(), _n(), not_moving(), posting_median(), rank(), lib/push_rules.py — the Push Planner's pure logic (spec: docs/push-planner.md).… (+9 more)
 
-### Community 93 - "get_gspread_client"
-Cohesion: 0.24
-Nodes (8): get_gspread_client(), Shared Google Sheets authentication for every dashboard generator. Two modes,…, offer_flags(), prime_offer_flags(), Seed offer_flags() from MONTHLY_TARGET rows the caller already read (saves a…, {BAG TYPE: (kenya, sinza, uganda) on-offer bools} from MONTHLY_TARGET cols…, main(), One-command Google re-authorization. python scripts/reauth.py Deletes any stale…
+### Community 93 - "load_pages"
+Cohesion: 0.29
+Nodes (7): read_block(), read_block(), _read_timed_offers(), load_pages(), bag_of(), Posting (PA) + Self-made combos (SMC) + new products, per market and bag type.…, html()
 
-### Community 94 - "_bg_jobs"
-Cohesion: 0.25
-Nodes (8): cache_resource, fragment, _bg_done_msg(), _bg_jobs(), _bg_watch(), _fmt_secs(), Background rebuilds shared by every session: label → job (see _bg_rebuild)., The refresh_msg for a finished background rebuild (None: the job vanished).
+### Community 94 - "reject_variants"
+Cohesion: 0.33
+Nodes (7): _parse_colour(), First primary colour token found in a name (longest-first), Title-cased; '' if…, Word tokens, plural 's' trimmed, so 'MOON BAGS' and 'Moon Bag Black' share…, Per-[REJECT]-product variant rows for a name-filtered offer, for the filterable…, reject_variants(), _match_bag(), _singular_tokens()
+
+### Community 95 - "get_engine"
+Cohesion: 0.29
+Nodes (7): _env(), get_engine(), Engine, The process's reused connection (opened on first query). Every generator runs…, Build a SQLAlchemy URL from the environment, or None if unset. Accepts…, _shared_conn(), _url()
 
 ### Community 96 - "Product (bag) targets"
 Cohesion: 0.29
@@ -517,17 +556,17 @@ Nodes (6): No zero targets, Output columns, Product (bag) targets, The split —
 Cohesion: 0.25
 Nodes (6): _apply_receipt_offers(), Kenya's combosGoal for a Sinza / Uganda market, from receipts: last month's…, {prev, cur}: the till's Odoo monthly target (KES + bags) vs what it sold (bags;…, Sinza & Uganda: when offers_monthly.csv lists the month's offers, the region…, _region_goal(), _till_targets()
 
-### Community 98 - "_matches_sheet"
-Cohesion: 0.20
-Nodes (9): _matches_sheet(), _opt_close(), Two normalised slot options name the same bag, loosely: equal ignoring spaces…, Same slot count and every slot overlaps under SOME pairing (any order: the…, The sheet label this Odoo combo maps to, or None if it isn't on the sheet.…, _slots_fit(), Inputs (from the user, Oct 2026), Ralph task — Sinza & Uganda offers + receipt-based combo counting (+1 more)
+### Community 98 - "_combo_button_usage"
+Cohesion: 0.14
+Nodes (11): _combo_button_usage(), _matches_sheet(), _opt_close(), Per running combo: units rung through the combo button (Odoo) vs the sheet's…, Two normalised slot options name the same bag, loosely: equal ignoring spaces…, Same slot count and every slot overlaps under SOME pairing (any order: the…, The sheet label this Odoo combo maps to, or None if it isn't on the sheet.…, _slots_fit() (+3 more)
 
 ### Community 99 - "Bag Signals — quant view of each bag (posting · stock · selling)"
 Cohesion: 0.40
 Nodes (4): Action (first rule that fits), Bag Signals — quant view of each bag (posting · stock · selling), Page, Per bag
 
 ### Community 100 - "check_connection"
-Cohesion: 0.15
-Nodes (16): corporate_from_db(), Current month's corporate bags, live from Odoo invoices. 0 when the DB isn't…, _corporate_bags(), Corporate bags sold in the given month, live from Odoo invoices. Returns 0 when…, _bucket(), odoo_bag_daily_value(), odoo_bag_prices(), odoo_bulk_lines() (+8 more)
+Cohesion: 0.14
+Nodes (21): _bucket(), odoo_bag_daily_value(), odoo_bag_prices(), odoo_bulk_lines(), odoo_daily_kenya(), odoo_list_price(), odoo_offer_price(), odoo_window_sales() (+13 more)
 
 ### Community 101 - "current_performance.html"
 Cohesion: 0.50
@@ -541,73 +580,85 @@ Nodes (5): attach(), page(), behaviour(), injectCss(), reveal()
 Cohesion: 0.29
 Nodes (7): lib/report_month.py live_month_window(), Menu 4: Self made combos vs running combos, bag_original_prices.json full-price catalogue, self_made_combos.build_payload(month_start, month_end) function, lib/report_month.py (which month are we reporting?), self_made_combos.html static page (reads const SMC), self_made_combos.py generator (build_payload + SQL + injection)
 
+### Community 104 - "corporate_clients_from_db"
+Cohesion: 0.40
+Nodes (6): corporate_clients_from_db(), _months(), A text cell from a query row: '' for NULL / NaN., 2026-09,2026-10' → [{"m": "Sep", "cur": False}, {"m": "Oct", "cur": True}],…, Current month's corporate activity per client (quoted · invoiced · paid · sold)…, _txt()
+
 ### Community 105 - "Pricing rule — two tiers (BAND cost cutoff) + hand pins"
 Cohesion: 0.33
 Nodes (6): "Below cost" flag, "No BOM" flag, "Pinned" flag, Pricing rule — two tiers (BAND cost cutoff) + hand pins, reject_overrides.json (hand-pinned prices), "Thin" margin flag
+
+### Community 106 - "odoo_weekly_breakdown"
+Cohesion: 0.40
+Nodes (6): odoo_weekly_breakdown(), _perfect_week_index(), Ordinal of d's Sun–Sat week within the month, counting EVERY week that has at…, Current month's Weekly Performance, live from Odoo. Cuts the month into Sun–Sat…, update_weekly_history(), _week_start()
+
+### Community 107 - "kenya_stock_by_bag"
+Cohesion: 0.33
+Nodes (6): kenya_stock_by_bag(), {BAG_UPPER: category} — the bag's category label only, from the product…, {BAG_UPPER: units} — physical stock summed per BAG TYPE from a repo CSV's UNITS…, {BAG_UPPER: {stock, category}} for the configured bags. STOCK is LIVE Kenya…, _sheet_category_by_bag(), _stock_from_file()
 
 ### Community 108 - "Ralph task — only three sheet tabs left"
 Cohesion: 0.40
 Nodes (4): Added mid-task (user), Monthly inputs (user uploads), Ralph task — only three sheet tabs left, Steps (verify each)
 
+### Community 109 - "_bag_stock"
+Cohesion: 0.40
+Nodes (5): _bag_stock(), _combo_bags(), _norm_bag(), Space/punctuation-insensitive key so 'MINIZURI' matches 'MINI ZURI'., Component bags of an offer, each with its stock, sorted most-stock first.
+
 ### Community 110 - "Bag targets October 2026_3acbad00.md"
 Cohesion: 0.50
 Nodes (3): Sheet: Bag targets, Sheet: Inputs, Sheet: Method
 
-### Community 111 - "_bg_rebuild"
-Cohesion: 0.33
-Nodes (7): _bg_rebuild(), work(), Seconds the last good `kind` rebuild of `lbl` took (any kind as a fallback),…, Rebuild `lbl` in the background. kind: "auto" (skipped if a rebuild was tried…, _rebuild_secs(), run_scripts(), _save_rebuild_secs()
+### Community 111 - "_bag_tiers"
+Cohesion: 0.50
+Nodes (4): _bag_tiers(), _price_tier(), Tier of a bag from its price (KES): <= 2,000 Entry, 2,001-3,000 Core, > 3,000…, {BAG: (category, tier)} from bag_tiers.csv (editable; '#' lines are comments).…
 
 ### Community 112 - "Ralph task — deals from the posters (deals_kenya.csv)"
 Cohesion: 0.50
 Nodes (3): Facts, Ralph task — deals from the posters (deals_kenya.csv), Steps (verify each before the next)
 
-### Community 121 - "_reveal_page"
-Cohesion: 0.50
-Nodes (4): Run script-only HTML in an invisible frame (same origin, so it can reach…, Fade the page area back in on a page that has no dashboard frame (password…, _reveal_page(), _run_js()
-
 ### Community 122 - "colours.py"
-Cohesion: 0.43
-Nodes (6): csv, family(), _load(), _norm(), lib/colours.py — colour FAMILY of a product (Brown, Black, Red, Beige, Grey,…, Colour family for a product name (Odoo or sheet spelling; "[REJECT]" ignored).…
+Cohesion: 0.36
+Nodes (7): collections, csv, family(), _load(), _norm(), lib/colours.py — colour FAMILY of a product (Brown, Black, Red, Beige, Grey,…, Colour family for a product name (Odoo or sheet spelling; "[REJECT]" ignored).…
 
 ### Community 126 - "odoo_tabs.py"
-Cohesion: 0.15
-Nodes (20): _build(), build_rows(), catalog_rows(), default_window(), _flag_cells(), _fmt(), get_rows(), last_complete_week() (+12 more)
+Cohesion: 0.08
+Nodes (43): _odoo_colour(), The colour as the product itself is named — the product name minus its bag…, _aliases(), base_name(), _build(), build_rows(), catalog_rows(), default_window() (+35 more)
 
-### Community 128 - "_month_archived"
-Cohesion: 0.67
-Nodes (3): cache_data, _month_archived(), True when `key` is in Supabase (falls back to monthly_report_history.json). If…
-
-### Community 138 - "lib/db.py"
+### Community 128 - "data"
 Cohesion: 0.12
-Nodes (24): corporate_target_from_db(), This month's Odoo corporate target {bags, kes} (sales_pos_target, scope…, odoo_combo_product_bags(), odoo_lifetime_product_bags(), odoo_month_product_bags(), All-time bags per product from Odoo (no month window) — the lifetime sales of…, [(product name, bags)] for bags sold INSIDE combos (sub_product_line) in the…, Reporting month's bags per product from Odoo (Postgres), or None if the DB… (+16 more)
+Nodes (18): cache_data, _db_count(), monthly_from_db(), Reporting month's subset count (e.g. rejectBags, giftBags) from…, Prefer the REPORTING month's real bags from Postgres (monthly_sales_db.json,…, _live_bags(), {BAG (upper): official full price} from bag_original_prices.json (fallback)., _read_bag_prices() (+10 more)
+
+### Community 138 - "run_query"
+Cohesion: 0.10
+Nodes (23): corporate_from_db(), corporate_target_from_db(), Current month's corporate bags, live from Odoo invoices. 0 when the DB isn't…, This month's Odoo corporate target {bags, kes} (sales_pos_target, scope…, _corporate_bags(), Corporate bags sold in the given month, live from Odoo invoices. Returns 0 when…, odoo_combo_product_bags(), odoo_lifetime_product_bags() (+15 more)
 
 ### Community 145 - "Shop Launch"
 Cohesion: 0.29
 Nodes (6): Config, Launch day, Marketing posts, Sales, Shop Launch, What the page shows
 
 ### Community 162 - "generate_insights.py"
-Cohesion: 0.20
-Nodes (7): card(), esc(), fmt(), generate_insights.py…, read_block(), region_card(), html()
+Cohesion: 0.24
+Nodes (5): card(), esc(), fmt(), generate_insights.py…, region_card()
 
 ## Knowledge Gaps
-- **185 isolated node(s):** `Three countries, one page (9 Oct 2026)`, `Period selector (Monthly / Weekly / Last week / Custom)`, `Laptop sleeves are bags (27 Sep 2026)`, `Shop metrics (vs the Odoo revenue target)`, `Shop birthdays` (+180 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 869 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **35 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **185 isolated node(s):** `PERF`, `graphify`, `Use in another project`, `Test a skill`, `Inputs you must build from the project's data` (+180 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 871 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **36 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Bags on offer vs not on offer` connect `Bags on offer vs not on offer` to `tests/test_receipt_combos.py`, `Denri Africa Dashboard Design System (skill)`, `offer_picking.py`, `oos_callbacks.py`?**
-  _High betweenness centrality (0.063) - this node is a cross-community bridge._
+- **Why does `Bags on offer vs not on offer` connect `Bags on offer vs not on offer` to `tests/test_receipt_combos.py`, `reject_sales.py`, `write_bags_offer_source`, `Denri Africa Dashboard Design System (skill)`, `oos_callbacks.py`?**
+  _High betweenness centrality (0.094) - this node is a cross-community bridge._
+- **Why does `bag_classifier()` connect `bag_classifier` to `Product (bag) targets`, `_apply_receipt_offers`, `generators/self_made_combos.py`, `Bags on offer vs not on offer`, `write_bags_offer_source`, `Push Planner (`push_planner.py` → `push_planner.html`, `PP`)`, `push_planner.py`, `fetch`, `oos_callbacks.py`?**
+  _High betweenness centrality (0.057) - this node is a cross-community bridge._
 - **Why does `Monthly Report (doc)` connect `Self-made combos vs running combos (doc)` to `Denri Africa Dashboard Design System (skill)`?**
-  _High betweenness centrality (0.042) - this node is a cross-community bridge._
-- **Why does `bag_classifier()` connect `bag_classifier` to `Product (bag) targets`, `_apply_receipt_offers`, `generators/self_made_combos.py`, `Bags on offer vs not on offer`, `stock.py`, `Push Planner (`push_planner.py` → `push_planner.html`, `PP`)`, `push_planner.py`, `bags_on_offer.py`, `oos_callbacks.py`?**
-  _High betweenness centrality (0.038) - this node is a cross-community bridge._
-- **What connects `Three countries, one page (9 Oct 2026)`, `Period selector (Monthly / Weekly / Last week / Custom)`, `Laptop sleeves are bags (27 Sep 2026)` to the rest of the system?**
+  _High betweenness centrality (0.050) - this node is a cross-community bridge._
+- **Are the 3 inferred relationships involving `fetch()` (e.g. with `classify()` and `oos_key()`) actually correct?**
+  _`fetch()` has 3 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `PERF`, `graphify`, `Use in another project` to the rest of the system?**
   _185 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `posting_yields.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.05048766494549627 - nodes in this community are weakly interconnected._
+- **Should `safe_int` be split into smaller, more focused modules?**
+  _Cohesion score 0.11586452762923351 - nodes in this community are weakly interconnected._
 - **Should `laya.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.09047619047619047 - nodes in this community are weakly interconnected._
-- **Should `tests/test_receipt_combos.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.08503401360544217 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09411764705882353 - nodes in this community are weakly interconnected._
