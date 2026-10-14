@@ -144,6 +144,38 @@ WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', '
 GROUP BY 1, 2, 4
 """
 
+# Every Kenya combo line with the bags inside it (14 Oct 2026, docs/bags-on-offer.md › Combos = running-combo
+# bags only). A combo's sub-lines sit on the same order with parent_id = the combo line's product. Same filters
+# as LINES_SQL's "+" lines, so these rows replace them one for one. Returned combos have no sub-lines (bags = []).
+COMBO_LINES_SQL = f"""
+WITH c AS (
+    SELECT pl.order_id, pl.product_id, UPPER(COALESCE(pc."name",'?')) AS shop, UPPER(pt."name") AS name,
+           p.date_order::date AS d, SUM(pl.qty)::int AS units, ROUND(SUM(pl.price_subtotal_incl))::int AS revenue
+    FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+    LEFT JOIN pos_session ps ON p.session_id=ps.id
+    LEFT JOIN pos_config pc ON ps.config_id=pc.id
+    LEFT JOIN product_product pp ON pl.product_id=pp.id
+    LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
+    WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
+      AND NOT COALESCE(pl.sub_product_line, false)
+      {_KENYA_TILLS}
+      AND pt."name" LIKE '%+%' AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
+      AND pt."name" NOT ILIKE '%strap%'
+    GROUP BY 1, 2, 3, 4, 5
+), s AS (
+    SELECT sl.order_id, sl.parent_id, UPPER(spt."name") AS bag, SUM(sl.qty)::int AS n
+    FROM pos_order_line sl JOIN c ON c.order_id = sl.order_id AND c.product_id = sl.parent_id
+    LEFT JOIN product_product spp ON sl.product_id=spp.id
+    LEFT JOIN product_template spt ON spp.product_tmpl_id=spt.id
+    WHERE COALESCE(sl.sub_product_line, false)
+    GROUP BY 1, 2, 3
+)
+SELECT c.shop, c.name, c.d, c.units, c.revenue,
+       COALESCE(json_agg(json_build_object('bag', s.bag, 'n', s.n)) FILTER (WHERE s.bag IS NOT NULL), '[]') AS bags
+FROM c LEFT JOIN s ON s.order_id = c.order_id AND s.parent_id = c.product_id
+GROUP BY c.order_id, c.product_id, c.shop, c.name, c.d, c.units, c.revenue
+"""
+
 # Single-bag lines inside a timed-offer campaign (timed_offers_config.json), one row per till
 # line so overlapping campaigns can't count a sale twice. The campaign's own shop / hour /
 # price / name filters (from timed_offers.py) are appended per offer.
@@ -384,7 +416,8 @@ _MARKETS = (("sinza", "Tanzania", "TSh"), ("uganda", "Uganda", "USh"))
 
 def _market_records(lo, hi, infer, new_of, new_names):
     """Tanzania (Sinza) & Uganda till receipts → sales in KES for the all-country rows (docs/bags-on-offer.md ›
-    Three countries, one page): every combo → COMBOS; a single on the month's singles list (offers_monthly.csv)
+    Three countries, one page): a running combo → COMBOS (one unit per bag), a self-made combo's bags → judged
+    like singles; a single on the month's singles list (offers_monthly.csv)
     or a new product → MID; any other single, and every bag on a bulk (5+ bag) receipt → OFF.
     Returns [{d, mkt, row, side, units, revenue, bags, parts: ((bag, weight), …)}], grouped by day."""
     from lib import receipt_combos as rc
@@ -404,20 +437,25 @@ def _market_records(lo, hi, infer, new_of, new_names):
             continue
         fx = smc.FX_PER_KSH.get(cur) or 1
         recs, _ = rc._receipts(lines, key_of)
-        listed = {}                                          # month name → set of listed single bags
+        listed, running = {}, {}                             # month name → listed single bags / running combos
         for rec in recs.values():
             d = _as_date(rec["d"])
             mn = d.strftime("%B")
             if mn not in listed:
                 offers = rc.load_offers(mn, mk) or {}
                 listed[mn] = {b for o in offers.get("singles", []) for slot in o["slots"] for b in slot}
+                running[mn] = [o["slots"] for o in offers.get("combos", [])]
             if len(rec["bags"]) >= rc.BULK_MIN:
                 for b, unit in rec["bags"]:
                     add(d, label, "OFF", 1, unit / fx, 1, ((bag(b), 1.0),))
                 continue
             combos, left = rc._groups(rec["bags"])
             for bs, rev in combos:
-                add(d, label, "COMBOS", 1, rev / fx, len(bs), tuple(sorted((bag(b), 1.0 / len(bs)) for b in bs)))
+                if any(rc._fits(bs, sl) for sl in running[mn]):  # running combo → Combos, one unit per bag
+                    add(d, label, "COMBOS", len(bs), rev / fx, len(bs),
+                        tuple(sorted((bag(b), 1.0 / len(bs)) for b in bs)))
+                else:                                        # self-made → each bag judged like a single
+                    left += [(b, rev / len(bs)) for b in bs]
             for b, unit in left:
                 row = "MID" if b in listed[mn] or b in new_set else "OFF"
                 add(d, label, row, 1, unit / fx, 1, ((bag(b), 1.0),))
@@ -949,6 +987,45 @@ def fetch():
         lines = split
         print(f"  Timed offers     : {len(timed_lines)} till lines in {', '.join(timed_names)}")
 
+    # ── Combos: a running combo stays a Combo sale, one unit per bag; a self-made combo's bags are
+    #    judged one by one like singles, its money split evenly (docs › Combos = running-combo bags only) ──
+    def combo_slots(src_m):
+        return smc._build_sheet_slots({"combos": [c["label"] for c in (src_m or {}).get("combos") or []]})
+    sheet_slots = combo_slots(src) or smc._build_sheet_slots(smc._read_offer_analysis() or {})
+    slots_by_month = {m_start: sheet_slots}
+
+    def slots_for(d):
+        """The running-combo list of the sale's own month (archived), else this month's."""
+        ms = d.replace(day=1)
+        if ms not in slots_by_month:
+            slots_by_month[ms] = (combo_slots(_archived_source(ms)) if ms < m_start else None) or sheet_slots
+        return slots_by_month[ms]
+    cdf = db.run_query(COMBO_LINES_SQL, params) if sheet_slots else None
+    if cdf is None:
+        print("  Combos           : offer sheet or combo lines unavailable — every combo left as 1 unit in Combos")
+    else:
+        lines = [r for r in lines if "+" not in r["name"]]
+        n_run = n_self = 0
+        for r in cdf.to_dict("records"):
+            shop, name, d = str(r["shop"]), str(r["name"]), _as_date(r["d"])
+            u, rev = int(r["units"] or 0), int(r["revenue"] or 0)
+            raw = r["bags"] if isinstance(r["bags"], list) else json.loads(r["bags"] or "[]")
+            bags = [(str(x["bag"]), int(x["n"] or 0)) for x in raw if x.get("bag")]
+            if not bags:                                     # returned combo: no sub-lines → the name's slots
+                bags = [(re.sub(r"\s+COMBO$", "", re.split(r"\s+OR\s+", x.strip())[0]).strip(), u)
+                        for x in name.split("+") if x.strip()]
+            if smc._matches_sheet(name, slots_for(d)) is not None:
+                lines.append({"shop": shop, "name": name, "d": d, "units": sum(n for _, n in bags), "revenue": rev})
+                n_run += sum(n for _, n in bags)
+                continue
+            total, left = sum(abs(n) for _, n in bags) or 1, rev
+            for i, (bg, n) in enumerate(bags):
+                part = left if i == len(bags) - 1 else round(rev * abs(n) / total)
+                left -= part
+                lines.append({"shop": shop, "name": bg, "d": d, "units": n, "revenue": part, "selfMade": True})
+                n_self += n
+        print(f"  Combos           : {n_run} running-combo bags in Combos · {n_self} self-made combo bags judged singly")
+
     # ── Bags printed inside combos (per day) ──
     import ast
 
@@ -1034,7 +1111,7 @@ def fetch():
     for r in lines:
         if m_start <= r["d"] <= m_end:
             kind, bt = base(r["name"])[:2]
-            if kind == "bag" and r["units"] > 0:
+            if kind == "bag" and r["units"] > 0 and not r.get("selfMade"):     # self-made bags are in prints
                 m_units[bt] = m_units.get(bt, 0) + r["units"]
                 m_days.setdefault(bt, set()).add(r["d"])
     for r in prints:

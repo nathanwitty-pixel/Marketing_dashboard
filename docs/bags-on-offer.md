@@ -20,7 +20,7 @@ money comes from*, Offer type summary) covers all three countries, Tanzania and 
 |---|---|---|---|---|
 | **Not on offer** | ✓ | ✓ | ✓ | not on offer |
 | **Power deals** | ✓ | — | — | on offer |
-| **Combos** | ✓ (combo button) | ✓ (receipts) | ✓ (receipts) | on offer |
+| **Combos** | ✓ running combos (combo button) | ✓ running combos (receipts) | ✓ running combos (receipts) | on offer |
 | **Deal of wk** | ✓ | — | — | on offer |
 | **Corporate** | ✓ (invoices) | — | — | others |
 | **Mid-month offers** | new products + timed offers | listed singles + new products | listed singles + new products | on offer |
@@ -31,8 +31,17 @@ money comes from*, Offer type summary) covers all three countries, Tanzania and 
 - A Kenya single sale counts in the first that applies: **Power Deal → Deal of the Week → Mid-month offer**
   (sold inside a timed-offer campaign, or a new product), else **not on offer**. A combo bag bought on its own
   is still not on offer.
-- Tanzania / Uganda receipts (`lib/receipt_combos`): every combo (running or self-made) → **Combos** (1 unit per
-  combo, money split evenly over its bags for category / tier); a single on the market's singles list in
+- **Combos = running-combo BAGS only (14 Oct 2026, user's call).** A combo counts in Combos only if it is a
+  **running** combo (its bags match a combo on the month's offer sheet — `self_made_combos._matches_sheet` in Kenya,
+  `receipt_combos._fits` against `offers_monthly.csv` in Tanzania / Uganda), and it counts **one unit per bag**
+  (*Jumbo + Jumbo* = 2). A **self-made** combo is not on offer as a combo: each of its bags is counted **on its
+  own**, exactly like a single sale (Kenya: Power Deal → Deal of wk → Mid-month → Not on offer; Tanzania / Uganda:
+  listed single / new product → Mid-month, else Not on offer), with the combo's money split evenly over its bags.
+  Kenya's bags come from the combo's **sub-lines** (`parent_id` = the combo line's product, same order); a
+  returned combo (no sub-lines) falls back to its name's slots. Checked 14 Oct 2026 against the marketing sheet:
+  Oct Wk 1 running-combo bags 234 vs sheet 232, Wk 2 452 vs 451.
+- Tanzania / Uganda receipts (`lib/receipt_combos`): a running combo → **Combos** (one unit per bag, money split
+  evenly over its bags for category / tier); a self-made combo's bags → counted as singles; a single on the market's singles list in
   `offers_monthly.csv`, or a new product → **Mid-month offers**; every other single → **Not on offer**;
   **bulk** receipts (5+ bags) → **Not on offer** too. Gift bags are not read there.
 - **Country tab** in the Offer type summary: each row split Kenya / Tanzania / Uganda.
@@ -79,7 +88,7 @@ straps excluded) and every qualifying corporate invoice line falls into exactly 
 
 | Bucket | Rule | Tag |
 |---|---|---|
-| **On offer** | a combo product (`name LIKE '%+%'`) — running *and* self-made, rung on the combo button | `Combo sale` |
+| **On offer** | a **running** combo product (`name LIKE '%+%'` matching the offer sheet), one unit per bag; a self-made combo's bags are judged one by one like singles (14 Oct 2026) | `Combo sale` |
 | **On offer** | a single bag sold inside a **timed offer** campaign, or that resolves to a bag that is a **running-combo component**, a **Deal of the Week** or a **Power Deal** | `Timed offer` / `Combo component` / `Deal of the Week` / `Power Deal` (several allowed; money counted **once** — see *Counted by how it was sold*) |
 | **Not on offer** | a single bag that resolves to a catalogue bag on no offer | — |
 | **Not on offer** | a **new product** (MONTHLY_TARGET sheet, col I ✅ — the New Products list) that is on no offer, **even if it isn't in the price catalogue yet** (e.g. LaFemme) | `NEW` |
@@ -105,8 +114,8 @@ straps excluded) and every qualifying corporate invoice line falls into exactly 
 
 Every sale is counted **once**, in the channel it actually went through (agreed Sep 2026):
 
-- **Printed inside a combo** (rung on the combo button) → the **Combo sales** row — whatever
-  else the bag is on. E.g. Sep 1–24: **367 Jumbos** were printed inside combos (290 in
+- **Printed inside a running combo** (rung on the combo button) → the **Combo sales** row — whatever
+  else the bag is on. Bags inside a **self-made** combo are counted as if sold singly (14 Oct 2026). E.g. Sep 1–24: **367 Jumbos** were printed inside combos (290 in
   Jumbo + Jumbo, 77 in Jumbo + Standard/Liam + …) → Combos.
 - **Sold singly** → the offer the single sale belongs to, in this order:
   **Power Deal → Deal of the Week**, and if neither applies → **not on offer**.
@@ -219,7 +228,7 @@ the rows add up to on + not on + others):
 |---|---|
 | NOT ON OFFER (`OFF`) | the *Not on offer* bucket, all three countries |
 | POWER DEALS (`POWER`) | Kenya single sales counted as Power Deal |
-| COMBOS (`COMBOS`) | combo sales, all three countries: a *Jumbo + Jumbo* is **1** unit (the combo) |
+| COMBOS (`COMBOS`) | running-combo bags, all three countries: a *Jumbo + Jumbo* is **2** units (14 Oct 2026; was 1 per combo, self-made included) |
 | DEAL OF WK (`DOW`) | Kenya single sales counted as Deal of the Week |
 | CORPORATE (`CORP`) | corporate invoices |
 | MID-MONTH OFFERS (`MID`) | new products + timed offers (Kenya), listed singles + new products (Tanzania, Uganda) — 9 Oct 2026 |
@@ -273,9 +282,10 @@ Columns (revenue / units / share toggle): **All**, **Top 5 categories**, **Other
     Each **bag row carries its offer tags** (Timed / Power / DoW / Combo — the same pills as the
     on-offer bag table). Data: `offerTypes.tree` = `{row: {"tier|category|bag": {units, revenue}}}`. Bags without a
     tier in `bag_tiers.csv` sit under **No tier** — the tree shows exactly which ones.
-- **A combo is one sale:** *Jumbo + Jumbo* rung on the combo button is **1** combo sale (1 unit in
-  the Combos row, its money once) containing **2** bags (the bag tables' *In combos* count 2). For
-  category / tier / bag its money and unit are split evenly over its slots (½ + ½ to JUMBO).
+- **A running combo counts its bags:** *Jumbo + Jumbo* rung on the combo button is **2** units in the
+  Combos row, its money once (14 Oct 2026; until then 1 unit per combo). For category / tier / bag its money
+  and units are split evenly over its slots (1 + 1 to JUMBO). Self-made combos aren't in Combos — their bags
+  sit in the row each bag earns on its own.
 - **Checked 27 Sep 2026** against independent SQL (`pos_order_line` / `account_move`): every row
   (Combos' combo-button part, Gift bag, samples + timed = Mid-month, Corporate) and every
   period / week total matched to rounding (≤ KES 15); category and tier columns each sum to the
