@@ -126,8 +126,13 @@ They stay in view while you scroll.
 - **MONTHLY_TARGET** sheet: col C target, D sales, E deficit (summed).
 - Real weekly/monthly **bags** are refreshed from Postgres first (`weekly_sales.py`,
   `monthly_sales.py`) so the sales figures are live, not stale sheet values.
-- `previous_snapshot.json` auto-loads the previous period so week-over-week deltas render
-  without manual entry (keyed on ISO week).
+- **Last week's bags** (`PERF.previousSalesBags`, the week-over-week base) are read straight from Postgres for
+  the previous complete **Sun–Sat** week (`BAGS_SOLD_TOTAL`, the same definition as this week's figure).
+  `previous_snapshot.json` is only the fallback when the DB is down. *Fixed 14 Oct 2026:* the snapshot rolled
+  over on the ISO (Monday) week, so a Sunday build saved Sunday's 197 bags as "last week" (real 4–10 Oct: 4,221),
+  and Week-over-week read +744%.
+- **Previous sales % achieved (N bags):** the % is (Sales − this week's bags) ÷ target, so N is that same
+  numerator, the bags sold before this week (`PERF.previousAchievedBags`), e.g. 8,238 − 1,664 = 6,574 on 14 Oct.
 
 ## Manual inputs
 

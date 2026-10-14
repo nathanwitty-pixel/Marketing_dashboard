@@ -246,6 +246,27 @@ total_target, total_sales, total_deficit, weekly_sales_total = fetch_monthly_tar
 # falls back to the WEEKLY_SALES sheet tab otherwise.
 weekly_sales_total = weekly_from_db(weekly_sales_total)
 
+
+def last_week_from_db(fallback):
+    """Bags sold in the previous complete Sun–Sat week, straight from Postgres (same BAGS_SOLD_TOTAL as
+    this week's figure). The ISO-week snapshot is only the fallback: it rolls over on Mondays, so a Sunday
+    build used to save Sunday alone as "last week" (docs/current-performance.md › Data sources)."""
+    try:
+        from lib import db, queries
+        start = week_start_of(datetime.date.today()) - datetime.timedelta(days=7)
+        df = db.run_query(queries.BAGS_SOLD_TOTAL, {"start_date": start.isoformat(),
+                                                    "end_date": (start + datetime.timedelta(days=6)).isoformat(),
+                                                    "excluded": queries.excluded_products()})
+        if df is not None and not df.empty:
+            return int(round(float(df.iloc[0].get("bags") or 0)))
+    except Exception as ex:                                  # noqa: BLE001
+        print(f"  Last week (DB)       : unavailable ({ex}) — using the snapshot")
+    return fallback
+
+
+previous_sales_bags = last_week_from_db(previous_sales_bags)
+print(f"  Last week (Sun–Sat)  : {previous_sales_bags:,} bags")
+
 # Real current-MONTH bags from Postgres when available (see monthly_sales.py);
 # this is the total sales we've done in the month. Falls back to the sheet's
 # SALES column for past months or when the DB/file isn't there.
@@ -474,6 +495,7 @@ sales = total_sales
 # 4. Previous Sales % Achieved
 #    (Sales - Weekly Sales) / (Remaining Target + Sales) × 100
 previous_sales_pct = ((total_sales - weekly_sales_total) / (remaining_target + total_sales)) * 100 if (remaining_target + total_sales) else 0
+previous_achieved_bags = total_sales - weekly_sales_total     # the bags behind Previous Sales % (sold before this week)
 
 # 5. Week-over-Week Sales
 #    Growth of this week vs last week: (this week - last week) / last week × 100.
@@ -582,6 +604,7 @@ inline_script = (
     f'  customFees:         "{fmt_int(custom_fees)}",\n'
     f'  previousSalesPct:   "{fmt_pct(previous_sales_pct)}",\n'
     f'  previousSalesBags:  "{fmt_int(previous_sales_bags)}",\n'
+    f'  previousAchievedBags: "{fmt_int(previous_achieved_bags)}",\n'
     f'  wowSalesPct:        "{fmt_signed_pct(wow_sales_pct)}",\n'
     f'  wowSalesBags:       "{fmt_signed(wow_sales_bags)}",\n'
     f'  weeklySalesTotal:   "{fmt_int(weekly_sales_total)}",\n'
