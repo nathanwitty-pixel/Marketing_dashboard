@@ -33,6 +33,7 @@ SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 # Shared auth: service account (permanent) or self-healing OAuth — see google_auth.py
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # project root → lib/
 from lib import paths
+from lib import marketing_posts
 from lib.google_auth import get_gspread_client
 from lib import odoo_tabs   # MONTHLY_SALES / WEEKLY_SALES rebuilt from Odoo
 from lib import oos_callbacks   # WhatsApp "Out of stock — call back" demand per shop
@@ -423,8 +424,7 @@ def fetch_new_products_data():
     # Keyed by PRODUCT NAME: the old (bag type, colour family) key handed every product in a
     # family the family's combined posts (Lafemme Garnet + Mulberry each showed both).
 
-    mmp      = sh.worksheet("MONTHLY_MARKETING_POST")
-    mmp_rows = mmp.get_all_values()
+    mmp_rows = marketing_posts.read(sh, "MONTHLY_MARKETING_POST")
 
     def _post_lookup(rows):
         out = {}   # _key(product name) -> {kenya, outsideKenya}
@@ -451,14 +451,35 @@ def fetch_new_products_data():
         r["mpostKenya"]   = post["kenya"]
         r["mpostOutside"] = post["outsideKenya"]
 
+    # Posts with no colour (marketing logs only the bag type's TOTAL from Sep 2026 — lib/marketing_posts):
+    # one "<BAG> (all colours)" row per bag with those posts and no sales, so bag and page totals are right
+    # and no colour is credited with posts it didn't get (user, 16 Oct 2026).
+    def _bag_post_rows(rows, kind):
+        out = []
+        for row in rows[1:]:
+            if not marketing_posts.is_bag_level(row):
+                continue
+            ke, ot = safe_int(row[4]) if len(row) > 4 else 0, safe_int(row[7]) if len(row) > 7 else 0
+            if not (ke or ot):
+                continue
+            bt = str(row[3]).strip()
+            r = {"colour": "All colours", "category": category_lookup.get(bt.upper(), "") or str(row[1]).strip(),
+                 "productName": f"{bt} (all colours)", "bagType": bt, "sKenya": 0, "sOutside": 0, "sRestock": 0}
+            if kind == "m":
+                r.update({"kenyaSales": 0, "outsideKenya": 0, "mpostKenya": ke, "mpostOutside": ot})
+            else:
+                r.update({"weeklySales": 0, "wpostKenya": ke, "wpostOutside": ot})
+            out.append(r)
+        return out
+
+    ms_base += _bag_post_rows(mmp_rows, "m")
     monthly_combined = ms_base
 
     # ── WEEKLY_MARKETING_POST ─────────────────────────────────
     # col C (idx 2) = PRODUCT NAME, col D (idx 3) = BAG TYPE
     # col E (idx 4) = KENYA posts, col H (idx 7) = OUTSIDE KENYA posts — keyed by product name
 
-    wmp      = sh.worksheet("WEEKLY_MARKETING_POST")
-    wmp_rows = wmp.get_all_values()
+    wmp_rows = marketing_posts.read(sh, "WEEKLY_MARKETING_POST")
 
     wpost_lookup = _post_lookup(wmp_rows)
 
@@ -497,6 +518,8 @@ def fetch_new_products_data():
             "sOutside":     0,    # set from live Odoo stock below
             "sRestock":     0     # set from live Odoo CBD/Stock below
         })
+
+    weekly_combined += _bag_post_rows(wmp_rows, "w")
 
     # ── Sales from Odoo — the single source of truth for EVERY sales figure ──
     # Replace the sheet's colour-level sales with live Odoo POS sales, split

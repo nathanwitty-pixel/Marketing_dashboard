@@ -58,3 +58,15 @@ Targets come from `product_targets_<YYYY-MM>.csv` for the month (built from Odoo
 `python -m lib.product_targets` if it's missing). If it can't be built (Odoo down, no file), the sheet's rows
 are used unchanged and a warning is printed. The reference workbook `Bag targets <Month YYYY>.xlsx` has the
 same calculation as live Excel formulas.
+
+## Estimated targets — the method without Odoo's total (16 Oct 2026, user's call)
+
+`python scripts/estimated_targets.py` → `data/estimated_targets.csv`. For every month back to the start of
+Odoo POS history (Dec 2023 → first estimate Jun 2024, which needs 6 months behind it) and one month ahead:
+
+- **Base** = this method's full-period equivalents (3 complete months before the month, all tills + Corporate
+  invoices, scaled to the days each bag was launched / in stock, ≥ 14) summed ÷ 3 — the monthly rate.
+- **Growth** = monthly rate of change: (bags sold in those 3 months ÷ the 3 months before) ^ ⅓ − 1.
+- **Estimate** = base × (1 + growth).
+- Compared with the **Odoo target** (shop tills + Corporate, `period = 'month'`; Mar 2026 has only 2 tills set)
+  and **bags sold** in the month (same counting rules): Est/Odoo, Sold/Est, Sold/Odoo.

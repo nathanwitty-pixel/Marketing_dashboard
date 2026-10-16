@@ -57,11 +57,27 @@ its stock now, its offer tags and posts — and the same *Why it moved* lines (f
 
 Every category (catalogue category of the bag type — `product_catalog.csv`; else Odoo's category), same share
 bars, units, revenue, change in share. Hover: its top 5 bags with their share of the category.
+**Top 5 vs the rest (16 Oct 2026, user's call):** the 5 biggest categories get their own rows; all the others are
+one "Other categories (N)" row with their combined share, units, revenue and change. Its ▸ lists each of them
+(ranked 6, 7, …, share of all bags).
+
+### 3b. Top 5 categories — best & weakest bags (16 Oct 2026, user's call)
+
+One card per top-5 category (same period / market / basis): its **top 3** and **bottom 3** bags by rank inside the
+category (only bags that sold ≥1 in the period), with units, share of the category and **shop stock now**
+(`info.stock`: KE · Sinza · UG, summed for All markets). Stock red = 0; amber = below what the bag sold in the
+period. Bags in stock that sold nothing aren't listed. Hover / tap a bag: the usual bag popover.
 
 ### 4. Colours — % share
 
 Colour **families** (`lib/colours.family()` — all browns → Brown, CN/TT/Croc/018 → base colour, Nude → Beige,
 Maroon → Red; [colour families rule](README.md)), same share bars. Hover: its top 5 bags in that colour.
+**▸ Shades (16 Oct 2026, user's call):** a family with 2+ shades has a ▸ toggle that opens every shade under it
+(Brown → Brown, Cracked, Spice, Chocolate, Dark Brown…), each with its **% of the family**, units, revenue and change.
+Shade = the product name after its bag type, minus edition / material words (Wooven, HB, CN, TT, 018, Ankara, Croc,
+Custom) and [REJECT]; Choco / Chocolate Brown → Chocolate, D.Brown → Dark Brown. Family totals don't change.
+**No colour** has no shades, so its ▸ lists the **bags** instead (Laptop Sleeve, Cathy Handbag…). Discount lines
+(KES or % — "10.0% Discount On Total Amount") are never bags and are left out of the page.
 
 ## Data
 
@@ -87,7 +103,7 @@ Maroon → Red; [colour families rule](README.md)), same share bars. Hover: its 
 
 ## Bulk orders
 
-**Corporate-team till orders (16 Oct 2026, user's call):** a till receipt paid by a client the **Corporate team** brought in (a Corporate-app lead — `lib/shop_corporate.corporate_team_receipts`) is **Corporate's sale, not the shop's**, even though a shop till took the money (October: ESK Company, HAZINA/29958 + 29613, KES 1,707,197). Orders a shop found itself (Kennedy Kalaa at Hilton, Sospeter at Kisumu, …) stay with the shop. Here: they stay in the totals (bag / category / colour shares aren't per shop) and are flagged ⚠ like bulk orders, named as a Corporate-team order.
+**Corporate-lead till orders (16 Oct 2026, user's call — revised the same day):** when a client the **Corporate team** brought in (a Corporate-app lead) pays at a shop till, the sale is **credited to that shop** like any till sale, but it's still marked as a Corporate lead (October: ESK Company, HAZINA/29958 + 29613, KES 1,707,197 → Hazina, "Corporate app lead 17 Sep · Scola Mithiri"). One that hasn't paid yet goes to the shop that hunted it (quote note → bought there before → client's town), still noted as a Corporate lead; with no shop link it isn't shown at all until something is paid at a till. Here: they stay in the totals and are flagged ⚠ like bulk orders, noted as a Corporate lead credited to the shop.
 
 
 A POS line of **10+ units** is a corporate / bulk order. It stays in every total (it was a real sale), is

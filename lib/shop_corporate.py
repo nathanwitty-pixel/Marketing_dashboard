@@ -6,11 +6,11 @@ what has been paid at the tills (when, where, how), the balance still owed, and 
 "hunted" the client:
 
   1. Quote / invoice in the Corporate app        → left out (counted there, never twice).
-  2. Lead in the Corporate app                   → Corporate, even if a shop took the money.
+  2. Lead in the Corporate app                   → doesn't decide the shop; it's noted ("lead") under it.
   3. Paid or part-paid                           → the shop whose till took the money.
   4. Not paid yet → shop named on the quote note → shop where the client bought before
                     (same customer, phone or email) → the client's town.
-  5. None of these                               → Corporate (not in any shop's totals).
+  5. None of these                               → not shown until something is paid at a till.
 
 Matching rules (the data has no shared key):
   • Quotes of one client are grouped by Odoo customer, name, phone, work-email domain or
@@ -349,7 +349,7 @@ def build(today: _dt.date | None = None) -> dict | None:
                           if (ph & c["phones"]) or (em and em in c["emails"])
                           or any(_maybe(n, tok, pre) and same_name(n, l["name"]) for n in c["names"])), None)
         c["paid"] = sum(t["kes"] for t in c["pays"])
-        if not c["lead"] and not c["paid"]:
+        if not c["paid"]:
             past_needed.append(c)
         rows.append(c)
 
@@ -375,12 +375,11 @@ def build(today: _dt.date | None = None) -> dict | None:
                 per[shop_label(t["shop"])] = per.get(shop_label(t["shop"]), 0) + t["kes"]
             paid_shop = max(per, key=per.get)
         top = max(pays, key=lambda t: t["kes"]) if pays else None
-        if c["lead"]:
-            hunted, how = "Corporate", f'Corporate app lead {_d(c["lead"]["created"])}' + (
-                f' · {c["lead"]["owner"]}' if _txt(c["lead"]["owner"]) else "")
-        elif paid:
+        lead = (f'Corporate app lead {_d(c["lead"]["created"])}' + (
+            f' · {c["lead"]["owner"]}' if _txt(c["lead"]["owner"]) else "")) if c["lead"] else ""
+        if paid:                       # a Corporate lead paid at a till is the shop's sale (user, 16 Oct 2026)
             hunted, how = paid_shop, "paid there" + (f' · {top["cashier"]}' if top and _txt(top["cashier"]) else "")
-        else:
+        else:                          # unpaid (lead or not): find the shop that hunted the client
             hunted, how = "", ""
             hit = next((shop_label(s) for s, rx in shop_re if rx.search(c["notes"])), None)
             if hit:
@@ -404,7 +403,9 @@ def build(today: _dt.date | None = None) -> dict | None:
                 if hit:
                     hunted, how = hit, "client's town"
             if not hunted:
-                hunted, how = "Corporate", "no shop link"
+                hunted, how = "Corporate", lead or "no shop link"
+        if status == "unpaid" and hunted == "Corporate":
+            continue                   # no shop link and not in the Corporate app: not needed until part-paid (user, 16 Oct 2026)
         latest_q = max((q["d"] for q in c["quotes"]), default=None)
         out.append({
             "client": c["name"].strip(),
@@ -417,7 +418,7 @@ def build(today: _dt.date | None = None) -> dict | None:
             "payments": [{"receipt": t["receipt"], "on": _d(t["d"]), "date": str(t["d"])[:10], "bags": int(t["bags"] or 0), "shop": shop_label(t["shop"]), "kes": t["kes"],
                           "by": _txt(t["paid_by"]), "cashier": _txt(t["cashier"]), "cust": _txt(t["cust"]).strip()}
                          for t in pays],
-            "hunted": hunted, "how": how,
+            "hunted": hunted, "how": how, "lead": lead,
             "paidAt": paid_shop if hunted != paid_shop else "",
             "age": (today - latest_q).days if latest_q and status == "unpaid" else None,
             "flags": c["flags"],
@@ -443,10 +444,10 @@ _TEAM_CACHE: dict = {}
 
 
 def corporate_team_receipts(start: _dt.date, end: _dt.date) -> dict:
-    """{receipt: {client, shop, kes, bags, date}} — till receipts in [start, end] paid by a client the CORPORATE
-    TEAM brought in (a Corporate-app lead, rule 2). These belong to Corporate, not to the shop whose till took the
-    money: shop revenue / targets, the POS share of Sales and each shop's sales history leave them out (user,
-    16 Oct 2026). Orders a shop found itself stay with the shop. {} when the DB isn't reachable."""
+    """{receipt: {client, shop, kes, bags, date, lead}} — till receipts in [start, end] paid by a client the
+    CORPORATE TEAM brought in (a Corporate-app lead). The sale is the shop's — it counts in shop revenue, POS and
+    sales history like any till sale — but pages note it as a Corporate lead (user, 16 Oct 2026).
+    {} when the DB isn't reachable."""
     out = {}
     anchor = end
     while True:                                      # build() covers [1st of last month, anchor]
@@ -454,13 +455,13 @@ def corporate_team_receipts(start: _dt.date, end: _dt.date) -> dict:
         if key not in _TEAM_CACHE:
             _TEAM_CACHE[key] = build(anchor) or {}
         for r in _TEAM_CACHE[key].get("rows", []):
-            if r.get("hunted") != "Corporate" or not str(r.get("how", "")).startswith("Corporate app lead"):
+            if not r.get("lead"):
                 continue
             for p in r.get("payments", []):
                 d = _dt.date.fromisoformat(p["date"])
                 if start <= d <= end:
                     out[p["receipt"]] = {"client": r["client"], "shop": p["shop"], "kes": p["kes"],
-                                         "bags": p.get("bags"), "date": p["date"]}
+                                         "bags": p.get("bags"), "date": p["date"], "lead": r["lead"]}
         first = (anchor.replace(day=1) - _dt.timedelta(days=1)).replace(day=1)
         if first <= start:
             return out

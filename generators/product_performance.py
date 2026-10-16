@@ -15,6 +15,7 @@ import webbrowser
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # project root → lib/
 from lib import paths
+from lib import marketing_posts
 from lib import db, queries, colours, odoo_tabs, runway_bags, receipt_combos
 
 HTML = paths.html("product_performance.html")
@@ -52,7 +53,7 @@ WHERE (o.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETW
   AND pt."name" NOT ILIKE '%delivery%'
   AND pt."name" NOT ILIKE '%customi%'
   AND pt."name" NOT ILIKE '%strap%'
-  AND pt."name" NOT ILIKE '%KES discount%'
+  AND pt."name" NOT ILIKE '%discount%'      -- KES and % discount lines aren't bags
   AND pt."name" NOT ILIKE '%sample%'
   AND pt."name" NOT ILIKE 'gift bag%'
   AND COALESCE(pcat."name", '') NOT ILIKE '%Pos%'
@@ -194,6 +195,23 @@ def load_lines(start, end, typ):
             flush()
     flush()
     return out
+
+
+# Shade = the product name after its bag type ("Mini Umbra Cracked" → Cracked), for the Colours list's
+# expandable shades. Edition / material words (counted as the base colour) and [REJECT] are dropped.
+_EDITION = {"WOOVEN", "WOVEN", "HB", "CN", "TT", "018", "ANKARA", "CUSTOM", "CROC"}
+_SHADE_ALIAS = {"CHOCO": "CHOCOLATE", "CHOCOLATE BROWN": "CHOCOLATE", "D.BROWN": "DARK BROWN", "D BROWN": "DARK BROWN",
+                "GRAY": "GREY", "CREAME": "CREAM"}
+
+
+def shade(product, bag, family):
+    n = re.sub(r"\s+", " ", re.sub(r"\[[^\]]*\]", " ", str(product).upper())).strip()
+    b = str(bag).upper()
+    i = n.find(b + " ") if b else -1
+    s = n[i + len(b) + 1:] if i >= 0 else n
+    s = " ".join(w for w in s.split() if w.strip("()") not in _EDITION and not w.isdigit())
+    s = _SHADE_ALIAS.get(s, s)
+    return s.title() if s else family
 
 
 def categories(lines):
@@ -383,8 +401,8 @@ def load_posts(typ):
     try:
         from lib.google_auth import get_gspread_client
         sh = get_gspread_client().open_by_key(SHEET_ID)
-        rows_m = sh.worksheet("MONTHLY_MARKETING_POST").get_all_values()
-        rows_w = sh.worksheet("WEEKLY_MARKETING_POST").get_all_values()
+        rows_m = marketing_posts.read(sh, "MONTHLY_MARKETING_POST")
+        rows_w = marketing_posts.read(sh, "WEEKLY_MARKETING_POST")
     except Exception as e:                                   # noqa: BLE001
         print(f"  Posts unavailable ({e}) — marketing reasons left out.")
         return None, None
@@ -524,7 +542,7 @@ def explain(b, mkt, w, ctx):
         if s1 <= x["d"] <= e1 or s0 <= x["d"] <= e0:
             lines.append(["Bulk", "warn", f"{int(x['units']):,} × {x['product']} — {x['ref']}, {x['till'].title()}, {_fmt_d(x['d'])}"
                           + (f" ({C})" if s1 <= x["d"] <= e1 else f" ({P})")
-                          + (f" — Corporate-team order ({x['corp']}), Corporate's sale" if x.get("corp") else "")])
+                          + (f" — Corporate lead ({x['corp']}), credited to {x['till'].title()}" if x.get("corp") else "")])
 
     delta = lw_nb - pw_nb
     want = "up" if delta > 0 else "down" if delta < 0 else None
@@ -552,7 +570,7 @@ def build(today=None):
     start = min(p[2] for p in P.values())
     typ = runway_bags.type_fn()
     lines = load_lines(start, today, typ)
-    try:                                                  # Corporate-team till orders — flagged like bulk orders
+    try:                                                  # Corporate-lead till orders — noted on the bulk-order flag
         from lib import shop_corporate
         corp_team = shop_corporate.corporate_team_receipts(start, today)
     except Exception as e:                                # noqa: BLE001
@@ -569,11 +587,11 @@ def build(today=None):
         for x in lines:
             cur, prev = s1 <= x["d"] <= e1, s0 <= x["d"] <= e0
             if cur or prev:
-                a = agg[(x["bag"], x["colour"], x["mkt"])]
+                a = agg[(x["bag"], x["colour"], x["mkt"], shade(x["product"], x["bag"], x["colour"]))]
                 i = 0 if cur else 2
                 a[i] += x["units"]
                 a[i + 1] += x["rev"]
-        rows = [[b, c, m, round(v[0]), round(v[1]), round(v[2]), round(v[3])] for (b, c, m), v in agg.items()
+        rows = [[b, c, m, round(v[0]), round(v[1]), round(v[2]), round(v[3]), s] for (b, c, m, s), v in agg.items()
                 if any(round(z) for z in v)]
         out_periods[key] = {"label": label, "cur": [s1.isoformat(), e1.isoformat()], "prev": [s0.isoformat(), e0.isoformat()],
                             "curLabel": f"{_fmt_d(s1)} – {_fmt_d(e1)}", "prevLabel": f"{_fmt_d(s0)} – {_fmt_d(e0)}", "rows": rows}

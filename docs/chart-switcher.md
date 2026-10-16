@@ -75,3 +75,12 @@ non-week labels, and for charts that set `options.plugins.weekChange = false` or
 (`valueLabels.above`, e.g. Bags on offer's Week 1 → latest week, whose latest-week bar is itself green / red).
 Plugin `weekChange` in `chart_switcher.js`, so every page that loads the switcher gets it (Shop Launch doesn't — its
 charts are by day).
+
+**Lines and two-period charts (16 Oct 2026, user's call):**
+- **Every line chart** with 2+ points gets the same pills, vs the point before, whatever its x labels (days,
+  months…). A line of more than 12 points gets one pill, at its latest point, so day-by-day lines stay readable.
+- **Two periods on one chart** — a series drawn **dashed** or labelled *last / prev / previous / prior / before*
+  is the earlier period: it gets no pills of its own, and the current series gets one extra pill at the latest point
+  both have: **"▲x% vs <that series>"** (e.g. "▼25% vs September 2026").
+- **Never hidden:** each pill tries 6 spots above its point, 4 below and 8 beside (both sides), then scans its column
+  for any free gap, before it's allowed to sit over another label.

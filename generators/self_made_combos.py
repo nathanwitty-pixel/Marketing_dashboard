@@ -28,6 +28,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # project root → lib/
 from lib import paths
+from lib import marketing_posts
 from lib import db, report_month, oos_callbacks, colours
 
 HTML = paths.html("self_made_combos.html")
@@ -2310,8 +2311,8 @@ def _add_noffer_posts(payload):
         from lib import offer_data
         from lib.google_auth import get_gspread_client
         sh = get_gspread_client().open_by_key(offer_data.SPREADSHEET_ID)
-        mmp = sh.worksheet("MONTHLY_MARKETING_POST").get_all_values()
-        wmp = sh.worksheet("WEEKLY_MARKETING_POST").get_all_values()
+        mmp = marketing_posts.read(sh, "MONTHLY_MARKETING_POST")
+        wmp = marketing_posts.read(sh, "WEEKLY_MARKETING_POST")
     except Exception as e:                                   # noqa: BLE001 — the list still renders
         print(f"  Not-on-offer posts unavailable ({e})")
         return

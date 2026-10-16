@@ -15,6 +15,7 @@ import webbrowser
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # project root → lib/
 from lib import paths
+from lib import marketing_posts
 from lib import db, queries, stock as lstock
 
 HTML = paths.html("shop_launch.html")
@@ -137,7 +138,7 @@ def kenya_posts():
         out = []
         for tab in ("MONTHLY_MARKETING_POST", "WEEKLY_MARKETING_POST"):
             per = {}
-            for r in sh.worksheet(tab).get_all_values()[1:]:
+            for r in marketing_posts.read(sh, tab)[1:]:
                 if len(r) < 5 or not str(r[3]).strip():
                     continue
                 try:

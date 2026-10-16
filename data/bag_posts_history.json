@@ -239,5 +239,158 @@
     "sold": 27
    }
   }
+ },
+ {
+  "week": "2026-10-04",
+  "bags": {
+   "ZULA": {
+    "posts": 18,
+    "sold": 29
+   },
+   "ARIA PRO": {
+    "posts": 12,
+    "sold": 14
+   },
+   "NIZANA": {
+    "posts": 8,
+    "sold": 54
+   },
+   "FEROZ": {
+    "posts": 18,
+    "sold": 11
+   },
+   "MINI UMBRA": {
+    "posts": 33,
+    "sold": 240
+   },
+   "GYM BAG": {
+    "posts": 0,
+    "sold": 46
+   },
+   "MOON BAG": {
+    "posts": 0,
+    "sold": 97
+   },
+   "KAI": {
+    "posts": 0,
+    "sold": 48
+   },
+   "AVANA HB": {
+    "posts": 0,
+    "sold": 33
+   },
+   "PIONEER": {
+    "posts": 19,
+    "sold": 38
+   },
+   "MEGA": {
+    "posts": 0,
+    "sold": 80
+   },
+   "MINI MAYA": {
+    "posts": 12,
+    "sold": 92
+   },
+   "KARINA": {
+    "posts": 0,
+    "sold": 7
+   },
+   "MINI MANBAG": {
+    "posts": 17,
+    "sold": 5
+   },
+   "ZURI": {
+    "posts": 10,
+    "sold": 40
+   },
+   "CLAIRE HANDBAG": {
+    "posts": 0,
+    "sold": 39
+   },
+   "BELT BAG": {
+    "posts": 34,
+    "sold": 39
+   },
+   "KATE": {
+    "posts": 26,
+    "sold": 39
+   },
+   "OVAL HANDBAG": {
+    "posts": 17,
+    "sold": 39
+   },
+   "TRECENTO": {
+    "posts": 0,
+    "sold": 28
+   },
+   "CESS": {
+    "posts": 0,
+    "sold": 7
+   },
+   "ELYSE": {
+    "posts": 0,
+    "sold": 39
+   },
+   "DOUBLE PRESS": {
+    "posts": 0,
+    "sold": 36
+   },
+   "PRIME": {
+    "posts": 0,
+    "sold": 99
+   },
+   "MANDY HB": {
+    "posts": 0,
+    "sold": 9
+   },
+   "LUNCHSET": {
+    "posts": 0,
+    "sold": 17
+   },
+   "MAN BAG": {
+    "posts": 19,
+    "sold": 111
+   },
+   "LOLA": {
+    "posts": 0,
+    "sold": 37
+   },
+   "MINI SCHOOL": {
+    "posts": 0,
+    "sold": 0
+   },
+   "JAMELA": {
+    "posts": 0,
+    "sold": 14
+   },
+   "CODE 3": {
+    "posts": 0,
+    "sold": 264
+   },
+   "MINI ZURI": {
+    "posts": 15,
+    "sold": 92
+   },
+   "LAMORA": {
+    "posts": 50,
+    "sold": 10
+   },
+   "LEILA": {
+    "posts": 0,
+    "sold": 10
+   },
+   "JUMBO": {
+    "posts": 38,
+    "sold": 240
+   },
+   "LIAM": {
+    "posts": 0,
+    "sold": 32
+   },
+   "NEO MAN": {
+    "posts": 20,
+    "sold": 66
+   }
+  }
  }
 ]

@@ -71,7 +71,7 @@ section shows when it opens.
 
 ## Data
 
-- **Corporate-team till orders (16 Oct 2026, user's call):** a till receipt paid by a client the **Corporate team** brought in (a Corporate-app lead — `lib/shop_corporate.corporate_team_receipts`) is **Corporate's sale, not the shop's**, even though a shop till took the money (October: ESK Company, HAZINA/29958 + 29613, KES 1,707,197). Orders a shop found itself (Kennedy Kalaa at Hilton, Sospeter at Kisumu, …) stay with the shop. Here: they're left out of each shop's sales history (the base period and month-to-date).
+- **Corporate-lead till orders (16 Oct 2026, user's call — revised the same day):** when a client the **Corporate team** brought in (a Corporate-app lead) pays at a shop till, the sale is **credited to that shop** like any till sale, but it's still marked as a Corporate lead (October: ESK Company, HAZINA/29958 + 29613, KES 1,707,197 → Hazina, "Corporate app lead 17 Sep · Scola Mithiri"). One that hasn't paid yet goes to the shop that hunted it (quote note → bought there before → client's town), still noted as a Corporate lead; with no shop link it isn't shown at all until something is paid at a till. Here: they count in each shop's sales history (the base period and month-to-date) — the bags left that shop.
 
 - Stock: `stock_quant` at the shop locations (top code → till: `lib/odoo_tabs.STOCK_CODE_TO_SHOP` + WEB =
   Website), combo products ('+') left out; warehouse = `CBD/Stock`.

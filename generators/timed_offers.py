@@ -20,6 +20,7 @@ Injects the campaign payload (const TO) into timed_offers.html between the
 import re, os, json, webbrowser, pathlib, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # project root → lib/
 from lib import paths
+from lib import marketing_posts
 from lib import colours as _colours      # colour families (bag_names.csv)
 from datetime import date, timedelta
 
@@ -748,7 +749,7 @@ def weekly_kenya_posts(bags):
     out = {b: 0 for b in _BAGS_UP}
     gc = get_gspread_client()
     sh = gc.open_by_key(SPREADSHEET_ID)
-    rows = sh.worksheet("WEEKLY_MARKETING_POST").get_all_values()
+    rows = marketing_posts.read(sh, "WEEKLY_MARKETING_POST")
     for row in rows[1:]:
         if len(row) < 5:
             continue

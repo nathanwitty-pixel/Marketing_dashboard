@@ -29,6 +29,7 @@ import re, webbrowser, os, pathlib, json, datetime, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # project root → lib/
 from lib import paths
+from lib import marketing_posts
 from lib import report_month   # which month these figures belong to
 from lib import odoo_tabs      # WEEKLY_SALES / MONTHLY_SALES / STOCK_LEVELS rebuilt from Odoo
 from lib import colours as _colours   # colour families (bag_names.csv)
@@ -157,6 +158,46 @@ def _real_ms(row):
     if not colour or not name:
         return False
     return "total" not in name.lower() and "total" not in colour.lower()
+
+def _fold_bag_level(bags, rows, name_col):
+    """Bags whose posts marketing logs only per BAG (the posting sheet's TOTAL row, Sep 2026+ —
+    lib/marketing_posts): their colour rows in `rows` become ONE "<BAG> (all colours)" row, colour
+    "All colours", numbers summed (other cells from the first row), so every post ↔ sales ↔ stock match
+    on this page works per bag for them (user, 16 Oct 2026). Bag type = the column after the name."""
+    if not bags or not rows:
+        return rows
+    bc = name_col + 1
+    out, folded = [rows[0]], {}
+    for r in rows[1:]:
+        bt = re.sub(r"\s+", " ", str(r[bc]).strip().upper()) if len(r) > bc else ""
+        name = str(r[name_col]).strip() if len(r) > name_col else ""
+        if bt not in bags or not name or "total" in name.lower() or "total" in str(r[0]).lower():
+            out.append(r)
+            continue
+        f = folded.get(bt)
+        if f is None:
+            f = folded[bt] = list(r)
+            f[0], f[name_col] = "All colours", f"{bt} (all colours)"
+            out.append(f)
+            continue
+        for i in range(bc + 1, max(len(f), len(r))):
+            a, b = (f[i] if i < len(f) else ""), (r[i] if i < len(r) else "")
+            try:
+                s = float(str(a).replace(",", "") or 0) + float(str(b).replace(",", "") or 0)
+            except ValueError:
+                continue                                    # a tick / text cell: keep the first row's
+            if i >= len(f):
+                f.extend([""] * (i + 1 - len(f)))
+            f[i] = str(int(s)) if s == int(s) else str(s)
+    return out
+
+
+def _bag_level_bags(*post_tabs):
+    """Bag types with posts logged without a colour in any of the posting tabs."""
+    return {re.sub(r"\s+", " ", str(r[3]).strip().upper())
+            for rows in post_tabs for r in rows[1:]
+            if marketing_posts.is_bag_level(r) and any(safe_int(x) for x in r[4:8])}
+
 
 def _real_mmp(row):
     """True only for a genuine MONTHLY_MARKETING_POST product row (colour A, name C)."""
@@ -924,14 +965,16 @@ def _fetch_weekly_region(wmp_rows, ws_rows, post_col, check_col, sales_col, offe
 
 # ── WEEKLY KENYA ──────────────────────────────────────────────
 
-def _fetch_weekly_kenya(sh, sl_rows):
+def _fetch_weekly_kenya(sh, sl_rows, wmp_rows=None, ws_rows=None):
     """
     Weekly Kenya figures for the S1 KPI card.
     WEEKLY_MARKETING_POST: sum col E (idx 4) where col I (idx 8) is checked
     WEEKLY_SALES: sum cols E–Q (4–16) + T–W (19–22) where col Y (idx 24) is checked
     """
-    wmp_rows = sh.worksheet("WEEKLY_MARKETING_POST").get_all_values()
-    ws_rows  = odoo_tabs.get_rows(sh, "WEEKLY_SALES")   # Odoo, last complete Sun–Sat week
+    if wmp_rows is None:
+        wmp_rows = marketing_posts.read(sh, "WEEKLY_MARKETING_POST")
+    if ws_rows is None:
+        ws_rows = odoo_tabs.get_rows(sh, "WEEKLY_SALES")   # Odoo, last complete Sun–Sat week
 
     weekly_posts = sum(
         safe_int(row[4])
@@ -2057,7 +2100,7 @@ def fetch_posting_data():
     sh = gc.open_by_key(SPREADSHEET_ID)
 
     print("  Reading sheets (one connection)...")
-    mmp_rows = sh.worksheet("MONTHLY_MARKETING_POST").get_all_values()
+    mmp_rows = marketing_posts.read(sh, "MONTHLY_MARKETING_POST")
     # Column C = the month's bag targets from Odoo (lib/product_targets — docs/product-targets.md).
     from lib import product_targets
     mt_rows  = product_targets.monthly_target_rows(sh.worksheet("MONTHLY_TARGET").get_all_values())
@@ -2078,6 +2121,18 @@ def fetch_posting_data():
                               if not (len(r) > 2 and (str(r[2]).strip().lower() in _excl
                                                       or _NON_BAG.search(str(r[2]))))]
     print(f"  STOCK_LEVELS non-bags dropped: {_before - (len(sl_rows) - 1)}")
+    # Bags marketing posts per BAG only (no colour — Sep 2026+): fold their colour rows into one
+    # "<BAG> (all colours)" row in every table, so posts meet sales and stock per bag (_fold_bag_level).
+    wmp_rows_wk = marketing_posts.read(sh, "WEEKLY_MARKETING_POST")
+    ws_rows_wk  = odoo_tabs.get_rows(sh, "WEEKLY_SALES")   # Odoo, last complete Sun–Sat week
+    _bag_lvl = _bag_level_bags(mmp_rows, wmp_rows_wk)
+    if _bag_lvl:
+        mmp_rows    = _fold_bag_level(_bag_lvl, mmp_rows, 2)
+        wmp_rows_wk = _fold_bag_level(_bag_lvl, wmp_rows_wk, 2)
+        ms_rows     = _fold_bag_level(_bag_lvl, ms_rows, 1)
+        ws_rows_wk  = _fold_bag_level(_bag_lvl, ws_rows_wk, 2)
+        sl_rows     = _fold_bag_level(_bag_lvl, sl_rows, 2)
+        print(f"  Posts logged per bag (no colour): {len(_bag_lvl)} bags compared as '<BAG> (all colours)'")
     print(f"  MONTHLY_SALES rows         : {len(ms_rows) - 1}")
     print(f"  MONTHLY_MARKETING_POST rows: {len(mmp_rows) - 1}")
     print(f"  STOCK_LEVELS rows          : {len(sl_rows) - 1}")
@@ -2118,7 +2173,7 @@ def fetch_posting_data():
      instock_not_posted_list, offer_posted_wk_x,
      offer_posted_wk_count, wk_posts_x, wk_sales_no_post,
      wk_mkt_pct, not_offer_not_posted_wk_sales,
-     wk_not_offer_mkt_pct, offer_not_posted_wk_sales) = _fetch_weekly_kenya(sh, sl_rows)
+     wk_not_offer_mkt_pct, offer_not_posted_wk_sales) = _fetch_weekly_kenya(sh, sl_rows, wmp_rows_wk, ws_rows_wk)
 
     # Kenya S3 monthly not-posted: STOCK_LEVELS col Y (idx 24) > 20 − MONTHLY_MARKETING_POST col E (idx 4) > 0
     kenya_sl_keys  = set(
@@ -2129,8 +2184,6 @@ def fetch_posting_data():
         for row in mmp_rows[1:] if len(row) > 4 and safe_int(row[4]) > 0)
     mo_instock_not_posted = len(kenya_sl_keys - kenya_mmp_keys)
 
-    wmp_rows_wk = sh.worksheet("WEEKLY_MARKETING_POST").get_all_values()
-    ws_rows_wk  = odoo_tabs.get_rows(sh, "WEEKLY_SALES")   # Odoo, last complete Sun–Sat week
     sz_wk = _fetch_weekly_region(wmp_rows_wk, ws_rows_wk, 5, 9, 17, 25, SINZA_SPP)
     ug_wk = _fetch_weekly_region(wmp_rows_wk, ws_rows_wk, 6, 10, 18, 26, UGANDA_SPP)
     sinza['weekly']  = sz_wk

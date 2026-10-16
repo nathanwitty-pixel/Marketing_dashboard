@@ -56,7 +56,6 @@ WHERE (o.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETW
   AND pt."name" NOT ILIKE '%KES discount%' AND pt."name" NOT ILIKE '%sample%' AND pt."name" NOT ILIKE 'gift bag%'
   AND COALESCE(pcat."name", '') NOT ILIKE '%Pos%'
   AND lower(pt."name") <> ALL(:excluded)
-  AND o."name" <> ALL(:corp_refs)   -- Corporate-team till orders are Corporate's, not the shop's history
 GROUP BY 1, 2
 """
 
@@ -100,14 +99,7 @@ def _next_month(d):
 
 def sales(start, end, typ):
     """({SHOP: {BAG: units}}, {SHOP: {BAG: {colour: units}}}) over [start, end]."""
-    try:
-        from lib import shop_corporate
-        corp = sorted(shop_corporate.corporate_team_receipts(start, end))
-    except Exception as e:                                   # noqa: BLE001
-        print(f"  Corporate-team till orders: skipped ({e})")
-        corp = []
-    df = db.run_query(SALES_SQL, {"s": start.isoformat(), "e": end.isoformat(), "excluded": queries.excluded_products(),
-                                  "corp_refs": corp or ["~none~"]})
+    df = db.run_query(SALES_SQL, {"s": start.isoformat(), "e": end.isoformat(), "excluded": queries.excluded_products()})
     if df is None:
         raise RuntimeError("Odoo unreachable")
     out = collections.defaultdict(collections.Counter)

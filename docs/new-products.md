@@ -340,3 +340,6 @@ python generators/new_products.py            # DENRI_LAUNCHER=1 to skip the brow
 Console prints the sold + lifetime match per product (watch for "(no Odoo match)").
 </content>
 </invoke>
+
+
+**Posts per bag (16 Oct 2026):** posts come from marketing's daily posting sheets (`lib/marketing_posts`). Posts logged without a colour (Sep 2026+, the bag's TOTAL row) get their own **"<BAG> (all colours)"** row — posts only, no sales — so bag and page totals are right and no colour is credited with posts it didn't get.

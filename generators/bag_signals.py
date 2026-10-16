@@ -12,6 +12,7 @@ import webbrowser
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # project root → lib/
 from lib import paths
+from lib import marketing_posts
 from lib import bag_quant as bq, product_targets
 
 HTML = paths.html("bag_signals.html")
@@ -24,7 +25,7 @@ def _posts():
     try:
         from lib.google_auth import get_gspread_client
         sh = get_gspread_client().open_by_key(SHEET_ID)
-        return sh.worksheet("MONTHLY_MARKETING_POST").get_all_values(), sh.worksheet("WEEKLY_MARKETING_POST").get_all_values()
+        return marketing_posts.read(sh, "MONTHLY_MARKETING_POST"), marketing_posts.read(sh, "WEEKLY_MARKETING_POST")
     except Exception as e:                                   # noqa: BLE001
         print(f"  Posts unavailable ({e}) — posting columns empty.")
         return [], []

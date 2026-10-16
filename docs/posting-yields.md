@@ -125,3 +125,6 @@ products, gift bags, wipes/cleaners and "Buy X get Y free" promo products are dr
 section runs — they are never posted, so they inflated "in stock, not posted" (1,673 promo units +
 1,144 wipes). `s3Posted / s3NotPosted` are Kenya stock **on offer / not on offer**; the monthly
 never-posted figure is `moInstockNotPostedSum`, with its bags in `moInstockNotPostedList`.
+
+
+**Posts per bag (16 Oct 2026):** posts come from marketing's daily posting sheets (`lib/marketing_posts`). A bag whose posts are logged without a colour (Sep 2026+) is compared **per bag**: its colour rows in the sales, stock and posting tables fold into one **"<BAG> (all colours)"** row (numbers summed) before any match (`_fold_bag_level`).

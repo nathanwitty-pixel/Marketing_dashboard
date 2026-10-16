@@ -53,7 +53,6 @@ LEFT JOIN product_product pp ON pl.product_id=pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0 AND NOT COALESCE(pl.sub_product_line, false)
   {_KENYA_TILLS}
-  AND p."name" <> ALL(:corp_refs)   -- Corporate-team till orders are Corporate's (lib/shop_corporate)
   AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
   AND pt."name" NOT ILIKE '%strap%'
 GROUP BY 1, 2, 3
@@ -68,7 +67,6 @@ LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid')
   {_KENYA_TILLS}
-  AND p."name" <> ALL(:corp_refs)   -- Corporate-team till orders are Corporate's (lib/shop_corporate)
 GROUP BY 1, 2
 """
 
@@ -894,17 +892,8 @@ def fetch():
             return classify_for(d)(name, shop, d, timed)
         return classify_cur(name, shop, d, timed)
 
-    # Till receipts paid by Corporate-team clients (a Corporate-app lead) are Corporate's sale, not the shop's
-    # (user, 16 Oct 2026): left out of the shop lines / till revenue below and added to the Corporate row.
-    try:
-        from lib import shop_corporate
-        corp_team = shop_corporate.corporate_team_receipts(lo, min(hi, datetime.date.today()))
-    except Exception as ex:                                  # noqa: BLE001
-        print(f"  Corporate-team till orders: skipped ({ex})")
-        corp_team = {}
-    for k, v in corp_team.items():
-        print(f"  Corporate-team till: {k} · {v['client']} · KES {v['kes']:,} → Corporate (not {v['shop']})")
-    params = {"s": lo.isoformat(), "e": hi.isoformat(), "corp_refs": sorted(corp_team) or ["~none~"]}
+    # Corporate-lead till orders count for the shop like any till sale (lib/shop_corporate; user, 16 Oct 2026).
+    params = {"s": lo.isoformat(), "e": hi.isoformat()}
 
     def rows(sql):
         df = db.run_query(sql, params)
@@ -921,8 +910,6 @@ def fetch():
         return out
 
     lines, till, corp, targets = rows(LINES_SQL), rows(TILL_SQL), rows(CORPORATE_SQL), rows(TARGET_SQL)
-    corp += [{"d": datetime.date.fromisoformat(v["date"]), "units": int(v["bags"] or 0), "revenue": int(v["kes"] or 0)}
-             for v in corp_team.values()]
     # Sinza / Uganda till revenue → KES (same rate as the rest of the page) so they join the shop table.
     for r in rows(MARKET_TILL_SQL):
         key, cur = _MARKET_TILL_SHOP.get(r["shop"], (None, None))

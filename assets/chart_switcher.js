@@ -478,7 +478,18 @@
     if (chart.$csType && chart.$csType !== 'original' && !/^(bar|line|stack|group|area)/.test(chart.$csType)) return false;
     var labels = (chart.data && chart.data.labels) || [];
     var nWk = labels.filter(function (l) { return weekNo(l) != null; }).length;
-    return labels.length >= 2 && nWk >= 2 && nWk >= labels.length / 2;
+    if (labels.length >= 2 && nWk >= 2 && nWk >= labels.length / 2) return 'week';
+    // Any LINE chart with 2+ points: change vs the point before (user, 16 Oct 2026).
+    var isLine = chart.config.type === 'line' || /^(line|area)/.test(chart.$csType || '');
+    return isLine && labels.length >= 2 ? 'line' : false;
+  }
+  // A series for an EARLIER period (drawn dashed, or labelled last / previous / prior): no change pills of its
+  // own; the current series gets one "▲x% vs <it>" pill at its latest point instead (user, 16 Oct 2026).
+  var PREV_RE = /\b(last|prev|previous|prior|before)\b/i;
+  function isPrevSeries(chart, di) {
+    var ds = chart.data.datasets[di] || {}, m = chart.getDatasetMeta(di);
+    var dash = ds.borderDash || (m && m.dataset && m.dataset.options && m.dataset.options.borderDash);
+    return !!(dash && dash.length) || PREV_RE.test(String(ds.label || ''));
   }
   // Headroom on the value axis so the label above the tallest bar isn't squeezed into the top edge.
   // Added to the config as the chart is created (Chart.js has read its axis options by the first plugin hook).
@@ -487,7 +498,7 @@
     if (['bar', 'line'].indexOf(config.type) < 0 || pl.weekChange === false || (pl.valueLabels && pl.valueLabels.above)) return;
     var labels = (config.data && config.data.labels) || [];
     var nWk = labels.filter(function (l) { return weekNo(l) != null; }).length;
-    if (labels.length < 2 || nWk < 2 || nWk < labels.length / 2) return;
+    if (labels.length < 2 || ((nWk < 2 || nWk < labels.length / 2) && config.type !== 'line')) return;
     var ax = raw.indexAxis === 'y' ? 'x' : 'y';
     var sc = (raw.scales = raw.scales || {}), a = (sc[ax] = sc[ax] || {});
     if (a.grace == null) a.grace = '14%';
@@ -551,16 +562,21 @@
     if (chart.$csPillsDone) return;
     chart.$csPillsDone = true;
     if (chart.ctx && chart.ctx.$csRec) chart.ctx.$csRec.on = false;
-    if (!weekChart(chart)) return;
+    var mode = weekChart(chart);
+    if (!mode) return;
     var o = chart.options || {}, pl = o.plugins || {};
-    var labels = chart.data.labels, wk = labels.map(weekNo);
+    var labels = chart.data.labels, wk = mode === 'week' ? labels.map(weekNo) : labels.map(function (_, i) { return i; });
+    var lastOnly = mode === 'line' && labels.length > 12;           // long day-by-day lines: the latest point only
     var horiz = o.indexAxis === 'y', sc = o.scales || {};
     var stacked = !!((sc.x && sc.x.stacked) || (sc.y && sc.y.stacked));
     var vis = chart.data.datasets.map(function (ds, di) { return di; }).filter(function (di) {
       var m = chart.getDatasetMeta(di); return chart.isDatasetVisible(di) && m && m.data && m.data.length;
     });
     if (!vis.length) return;
-    var groups = (stacked || vis.length === 1) ? [vis] : (vis.length <= 3 ? vis.map(function (d) { return [d]; }) : null);
+    var prevDs = stacked ? [] : vis.filter(function (di) { return isPrevSeries(chart, di); });
+    var curDs = vis.filter(function (di) { return prevDs.indexOf(di) < 0; });
+    if (!curDs.length) { curDs = vis; prevDs = []; }
+    var groups = (stacked || curDs.length === 1) ? [curDs] : (curDs.length <= 3 ? curDs.map(function (d) { return [d]; }) : null);
     if (!groups) return;
     var ctx = chart.ctx, area = chart.chartArea || { left: 0, top: 0, right: chart.width, bottom: chart.height };
     var fs = groups.length === 1 ? 12 : 11, padX = 6, h = 20;        // even sizes keep edges on whole pixels
@@ -580,9 +596,28 @@
           return v != null && !(typeof v === 'object' && (horiz ? v.x : v.y) == null);
         });
       });
+      var lastI = -1;
+      labels.forEach(function (_, i) { if (has[i]) lastI = i; });
+      var jobs = [];
       labels.forEach(function (_, i) {
         if (i === 0 || wk[i] == null || wk[i - 1] == null || !has[i] || !has[i - 1]) return;
-        var ch = changeTxt(tot[i - 1], tot[i]); if (!ch) return;
+        if (lastOnly && i !== lastI) return;
+        jobs.push({ i: i, ch: changeTxt(tot[i - 1], tot[i]) });
+      });
+      // Two periods on one chart: the current series vs the earlier one at the latest point both have.
+      if (prevDs.length && g.length === 1) {
+        var pv = prevDs[0], pdata = chart.data.datasets[pv].data, pl2 = String(chart.data.datasets[pv].label || 'previous');
+        for (var ii = lastI; ii >= 0; ii--) {
+          var pvv = pdata[ii];
+          if (has[ii] && pvv != null && !(typeof pvv === 'object' && (horiz ? pvv.x : pvv.y) == null)) {
+            var c2 = changeTxt(valAt(pvv, horiz), tot[ii]);
+            if (c2 && c2.t !== 'new') jobs.push({ i: ii, ch: { t: c2.t + ' vs ' + (pl2.length > 14 ? pl2.slice(0, 13) + '…' : pl2), c: c2.c } });
+            break;
+          }
+        }
+      }
+      jobs.forEach(function (job) {
+        var i = job.i, ch = job.ch; if (!ch) return;
         var els = g.map(function (di) { return chart.getDatasetMeta(di).data[i]; }).filter(Boolean);
         if (!els.length) return;
         var fill = ch.c === UP ? PILL.up : ch.c === DOWN ? PILL.down : PILL.flat;
@@ -597,14 +632,23 @@
           var x = els.reduce(function (a, e) { return a + e.x; }, 0) / els.length;
           var top = Math.min.apply(null, els.map(function (e) { return Math.min(e.y, e.base != null ? e.base : e.y); }));
           var bottom = Math.max.apply(null, els.map(function (e) { return e.y; }));
-          for (var k = 0; k < 4; k++) cands.push({ cx: x, cy: top - lift - k * (h + 3) });       // above, stepping up
-          for (k = 0; k < 2; k++) cands.push({ cx: x, cy: bottom + lift + 4 + k * (h + 3) });   // then below
-          cands.push({ cx: x + w / 2 + 10, cy: top }, { cx: x - w / 2 - 10, cy: top });          // then beside
+          for (var k = 0; k < 6; k++) cands.push({ cx: x, cy: top - lift - k * (h + 4) });       // above, stepping up
+          for (k = 0; k < 4; k++) cands.push({ cx: x, cy: bottom + lift + 4 + k * (h + 4) });   // then below
+          [10, 14 + w].forEach(function (dx) {                                                     // then beside, both sides
+            cands.push({ cx: x + w / 2 + dx, cy: top }, { cx: x - w / 2 - dx, cy: top },
+                       { cx: x + w / 2 + dx, cy: top - h - 4 }, { cx: x - w / 2 - dx, cy: top - h - 4 });
+          });
         }
         var box = function (c) { return { x0: c.cx - w / 2, y0: c.cy - h / 2, x1: c.cx + w / 2, y1: c.cy + h / 2 }; };
         var inside = function (b) { return b.y0 >= 0 && b.y1 <= chart.height && b.x0 >= 0 && b.x1 <= chart.width; };
         var pick = null;
         for (var j = 0; j < cands.length && !pick; j++) { var b = box(cands[j]); if (inside(b) && !overlaps(b, taken)) pick = cands[j]; }
+        if (!pick && !horiz) {                                  // still nowhere: scan this column top → bottom for a gap
+          for (var yy = area.top + h / 2; yy <= area.bottom - h / 2 && !pick; yy += 4) {
+            var bb = box({ cx: cands[0].cx, cy: yy });
+            if (inside(bb) && !overlaps(bb, taken)) pick = { cx: cands[0].cx, cy: yy };
+          }
+        }
         if (!pick) {                                            // nowhere free: nearest spot above, kept on the canvas
           pick = cands[0];
           pick.cy = Math.max(pick.cy, h / 2 + 1);

@@ -8,8 +8,16 @@ match it.
 
 **Google Sheets — only three tabs** of the main spreadsheet (`1Zb8Ly6v…`):
 `MONTHLY_TARGET` (on-offer ✅ col F; New Products now use `data/new_products.txt` + Odoo targets), `MONTHLY_MARKETING_POST` and
-`WEEKLY_MARKETING_POST` (posts). Nothing else is read from any sheet — `tests/test_sheet_reads.py` fails if
-code reads another tab or another spreadsheet.
+`WEEKLY_MARKETING_POST` (posts — now only a fallback, see below). Nothing else is read from any sheet —
+`tests/test_sheet_reads.py` fails if code reads another tab or another spreadsheet.
+
+**Marketing posts (16 Oct 2026):** read from marketing's own daily posting sheets by `lib/marketing_posts.py` —
+Kenya: *MARKETING POSTS KENYA* (`1Os81Lhn…`) tab `2026`; Sinza / Uganda: *STOCKS & POSTING RECORDS* (`1DGrRYrv…`)
+tabs `MARKETING POSTS_SINZA` / `MARKETING POSTS_UGANDA`. Row 2 = BAG TYPE · COLOUR · one column per day. Summed into
+the old tabs' layout: **weekly = last complete Sun–Sat week, monthly = the live month to date**. From Sep 2026
+marketing logs posts only on each bag's TOTAL row (no colour) → those come through as bag-level rows
+(`<BAG>` / "(all colours)"), compared per bag on New Products and Posting Yields. Both spreadsheets must be shared
+(Viewer) with the service account; until they are, the old two tabs are read (with a warning).
 
 **Monthly uploads (the user sends them, Claude transcribes):**
 - `offers_monthly.csv` — Kenya / Sinza / Uganda combos and singles with prices (the old COMBOS tab).
