@@ -7,19 +7,26 @@
 
 ## What the page shows
 
-**Sidebar** ([page sidebar](README.md#page-sidebar)) — one entry per block — Overview, Weekly Sales vs Marketing Posts, Weekly Performance, Sales by Shop, Sold vs Remaining to Target, Top 10, Colour Movement & Stock Guidance.
+**Sidebar** ([page sidebar](README.md#page-sidebar)) — one entry per block — Overview, Weekly Sales vs Marketing Posts, Weekly Performance, Sales by Shop, Sold vs Remaining to Target, Runway Bags, Top 10, Colour Movement & Stock Guidance.
 
 Per new-product KPIs (target vs sold vs deficit), monthly and weekly sales split
 Kenya vs Outside, marketing posts, stock levels, a weekly-sales-vs-posts chart, and a
-lifetime tally. **The product LIST + TARGET come from the sheet; every SOLD figure comes
-from Odoo** (falls back to the sheet only if Postgres is unreachable).
+lifetime tally. **The product LIST = `data/new_products.txt`; TARGETS = Odoo bag targets
+([product-targets.md](product-targets.md)); every SOLD figure comes from Odoo** (0 if Postgres is
+unreachable). Plus a separate **Runway bags** metric (below).
 
 ## Data sources
 
-Spreadsheet `1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0`:
+- **The new products — `data/new_products.txt`** (16 Oct 2026: the only source; one bag type per line,
+  file order = page order). Today: Loop BP, Zula, Lamora, Taji, Imani, Nala, Amora, Voyage, Lafemme.
+  **MONTHLY_TARGET is not read any more** (not for the list, the col I ticks, targets, sales or
+  category) — here or on Bags On vs Off Offer.
+- **Targets** — `lib/product_targets.load_targets()` (`product_targets_<YYYY-MM>.csv`); a listed bag with
+  no Odoo target shows 0 (warning printed).
+- **Category** — the bag type's usual category in `product_catalog.csv` (was MONTHLY_TARGET col B).
 
-- **MONTHLY_TARGET** — col A bag, C target, D sales, E deficit, **col I flag** = is a new
-  product. Only flagged rows become cards.
+Spreadsheet `1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0` — **posts only**:
+
 - **MONTHLY_SALES / WEEKLY_SALES** — colour-level rows (colour / category / product /
   bag type + sales columns). Sales are **overwritten** by Odoo.
 - **MONTHLY_MARKETING_POST / WEEKLY_MARKETING_POST** — col E Kenya posts, col H Outside.
@@ -53,13 +60,36 @@ This once cost Lamora 4 units this month (10 vs 14) and 38 lifetime.
 > lines excluded) **plus** the bags inside combos (sub-lines, added by
 > `odoo_combo_product_bags()` — see *Odoo sales window* below).
 
+## Runway bags (16 Oct 2026)
+
+A separate metric — **not** part of the New Products list, its target or its totals.
+
+- **What is a runway bag:** a bag **style** whose **first product in Odoo was created in the last 30 days**
+  (`lib/runway_bags.py`, `RUNWAY_DAYS`). Every product template in a *Bags / …* category (active or archived)
+  is folded to its bag type — the catalogue bag when known (`product_targets.bag_key_fn`), else the name
+  minus its trailing colour words (Noria Sky Blue → NORIA, Zela Creame → ZELA). The type's first-created
+  date = its earliest template. So a **new colour of an older bag doesn't count** (Code 3 Ankara Grey), only a
+  brand-new style; it drops off by itself 30 days after it was created.
+- **Left out:** samples, custom / customised orders, tests, Sponsorship, PPM (`EXCLUDE`), and the bags in
+  `new_products.txt`.
+- **Sold:** POS bags with the page's usual rules (combo sub-lines included), per period — this week, last
+  week, this month, custom range, and *since created*. **Stock:** live Odoo, Kenya shops vs Sinza + Uganda.
+- **On the page:** a **Runway Bags Sold** KPI card (this month; hover → each bag, sold + created date) and a
+  **Runway Bags** tiles section after Sold vs Target — Period + Sort by; tile = bags sold (big), created date,
+  age in days, KE / Sinza+UG stock, rank badge by sold; hover / tap → sold per period, stock and what to do
+  (no stock yet → dispatch; sold out → restock; in shops, not selling → post it; else keep posting).
+  Hidden when there are no runway bags. Payload `NP.runway = {days, bags:[{name, created, category,
+  stockKe, stockOut}], sold:{period:{BAG: n}}}`.
+- First list (16 Oct 2026): Zela, Viana, Veya, Noria, Mila, Kiana, Aven, Sejeh Basket (8 Oct, handbags),
+  Ankara HB, Ankara Sleeve, Leather Sleeve, Belt Leather (8–9 Oct).
+
 ## Per-product chart (Sold vs Still needed) — targets per period
 
 The target the bars are measured against matches the **Period** selector:
 
 | Period | Sold so far | Target / Still needed |
 |---|---|---|
-| Monthly | month-to-date sold | the product's **monthly** target (MONTHLY_TARGET col C) |
+| Monthly | month-to-date sold | the product's **monthly** target (Odoo — [product-targets.md](product-targets.md)) |
 | Weekly | this Sun–Sat week's sold | **weekly** target = monthly target ÷ `perfectWeeks` (same rule as the *Weekly Target* card) |
 | Last week | previous complete week's sold | **weekly** target, as above |
 | Lifetime | all-time sold | monthly target (reference only) |

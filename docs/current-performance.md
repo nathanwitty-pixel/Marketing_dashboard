@@ -79,6 +79,8 @@ refunds netted, → `PERF.samples` / `customBags` / `customFees`):
   (`'%customization%'` — a service line, **not** in Sales). The tooltip gives the split.
 Sep 2026: 4 samples, 1 customised bag, 0 customisation charges.
 
+**Corporate-team till orders (16 Oct 2026, user's call):** a till receipt paid by a client the **Corporate team** brought in (a Corporate-app lead — `lib/shop_corporate.corporate_team_receipts`) is **Corporate's sale, not the shop's**, even though a shop till took the money (October: ESK Company, HAZINA/29958 + 29613, KES 1,707,197). Orders a shop found itself (Kennedy Kalaa at Hilton, Sospeter at Kisumu, …) stay with the shop. Here: their bags move from **POS** to **corporate** in the Sales-card split (the total doesn't change).
+
 **Corporate by client** (Sales popover, `sql/corporate_clients.sql` → `PERF.corporateClients`):
 one row per client: quoted · invoiced · paid % · sold. In the Invoiced column, a **month badge** marks
 when each counted invoice was raised (`invMonths`, Oct 2026), so you can see which month a client

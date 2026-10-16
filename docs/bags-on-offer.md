@@ -91,7 +91,7 @@ straps excluded) and every qualifying corporate invoice line falls into exactly 
 | **On offer** | a **running** combo product (`name LIKE '%+%'` matching the offer sheet), one unit per bag; a self-made combo's bags are judged one by one like singles (14 Oct 2026) | `Combo sale` |
 | **On offer** | a single bag sold inside a **timed offer** campaign, or that resolves to a bag that is a **running-combo component**, a **Deal of the Week** or a **Power Deal** | `Timed offer` / `Combo component` / `Deal of the Week` / `Power Deal` (several allowed; money counted **once** — see *Counted by how it was sold*) |
 | **Not on offer** | a single bag that resolves to a catalogue bag on no offer | — |
-| **Not on offer** | a **new product** (MONTHLY_TARGET sheet, col I ✅ — the New Products list) that is on no offer, **even if it isn't in the price catalogue yet** (e.g. LaFemme) | `NEW` |
+| **Not on offer** | a **new product** (`data/new_products.txt` — the New Products list; the sheet's col I ticks are no longer read) that is on no offer, **even if it isn't in the price catalogue yet** (e.g. LaFemme) | `NEW` |
 | **Others** | **gift bags** (POS `name ILIKE 'gift bag%'`), **samples** (`SAMPLE…`) and **corporate** sales (customer invoices, same qualifying rule as `sql/corporate_bags.sql`: posted `out_invoice`, paid / in payment or ≤25 % outstanding; product lines; `price_total`) | `Gift bags` / `Samples` / `Corporate` |
 | **Unclassified** | a single POS product that matches no catalogue bag and no new product | footnote count/revenue |
 
@@ -452,3 +452,7 @@ live by running `self_made_combos.fetch()`.
   sold (single sales + combo prints).
 - Check changes at 390px in a real narrow frame — headless Chrome won't shrink a window below
   ~500px, so a plain `--window-size=390` screenshot is cropped, not reflowed.
+
+## Corporate-team till orders
+
+**Corporate-team till orders (16 Oct 2026, user's call):** a till receipt paid by a client the **Corporate team** brought in (a Corporate-app lead — `lib/shop_corporate.corporate_team_receipts`) is **Corporate's sale, not the shop's**, even though a shop till took the money (October: ESK Company, HAZINA/29958 + 29613, KES 1,707,197). Orders a shop found itself (Kennedy Kalaa at Hilton, Sospeter at Kisumu, …) stay with the shop. Here: they're left out of the shop's till revenue (shop vs target) and its bag lines, and added to the **Corporate** row.

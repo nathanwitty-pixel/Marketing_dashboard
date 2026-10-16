@@ -414,7 +414,7 @@ def build(today: _dt.date | None = None) -> dict | None:
             "quotedKes": quoted, "quotedBags": c["quotedBags"],
             "paidKes": paid, "bags": sum(t["bags"] for t in pays),
             "balance": max(quoted - paid, 0), "status": status,
-            "payments": [{"receipt": t["receipt"], "on": _d(t["d"]), "shop": shop_label(t["shop"]), "kes": t["kes"],
+            "payments": [{"receipt": t["receipt"], "on": _d(t["d"]), "date": str(t["d"])[:10], "bags": int(t["bags"] or 0), "shop": shop_label(t["shop"]), "kes": t["kes"],
                           "by": _txt(t["paid_by"]), "cashier": _txt(t["cashier"]), "cust": _txt(t["cust"]).strip()}
                          for t in pays],
             "hunted": hunted, "how": how,
@@ -437,6 +437,34 @@ def build(today: _dt.date | None = None) -> dict | None:
     months = start.strftime("%b") + ("–" + today.strftime("%b") if today.month != start.month else "")
     return {"rows": out, "shops": shops_out, "leftOut": left_out, "period": months,
             "asOf": _d(today)}
+
+
+_TEAM_CACHE: dict = {}
+
+
+def corporate_team_receipts(start: _dt.date, end: _dt.date) -> dict:
+    """{receipt: {client, shop, kes, bags, date}} — till receipts in [start, end] paid by a client the CORPORATE
+    TEAM brought in (a Corporate-app lead, rule 2). These belong to Corporate, not to the shop whose till took the
+    money: shop revenue / targets, the POS share of Sales and each shop's sales history leave them out (user,
+    16 Oct 2026). Orders a shop found itself stay with the shop. {} when the DB isn't reachable."""
+    out = {}
+    anchor = end
+    while True:                                      # build() covers [1st of last month, anchor]
+        key = anchor.isoformat()
+        if key not in _TEAM_CACHE:
+            _TEAM_CACHE[key] = build(anchor) or {}
+        for r in _TEAM_CACHE[key].get("rows", []):
+            if r.get("hunted") != "Corporate" or not str(r.get("how", "")).startswith("Corporate app lead"):
+                continue
+            for p in r.get("payments", []):
+                d = _dt.date.fromisoformat(p["date"])
+                if start <= d <= end:
+                    out[p["receipt"]] = {"client": r["client"], "shop": p["shop"], "kes": p["kes"],
+                                         "bags": p.get("bags"), "date": p["date"]}
+        first = (anchor.replace(day=1) - _dt.timedelta(days=1)).replace(day=1)
+        if first <= start:
+            return out
+        anchor = first - _dt.timedelta(days=1)
 
 
 if __name__ == "__main__":                                   # quick check: python -m lib.shop_corporate

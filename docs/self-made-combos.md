@@ -72,6 +72,15 @@ Three areas, all scoped to the **current live month** (`report_month.live_month_
    (never summed across bags).
 3. **Power Deals vs Deal of the Week** — the Kenya deals sheet, enriched with live Odoo
    sales, per-week series, stock, and a per-shop breakdown.
+   - **Power Deals View** (16 Oct 2026): **Tiles** (default, same look as New Products › Sold vs target)
+     or **List** (the old cards). One tile per deal in the Sort order: big number = **% of its stock
+     cleared** this month = sold ÷ (sold + stock now) (green ≥ 50 %, amber ≥ 25 %, red below), rank
+     badge by the current Sort metric, now price / % off / latest week sold / stock, the ▲/▼ rank chip
+     and a "also DoW" mark. Hover / tap a tile → price, sold by week, revenue, stock, the current-tier
+     Deal of the Week link and the verdict.
+   - **Deal of the Week opens on the current tier** (16 Oct 2026) — the tier whose window holds the live
+     week (`smcCurTier`), marked "· now"; its KPI cards, location table and shop hovers all follow it.
+     All tiers / the earlier tier stay one click away to look back.
    **New month, deals sheet not filled yet** (`_deals_from_offer_sheet`): if the deals sheet
    has no rows for the live month, the page still moves to the new month — Power Deals come
    from the COMBOS sheet's own **POWER DEALS** table (`TRAVEL` → Standard Travel; price from its

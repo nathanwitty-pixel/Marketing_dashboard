@@ -7,7 +7,7 @@ match it.
 ## Where the data comes from (Oct 2026)
 
 **Google Sheets — only three tabs** of the main spreadsheet (`1Zb8Ly6v…`):
-`MONTHLY_TARGET` (targets, New-products col I, on-offer ✅ col F), `MONTHLY_MARKETING_POST` and
+`MONTHLY_TARGET` (on-offer ✅ col F; New Products now use `data/new_products.txt` + Odoo targets), `MONTHLY_MARKETING_POST` and
 `WEEKLY_MARKETING_POST` (posts). Nothing else is read from any sheet — `tests/test_sheet_reads.py` fails if
 code reads another tab or another spreadsheet.
 
@@ -199,10 +199,12 @@ Reject Sale); this table is the per-menu spec index.
 | # | Menu | Doc | Generator | HTML |
 |---|------|-----|-----------|------|
 | 1 | Current Performance | [current-performance.md](current-performance.md) | `current_performance.py` (+ `weekly_sales.py`, `monthly_sales.py`, `forward_projections.py`) | `current_performance.html` |
+| 1a | Product Performance (top bags / categories / colours by share · Bag of the Week + why it moved) | [product-performance.md](product-performance.md) | `product_performance.py` (reads `bags_offer_source_<month>.json`, `bag_posts_history.json`) | `product_performance.html` |
 | 2 | New Products Analytics | [new-products.md](new-products.md) | `new_products.py` | `new_products.html` |
 | 3 | Timed Offers Analytics | [timed-offers.md](timed-offers.md) | `timed_offers.py` | `timed_offers.html` |
 | 4 | Self made combos vs running combos | [self-made-combos.md](self-made-combos.md) | `self_made_combos.py` (+ `offer_data.py`) | `self_made_combos.html` |
 | 5 | Bags on offer vs not on offer | [bags-on-offer.md](bags-on-offer.md) | `bags_on_offer.py` (reads `bags_offer_source.json` from `self_made_combos.py`) | `bags_on_offer.html` |
+| 5a | Shop Stock Levels (min / max per shop · stocks report · next-month preparedness · OOS leads) | [shop-stock-levels.md](shop-stock-levels.md) | `shop_stock_levels.py` | `shop_stock_levels.html` |
 | 6 | Posting – Sales Yields from Accurate Posting | [posting-yields.md](posting-yields.md) | `posting_yields.py` | `posting_yields.html` |
 | 7 | Shops Efficiency Tracking | [shops-efficiency.md](shops-efficiency.md) | `shops_dispatch.py` → `shops_efficiency.py` | `shops_efficiency.html` |
 | 7a | Shop Launch (a new shop from its first sale · Nyeri, Oct 2026) | [shop-launch.md](shop-launch.md) | `shop_launch.py` (config `shop_launch_config.json`) | `shop_launch.html` |
@@ -228,8 +230,10 @@ Report, History) **must run last**. The ordered list:
 3. `new_products.py`
 4. `timed_offers.py`
 5. `self_made_combos.py` → `bags_on_offer.py`
+5a. `shop_stock_levels.py`
 6. `posting_yields.py`
 7. `shops_dispatch.py` → `shops_efficiency.py`
+7c. `bag_signals.py` → `product_performance.py` (reads Self-made Combos' offer source + Bag Signals' posts history)
 8. ~~`generate_insights.py`~~ — not run any more (Insights menu removed Oct 2026)
 9. `monthly_report.py` (reads the pages above)
 10. `push_to_supabase.py` → `history.py`

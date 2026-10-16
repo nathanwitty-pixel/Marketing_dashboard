@@ -51,7 +51,7 @@ Forward Projections, New Products, Posting Yields and the offer data (combo / Po
 `product_targets.monthly_target_rows(sheet_rows)`, takes the sheet's rows and returns them with **column C =
 the bag's target** (matched by bag, colours folded; a bag on several sheet rows gets it once) and **column E =
 max(C − D, 0)**; bags with a target but no sheet row are appended. Everything else on the sheet is kept —
-the **New Products tick (col I)** and the **on-offer tick (col F)** still come from it. Sheet bags with no
+the **on-offer tick (col F)** still comes from it (the New Products list is `data/new_products.txt` since 16 Oct 2026 — the col I tick is no longer read). Sheet bags with no
 target (no sales in the base period) get **0**.
 
 Targets come from `product_targets_<YYYY-MM>.csv` for the month (built from Odoo by

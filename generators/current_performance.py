@@ -368,8 +368,27 @@ def shop_corporate_from_db():
 
 
 shop_corporate = shop_corporate_from_db()
-sales_pos      = total_sales                    # POS-only (Weekly basis)
-total_sales    = total_sales + corporate_bags   # Sales card = POS + corporate
+
+
+def corporate_team_till_bags():
+    """Bags of this month's till receipts paid by Corporate-team clients (a Corporate-app lead) — rung at a shop
+    till but Corporate's sale (lib/shop_corporate.corporate_team_receipts; user, 16 Oct 2026). 0 if no DB."""
+    try:
+        from lib import shop_corporate as _sc
+        _s, _e = report_month.live_month_window()
+        recs = _sc.corporate_team_receipts(_s, min(_e, datetime.date.today()))
+        for k, v in recs.items():
+            print(f"  Corporate-team till  : {k} · {v['client']} · {v['bags'] or 0} bags → Corporate (was {v['shop']})")
+        return sum(int(v["bags"] or 0) for v in recs.values())
+    except Exception as e:                                   # noqa: BLE001
+        print(f"  Corporate-team till  : skipped ({e})")
+        return 0
+
+
+corp_team_bags = corporate_team_till_bags()
+sales_pos      = total_sales - corp_team_bags   # POS-only (Weekly basis), Corporate-team till orders moved out
+corporate_bags = corporate_bags + corp_team_bags
+total_sales    = sales_pos + corporate_bags     # Sales card = POS + corporate (the total doesn't change)
 
 # Subsets of the POS bags for the Sales-card breakdown — reject-clearance bags ([REJECT] tag)
 # and gift bags: "of N sold, R were rejects, G were gift bags". % is of the POS total.

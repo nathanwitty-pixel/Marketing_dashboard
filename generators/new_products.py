@@ -1,10 +1,10 @@
 """
 new_products.py
 ─────────────────────────────────────────────────────────────────
-Reads live from Google Sheets (five sheets):
+New products = data/new_products.txt (lib/new_products_list); targets = Odoo bag targets
+(lib/product_targets); runway bags = bag types first created in Odoo in the last 30 days
+(lib/runway_bags). Google Sheets is read only for posts:
 
-  MONTHLY_TARGET        → new product names + KPIs (target/sales/deficit)
-                          col A=bag, col C=target, col D=sales, col E=deficit, col I=flag
   MONTHLY_MARKETING_POST→ col D=BAG TYPE, col E=KENYA posts, col H=OUTSIDE KENYA posts
   STOCK_LEVELS          → col D=BAG TYPE, col A=COLOUR
                           col Y=KENYA, col Z=OUTSIDE KENYA, col AA=RESTOCK
@@ -80,7 +80,7 @@ def odoo_combo_product_bags(start_date, end_date):
 
 def odoo_month_product_bags():
     """Reporting month's bags per product from Odoo (Postgres), or None if the DB
-    isn't reachable. Product list still comes from MONTHLY_TARGET; only the SOLD
+    isn't reachable. The product list comes from data/new_products.txt; only the SOLD
     figure is sourced here.
 
     The window comes from lib/report_month.py so this matches the month the
@@ -313,64 +313,42 @@ def fetch_new_products_data():
     gc = get_gspread_client()
     sh = gc.open_by_key(SPREADSHEET_ID)
 
-    # ── MONTHLY_TARGET ────────────────────────────────────────
-    # col A (idx 0) = bag type / name
-    # col C (idx 2) = TARGET
-    # col D (idx 3) = SALES
-    # col E (idx 4) = DEFICIT
-    # col I (idx 8) = NEW PRODUCTS flag
-
-    mt      = sh.worksheet("MONTHLY_TARGET")
-    # Column C = the month's bag targets from Odoo (lib/product_targets — docs/product-targets.md).
-    from lib import product_targets
-    mt_rows = product_targets.monthly_target_rows(mt.get_all_values())
-
-    new_product_names = []
-    total_target      = 0
-    total_sales       = 0
-    total_deficit     = 0
-    category_lookup   = {}   # bag_upper -> CATEGORY (col B of MONTHLY_TARGET)
-    product_targets   = []   # per-product {name, target, sold, remaining}
-
-    # Which bags are new: new_products.txt when it lists any (lib/new_products_list),
-    # otherwise the col I ✅ ticks.
-    from lib import new_products_list
+    # ── THE NEW PRODUCTS + THEIR TARGETS (no MONTHLY_TARGET sheet — docs/new-products.md) ──
+    # The list = data/new_products.txt, in file order (lib/new_products_list) — the only source.
+    # Target = the month's bag target from Odoo (lib/product_targets — docs/product-targets.md).
+    # Sold is filled from Odoo just below (0 if Postgres is down).
+    from lib import new_products_list, product_targets as _pt
     listed = new_products_list.names()
-    if listed:
-        print(f"  New products from new_products.txt: {', '.join(listed)}")
-        missing = set(listed) - {str(r[0]).strip().upper() for r in mt_rows[1:] if r}
-        if missing:
-            print(f"  WARNING: not in MONTHLY_TARGET col A (no target row): {', '.join(sorted(missing))}")
-        order = {n: i for i, n in enumerate(listed)}
-        mt_rows = [mt_rows[0]] + sorted(mt_rows[1:], key=lambda r: order.get(str(r[0]).strip().upper() if r else "", len(order)))
+    if not listed:
+        print("  WARNING: data/new_products.txt lists no bags — the New Products page will be empty.")
+    targets = _pt.load_targets()
+    if not targets:
+        print("  WARNING: bag targets unavailable (product_targets CSV missing and Odoo down) — targets show 0.")
+    missing = [n for n in listed if n not in targets]
+    if targets and missing:
+        print(f"  WARNING: no Odoo target for {', '.join(missing)} (no sales in the base period) — target 0.")
+    print(f"  New products from new_products.txt: {', '.join(listed)}")
 
-    for row in mt_rows[1:]:
-        if len(row) < 1:
-            continue
-        bag = str(row[0]).strip()
-        if bag and len(row) > 1:
-            category_lookup[bag.upper()] = str(row[1]).strip()
-        is_new = (bag.upper() in listed) if listed else (len(row) >= 9 and is_checked(row[8]))
-        if not is_new:
-            continue
-        row = list(row) + [""] * (5 - len(row))
-        t = safe_int(row[2]); s = safe_int(row[3]); dfc = safe_int(row[4])
-        total_target  += t
-        total_sales   += s
-        total_deficit += dfc
-        if bag:
-            new_product_names.append(bag)
-            product_targets.append({
-                "name": bag, "target": t, "sold": s,
-                "remaining": max(t - s, 0),
-            })
+    # Category per bag type = its usual category in product_catalog.csv (was MONTHLY_TARGET col B).
+    _cat_votes = {}
+    for c in odoo_tabs.load_catalog():
+        if c["bag"] and c["category"]:
+            v = _cat_votes.setdefault(c["bag"].strip().upper(), {})
+            v[c["category"]] = v.get(c["category"], 0) + 1
+    category_lookup = {b: max(v, key=v.get) for b, v in _cat_votes.items()}   # bag_upper -> CATEGORY
+
+    new_product_names = list(listed)
+    product_targets   = [{"name": n, "target": targets.get(n, 0), "sold": 0, "remaining": targets.get(n, 0)}
+                         for n in listed]                    # per-product {name, target, sold, remaining}
+    total_target      = sum(p["target"] for p in product_targets)
+    total_sales       = 0
+    total_deficit     = total_target
 
     names_upper = {n.upper() for n in new_product_names}
 
     # ── SALES from Odoo (source of truth) ─────────────────────
-    # The product LIST + TARGET stay from MONTHLY_TARGET; the SOLD figure now
-    # comes from Odoo (this month's bags for that product). Falls back to the
-    # sheet's SALES column if Postgres isn't reachable.
+    # The SOLD figure comes from Odoo (this month's bags for that product); 0 if
+    # Postgres isn't reachable.
     odoo_list = odoo_month_product_bags()
     if odoo_list is not None:
         total_sales = 0
@@ -384,7 +362,7 @@ def fetch_new_products_data():
             print(f"    - {p['name']:<16} {sold:>5} sold  {tag}")
         total_deficit = sum(p["remaining"] for p in product_targets)
     else:
-        print("  Sales source          : sheet (Odoo unreachable)")
+        print("  Sales source          : none — Odoo unreachable, sold shows 0")
 
     # ── LIFETIME sales (all-time, per product) ────────────────
     odoo_life = odoo_lifetime_product_bags()
@@ -977,6 +955,18 @@ except Exception as _err:                                     # noqa: BLE001 —
     shop_sales_data = {}
 
 
+# ── RUNWAY BAGS (bag types first created in Odoo in the last 30 days — docs/new-products.md › Runway bags) ──
+try:
+    from lib import runway_bags
+    np_runway = runway_bags.build(oos_callbacks.windows(date.today(), custom=NP_CUSTOM))
+    print(f"  Runway bags           : {len(np_runway['bags'])} types — "
+          f"{sum(np_runway['sold'].get('monthly', {}).values())} sold this month "
+          f"({', '.join(b['name'] for b in np_runway['bags'])})")
+except Exception as _err:                                     # noqa: BLE001 — the section just hides
+    print(f"  Runway bags unavailable ({_err})")
+    np_runway = {"days": 30, "bags": [], "sold": {}}
+
+
 # ── INJECT INTO HTML ──────────────────────────────────────────
 
 inline_script = (
@@ -1025,6 +1015,7 @@ inline_script = (
     f'  npCurLabel:   {json.dumps(np_cur_label, ensure_ascii=False)},\n'
     f'  oos:          {json.dumps(np_oos, ensure_ascii=False, separators=(",", ":"))},\n'
     f'  shopSales:    {json.dumps(shop_sales_data, ensure_ascii=False, separators=(",", ":"))},\n'
+    f'  runway:       {json.dumps(np_runway, ensure_ascii=False, separators=(",", ":"))},\n'
     f'  custom:       {json.dumps(NP_CUSTOM_BLOCK, ensure_ascii=False)}\n'
     "};\n"
     "</script>\n"

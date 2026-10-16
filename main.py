@@ -37,6 +37,8 @@ SCRIPTS = [
     ("Self Made Combos",       "self_made_combos.py"),
     # Reads bags_offer_source.json that self_made_combos.py just wrote — keep it right after.
     ("Bags On vs Off Offer",   "bags_on_offer.py"),
+    # Min / max per shop from the month's bag + shop targets, stock, OOS leads (docs/shop-stock-levels.md).
+    ("Shop Stock Levels",      "shop_stock_levels.py"),
     ("Posting Yields",         "posting_yields.py"),
     # Live dispatch/receiving from Odoo — shops_efficiency.py reads its JSON.
     ("Shops Dispatch (Postgres)", "shops_dispatch.py"),
@@ -45,6 +47,8 @@ SCRIPTS = [
     ("Push Planner",           "push_planner.py"),
     # Quant signals per bag (docs/bag-signals.md) — Odoo + the two MARKETING_POST tabs.
     ("Bag Signals",            "bag_signals.py"),
+    # Reads bags_offer_source_<month>.json (Self Made Combos) and bag_posts_history.json (Bag Signals) — keep after both.
+    ("Product Performance",    "product_performance.py"),
     # These read the data the scripts above injected — keep them LAST.
     # ("Dashboard Insights", "generate_insights.py") — Insights menu removed (Oct 2026); script kept.
     ("Monthly Report",         "monthly_report.py"),
@@ -195,11 +199,13 @@ SCRIPT_MAP = {
                                                              "current_performance.py",
                                                              "forward_projections.py"],
     "forward_projections.html":                             ["forward_projections.py"],
+    "product_performance.html":                             ["product_performance.py"],
     "new_products.html":                                    ["new_products.py"],
     "timed_offers.html":                                    ["timed_offers.py"],
     "self_made_combos.html":                                ["self_made_combos.py"],
     "bags_on_offer.html":                                   ["self_made_combos.py",
                                                              "bags_on_offer.py"],
+    "shop_stock_levels.html":                               ["shop_stock_levels.py"],
     "posting_yields.html":                                  ["posting_yields.py"],
     "shops_efficiency.html":                                ["shops_dispatch.py",
                                                              "shops_efficiency.py"],

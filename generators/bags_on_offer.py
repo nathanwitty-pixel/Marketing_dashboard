@@ -36,7 +36,6 @@ import reject_sales as rsl
 HTML = paths.html("bags_on_offer.html")
 SOURCE_JSON = paths.data("bags_offer_source.json")
 TIERS_CSV = paths.data("bag_tiers.csv")
-NEW_PRODUCTS_SHEET = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"   # same sheet as new_products.py
 
 _KENYA_TILLS = "AND lower(COALESCE(pc.\"name\",'')) NOT IN ('sinza','dar-es-alam','uganda')"
 
@@ -54,6 +53,7 @@ LEFT JOIN product_product pp ON pl.product_id=pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0 AND NOT COALESCE(pl.sub_product_line, false)
   {_KENYA_TILLS}
+  AND p."name" <> ALL(:corp_refs)   -- Corporate-team till orders are Corporate's (lib/shop_corporate)
   AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
   AND pt."name" NOT ILIKE '%strap%'
 GROUP BY 1, 2, 3
@@ -68,6 +68,7 @@ LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid')
   {_KENYA_TILLS}
+  AND p."name" <> ALL(:corp_refs)   -- Corporate-team till orders are Corporate's (lib/shop_corporate)
 GROUP BY 1, 2
 """
 
@@ -314,38 +315,13 @@ def _archived_source(month_start):
         return None
 
 
-def _previous_payload():
-    try:
-        with open(HTML, encoding="utf-8") as f:
-            m = re.search(r"const BOO = (.*?);\n</script>", f.read(), re.S)
-        return json.loads(m.group(1)) if m else None
-    except (OSError, ValueError):
-        return None
-
-
 def _new_products():
-    """This month's new products: new_products.txt when it lists any (lib/new_products_list),
-    else MONTHLY_TARGET col A where col I is ticked. Falls back to the previous build's list
-    if the sheet can't be read."""
+    """This month's new products: data/new_products.txt (lib/new_products_list) — the only source
+    (the MONTHLY_TARGET col I ticks are no longer read)."""
     from lib import new_products_list
     listed = new_products_list.names()
-    if listed:
-        print(f"  New products     : {len(listed)} from new_products.txt")
-        return listed
-
-    def _ticked(v):
-        v = str(v).strip()
-        return any(c in v for c in "✅✔✓") or v.upper() in ("TRUE", "1", "YES")
-    try:
-        from lib.google_auth import get_gspread_client
-        rows = get_gspread_client().open_by_key(NEW_PRODUCTS_SHEET).worksheet("MONTHLY_TARGET").get_all_values()
-        names = [r[0].strip().upper() for r in rows[1:] if len(r) > 8 and r[0].strip() and _ticked(r[8])]
-        print(f"  New products     : {len(names)} from MONTHLY_TARGET")
-        return names
-    except Exception as e:                                   # noqa: BLE001
-        prev = (_previous_payload() or {}).get("newProducts") or []
-        print(f"  New products     : sheet unreadable ({type(e).__name__}); reusing {len(prev)} from last build")
-        return prev
+    print(f"  New products     : {len(listed)} from new_products.txt")
+    return listed
 
 
 def _shop_label(till):
@@ -918,7 +894,17 @@ def fetch():
             return classify_for(d)(name, shop, d, timed)
         return classify_cur(name, shop, d, timed)
 
-    params = {"s": lo.isoformat(), "e": hi.isoformat()}
+    # Till receipts paid by Corporate-team clients (a Corporate-app lead) are Corporate's sale, not the shop's
+    # (user, 16 Oct 2026): left out of the shop lines / till revenue below and added to the Corporate row.
+    try:
+        from lib import shop_corporate
+        corp_team = shop_corporate.corporate_team_receipts(lo, min(hi, datetime.date.today()))
+    except Exception as ex:                                  # noqa: BLE001
+        print(f"  Corporate-team till orders: skipped ({ex})")
+        corp_team = {}
+    for k, v in corp_team.items():
+        print(f"  Corporate-team till: {k} · {v['client']} · KES {v['kes']:,} → Corporate (not {v['shop']})")
+    params = {"s": lo.isoformat(), "e": hi.isoformat(), "corp_refs": sorted(corp_team) or ["~none~"]}
 
     def rows(sql):
         df = db.run_query(sql, params)
@@ -935,6 +921,8 @@ def fetch():
         return out
 
     lines, till, corp, targets = rows(LINES_SQL), rows(TILL_SQL), rows(CORPORATE_SQL), rows(TARGET_SQL)
+    corp += [{"d": datetime.date.fromisoformat(v["date"]), "units": int(v["bags"] or 0), "revenue": int(v["kes"] or 0)}
+             for v in corp_team.values()]
     # Sinza / Uganda till revenue → KES (same rate as the rest of the page) so they join the shop table.
     for r in rows(MARKET_TILL_SQL):
         key, cur = _MARKET_TILL_SHOP.get(r["shop"], (None, None))
