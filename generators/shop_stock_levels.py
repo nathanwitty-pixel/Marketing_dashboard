@@ -238,7 +238,7 @@ def dispatch_shop(name):
     return _shop(name) or str(name or "").strip().title() or None
 
 
-def requests_block(today, typ):
+def requests_block(today, typ, have=None):
     """Shop requests vs received (this month · last month) and the production approved lists — or {} on failure."""
     m1 = today.replace(day=1)
     lm1 = (m1 - datetime.timedelta(days=1)).replace(day=1)
@@ -246,10 +246,12 @@ def requests_block(today, typ):
         offers = shop_requests._offers()
         per = {"monthly": (m1, today, m1.strftime("%B %Y")),
                "lastmonth": (lm1, m1 - datetime.timedelta(days=1), lm1.strftime("%B %Y"))}
-        out = {"sellDays": shop_requests.SELL_DAYS, "periods": {}}
+        out = {"sellDays": shop_requests.SELL_DAYS, "notConvertingPct": shop_requests.NOT_CONVERTING_PCT,
+               "askLookback": shop_requests.ASK_LOOKBACK, "periods": {}}
         for k, (s, e, label) in per.items():
             out["periods"][k] = {"label": label, "from": s.isoformat(), "to": e.isoformat(),
-                                 "shops": shop_requests.requests(s, e, today, dispatch_shop, typ, offers)}
+                                 "shops": shop_requests.requests(s, e, today, dispatch_shop, typ, offers,
+                                                                  code_shop=CODE_SHOP.get, have=have, no_shelf=ONLINE)}
         out["production"] = shop_requests.production(dispatch_shop, typ, today)
         return out
     except Exception as e:                                   # noqa: BLE001
@@ -336,7 +338,7 @@ def build(today=None):
             "shopTargets": {s: round(v) for s, v in shop_tgt.items()}, "outside": sorted(OUTSIDE), "online": sorted(ONLINE),
             "rows": rows, "wh": {b: int(q) for b, q in wh.items() if q},
             "whColours": {b: {c: int(q) for c, q in cs.items() if q} for b, cs in wh_cols.items()},
-            "leads": waiting, "leadWindows": lead_wins, "requests": requests_block(today, typ)}
+            "leads": waiting, "leadWindows": lead_wins, "requests": requests_block(today, typ, {sh: dict(bs) for sh, bs in stock.items()})}
 
 
 def inject(payload):

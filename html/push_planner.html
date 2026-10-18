@@ -98,6 +98,7 @@ const PP = {"generated": "18 Oct 2026 19:24", "salesWindow": "2026-09-20 → 202
     <h2>Why it isn't moving</h2>
     <p class="hint">Bags with stock that isn't clearing (cleared under 30% this month, or more than 45 days of stock). Every reason the numbers show is listed; <b style="color:#a78bfa">Laya</b> adds which one it thinks matters most.</p>
     <div class="bar" id="pp-why-mk"></div>
+    <div class="bar" id="pp-why-rs"></div>
     <div class="chart-wrap"><canvas id="pp-reason-chart"></canvas></div>
     <div id="pp-laya-note"></div>
     <div class="tbl" id="pp-why"></div>
@@ -196,16 +197,27 @@ const PP = {"generated": "18 Oct 2026 19:24", "salesWindow": "2026-09-20 → 202
 
   /* 3 · why it isn't moving */
   var LBL = {}; ['kenya','sinza','uganda'].forEach(function(k){ ((D.notMoving||{})[k]||[]).forEach(function(r){ (r.reasons||[]).forEach(function(x){ LBL[x.code] = x.label; }); }); });
-  var chart = null, whyMk = 'kenya';
+  var chart = null, whyMk = 'kenya', whyRs = 'all';   // whyRs: reason filter (a reason code, or 'all')
   function renderWhy(){
-    var rows = (D.notMoving||{})[whyMk] || [], tot = (D.notMovingCount||{})[whyMk] || 0;
+    var all = (D.notMoving||{})[whyMk] || [], tot = (D.notMovingCount||{})[whyMk] || 0;
+    // Reason filter: one button per reason among the listed bags (a bag with several reasons counts under each).
+    var rn = {}; all.forEach(function(r){ (r.reasons||[]).forEach(function(x){ rn[x.code] = (rn[x.code]||0) + 1; }); });
+    if (whyRs !== 'all' && !rn[whyRs]) whyRs = 'all';
+    segs(document.getElementById('pp-why-rs'), [['all','All reasons (' + all.length + ')']].concat(Object.keys(rn).sort(function(a,b){ return rn[b]-rn[a]; })
+      .map(function(k){ return [k, esc(LBL[k] || k) + ' (' + rn[k] + ')']; })), whyRs, function(k){ whyRs = k; renderWhy(); });
+    document.getElementById('pp-why-rs').insertAdjacentHTML('afterbegin', '<span>Why</span>');
+    var rows = whyRs === 'all' ? all : all.filter(function(r){ return (r.reasons||[]).some(function(x){ return x.code === whyRs; }); });
     var rc = (D.reasonCounts||{})[whyMk] || {}, keys = Object.keys(rc).sort(function(a,b){ return rc[b]-rc[a]; });
     if (window.Chart) {
       if (chart) chart.destroy();
       chart = new Chart(document.getElementById('pp-reason-chart'), { type:'bar',
-        data:{ labels: keys.map(function(k){ return LBL[k] || k; }), datasets:[{ label:'Bags', data: keys.map(function(k){ return rc[k]; }), backgroundColor:'#f59e0b', borderRadius:4 }] },
-        options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false},
-          tooltip:{ callbacks:{ label:function(c){ return c.parsed.x + ' of ' + tot + ' not-moving bags'; } } } },
+        data:{ labels: keys.map(function(k){ return LBL[k] || k; }), datasets:[{ label:'Bags', data: keys.map(function(k){ return rc[k]; }),
+          backgroundColor: keys.map(function(k){ return whyRs === 'all' || whyRs === k ? '#f59e0b' : 'rgba(245,158,11,0.3)'; }), borderRadius:4 }] },
+        options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+          onClick:function(e, els){ if (!els.length) return; var k = keys[els[0].index]; whyRs = whyRs === k ? 'all' : k; renderWhy(); },
+          onHover:function(e, els){ e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
+          plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ label:function(c){ return c.parsed.x + ' of ' + tot + ' not-moving bags'; }, footer:function(){ return 'Click to filter the table'; } } } },
           scales:{ x:{ beginAtZero:true, ticks:{ precision:0, color:'#94a3b8' }, grid:{ color:'rgba(45,49,72,0.55)' } },
                    y:{ ticks:{ color:'#cbd5e1' }, grid:{ display:false } } } } });
     }
@@ -221,8 +233,9 @@ const PP = {"generated": "18 Oct 2026 19:24", "salesWindow": "2026-09-20 → 202
               + '<td class="r">'+nf(r.stock)+'</td><td class="r">'+nf(r.sold28)+'</td><td class="r">'+d1(r.perDay)+'</td><td class="r">'+cover(r.daysCover)+'</td><td class="r">'+nf(r.postsMonth||0)+'</td>'
               + '<td><div class="why">'+(r.reasons||[]).map(function(x){ return '<div><span class="chip">'+esc(x.label)+'</span>'+esc(x.text)+'</div>'; }).join('')+'</div>'+layaLine(r)+'</td></tr>';
           }).join('') + '</tbody></table>'
-        + (tot > rows.length ? '<div class="empty">Showing the ' + rows.length + ' with the most stock value of ' + tot + '.</div>' : '')
-      : '<div class="empty">No stuck bags in ' + MK[whyMk] + ' right now.</div>';
+        + (whyRs !== 'all' ? '<div class="empty">' + rows.length + ' of the ' + all.length + ' listed bags have “' + esc(LBL[whyRs] || whyRs) + '”.</div>'
+           : tot > rows.length ? '<div class="empty">Showing the ' + rows.length + ' with the most stock value of ' + tot + '.</div>' : '')
+      : '<div class="empty">No stuck bags in ' + MK[whyMk] + (whyRs !== 'all' ? ' for this reason' : '') + ' right now.</div>';
   }
   function onWhy(k){ whyMk = k; segs(document.getElementById('pp-why-mk'), [['kenya','Kenya'],['sinza','Sinza'],['uganda','Uganda']].map(function(x){
     return [x[0], x[1] + ' (' + nf(((D.notMovingCount||{})[x[0]])||0) + ')']; }), k, onWhy); renderWhy(); }

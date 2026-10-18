@@ -122,7 +122,9 @@ don't show it). `--dry-run` never writes the history.
    the dashboard).
 3. **Why it isn't moving** — Kenya / Sinza / Uganda tabs: a chart of how many bags each reason
    covers, Laya's note, and the 40 stuck bags with the most stock value (stock, sold 28 d, a day,
-   stock lasts, posts, reason chips, Laya's line).
+   stock lasts, posts, reason chips, Laya's line). **Why filter** (18 Oct 2026): one button per reason
+   with how many of the listed bags have it (a bag with several reasons counts under each); clicking
+   a bar in the chart does the same, clicking it again clears it.
 4. **Move stock — Kenya shops** — up to 30 shop → shop moves.
 5. **Last week's calls** — moved or not (the first week says the calls are saved).
 

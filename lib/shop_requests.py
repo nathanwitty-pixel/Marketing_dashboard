@@ -38,29 +38,31 @@ from lib import db, runway_bags
 SELL_DAYS = 14
 
 REQUESTS_SQL = """
-WITH roots AS (
+WITH roots AS MATERIALIZED (
   SELECT o.id, o.name, (o.order_date AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date AS d, o.state,
          s.name AS shop, s.pos_config_id AS cfg, s.denri_country AS cty
   FROM denri_dispatch_order o JOIN denri_dispatch_shop s ON s.id = o.shop_id
   WHERE NOT COALESCE(o.is_backorder, false) AND o.request_type = 'shop' AND o.state <> 'cancel'
     AND s.shop_type = 'retail'
     AND (o.order_date AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETWEEN :s AND :e
-), chain AS (
-  SELECT r.id AS root, o.id AS oid, o.state
-  FROM roots r JOIN denri_dispatch_order o ON o.id = r.id OR o.backorder_root_id = r.id
-), asked AS (
+), chain AS MATERIALIZED (
+  SELECT r.id AS root, r.id AS oid, r.state FROM roots r
+  UNION ALL
+  SELECT o.backorder_root_id, o.id, o.state FROM denri_dispatch_order o
+  WHERE o.backorder_root_id IN (SELECT id FROM roots)
+), asked AS MATERIALIZED (
   SELECT l.order_id AS root, l.product_id, SUM(l.qty_ordered) AS req,
          MAX(l.stock_current_qty) AS cur, MAX(l.stock_incoming_qty) AS inc,
          MAX(l.stock_min_qty) AS mn, MAX(l.stock_max_qty) AS mx, MAX(l.stock_suggested_qty) AS sug,
          MAX(l.stock_alert_status) AS alert
   FROM denri_dispatch_order_line l WHERE l.order_id IN (SELECT id FROM roots)
   GROUP BY 1, 2
-), moved AS (
+), moved AS MATERIALIZED (
   SELECT c.root, l.product_id, SUM(l.qty_fulfilled) AS sent, SUM(l.qty_received) AS rec,
          SUM(CASE WHEN c.state NOT IN ('done', 'cancel', 'received') THEN l.qty_remaining ELSE 0 END) AS pend
   FROM chain c JOIN denri_dispatch_order_line l ON l.order_id = c.oid
   GROUP BY 1, 2
-), arrived AS (
+), arrived AS MATERIALIZED (
   SELECT c.root, tl.product_id,
          MIN((t.receive_date AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date) AS first_rcv
   FROM chain c JOIN denri_dispatch_transit t ON t.order_id = c.oid
@@ -87,6 +89,36 @@ WHERE (o.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETW
   AND o.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
 GROUP BY 1, 2, 3
 """
+
+# Warehouse sends INTO a shop's stock — the Shops menu's dispatch basis (sql/combined_distribution.sql):
+# done stock moves from FINWH/Goods in Transit, CBD/Stock or FINWH/Stock into <CODE>/Stock. Stock counts
+# (inventory adjustments), returns and shop-to-shop moves are left out.
+SENT_SQL = """
+SELECT split_part(d.complete_name, '/', 1) AS code, m.product_id, pt."name" AS product,
+       MIN((m."date" AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date) AS first_in, SUM(m.product_qty) AS qty
+FROM stock_move m
+JOIN stock_location s ON s.id = m.location_id JOIN stock_location d ON d.id = m.location_dest_id
+JOIN product_product pp ON pp.id = m.product_id JOIN product_template pt ON pt.id = pp.product_tmpl_id
+WHERE m.state = 'done' AND d.usage = 'internal' AND split_part(d.complete_name, '/', 2) = 'Stock'
+  AND (s.complete_name LIKE 'FINWH/Goods in Transit%' OR s.complete_name LIKE 'CBD/Stock%' OR s.complete_name LIKE 'FINWH/Stock%')
+  AND split_part(d.complete_name, '/', 1) NOT IN ('CBD', 'FINWH', 'VLD')
+  AND (m."date" AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETWEEN :s AND :e
+  AND pt."name" NOT LIKE '%+%'
+GROUP BY 1, 2, 3
+"""
+
+# KTDA also asks through the older Shop Request module (SRQ, ic_shop_request) — those asks count as asked-for too.
+SRQ_SQL = """
+SELECT w.name AS shop, l.product_id, SUM(l.qty_requested) AS qty
+FROM ic_shop_request r JOIN ic_shop_request_line l ON l.request_id = r.id
+JOIN stock_warehouse w ON w.id = r.shop_warehouse_id
+WHERE r.state NOT IN ('cancel', 'declined')
+  AND (r.date_requested AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETWEEN :s AND :e
+GROUP BY 1, 2
+"""
+
+NOT_CONVERTING_PCT = 25     # a requested bag that sold under this % of what arrived within 14 days isn't converting
+ASK_LOOKBACK = 14           # a send counts as asked-for if the shop asked for that product up to 14 days before
 
 PLANS_SQL = """
 SELECT p.id, p.name, p.country, p.plan_date AS d, p.state
@@ -149,10 +181,14 @@ def _offer_label(o):
     return " · ".join(bits)
 
 
-def requests(start, end, today, shop_name, typ, offers=None):
-    """Per shop: requests in [start, end] — totals, the three checks, effectiveness %, dispatch fill and the bags.
-    shop_name(dispatch shop name) → the page's shop name."""
-    df = db.run_query(REQUESTS_SQL, {"s": start.isoformat(), "e": end.isoformat()})
+def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, have=None, no_shelf=()):
+    """Per shop: requests in [start, end] — totals, the three checks, effectiveness %, dispatch fill and the bags;
+    plus bags SENT WITHOUT A REQUEST (warehouse sends beyond what the shop asked for) and requested bags NOT
+    CONVERTING (received, but under NOT_CONVERTING_PCT % sold within 14 days).
+    shop_name(dispatch shop name) → the page's shop name; code_shop(stock location code) → the same names;
+    have = {SHOP: {BAG: units on the shelf now}}; no_shelf = online shops (never in "sent without a request")."""
+    look = start - datetime.timedelta(days=ASK_LOOKBACK)
+    df = db.run_query(REQUESTS_SQL, {"s": look.isoformat(), "e": end.isoformat()})
     if df is None:
         raise RuntimeError("Odoo unreachable (dispatch requests)")
     lines = []
@@ -168,11 +204,36 @@ def requests(start, end, today, shop_name, typ, offers=None):
                       "cty": r.cty, "pid": int(r.product_id), "product": str(r.product), "bag": bag, "req": req,
                       "cur": _f(r.cur), "inc": _f(r.inc), "mn": _f(r.mn), "mx": _f(r.mx), "sug": _f(r.sug), "alert": r.alert or "",
                       "sent": _f(r.sent), "rec": _f(r.rec), "pend": _f(r.pend), "rcv": _d(r.first_rcv)})
+    asked = collections.Counter()                         # (shop, product id) → asked from `look` to `end`
+    cfg_of = {}
+    for x in lines:
+        asked[(x["shop"], x["pid"])] += x["req"]
+        if x["cfg"]:
+            cfg_of[x["shop"]] = x["cfg"]
+    srq = db.run_query(SRQ_SQL, {"s": look.isoformat(), "e": end.isoformat()})
+    for r in (srq.itertuples() if srq is not None else []):
+        shop = shop_name(r.shop)
+        if shop:
+            asked[(shop, int(r.product_id))] += _f(r.qty)
+    lines = [x for x in lines if x["d"] >= start]
     if not lines:
         return {}
 
-    # Sales per till × product × day from the first receipt on — for the 14-day sell-through.
-    rcvs = [x["rcv"] for x in lines if x["rcv"]]
+    # Warehouse sends into each shop in the period (the Shops menu's dispatch basis).
+    sent_in = collections.defaultdict(lambda: {"qty": 0.0, "first": None, "product": "", "bag": ""})
+    if code_shop:
+        sq = db.run_query(SENT_SQL, {"s": start.isoformat(), "e": end.isoformat()})
+        for r in (sq.itertuples() if sq is not None else []):
+            shop, bag = code_shop(r.code), typ(str(r.product))
+            if not shop or not bag or shop in no_shelf:
+                continue
+            k = sent_in[(shop, int(r.product_id))]
+            k["qty"] += _f(r.qty)
+            k["first"] = min(k["first"] or _d(r.first_in), _d(r.first_in))
+            k["product"], k["bag"] = str(r.product), bag
+
+    # Sales per till × product × day from the period start / first receipt on — sell-through and sold-since.
+    rcvs = [x["rcv"] for x in lines if x["rcv"]] + [start]
     sold = collections.defaultdict(float)
     if rcvs:
         sd = db.run_query(SALES_SQL, {"s": min(rcvs).isoformat(), "e": today.isoformat()})
@@ -257,7 +318,42 @@ def requests(start, end, today, shop_name, typ, offers=None):
                                "offer": off, "rcv": x["rcv"].isoformat() if x["rcv"] else None,
                                "sold14": None if st is None else int(st)})
 
+    by_sp = collections.defaultdict(list)                  # (till, product id) → [(date, qty)]
+    for (c, p, d), v in sold.items():
+        by_sp[(c, p)].append((d, v))
+
+    def sold_since(shop, pid, d0):
+        cfg = cfg_of.get(shop)
+        if not cfg or not d0:
+            return 0.0
+        return sum(v for d, v in by_sp.get((cfg, pid), []) if d >= d0)
+
+    # Sent without a request: per shop × product, warehouse sends beyond what the shop asked for (from 14 days
+    # before the period to its end). "Never asked" = no ask for that product at all in that window.
+    unasked = collections.defaultdict(dict)
+    for (shop, pid), k in sent_in.items():
+        a_q = asked.get((shop, pid), 0.0)
+        extra = k["qty"] - a_q
+        if extra <= 0:
+            continue
+        b = unasked[shop].setdefault(k["bag"], {"bag": k["bag"], "sent": 0.0, "asked": 0.0, "extra": 0.0, "sold": 0.0,
+                                                "never": True, "first": k["first"], "products": []})
+        b["sent"] += k["qty"]
+        b["asked"] += a_q
+        b["extra"] += extra
+        b["never"] = b["never"] and a_q == 0
+        b["first"] = min(b["first"], k["first"])
+        sl = min(sold_since(shop, pid, k["first"]), k["qty"])
+        b["sold"] += sl
+        b["products"].append({"product": k["product"], "sent": int(k["qty"]), "asked": int(a_q), "extra": int(extra),
+                              "first": k["first"].isoformat(), "sold": int(sl)})
+
     out = {}
+    for shop in set(unasked) - set(acc):
+        ua = sorted(unasked[shop].values(), key=lambda b: -b["extra"])
+        out[shop] = {"orders": 0, "req": 0, "sent": 0, "rec": 0, "pend": 0, "fill": None, "recPct": None, "lowPct": None,
+                     "offerPct": None, "checks": {"need": None, "qty": None, "sell": None}, "score": None,
+                     "sellBase": 0, "sug": 0, "bags": [], "notConverting": [], **_unasked_block(ua, have, shop)}
     for shop, a in acc.items():
         checks = {"need": _pct(a["need_ok"], a["req"]), "qty": _pct(a["qty_ok"], a["qty_base"]),
                   "sell": _pct(a["st_sold"], a["st_base"])}
@@ -275,8 +371,25 @@ def requests(start, end, today, shop_name, typ, offers=None):
                       "fitPct": _pct(b["fit"], b["fitBase"]), "sellPct": _pct(b["st"], b["stBase"]),
                       "offer": b["offer"], "last": b["last"].isoformat() if b["last"] else None,
                       "lines": b["lines"]} for b in bags],
+            "notConverting": sorted([{"bag": b["bag"], "rec": int(b["stBase"]), "sold14": int(b["st"]),
+                                      "pct": _pct(b["st"], b["stBase"]), "req": int(b["req"]), "offer": b["offer"],
+                                      "have": int(((have or {}).get(shop) or {}).get(b["bag"], 0)),
+                                      "lines": [l for l in b["lines"] if l["sold14"] is not None]}
+                                     for b in bags if b["stBase"] > 0 and b["st"] / b["stBase"] * 100 < NOT_CONVERTING_PCT],
+                                    key=lambda r: (r["pct"] or 0, -r["rec"])),
+            **_unasked_block(sorted(unasked.get(shop, {}).values(), key=lambda b: -b["extra"]), have, shop),
         }
     return out
+
+
+def _unasked_block(rows, have, shop):
+    return {"unasked": int(sum(b["extra"] for b in rows)),
+            "unaskedNever": int(sum(b["extra"] for b in rows if b["never"])),
+            "unaskedSold": int(sum(min(b["sold"], b["extra"]) for b in rows)),
+            "unaskedBags": [{"bag": b["bag"], "sent": int(b["sent"]), "asked": int(b["asked"]), "extra": int(b["extra"]),
+                             "never": b["never"], "first": b["first"].isoformat(), "sold": int(min(b["sold"], b["extra"])),
+                             "have": int(((have or {}).get(shop) or {}).get(b["bag"], 0)),
+                             "products": b["products"][:12]} for b in rows]}
 
 
 def production(shop_name, typ, today, keep=6):
