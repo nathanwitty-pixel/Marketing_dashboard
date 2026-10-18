@@ -50,6 +50,19 @@ Rules the implementation must hold to:
 - **The choice persists** in `localStorage` under `cp_wp_chart_type`; reads and writes are
   `try`-wrapped, and an unknown or missing value falls back to `area`.
 
+**September vs October, week on week (18 Oct 2026, user's call):**
+- Each month's week-on-week change shows as pills: October's above its points ("Oct ▲108%"), the
+  previous month's under its own ("Sep ▲20%"). The pills come from the shared weekChange code
+  ([chart-switcher](chart-switcher.md)).
+- **Short weeks are labelled** under the x axis with their day counts, e.g. "Oct 3d · Sep 5d" for Wk 1, and
+  "Oct 1d so far · Sep 7d" for the week still running. Weeks are Sun–Sat inside the month, so the first and last
+  weeks are often short. Full 7-day weeks show no day line.
+- **The running week** (`partialWks`, from today's date) is passed as `weekChange.partial`. Its pills read grey
+  "… so far", not a red crash.
+- **No overshoot:** both lines use `cubicInterpolationMode: 'monotone'`, so the curve never rises above a
+  week's real figure.
+- **The tooltip** adds last month's same week and its move from the week before.
+
 The control's markup, CSS and JS all live **outside** the `PERF_DATA_*` and `PROJ_DATA_*` markers,
 so `current_performance.py`'s regex rewrite never touches them.
 

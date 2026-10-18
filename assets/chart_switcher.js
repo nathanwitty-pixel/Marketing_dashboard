@@ -486,6 +486,13 @@
   // A series for an EARLIER period (drawn dashed, or labelled last / previous / prior): no change pills of its
   // own; the current series gets one "▲x% vs <it>" pill at its latest point instead (user, 16 Oct 2026).
   var PREV_RE = /\b(last|prev|previous|prior|before)\b/i;
+  // Short tag naming a series' period on its pills: "September 2026" → "Sep", "Last month" → "Last".
+  var MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+  function tagOf(l) {
+    var w = String(l || '').trim().split(/\s+/)[0] || '';
+    if (MONTHS.indexOf(w.slice(0, 3).toLowerCase()) > -1) return w.slice(0, 3);
+    return w.length <= 5 ? w : '';
+  }
   function isPrevSeries(chart, di) {
     var ds = chart.data.datasets[di] || {}, m = chart.getDatasetMeta(di);
     var dash = ds.borderDash || (m && m.dataset && m.dataset.options && m.dataset.options.borderDash);
@@ -568,6 +575,8 @@
     var labels = chart.data.labels, wk = mode === 'week' ? labels.map(weekNo) : labels.map(function (_, i) { return i; });
     var lastOnly = mode === 'line' && labels.length > 12;           // long day-by-day lines: the latest point only
     var horiz = o.indexAxis === 'y', sc = o.scales || {};
+    var partial = (pl.weekChange && pl.weekChange.partial) || [];
+    var isBarNow = chart.config.type === 'bar';
     var stacked = !!((sc.x && sc.x.stacked) || (sc.y && sc.y.stacked));
     var vis = chart.data.datasets.map(function (ds, di) { return di; }).filter(function (di) {
       var m = chart.getDatasetMeta(di); return chart.isDatasetVisible(di) && m && m.data && m.data.length;
@@ -602,8 +611,19 @@
       labels.forEach(function (_, i) {
         if (i === 0 || wk[i] == null || wk[i - 1] == null || !has[i] || !has[i - 1]) return;
         if (lastOnly && i !== lastI) return;
-        jobs.push({ i: i, ch: changeTxt(tot[i - 1], tot[i]) });
+        var ch = changeTxt(tot[i - 1], tot[i]);
+        // A week the page marks unfinished (plugins.weekChange.partial) reads grey "… so far", not a red crash.
+        if (ch && partial.indexOf(i) > -1) ch = { t: ch.t + ' so far', c: 'flat' };
+        jobs.push({ i: i, ch: ch });
       });
+      // Two periods, one series each: the earlier period gets its own week-on-week pills too, so both
+      // months' week-to-week moves sit side by side — "Oct ▲108%" over its point, "Sep ▲20%" under its own
+      // (user, 18 Oct 2026). Each pill is tagged with its period's month.
+      var duo = prevDs.length && g.length === 1 && groups.length === 1 && !lastOnly;
+      if (duo) {
+        var curTag = tagOf(chart.data.datasets[g[0]].label);
+        if (curTag) jobs.forEach(function (j) { if (j.ch) j.ch = { t: curTag + ' ' + j.ch.t, c: j.ch.c }; });
+      }
       // Two periods on one chart: the current series vs the earlier one at the latest point both have.
       if (prevDs.length && g.length === 1) {
         var pv = prevDs[0], pdata = chart.data.datasets[pv].data, pl2 = String(chart.data.datasets[pv].label || 'previous');
@@ -611,14 +631,25 @@
           var pvv = pdata[ii];
           if (has[ii] && pvv != null && !(typeof pvv === 'object' && (horiz ? pvv.x : pvv.y) == null)) {
             var c2 = changeTxt(valAt(pvv, horiz), tot[ii]);
+            if (c2 && partial.indexOf(ii) > -1) c2 = { t: c2.t + ' so far', c: 'flat' };
             if (c2 && c2.t !== 'new') jobs.push({ i: ii, ch: { t: c2.t + ' vs ' + (pl2.length > 14 ? pl2.slice(0, 13) + '…' : pl2), c: c2.c } });
             break;
           }
         }
       }
+      if (duo) {
+        var pvI = prevDs[0], pd = chart.data.datasets[pvI].data, prevTag = tagOf(chart.data.datasets[pvI].label);
+        var present = function (v) { return v != null && !(typeof v === 'object' && (horiz ? v.x : v.y) == null); };
+        labels.forEach(function (_, i) {
+          if (i === 0 || wk[i] == null || wk[i - 1] == null || !present(pd[i]) || !present(pd[i - 1])) return;
+          var c3 = changeTxt(valAt(pd[i - 1], horiz), valAt(pd[i], horiz));
+          if (c3 && c3.t !== 'new') jobs.push({ i: i, ds: [pvI], below: true, alpha: 0.78,
+                                               ch: { t: (prevTag ? prevTag + ' ' : '') + c3.t, c: c3.c } });
+        });
+      }
       jobs.forEach(function (job) {
         var i = job.i, ch = job.ch; if (!ch) return;
-        var els = g.map(function (di) { return chart.getDatasetMeta(di).data[i]; }).filter(Boolean);
+        var els = (job.ds || g).map(function (di) { return chart.getDatasetMeta(di).data[i]; }).filter(Boolean);
         if (!els.length) return;
         var fill = ch.c === UP ? PILL.up : ch.c === DOWN ? PILL.down : PILL.flat;
         var w = Math.ceil(ctx.measureText(ch.t).width) + padX * 2, cands = [];
@@ -632,8 +663,11 @@
           var x = els.reduce(function (a, e) { return a + e.x; }, 0) / els.length;
           var top = Math.min.apply(null, els.map(function (e) { return Math.min(e.y, e.base != null ? e.base : e.y); }));
           var bottom = Math.max.apply(null, els.map(function (e) { return e.y; }));
-          for (var k = 0; k < 6; k++) cands.push({ cx: x, cy: top - lift - k * (h + 4) });       // above, stepping up
-          for (k = 0; k < 4; k++) cands.push({ cx: x, cy: bottom + lift + 4 + k * (h + 4) });   // then below
+          var above = [], under = [];
+          for (var k = 0; k < 6; k++) above.push({ cx: x, cy: top - lift - k * (h + 4) });       // above, stepping up
+          for (k = 0; k < 4; k++) under.push({ cx: x, cy: bottom + lift + 4 + k * (h + 4) });   // then below
+          // The earlier period's pills go under its line first, keeping "above" for the current period.
+          cands = (job.below && !isBarNow) ? under.concat(above) : above.concat(under);
           [10, 14 + w].forEach(function (dx) {                                                     // then beside, both sides
             cands.push({ cx: x + w / 2 + dx, cy: top }, { cx: x - w / 2 - dx, cy: top },
                        { cx: x + w / 2 + dx, cy: top - h - 4 }, { cx: x - w / 2 - dx, cy: top - h - 4 });
@@ -657,11 +691,13 @@
         pick = { cx: Math.round(pick.cx), cy: Math.round(pick.cy) };
         var bx = box(pick);
         taken.push(bx);
+        ctx.globalAlpha = job.alpha || 1;
         roundRect(ctx, bx.x0, bx.y0, w, h, 4);
         ctx.fillStyle = fill; ctx.fill();
         roundRect(ctx, bx.x0 + 0.5, bx.y0 + 0.5, w - 1, h - 1, 4);    // 1px edge on whole pixels, not split across two
         ctx.lineWidth = 1; ctx.strokeStyle = PILL.edge; ctx.stroke();
         whiteText(ctx, ch.t, pick.cx, pick.cy);
+        ctx.globalAlpha = 1;
       });
     });
     ctx.restore();

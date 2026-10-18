@@ -80,7 +80,15 @@ charts are by day).
 - **Every line chart** with 2+ points gets the same pills, vs the point before, whatever its x labels (days,
   months…). A line of more than 12 points gets one pill, at its latest point, so day-by-day lines stay readable.
 - **Two periods on one chart** — a series drawn **dashed** or labelled *last / prev / previous / prior / before*
-  is the earlier period: it gets no pills of its own, and the current series gets one extra pill at the latest point
-  both have: **"▲x% vs <that series>"** (e.g. "▼25% vs September 2026").
+  is the earlier period. The current series gets one extra pill at the latest point both have:
+  **"▲x% vs <that series>"** (e.g. "▼25% vs September 2026").
+- **Both periods' week-on-week, side by side (18 Oct 2026, user's call):** when the chart is one current series +
+  one earlier series (and not a >12-point line), the earlier series gets its own week-on-week pills too, so you can
+  read "what happened in September week on week vs October week on week". Every pill is tagged with its period
+  (month name → 3 letters, e.g. **"Oct ▲108%"** / **"Sep ▲20%"**; otherwise a short first word like "Last").
+  The earlier period's pills go **under** its own points first (above on bars) and are drawn slightly faded.
+- **Unfinished weeks:** a page can pass `options.plugins.weekChange = { partial: [index, …] }` for weeks still
+  running. Their pills (and the "vs …" pill) read grey **"… so far"** instead of a red/green move, since a
+  1-day week vs a 7-day week isn't a real drop.
 - **Never hidden:** each pill tries 6 spots above its point, 4 below and 8 beside (both sides), then scans its column
   for any free gap, before it's allowed to sit over another label.
