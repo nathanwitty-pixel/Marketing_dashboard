@@ -257,6 +257,11 @@
       box-shadow: inset 0 -1px 0 #2d3148; }
     #corp-clients .corp-chart { margin: 0.2rem 0 0.9rem; padding-bottom: 0.7rem; border-bottom: 1px solid #2d3148; }
     #corp-clients .corp-chart-title { font-size: 0.7rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.35rem; }
+    /* Number columns: heading + header total right-aligned over their right-aligned figures (the page-wide
+       thead rule left-aligns); Client / Hunted by keep their inline left alignment. */
+    #corp-clients thead th { text-align: right; white-space: nowrap; }
+    #corp-clients tbody td { white-space: nowrap; }
+    #corp-clients tbody td:first-child { white-space: normal; }
     #corp-clients thead .ct { display: block; color: #e2e8f0; font-weight: 800; font-size: 0.74rem; }
     /* Tabs: Corporate app | Shop corporate */
     #corp-clients .corp-tabs { display: flex; gap: 0.3rem; margin-bottom: 0.55rem; }
@@ -698,6 +703,33 @@ const PROJ = {
       : '';
     el.innerHTML = base + rejNote + giftNote + smpNote + cusNote;
   })();
+  // Numbers on the corporate bar charts: each segment's value inside it (when it fits), the bar's total at its end.
+  var corpBarLabels = function (f) {
+    return {id: 'corpLabels', afterDatasetsDraw: function (chart) {
+      var c = chart.ctx, sets = chart.data.datasets;
+      c.save();
+      c.font = '600 10px "Segoe UI", system-ui, sans-serif';
+      c.textBaseline = 'middle';
+      chart.data.labels.forEach(function (_, i) {
+        var tot = 0, end = null, y = null;
+        sets.forEach(function (ds, j) {
+          var m = chart.getDatasetMeta(j), bar = m.data[i], v = ds.data[i] || 0;
+          if (m.hidden || !bar || !v) return;
+          tot += v; end = Math.max(end || 0, bar.x); y = bar.y;
+          var w = Math.abs(bar.x - bar.base), t = f(v);
+          if (j < sets.length && w > c.measureText(t).width + 8 && sets.filter(function (d, k) { return d.data[i] && !chart.getDatasetMeta(k).hidden; }).length > 1) {
+            c.fillStyle = '#0f172a'; c.textAlign = 'center';
+            c.fillText(t, (bar.x + bar.base) / 2, bar.y);
+          }
+        });
+        if (end !== null) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'left';
+          c.fillText(f(tot), end + 5, y);
+        }
+      });
+      c.restore();
+    }};
+  };
   // Corporate by client: quotations, invoices and payments this month, top-ups summed per client.
   (function(){
     var box = document.getElementById('corp-clients');
@@ -785,8 +817,7 @@ const PROJ = {
       var d = rows.map(function (r) {
         var sold = Math.round(r.sold || 0);
         return {r: r, sold: sold, unpaid: Math.max((r.invoiced || 0) - sold, 0), quote: toInvoice(r)};
-      }).filter(function (x) { return x.sold + x.unpaid + x.quote; })
-        .sort(function (a, b) { return (b.sold + b.unpaid + b.quote) - (a.sold + a.unpaid + a.quote); });
+      }).filter(function (x) { return x.sold + x.unpaid + x.quote; });   // same order as the table below
       if (!d.length) return;
       cv.parentNode.style.height = (d.length * 26 + 56) + 'px';
       cv.closest('.corp-chart').hidden = false;
@@ -799,8 +830,9 @@ const PROJ = {
         data: {labels: d.map(function (x) { return x.r.client; }),
                datasets: [seg('Sold (paid)', 'sold', '#10b981'), seg('Invoiced, not paid yet', 'unpaid', '#f59e0b'),
                           seg('Quoted, to invoice', 'quote', '#64748b')]},
+        plugins: [corpBarLabels(fmt)],
         options: {
-          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: {padding: {right: 34}},
           scales: {x: {stacked: true, beginAtZero: true, grid: {color: 'rgba(45,49,72,0.6)'}, ticks: {font: {size: 10}},
                        title: {display: true, text: 'bags', font: {size: 10}}},
                    y: {stacked: true, grid: {display: false}, ticks: {color: '#cbd5e1', font: {size: 10}}}},
@@ -950,8 +982,9 @@ const PROJ = {
         type: 'bar',
         data: {labels: d.map(function (s) { return s.shop; }),
                datasets: [seg('Paid', 'paid', '#10b981'), seg('Owed', 'owed', '#ef4444')]},
+        plugins: [corpBarLabels(k)],
         options: {
-          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: {padding: {right: 40}},
           onClick: function (e, els) {
             if (!els.length) return;
             var shop = d[els[0].index].shop;
