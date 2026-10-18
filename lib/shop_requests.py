@@ -16,9 +16,10 @@ Source = the dispatch module (denri_dispatch_*), which every shop orders through
 Effectiveness % per shop (user's choice, 18 Oct 2026 — "blend of 3 checks"), units-weighted:
   1. Right bag   — the bag was out of stock or at / below Min when asked, or on an offer that day while the shop
                    held under half of Max (Power Deal runs all month, so an offer alone isn't a reason).
-  2. Right qty   — asked vs Odoo's SUGGESTED quantity (Max − on hand − incoming): min(asked, suggested) ÷ suggested
-                   (lines with no suggestion are left out). Odoo already blocks ordering above Max, so the real
-                   miss is under-ordering — Sep 2026: 14,858 asked against 43,683 suggested.
+  2. Right qty   — asked vs Odoo's SUGGESTED quantity (Max − on hand − incoming), once per shop × product: all the
+                   period's asks vs the largest suggestion at any of its requests, min(asked, suggested) ÷ suggested
+                   (products with no suggestion are left out). Odoo already blocks ordering above Max, so the real
+                   miss is under-ordering — Sep 2026: 13,467 asked against 20,716 suggested (once per product).
   3. Sold through — of what arrived, the share sold at that shop within 14 days of the first receipt
                    (only lines received at least 14 days ago).
   Score = the average of the three. Dispatch FILL (sent ÷ asked, capped per line) is shown beside it — that is the
@@ -34,6 +35,7 @@ from __future__ import annotations
 
 import collections
 import datetime
+import math
 
 from lib import db, runway_bags
 
@@ -183,12 +185,20 @@ def _offer_label(o):
     return " · ".join(bits)
 
 
-def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, have=None, no_shelf=()):
+def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, have=None, no_shelf=(), target=None):
     """Per shop: requests in [start, end] — totals, the three checks, effectiveness %, dispatch fill and the bags;
     plus bags SENT WITHOUT A REQUEST (warehouse sends beyond what the shop asked for) and requested bags NOT
     CONVERTING (received, but under NOT_CONVERTING_PCT % sold within 14 days).
     shop_name(dispatch shop name) → the page's shop name; code_shop(stock location code) → the same names;
-    have = {SHOP: {BAG: units on the shelf now}}; no_shelf = online shops (never in "sent without a request")."""
+    have = {SHOP: {BAG: units on the shelf now}}; no_shelf = online shops (never in "sent without a request").
+    target = {"need": {SHOP: {BAG: monthly need}}, "days": days in that month, "minDays", "maxDays",
+              "now": True when the period is this month (then "target needs it, not asked" uses the shelf now)}."""
+    tneed = (target or {}).get("need") or {}
+    tdays = (target or {}).get("days") or 30
+
+    def tmax(shop, bag, days_key="maxDays"):
+        nd = tneed.get(shop, {}).get(bag, 0.0)
+        return math.ceil(nd / tdays * target[days_key]) if nd > 0 else 0
     look = start - datetime.timedelta(days=ASK_LOOKBACK)
     df = db.run_query(REQUESTS_SQL, {"s": look.isoformat(), "e": end.isoformat()})
     if df is None:
@@ -257,7 +267,10 @@ def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, hav
 
     acc = collections.defaultdict(lambda: {"orders": set(), "req": 0.0, "sent": 0.0, "rec": 0.0, "pend": 0.0, "fill": 0.0,
                                            "need_ok": 0.0, "qty_ok": 0.0, "qty_base": 0.0, "st_sold": 0.0, "st_base": 0.0,
-                                           "low": 0.0, "offer": 0.0, "cur": 0.0, "mx": 0.0, "short": 0.0, "bags": {}})
+                                           "low": 0.0, "offer": 0.0, "cur": 0.0, "mx": 0.0, "short": 0.0,
+                                           "t_ok": 0.0, "t_base": 0.0, "t_over": 0.0, "t_off": 0.0, "bags": {}})
+    t_ask = collections.defaultdict(dict)                   # (shop, bag) → {request: {d, have (stock + incoming), req}}
+    q_ask = {}                                              # (shop, product id) → {bag, sug (largest), req (total)}
     for x in lines:
         a = acc[x["shop"]]
         a["orders"].add(x["root"])
@@ -280,22 +293,27 @@ def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, hav
         right = low or (off and x["mx"] > 0 and x["cur"] + x["inc"] < x["mx"] / 2)
         if right:
             a["need_ok"] += req
-        fit = None
-        if x["sug"] > 0:                                              # check 2 — right qty (vs Odoo's suggestion)
-            fit = min(req, x["sug"])
-            a["qty_ok"] += fit
-            a["qty_base"] += x["sug"]
+        if x["sug"] > 0:                                              # check 2 — right qty, judged per product below
+            q = q_ask.setdefault((x["shop"], x["pid"]), {"bag": x["bag"], "sug": 0.0, "req": 0.0})
+            q["sug"] = max(q["sug"], x["sug"])
+            q["req"] += req
         st = None
         if x["rcv"] and x["rec"] > 0 and (today - x["rcv"]).days >= SELL_DAYS and x["cfg"]:   # check 3 — sold through
             s14 = sum(sold.get((x["cfg"], x["pid"], x["rcv"] + datetime.timedelta(days=i)), 0.0) for i in range(SELL_DAYS))
             st = min(max(s14, 0), x["rec"])
             a["st_sold"] += st
             a["st_base"] += x["rec"]
+        # vs target — collected per shop × bag × request (all colours), judged once per bag below
+        if target:
+            tg = t_ask[(x["shop"], x["bag"])].setdefault(x["root"], {"d": x["d"], "have": 0.0, "req": 0.0})
+            tg["have"] += x["cur"] + x["inc"]
+            tg["req"] += req
         a["cur"] += x["cur"]
         a["mx"] += x["mx"]
         b = a["bags"].setdefault(x["bag"], {"bag": x["bag"], "req": 0.0, "sent": 0.0, "rec": 0.0, "pend": 0.0, "cur": 0.0,
                                             "mx": 0.0, "sug": 0.0, "low": 0.0, "fit": 0.0, "fitBase": 0.0, "st": 0.0, "stBase": 0.0,
-                                            "orders": 0, "offer": "", "last": None, "short": 0.0, "matched": 0.0, "lines": []})
+                                            "orders": 0, "offer": "", "last": None, "short": 0.0, "matched": 0.0,
+                                            "tIn": 0.0, "tGap": 0.0, "tOver": 0.0, "tOff": 0.0, "lines": []})
         b["req"] += req
         b["sent"] += x["sent"]
         b["rec"] += x["rec"]
@@ -307,10 +325,6 @@ def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, hav
         b["matched"] += sent
         if low:
             b["low"] += req
-        if fit is not None:
-            b["fit"] += fit
-            b["fitBase"] += x["sug"]
-            b["sug"] += x["sug"]
         if st is not None:
             b["st"] += st
             b["stBase"] += x["rec"]
@@ -323,6 +337,36 @@ def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, hav
                                "inc": int(x["inc"]), "mn": int(x["mn"]), "mx": int(x["mx"]), "sug": int(x["sug"]), "alert": x["alert"],
                                "offer": off, "rcv": x["rcv"].isoformat() if x["rcv"] else None,
                                "sold14": None if st is None else int(st)})
+
+    # Right qty, once per shop × product: everything asked in the period vs the LARGEST suggestion Odoo made at any
+    # of those requests (summing each request's suggestion counted the same shortfall again on every re-order).
+    for (shop, pid), q in q_ask.items():
+        a, b = acc[shop], acc[shop]["bags"][q["bag"]]
+        fit = min(q["req"], q["sug"])
+        a["qty_ok"] += fit
+        a["qty_base"] += q["sug"]
+        b["fit"] += fit
+        b["fitBase"] += q["sug"]
+        b["sug"] += q["sug"]
+
+    # Asks vs target, once per shop × bag: target refill = (target Max − stock + incoming, all colours, at the first
+    # request in the period) + the daily target need × days from that request to the period end (or today).
+    end_eff = min(end, today)
+    for (shop, bag), rq in t_ask.items():
+        a, b = acc[shop], acc[shop]["bags"][bag]
+        asked_t = sum(r["req"] for r in rq.values())
+        nd = tneed.get(shop, {}).get(bag, 0.0)
+        if nd <= 0:
+            a["t_off"] += asked_t
+            b["tOff"] += asked_t
+            continue
+        first = min(rq.values(), key=lambda r: r["d"])
+        gap = max(tmax(shop, bag) - first["have"], 0.0) + nd / tdays * max((end_eff - first["d"]).days, 0)
+        t_in = min(asked_t, gap)
+        a["t_ok"] += t_in
+        a["t_base"] += gap
+        a["t_over"] += asked_t - t_in
+        b["tIn"], b["tGap"], b["tOver"] = t_in, gap, asked_t - t_in
 
     by_sp = collections.defaultdict(list)                  # (till, product id) → [(date, qty)]
     for (c, p, d), v in sold.items():
@@ -362,6 +406,7 @@ def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, hav
                      "sellBase": 0, "sug": 0, "bags": [], "notConverting": [], "short": 0, "matched": 0, "notGot": [],
                      **_unasked_block(ua, have, shop)}
         out[shop]["match"] = _match(0, 0, out[shop]["unasked"])
+        out[shop].update(_target_block(shop, None, [], have, target, tneed, tmax))
     for shop, a in acc.items():
         checks = {"need": _pct(a["need_ok"], a["req"]), "qty": _pct(a["qty_ok"], a["qty_base"]),
                   "sell": _pct(a["st_sold"], a["st_base"])}
@@ -386,6 +431,7 @@ def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, hav
                                      for b in bags if b["stBase"] > 0 and b["st"] / b["stBase"] * 100 < NOT_CONVERTING_PCT],
                                     key=lambda r: (r["pct"] or 0, -r["rec"])),
             "short": int(a["short"]), "matched": int(a["fill"]),
+            **_target_block(shop, a, bags, have, target, tneed, tmax),
             "notGot": sorted([{"bag": b["bag"], "req": int(b["req"]), "sent": int(b["sent"]), "matched": int(b["matched"]),
                                "pend": int(b["pend"]), "short": int(b["short"]), "orders": b["orders"],
                                "have": int(((have or {}).get(shop) or {}).get(b["bag"], 0)),
@@ -396,6 +442,35 @@ def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, hav
         }
         out[shop]["match"] = _match(a["fill"], a["short"], out[shop]["unasked"])
     return out
+
+
+def _target_block(shop, a, bags, have, target, tneed, tmax):
+    """Asks vs the shop's target need: % of the target gap asked, units over / off target, and (this month) bags the
+    target says need a refill that the shop hasn't asked for."""
+    if not target:
+        return {"vsTarget": None, "tOver": 0, "tOff": 0, "tMissed": 0, "targetBags": []}
+    on_shelf = (have or {}).get(shop) or {}
+    rows = [{"bag": b["bag"], "need": round(tneed.get(shop, {}).get(b["bag"], 0.0)), "tmax": tmax(shop, b["bag"]),
+             "req": int(b["req"]), "gap": int(b["tGap"]), "in": int(b["tIn"]), "over": int(b["tOver"]),
+             "off": int(b["tOff"]), "missed": 0, "have": int(on_shelf.get(b["bag"], 0))}
+            for b in bags if b["tOver"] >= 1 or b["tOff"] >= 1 or b["tGap"] - b["tIn"] >= 1]
+    missed = 0
+    if target.get("now"):
+        asked_bags = {b["bag"] for b in bags}
+        for bag, nd in (tneed.get(shop) or {}).items():
+            h = on_shelf.get(bag, 0)
+            if nd <= 0 or bag in asked_bags or h > tmax(shop, bag, "minDays"):
+                continue
+            m = max(tmax(shop, bag) - h, 0)
+            if m >= 1:
+                missed += m
+                rows.append({"bag": bag, "need": round(nd), "tmax": tmax(shop, bag), "req": 0, "gap": int(m), "in": 0,
+                             "over": 0, "off": 0, "missed": int(m), "have": int(h)})
+    rows.sort(key=lambda r: -(r["missed"] + r["off"] + r["over"] + r["gap"] - r["in"]))
+    return {"vsTarget": _pct(a["t_ok"], a["t_base"]) if a else None,
+            "tGap": int(a["t_base"]) if a else 0, "tIn": int(a["t_ok"]) if a else 0,
+            "tOver": int(a["t_over"]) if a else 0, "tOff": int(a["t_off"]) if a else 0,
+            "tMissed": int(missed), "targetBags": rows}
 
 
 def _match(matched, short, unasked):

@@ -1210,7 +1210,7 @@ if __name__ == "__main__":
     with open(html_path, "r", encoding="utf-8") as f:
         html = f.read()
     html = re.sub(r"<!-- TIMED_DATA_START -->.*?<!-- TIMED_DATA_END -->",
-                  inline_script, html, flags=re.DOTALL)
+                  lambda _m: inline_script, html, flags=re.DOTALL)
     with open(html_path, "w", encoding="utf-8") as f:
         f.write(html)
 

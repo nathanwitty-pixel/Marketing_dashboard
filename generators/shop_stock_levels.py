@@ -204,6 +204,38 @@ def warehouse_stock(typ):
     return out, cols
 
 
+BUFFER_LOCATIONS = ("CBD/Stock", "VLD/Stock")   # restock the Kenya shops — November preparedness "with" stock
+
+
+def buffer_stock(typ):
+    """{location: {BAG: units}} at CBD/Stock and VLD/Stock (exact locations)."""
+    out = {}
+    for loc in BUFFER_LOCATIONS:
+        c = collections.Counter()
+        for name, q in (stock_lib.odoo_stock_at_location(loc) or {}).items():
+            b = typ(name)
+            if b and q:
+                c[b] += q
+        out[loc] = c
+    return out
+
+
+CORE_CATEGORIES = ("BACKPACK", "TRAVEL", "HANDBAG", "MAN BAG", "SLING")   # ~75 % of bags sold (user, 18 Oct 2026)
+
+
+def bag_categories():
+    """{BAG: CATEGORY} from data/bag_tiers.csv (blank category left out)."""
+    out = {}
+    try:
+        with open(paths.data("bag_tiers.csv"), encoding="utf-8") as f:
+            for r in csv.DictReader(ln for ln in f if not ln.startswith("#")):
+                if r.get("BAG") and (r.get("CATEGORY") or "").strip():
+                    out[r["BAG"].strip().upper()] = r["CATEGORY"].strip().upper()
+    except OSError:
+        pass
+    return out
+
+
 def leads(typ, today):
     """{period: {SHOP: {BAG: {"n", "online", "walkin", "colours": {c: n}}}}} — people still waiting, asked in the period."""
     rows = oos_callbacks.load_rows()
@@ -238,7 +270,7 @@ def dispatch_shop(name):
     return _shop(name) or str(name or "").strip().title() or None
 
 
-def requests_block(today, typ, have=None):
+def requests_block(today, typ, have=None, targets=None):
     """Shop requests vs received (this month · last month) and the production approved lists — or {} on failure."""
     m1 = today.replace(day=1)
     lm1 = (m1 - datetime.timedelta(days=1)).replace(day=1)
@@ -251,12 +283,29 @@ def requests_block(today, typ, have=None):
         for k, (s, e, label) in per.items():
             out["periods"][k] = {"label": label, "from": s.isoformat(), "to": e.isoformat(),
                                  "shops": shop_requests.requests(s, e, today, dispatch_shop, typ, offers,
-                                                                  code_shop=CODE_SHOP.get, have=have, no_shelf=ONLINE)}
+                                                                  code_shop=CODE_SHOP.get, have=have, no_shelf=ONLINE,
+                                                                  target=(targets or {}).get(k))}
         out["production"] = shop_requests.production(dispatch_shop, typ, today)
         return out
     except Exception as e:                                   # noqa: BLE001
         print(f"  Shop requests: skipped ({e})")
         return {}
+
+
+def last_month_need(m1, typ):
+    """Last month's shop × bag target need (its own Odoo targets) for judging last month's requests — or None."""
+    lm1 = (m1 - datetime.timedelta(days=1)).replace(day=1)
+    try:
+        tg, st = product_targets.load_targets(lm1, build_if_missing=False), shop_targets(lm1)
+        if not tg or not st:
+            return None
+        b0, b1 = product_targets.base_period(lm1)
+        base, _ = sales(b0, b1, typ)
+        return {"need": needs(lm1, typ, base, tg, st), "days": calendar.monthrange(lm1.year, lm1.month)[1],
+                "now": False, "minDays": MIN_DAYS, "maxDays": MAX_DAYS}
+    except Exception as e:                                   # noqa: BLE001
+        print(f"  Shop requests: last month's targets unavailable ({e})")
+        return None
 
 
 def build(today=None):
@@ -276,17 +325,29 @@ def build(today=None):
     # Next month — its own Odoo targets when they exist, else this month's need as the estimate.
     nm1 = _next_month(m1)
     nm_open = today.day >= NEXT_MONTH_FROM_DAY
-    nm_targets = product_targets.load_targets(nm1, build_if_missing=False)
+    nm_rev = nm1.strftime("%Y-%m") in product_targets.REVENUE_TARGETS
+    nm_targets = product_targets.load_targets(nm1, build_if_missing=nm_rev)
     nm_shop = shop_targets(nm1)
+    nm_info = {"source": "odoo"}
+    if nm_targets and not nm_shop and nm_rev:
+        # Revenue-target month (docs/product-targets.md): shop targets = this month's Odoo shop targets scaled to the
+        # month's total units, each shop keeping its share (Corporate's share left out as usual in needs()).
+        nm_total, nm_info = product_targets.total_for(nm1)
+        gt = grand_total(m1) or sum(shop_tgt.values())
+        if nm_total and gt:
+            nm_shop = collections.Counter({s: v * nm_total / gt for s, v in shop_tgt.items()})
     nm_estimated = not (nm_targets and nm_shop)
     if nm_open and not nm_estimated:
-        nm_need = needs(nm1, typ, base, nm_targets, nm_shop)
+        nb0, nb1 = product_targets.base_period(nm1)          # the month's own base (Nov → Aug – Oct, to today)
+        nm_base, _ = sales(nb0, min(nb1, today), typ)
+        nm_need = needs(nm1, typ, nm_base, nm_targets, nm_shop)
     else:
         nm_need = need
     nm_days = calendar.monthrange(nm1.year, nm1.month)[1]
 
     stock, stock_cols = shop_stock(typ)
     wh, wh_cols = warehouse_stock(typ)
+    buf = buffer_stock(typ)
     waiting, lead_wins = leads(typ, today)
     # Only leads for real bags (the leads module takes free text — repairs, spare parts…).
     known = set(targets) | {b for sb in stock.values() for b in sb} | {b for sb in base.values() for b in sb}
@@ -334,11 +395,19 @@ def build(today=None):
             "minDays": MIN_DAYS, "maxDays": MAX_DAYS, "warehouse": WAREHOUSE,
             "base": f"{b0.strftime('%d %b')} – {b1.strftime('%d %b %Y')}",
             "nextMonth": {"label": nm1.strftime("%B %Y"), "open": nm_open, "opensOn": m1.replace(day=NEXT_MONTH_FROM_DAY).isoformat(),
-                          "estimated": nm_estimated},
+                          "estimated": nm_estimated, "source": "estimate" if nm_estimated else nm_info.get("source"),
+                          "revenue": nm_info.get("revenue"), "kesPerBag": nm_info.get("kesPerBag"),
+                          "kpbFrom": nm_info.get("from"), "totalUnits": int(sum((nm_targets or {}).values())),
+                          "shopsUnits": round(sum(nm_shop.values())) if nm_shop else 0},
             "shopTargets": {s: round(v) for s, v in shop_tgt.items()}, "outside": sorted(OUTSIDE), "online": sorted(ONLINE),
             "rows": rows, "wh": {b: int(q) for b, q in wh.items() if q},
+            "cats": bag_categories(), "core": list(CORE_CATEGORIES),
+            "buffer": {loc: {b: int(q) for b, q in bs.items() if q} for loc, bs in buf.items()},
             "whColours": {b: {c: int(q) for c, q in cs.items() if q} for b, cs in wh_cols.items()},
-            "leads": waiting, "leadWindows": lead_wins, "requests": requests_block(today, typ, {sh: dict(bs) for sh, bs in stock.items()})}
+            "leads": waiting, "leadWindows": lead_wins, "requests": requests_block(today, typ, {sh: dict(bs) for sh, bs in stock.items()},
+                                      {"monthly": {"need": need, "days": days_in, "now": True,
+                                                   "minDays": MIN_DAYS, "maxDays": MAX_DAYS},
+                                       "lastmonth": last_month_need(m1, typ)})}
 
 
 def inject(payload):

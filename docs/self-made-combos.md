@@ -729,6 +729,12 @@ with monthly units/revenue, Kenya only, `qty <> 0` (nets returns). Detail + summ
 
 ## Gotchas / history
 
+- **Blank page, 17–18 Oct 2026:** `inject()` passed the data block to `re.sub` as a plain string — a replacement
+  *template* — so the JSON's `
+` escapes became real newlines. A CBR reject reason typed over several lines
+  (CBR/2026/0852) put a raw newline inside a JS string → `SyntaxError`, `SMC` undefined, every section empty. Fixed:
+  `lambda _m: block` (and `</` escaped). Same latent bug fixed in `shops_efficiency.py` and `timed_offers.py`.
+
 - **Combo products must be excluded from deal totals** — `DEAL_SALES_SQL` has
   `AND pt."name" NOT LIKE '%+%'` (else e.g. the "Amaya +" running combo leaked 54 units
   into the DoW total).

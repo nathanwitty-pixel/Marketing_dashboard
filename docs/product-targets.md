@@ -10,6 +10,20 @@ Sinza / Dar-es-Salaam and Uganda included) **plus Corporate** (scope `corporate`
 October 2026: 26,850 + 1,163 = **28,013 bags** (KES 56.0M). Shops keep their own Odoo targets on the
 pages that show shops; this file splits the same total by bag.
 
+## A month with only a revenue target (November 2026)
+
+When the month's Odoo targets aren't entered yet but management has given a **revenue target**
+(`REVENUE_TARGETS` in `lib/product_targets.py` — November 2026: **KES 66,632,243**, user 18 Oct 2026):
+
+- **Total units** = revenue target ÷ the previous month's **KES per bag** from Odoo (October: Σ `target_amount` ÷
+  Σ `target_qty`, shop tills + Corporate). Rounded to whole bags.
+- The **split is the same** as any month: each bag's share of the last three complete months (November → 1 Aug –
+  31 Oct), scaled to launch and to the days it had stock, largest remainder, no zero targets. While October isn't
+  over, the base runs to today: the days-available rule counts only days up to today, so October's part is scaled
+  from the days so far (the CSV and the page say so).
+- Written to `product_targets_2026-11.csv` like any month. Once November's Odoo targets are entered, they win
+  (delete the CSV to rebuild).
+
 ## The split — by each bag's share of recent sales
 
 - **Base period:** the last three complete months (Oct 2026 → 1 Jul – 30 Sep).

@@ -2425,9 +2425,13 @@ def _add_oos(payload):
 def inject(payload):
     with open(HTML, "r", encoding="utf-8") as f:
         html = f.read()
+    # Function replacement: a plain string is a re.sub template, which turns the JSON's "\n" escapes back into real
+    # newlines — a multi-line CBR reject reason (17 Oct 2026) broke the whole page. "</" escaped so text can't close
+    # the <script>.
     block = ("<!-- SMC_DATA_START -->\n<script>\nconst SMC = "
-             + json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + ";\n</script>\n<!-- SMC_DATA_END -->")
-    html = re.sub(r"<!-- SMC_DATA_START -->.*?<!-- SMC_DATA_END -->", block, html, flags=re.DOTALL)
+             + json.dumps(payload, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+             + ";\n</script>\n<!-- SMC_DATA_END -->")
+    html = re.sub(r"<!-- SMC_DATA_START -->.*?<!-- SMC_DATA_END -->", lambda _m: block, html, flags=re.DOTALL)
     # Embed the offer/combo data block here too, so the Monthly Report reads it from
     # this page (Offer Type Analysis has been retired). Function replacement avoids
     # re.sub treating backslashes in the block as backreferences.

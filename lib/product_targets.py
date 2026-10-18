@@ -93,6 +93,32 @@ WHERE period = 'month' AND start_date = :m AND target_scope IN ('pos', 'corporat
 """
 
 
+# Months with a management REVENUE target but no Odoo targets yet (user, 18 Oct 2026). Units = revenue ÷ the previous
+# month's Odoo KES per bag; the split is the usual one. Odoo's own targets win once they are entered.
+REVENUE_TARGETS = {"2026-11": 66_632_243}
+
+
+def total_for(month_start):
+    """(total units, info) — the month's Odoo target units, or (no Odoo targets yet) its revenue target ÷ the previous
+    month's Odoo KES per bag. info = {source: odoo|revenue|none, revenue, kesPerBag, from}."""
+    t = db.run_query(TOTAL_SQL, {"m": month_start.isoformat()})
+    qty = float(t.qty[0]) if t is not None and len(t) and t.qty[0] is not None else 0.0
+    if qty > 0:
+        return int(round(qty)), {"source": "odoo"}
+    rev = REVENUE_TARGETS.get(month_start.strftime("%Y-%m"))
+    if not rev:
+        return 0, {"source": "none"}
+    prev = (month_start - datetime.timedelta(days=1)).replace(day=1)
+    p = db.run_query(TOTAL_SQL, {"m": prev.isoformat()})
+    pq = float(p.qty[0]) if p is not None and len(p) and p.qty[0] is not None else 0.0
+    pa = float(p.amt[0]) if p is not None and len(p) and p.amt[0] is not None else 0.0
+    if pq <= 0 or pa <= 0:
+        return 0, {"source": "none"}
+    kpb = pa / pq
+    return int(round(rev / kpb)), {"source": "revenue", "revenue": rev, "kesPerBag": round(kpb, 2),
+                                   "from": prev.strftime("%B %Y")}
+
+
 def bag_key_fn():
     """Product name → catalogue bag (colours folded); sleeves and not-yet-catalogued new products by name."""
     import sys
@@ -216,8 +242,7 @@ def build(month_start=None):
         if k:
             sold_d[k].add(r.d if isinstance(r.d, datetime.date) else datetime.date.fromisoformat(str(r.d)[:10]))
     avail = available_days(onhand, net, sold_d, start, end, today) if (onhand or net) else None
-    t = db.run_query(TOTAL_SQL, {"m": month_start.isoformat()})
-    total = int(round(float(t.qty[0]))) if t is not None and len(t) and t.qty[0] is not None else 0
+    total, _info = total_for(month_start)
     months = []
     m = start
     while m <= end:
@@ -309,5 +334,11 @@ def _sheet_targets():
 
 
 if __name__ == "__main__":
-    p, rows, total = write_csv(sheet_targets=_sheet_targets())
+    import sys
+    ms = datetime.date.fromisoformat(sys.argv[1] + "-01") if len(sys.argv) > 1 else None   # e.g. 2026-11
+    p, rows, total = write_csv(ms, sheet_targets=_sheet_targets())
     print(f"{p}: {len(rows)} bags, {sum(r['target'] for r in rows)} of {total} units")
+    if ms:
+        print("  total:", total_for(ms))
+        for r in rows[:10]:
+            print(f"  {r['bag']:22} {r['target']:6,}  ({r['share']}%)")
