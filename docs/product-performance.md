@@ -27,9 +27,10 @@ This week, *Bag of the Month* for This month / Last month, each compared with th
 - **Biggest mover** — the largest rise in units vs the period before, among bags that sold **≥ 10 a week**
   (scaled to the period's length — 23 for 16 days). Judged **without bulk orders** (below).
 
-The reasons use the same comparison. Posts: Last week compares with the week before (when Bag Signals saved it);
-This week's posts aren't counted until next week; This month shows the month's posts; Last month has no posting
-comparison (posts per past month aren't kept).
+The reasons use the same comparison. Posts (marketing's daily posting sheets, `lib/marketing_posts`, 18 Oct 2026):
+Last week compares with the week before and Last month with the month before, both counted day by day from the
+sheets (Kenya / Sinza / Uganda per market, all three for All); This week's posts aren't counted until next week;
+This month shows the month's posts. If the sheets can't be read, Last week falls back to the week Bag Signals saved.
 
 Each card: bag, units (and share of the week), revenue, change vs the week before (units and %), and
 **Why it moved** — the evidence, grouped:

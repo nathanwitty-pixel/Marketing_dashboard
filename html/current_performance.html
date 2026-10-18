@@ -50,6 +50,7 @@
 
     .pill-live     { background: #6366f1; }
     .pill-forecast { background: #0ea5e9; }
+    .pill-corp     { background: #a855f7; }
 
     .section-header h2 {
       font-size: 1.4rem;
@@ -250,22 +251,18 @@
     }
     /* When shown, allow the mouse into the popover to read chart tooltips */
     .sales-popover.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
-    /* Sales popover: target donut on the left, "Corporate by client" beside it on the right */
-    #sales-popover .sp-wrap { display: flex; gap: 1.2rem; align-items: stretch; }
-    #sales-popover .sp-main { flex: 0 0 300px; min-width: 0; }
-    #sales-popover.has-corp { width: 780px; }
-    #sales-popover #corp-clients { flex: 1 1 auto; min-width: 0; border-left: 1px solid #2d3148; padding-left: 1.2rem; }
     /* Corporate by client: table + notes scroll as one box; the header (with totals) stays pinned. */
-    #corp-clients .corp-scroll { max-height: 300px; overflow-y: auto; overscroll-behavior: contain; padding-right: 0.35rem; }
+    #corp-clients .corp-scroll { max-height: 560px; overflow-y: auto; overscroll-behavior: contain; padding-right: 0.35rem; }
     #corp-clients thead th { position: sticky; top: 0; z-index: 1; background: #1e2130; vertical-align: bottom;
       box-shadow: inset 0 -1px 0 #2d3148; }
+    #corp-clients .corp-chart { margin: 0.2rem 0 0.9rem; padding-bottom: 0.7rem; border-bottom: 1px solid #2d3148; }
+    #corp-clients .corp-chart-title { font-size: 0.7rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.35rem; }
     #corp-clients thead .ct { display: block; color: #e2e8f0; font-weight: 800; font-size: 0.74rem; }
     /* Tabs: Corporate app | Shop corporate */
     #corp-clients .corp-tabs { display: flex; gap: 0.3rem; margin-bottom: 0.55rem; }
     #corp-clients .corp-tabs button { font: inherit; font-size: 0.68rem; font-weight: 600; cursor: pointer; color: #94a3b8;
       background: transparent; border: 1px solid #334155; border-radius: 999px; padding: 0.15rem 0.65rem; }
     #corp-clients .corp-tabs button.on { color: #e2e8f0; background: rgba(99,102,241,0.18); border-color: #6366f1; }
-    #sales-popover.has-corp.sc-on { width: 900px; }
     /* Shop corporate tab */
     #corp-clients .sc-strip { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; margin: -0.1rem 0 0.45rem; padding: 0.4rem 0.55rem;
       border-radius: 8px; background: rgba(99,102,241,0.08); border: 1px solid #2d3148; font-size: 0.68rem; }
@@ -285,12 +282,6 @@
     #corp-clients .sc-flag { color: #fbbf24; }
     #corp-clients .sc-grp td { padding-top: 0.5rem; font-size: 0.6rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
     #corp-clients .sc-left { margin-top: 0.5rem; padding: 0.35rem 0.5rem; border: 1px dashed #334155; border-radius: 7px; font-size: 0.64rem; }
-    @media (max-width: 840px) {
-      #sales-popover .sp-wrap { flex-direction: column; gap: 0; }
-      #sales-popover .sp-main { flex-basis: auto; }
-      #sales-popover.has-corp, #sales-popover.has-corp.sc-on { width: 380px; }
-      #sales-popover #corp-clients { border-left: 0; padding-left: 0; border-top: 1px solid #2d3148; margin-top: 0.6rem; padding-top: 0.6rem; }
-    }
 
     /* ── Section divider ──────────────────────────────────── */
     .section-divider {
@@ -439,67 +430,6 @@
       <strong id="sales-pop-prev" style="font-size:0.95rem;color:#facc15;font-variant-numeric:tabular-nums"></strong>
     </div>
     </div>
-    <div id="corp-clients" hidden style="font-size:0.72rem;color:#94a3b8">
-      <div class="corp-tabs" hidden>
-        <button type="button" data-tab="app" title="Corporate app (denri_corporate): quotations, invoices and payments">Corporate app</button>
-        <button type="button" data-tab="shop" title="Odoo Sales quotes paid at the shop tills: balance owed and which shop hunted the client">Shop corporate</button>
-      </div>
-      <div class="corp-pane" data-pane="app">
-      <div class="corp-head card-label" style="margin-bottom:0.45rem"></div>
-      <div class="corp-target" hidden style="display:flex;flex-wrap:wrap;gap:0.35rem 0.9rem;margin:-0.1rem 0 0.55rem;padding:0.4rem 0.55rem;border-radius:8px;background:rgba(99,102,241,0.08);border:1px solid #2d3148;font-size:0.68rem;color:#94a3b8"></div>
-      <div class="corp-scroll">
-        <table style="width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums">
-          <thead><tr style="color:#64748b;text-align:right">
-            <th style="text-align:left;font-weight:600;padding:0.15rem 0.3rem 0.15rem 0">Client</th>
-            <th style="font-weight:600;padding:0.15rem 0.3rem" title="Bags on quotations dated this month (declined / cancelled left out). The total counts only bags still to invoice; the tag under each number says what became of the quote — hover it for details.">Quoted<span class="ct" data-t="quoted"></span></th>
-            <th style="font-weight:600;padding:0.15rem 0.3rem" title="Bags on invoices raised this month, plus older invoices paid this month">Invoiced<span class="ct" data-t="invoiced"></span></th>
-            <th style="font-weight:600;padding:0.15rem 0.3rem" title="Paid so far ÷ agreed amount (after WHT) — the total is all paid ÷ all agreed">Paid<span class="ct" data-t="paid"></span></th>
-            <th style="font-weight:600;padding:0.15rem 0 0.15rem 0.3rem" title="Bags × share of the money received this month — what goes into Sales">Sold<span class="ct" data-t="sold"></span></th>
-          </tr></thead>
-          <tbody></tbody>
-        </table>
-      <div class="corp-why" hidden style="margin-top:0.55rem;padding:0.45rem 0.55rem;border-radius:8px;background:rgba(100,116,139,0.10);border:1px solid #2d3148;font-size:0.68rem;line-height:1.5;color:#94a3b8"></div>
-      <div style="margin-top:0.45rem;font-size:0.66rem;line-height:1.45;color:#64748b">
-        <b style="color:#94a3b8">Sold</b> = bags × share of the money received this month.
-        <b style="color:#94a3b8">Invoiced</b> covers invoices raised this month plus older ones paid this month;
-        a month tag (e.g. <span style="border:1px solid #334155;border-radius:4px;padding:0 0.2rem">Sep</span>) means the invoice
-        was raised then and only the money came in now. <b style="color:#94a3b8">Paid</b> = paid so far ÷ agreed amount (after WHT).
-        <b style="color:#94a3b8">Quoted</b> = bags on quotations raised this month; the tag under it says what became of
-        each quote (invoiced, or its status and how many bags are still to invoice). The Quoted total counts only bags
-        still to invoice.
-        <b style="color:#94a3b8">–</b> = none yet, e.g. a quotation not invoiced.
-      </div>
-      </div>
-      </div>
-      <!-- Shop corporate: Odoo Sales quotes (S0…) paid at the shop tills — see lib/shop_corporate.py -->
-      <div class="corp-pane" data-pane="shop" hidden>
-        <div class="sc-head card-label" style="margin-bottom:0.45rem"></div>
-        <div class="sc-strip"></div>
-        <div class="sc-shops"></div>
-        <div class="corp-scroll">
-          <table style="width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums">
-            <thead><tr style="color:#64748b;text-align:right">
-              <th style="text-align:left;font-weight:600;padding:0.15rem 0.3rem 0.15rem 0">Client</th>
-              <th style="text-align:left;font-weight:600;padding:0.15rem 0.3rem" title="The shop that brought the client in — see the rules below">Hunted by</th>
-              <th style="font-weight:600;padding:0.15rem 0.3rem" title="KES on the client's Odoo Sales quotes (repeat versions of one order count once)">Quoted<span class="ct" data-t="quoted"></span></th>
-              <th style="font-weight:600;padding:0.15rem 0.3rem" title="KES paid at the shop tills (refunded receipts left out), with % of the quote">Paid<span class="ct" data-t="paid"></span></th>
-              <th style="font-weight:600;padding:0.15rem 0.3rem" title="Quoted − paid">Balance<span class="ct" data-t="balance"></span></th>
-              <th style="font-weight:600;padding:0.15rem 0 0.15rem 0.3rem" title="Bags on the till receipts">Bags<span class="ct" data-t="bags"></span></th>
-            </tr></thead>
-            <tbody></tbody>
-          </table>
-          <div class="sc-left" hidden></div>
-          <div style="margin-top:0.45rem;font-size:0.66rem;line-height:1.45;color:#64748b">
-            <b style="color:#94a3b8">Hunted by</b>: a client with a quote or invoice in the Corporate app is left out here (counted there);
-            a <b style="color:#94a3b8">lead</b> in the Corporate app → Corporate, even if a shop took the money;
-            paid / part-paid → the shop whose till took the money; not paid yet → the shop named on the quote note,
-            else the shop where the client bought before (same customer, phone or email), else the client's town;
-            none of these → <b style="color:#c4b5fd">Corporate</b> (not in any shop's totals).
-            Repeat quotes within 25% of each other count once. Hover a row for its receipts.
-          </div>
-        </div>
-      </div>
-    </div>
    </div>
   </div>
 
@@ -557,16 +487,104 @@
 
 </div><!-- /.section -->
 
+<div class="section-divider" id="corp-divider" hidden>
+  <div class="div-line"></div>
+  <span class="div-label">Corporate</span>
+  <div class="div-line"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION 3 — Corporate (Corporate app | Shop corporate)     -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section" id="corp-section" hidden>
+
+  <div class="section-header">
+    <span class="pill pill-corp">Corporate</span>
+    <h2>Corporate by Client</h2>
+  </div>
+
+  <div id="corp-clients" class="card" hidden style="font-size:0.78rem;color:#94a3b8">
+    <div class="corp-tabs" hidden>
+      <button type="button" data-tab="app" title="Corporate app (denri_corporate): quotations, invoices and payments">Corporate app</button>
+      <button type="button" data-tab="shop" title="Odoo Sales quotes paid at the shop tills: balance owed and which shop hunted the client">Shop corporate</button>
+    </div>
+    <div class="corp-pane" data-pane="app">
+    <div class="corp-head card-label" style="margin-bottom:0.45rem"></div>
+    <div class="corp-target" hidden style="display:flex;flex-wrap:wrap;gap:0.35rem 0.9rem;margin:-0.1rem 0 0.55rem;padding:0.4rem 0.55rem;border-radius:8px;background:rgba(99,102,241,0.08);border:1px solid #2d3148;font-size:0.68rem;color:#94a3b8"></div>
+    <div class="corp-chart" hidden>
+      <div class="corp-chart-title">Bags per client — where each order stands</div>
+      <div style="position:relative"><canvas id="chart-corp-app" role="img" aria-label="Bags per corporate client: sold, invoiced but not paid, and quoted still to invoice"></canvas></div>
+    </div>
+    <div class="corp-scroll">
+      <table style="width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums">
+        <thead><tr style="color:#64748b;text-align:right">
+          <th style="text-align:left;font-weight:600;padding:0.15rem 0.3rem 0.15rem 0">Client</th>
+          <th style="font-weight:600;padding:0.15rem 0.3rem" title="Bags on quotations dated this month (declined / cancelled left out). The total counts only bags still to invoice; the tag under each number says what became of the quote — hover it for details.">Quoted<span class="ct" data-t="quoted"></span></th>
+          <th style="font-weight:600;padding:0.15rem 0.3rem" title="Bags on invoices raised this month, plus older invoices paid this month">Invoiced<span class="ct" data-t="invoiced"></span></th>
+          <th style="font-weight:600;padding:0.15rem 0.3rem" title="Paid so far ÷ agreed amount (after WHT) — the total is all paid ÷ all agreed">Paid<span class="ct" data-t="paid"></span></th>
+          <th style="font-weight:600;padding:0.15rem 0 0.15rem 0.3rem" title="Bags × share of the money received this month — what goes into Sales">Sold<span class="ct" data-t="sold"></span></th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    <div class="corp-why" hidden style="margin-top:0.55rem;padding:0.45rem 0.55rem;border-radius:8px;background:rgba(100,116,139,0.10);border:1px solid #2d3148;font-size:0.68rem;line-height:1.5;color:#94a3b8"></div>
+    <div style="margin-top:0.45rem;font-size:0.66rem;line-height:1.45;color:#64748b">
+      <b style="color:#94a3b8">Sold</b> = bags × share of the money received this month.
+      <b style="color:#94a3b8">Invoiced</b> covers invoices raised this month plus older ones paid this month;
+      a month tag (e.g. <span style="border:1px solid #334155;border-radius:4px;padding:0 0.2rem">Sep</span>) means the invoice
+      was raised then and only the money came in now. <b style="color:#94a3b8">Paid</b> = paid so far ÷ agreed amount (after WHT).
+      <b style="color:#94a3b8">Quoted</b> = bags on quotations raised this month; the tag under it says what became of
+      each quote (invoiced, or its status and how many bags are still to invoice). The Quoted total counts only bags
+      still to invoice.
+      <b style="color:#94a3b8">–</b> = none yet, e.g. a quotation not invoiced.
+    </div>
+    </div>
+    </div>
+    <!-- Shop corporate: Odoo Sales quotes (S0…) paid at the shop tills — see lib/shop_corporate.py -->
+    <div class="corp-pane" data-pane="shop" hidden>
+      <div class="sc-head card-label" style="margin-bottom:0.45rem"></div>
+      <div class="sc-strip"></div>
+      <div class="sc-shops"></div>
+      <div class="corp-chart" hidden>
+        <div class="corp-chart-title">KES per hunting shop — paid vs still owed <span style="font-weight:500;color:#64748b">· click a bar to filter</span></div>
+        <div style="position:relative"><canvas id="chart-corp-shop" role="img" aria-label="KES paid and owed per shop that hunted the corporate client"></canvas></div>
+      </div>
+      <div class="corp-scroll">
+        <table style="width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums">
+          <thead><tr style="color:#64748b;text-align:right">
+            <th style="text-align:left;font-weight:600;padding:0.15rem 0.3rem 0.15rem 0">Client</th>
+            <th style="text-align:left;font-weight:600;padding:0.15rem 0.3rem" title="The shop that brought the client in — see the rules below">Hunted by</th>
+            <th style="font-weight:600;padding:0.15rem 0.3rem" title="KES on the client's Odoo Sales quotes (repeat versions of one order count once)">Quoted<span class="ct" data-t="quoted"></span></th>
+            <th style="font-weight:600;padding:0.15rem 0.3rem" title="KES paid at the shop tills (refunded receipts left out), with % of the quote">Paid<span class="ct" data-t="paid"></span></th>
+            <th style="font-weight:600;padding:0.15rem 0.3rem" title="Quoted − paid">Balance<span class="ct" data-t="balance"></span></th>
+            <th style="font-weight:600;padding:0.15rem 0 0.15rem 0.3rem" title="Bags on the till receipts">Bags<span class="ct" data-t="bags"></span></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="sc-left" hidden></div>
+        <div style="margin-top:0.45rem;font-size:0.66rem;line-height:1.45;color:#64748b">
+          <b style="color:#94a3b8">Hunted by</b>: a client with a quote or invoice in the Corporate app is left out here (counted there);
+          a <b style="color:#94a3b8">lead</b> in the Corporate app → Corporate, even if a shop took the money;
+          paid / part-paid → the shop whose till took the money; not paid yet → the shop named on the quote note,
+          else the shop where the client bought before (same customer, phone or email), else the client's town;
+          none of these → <b style="color:#c4b5fd">Corporate</b> (not in any shop's totals).
+          Repeat quotes within 25% of each other count once. Hover a row for its receipts.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.section -->
+
 <!-- PERF_DATA_START -->
 <script>
 const PERF = {
   cpPrevWeekly:       [{"label": "Wk 1", "pct": 11.82}, {"label": "Wk 2", "pct": 14.24}, {"label": "Wk 3", "pct": 12.98}, {"label": "Wk 4", "pct": 13.89}, {"label": "Wk 5", "pct": 7.17}],
   cpPrevLabel:        "September 2026",
   cpCurLabel:         "October 2026",
-  remainingTarget:    "17,644",
-  salesPctAchieved:   "37.01%",
-  sales:              "10,369",
-  salesPos:           "10,043",
+  remainingTarget:    "17,608",
+  salesPctAchieved:   "37.14%",
+  sales:              "10,405",
+  salesPos:           "10,079",
   corporateBags:      "326",
   corporateClients:   [{"client": "CIArb KENYA", "quoted": 0, "invoiced": 250, "agreedKes": 301000, "paidKes": 225750, "receivedKes": 225750, "sold": 187, "earlier": "Sep", "earlierPaidOn": "1 Oct", "quotes": [], "invMonths": [{"m": "Sep", "cur": false}]}, {"client": "safarilink", "quoted": 100, "invoiced": 200, "agreedKes": 805000, "paidKes": 399000, "receivedKes": 399000, "sold": 100, "earlier": "Aug", "earlierPaidOn": "5 Oct", "quotes": [{"no": "QUO-00064", "status": "accepted", "on": "5 Oct", "until": "31 Oct", "bags": "100", "kes": "406000", "invoice": "INV-00140 sent 5 Oct"}], "invMonths": [{"m": "Aug", "cur": false}, {"m": "Oct", "cur": true}]}, {"client": "Greenlight Planet Kenya Ltd", "quoted": 0, "invoiced": 13, "agreedKes": 69996, "paidKes": 69996, "receivedKes": 69996, "sold": 13, "earlier": "Sep", "earlierPaidOn": "2 Oct", "quotes": [], "invMonths": [{"m": "Sep", "cur": false}]}, {"client": "George Eshuchi", "quoted": 10, "invoiced": 10, "agreedKes": 28790, "paidKes": 28790, "receivedKes": 28790, "sold": 10, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00066", "status": "accepted", "on": "7 Oct", "until": "6 Nov", "bags": "10", "kes": "28790", "invoice": "INV-00135 paid 7 Oct"}], "invMonths": [{"m": "Oct", "cur": true}]}, {"client": "Zakale", "quoted": 10, "invoiced": 10, "agreedKes": 37000, "paidKes": 37000, "receivedKes": 37000, "sold": 10, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00062", "status": "accepted", "on": "2 Oct", "until": "1 Nov", "bags": "10", "kes": "37000", "invoice": "INV-00134 paid 2 Oct"}], "invMonths": [{"m": "Oct", "cur": true}]}, {"client": "Software Technologies Ltd", "quoted": 3, "invoiced": 3, "agreedKes": 13920, "paidKes": 13920, "receivedKes": 13920, "sold": 3, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00069", "status": "accepted", "on": "12 Oct", "until": "31 Oct", "bags": "3", "kes": "13920", "invoice": "INV-00141 paid 12 Oct"}], "invMonths": [{"m": "Oct", "cur": true}]}, {"client": "Mirror Arts Designs Limited", "quoted": 2, "invoiced": 2, "agreedKes": 5900, "paidKes": 5900, "receivedKes": 5900, "sold": 2, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00063", "status": "accepted", "on": "4 Oct", "until": "3 Nov", "bags": "2", "kes": "5900", "invoice": "INV-00133 paid 4 Oct"}], "invMonths": [{"m": "Oct", "cur": true}]}, {"client": "H.k", "quoted": 1, "invoiced": 1, "agreedKes": 6000, "paidKes": 6000, "receivedKes": 6000, "sold": 1, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00067", "status": "accepted", "on": "8 Oct", "until": "7 Nov", "bags": "1", "kes": "6000", "invoice": "INV-00136 paid 8 Oct"}], "invMonths": [{"m": "Oct", "cur": true}]}, {"client": "TerraGo", "quoted": 2, "invoiced": 2, "agreedKes": 4400, "paidKes": 0, "receivedKes": 0, "sold": 0, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00070", "status": "accepted", "on": "15 Oct", "until": "16 Oct", "bags": "2", "kes": "4400", "invoice": "INV-00142 sent 15 Oct"}], "invMonths": [{"m": "Oct", "cur": true}]}, {"client": "Buhler Limited", "quoted": 60, "invoiced": 0, "agreedKes": 0, "paidKes": 0, "receivedKes": 0, "sold": 0, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00068", "status": "draft", "on": "9 Oct", "until": "31 Oct", "bags": "60", "kes": "208800", "invoice": ""}], "invMonths": []}, {"client": "Mirror Arts Designz Limited", "quoted": 12, "invoiced": 0, "agreedKes": 0, "paidKes": 0, "receivedKes": 0, "sold": 0, "earlier": "", "earlierPaidOn": "", "quotes": [{"no": "QUO-00071", "status": "draft", "on": "18 Oct", "until": "17 Nov", "bags": "12", "kes": "34200", "invoice": ""}], "invMonths": []}],
   corporateTarget:    {"bags": 1163, "kes": 2325368},
@@ -581,12 +599,12 @@ const PERF = {
   previousSalesPct:   "36.66%",
   previousSalesBags:  "3,695",
   previousAchievedBags: "10,269",
-  wowSalesPct:        "-97.29%",
-  wowSalesBags:       "-3,595",
-  weeklySalesTotal:   "100",
-  weeklySalesPct:     "0.36%",
-  growthHistory:      [{"date": "2026-07-27", "growth": 14.52}, {"date": "2026-07-28", "growth": 14.52}, {"date": "2026-07-30", "growth": 14.52}, {"date": "2026-07-31", "growth": 14.52}, {"date": "2026-08-01", "growth": 14.52}, {"date": "2026-08-02", "growth": 19.73}, {"date": "2026-08-03", "growth": 71.8}, {"date": "2026-08-04", "growth": 2.9}, {"date": "2026-08-05", "growth": 2.9}, {"date": "2026-08-06", "growth": 7.2}, {"date": "2026-08-07", "growth": 7.2}, {"date": "2026-08-08", "growth": 13.65}, {"date": "2026-08-10", "growth": 1.01}, {"date": "2026-08-11", "growth": 3.59}, {"date": "2026-08-13", "growth": 9.34}, {"date": "2026-08-14", "growth": 11.67}, {"date": "2026-08-16", "growth": 0.84}, {"date": "2026-08-17", "growth": 1.28}, {"date": "2026-08-20", "growth": 8.17}, {"date": "2026-08-21", "growth": 11.23}, {"date": "2026-08-22", "growth": 14.12}, {"date": "2026-08-23", "growth": 1.02}, {"date": "2026-08-24", "growth": 1.18}, {"date": "2026-08-26", "growth": 9.32}, {"date": "2026-08-27", "growth": 9.43}, {"date": "2026-08-28", "growth": 12.4}, {"date": "2026-08-31", "growth": 3.11}, {"date": "2026-09-01", "growth": 4.24}, {"date": "2026-09-02", "growth": 8.84}, {"date": "2026-09-03", "growth": 9.13}, {"date": "2026-09-04", "growth": 11.66}, {"date": "2026-09-06", "growth": 0.49}, {"date": "2026-09-07", "growth": 0.69}, {"date": "2026-09-08", "growth": 8.49}, {"date": "2026-09-09", "growth": 8.55}, {"date": "2026-09-10", "growth": 13.61}, {"date": "2026-09-12", "growth": 15.64}, {"date": "2026-09-13", "growth": 0.71}, {"date": "2026-09-14", "growth": 0.87}, {"date": "2026-09-17", "growth": 7.9}, {"date": "2026-09-18", "growth": 11.43}, {"date": "2026-09-19", "growth": 12.29}, {"date": "2026-09-20", "growth": 0.57}, {"date": "2026-09-21", "growth": 1.46}, {"date": "2026-09-22", "growth": 3.25}, {"date": "2026-09-23", "growth": 4.64}, {"date": "2026-09-24", "growth": 7.33}, {"date": "2026-09-25", "growth": 8.68}, {"date": "2026-09-27", "growth": 0.37}, {"date": "2026-09-28", "growth": 0.76}, {"date": "2026-09-29", "growth": 3.25}, {"date": "2026-09-30", "growth": 5.64}, {"date": "2026-10-01", "growth": 9.42}, {"date": "2026-10-02", "growth": 9.42}, {"date": "2026-10-04", "growth": 0.66}, {"date": "2026-10-05", "growth": 0.96}, {"date": "2026-10-06", "growth": 4.3}, {"date": "2026-10-07", "growth": 6.48}, {"date": "2026-10-08", "growth": 8.18}, {"date": "2026-10-09", "growth": 9.83}, {"date": "2026-10-10", "growth": 13.95}, {"date": "2026-10-11", "growth": 0.7}, {"date": "2026-10-12", "growth": 0.78}, {"date": "2026-10-13", "growth": 5.6}, {"date": "2026-10-14", "growth": 6.15}, {"date": "2026-10-15", "growth": 7.54}, {"date": "2026-10-16", "growth": 9.77}, {"date": "2026-10-18", "growth": 0.36}],
-  weeklyThisMonth:    "100",
+  wowSalesPct:        "-96.32%",
+  wowSalesBags:       "-3,559",
+  weeklySalesTotal:   "136",
+  weeklySalesPct:     "0.49%",
+  growthHistory:      [{"date": "2026-07-27", "growth": 14.52}, {"date": "2026-07-28", "growth": 14.52}, {"date": "2026-07-30", "growth": 14.52}, {"date": "2026-07-31", "growth": 14.52}, {"date": "2026-08-01", "growth": 14.52}, {"date": "2026-08-02", "growth": 19.73}, {"date": "2026-08-03", "growth": 71.8}, {"date": "2026-08-04", "growth": 2.9}, {"date": "2026-08-05", "growth": 2.9}, {"date": "2026-08-06", "growth": 7.2}, {"date": "2026-08-07", "growth": 7.2}, {"date": "2026-08-08", "growth": 13.65}, {"date": "2026-08-10", "growth": 1.01}, {"date": "2026-08-11", "growth": 3.59}, {"date": "2026-08-13", "growth": 9.34}, {"date": "2026-08-14", "growth": 11.67}, {"date": "2026-08-16", "growth": 0.84}, {"date": "2026-08-17", "growth": 1.28}, {"date": "2026-08-20", "growth": 8.17}, {"date": "2026-08-21", "growth": 11.23}, {"date": "2026-08-22", "growth": 14.12}, {"date": "2026-08-23", "growth": 1.02}, {"date": "2026-08-24", "growth": 1.18}, {"date": "2026-08-26", "growth": 9.32}, {"date": "2026-08-27", "growth": 9.43}, {"date": "2026-08-28", "growth": 12.4}, {"date": "2026-08-31", "growth": 3.11}, {"date": "2026-09-01", "growth": 4.24}, {"date": "2026-09-02", "growth": 8.84}, {"date": "2026-09-03", "growth": 9.13}, {"date": "2026-09-04", "growth": 11.66}, {"date": "2026-09-06", "growth": 0.49}, {"date": "2026-09-07", "growth": 0.69}, {"date": "2026-09-08", "growth": 8.49}, {"date": "2026-09-09", "growth": 8.55}, {"date": "2026-09-10", "growth": 13.61}, {"date": "2026-09-12", "growth": 15.64}, {"date": "2026-09-13", "growth": 0.71}, {"date": "2026-09-14", "growth": 0.87}, {"date": "2026-09-17", "growth": 7.9}, {"date": "2026-09-18", "growth": 11.43}, {"date": "2026-09-19", "growth": 12.29}, {"date": "2026-09-20", "growth": 0.57}, {"date": "2026-09-21", "growth": 1.46}, {"date": "2026-09-22", "growth": 3.25}, {"date": "2026-09-23", "growth": 4.64}, {"date": "2026-09-24", "growth": 7.33}, {"date": "2026-09-25", "growth": 8.68}, {"date": "2026-09-27", "growth": 0.37}, {"date": "2026-09-28", "growth": 0.76}, {"date": "2026-09-29", "growth": 3.25}, {"date": "2026-09-30", "growth": 5.64}, {"date": "2026-10-01", "growth": 9.42}, {"date": "2026-10-02", "growth": 9.42}, {"date": "2026-10-04", "growth": 0.66}, {"date": "2026-10-05", "growth": 0.96}, {"date": "2026-10-06", "growth": 4.3}, {"date": "2026-10-07", "growth": 6.48}, {"date": "2026-10-08", "growth": 8.18}, {"date": "2026-10-09", "growth": 9.83}, {"date": "2026-10-10", "growth": 13.95}, {"date": "2026-10-11", "growth": 0.7}, {"date": "2026-10-12", "growth": 0.78}, {"date": "2026-10-13", "growth": 5.6}, {"date": "2026-10-14", "growth": 6.15}, {"date": "2026-10-15", "growth": 7.54}, {"date": "2026-10-16", "growth": 9.77}, {"date": "2026-10-18", "growth": 0.49}],
+  weeklyThisMonth:    "136",
   weeklyThisMonthDays: 0,
   prevMonthDays:      0,
   weeklyCarryover:    "",
@@ -594,8 +612,8 @@ const PERF = {
   carryoverDate:      "",
   prevMonthWeekly:    "1,530",
   prevMonthLabel:     "September",
-  momWeeklyBags:      "-1,430",
-  momWeeklyPct:       "-93.46%",
+  momWeeklyBags:      "-1,394",
+  momWeeklyPct:       "-91.11%",
   bareMinimum:        "",
   declinedBy:         ""
 };
@@ -610,15 +628,15 @@ const PROJ = {
   projMonth:                "October",
   velocityFactor:           "1.82x",
   totalTarget:              "28,013",
-  totalSales:               "10,043",
-  standardProjection:       "65.38%",
-  forecastedProjection:     "67.50%",
+  totalSales:               "10,079",
+  standardProjection:       "65.61%",
+  forecastedProjection:     "67.73%",
   corporateBags:            "326",
   bareMinimum:              "7,003",
   bareMinimumGrowthPct:     "25.00%",
-  declinedBy:               "-6,903",
-  weeklySalesTotal:         "100",
-  weeklyHistory:            [{"weekStart": "2026-10-01", "label": "Wk 1", "month": "Oct", "salesPct": 7.24, "salesBags": 2027, "prevSalesPct": 0.0, "prevSalesBags": 0, "weeklySales": 2027, "declinedBy": -4976}, {"weekStart": "2026-10-04", "label": "Wk 2", "month": "Oct", "salesPct": 22.3, "salesBags": 6248, "prevSalesPct": 7.24, "prevSalesBags": 2027, "weeklySales": 4221, "declinedBy": -2782}, {"weekStart": "2026-10-11", "label": "Wk 3", "month": "Oct", "salesPct": 35.49, "salesBags": 9943, "prevSalesPct": 22.3, "prevSalesBags": 6248, "weeklySales": 3695, "declinedBy": -3308}, {"weekStart": "2026-10-18", "label": "Wk 4", "month": "Oct", "salesPct": 35.85, "salesBags": 10043, "prevSalesPct": 35.49, "prevSalesBags": 9943, "weeklySales": 100, "declinedBy": -6903}]
+  declinedBy:               "-6,867",
+  weeklySalesTotal:         "136",
+  weeklyHistory:            [{"weekStart": "2026-10-01", "label": "Wk 1", "month": "Oct", "salesPct": 7.24, "salesBags": 2027, "prevSalesPct": 0.0, "prevSalesBags": 0, "weeklySales": 2027, "declinedBy": -4976}, {"weekStart": "2026-10-04", "label": "Wk 2", "month": "Oct", "salesPct": 22.3, "salesBags": 6248, "prevSalesPct": 7.24, "prevSalesBags": 2027, "weeklySales": 4221, "declinedBy": -2782}, {"weekStart": "2026-10-11", "label": "Wk 3", "month": "Oct", "salesPct": 35.49, "salesBags": 9943, "prevSalesPct": 22.3, "prevSalesBags": 6248, "weeklySales": 3695, "declinedBy": -3308}, {"weekStart": "2026-10-18", "label": "Wk 4", "month": "Oct", "salesPct": 35.98, "salesBags": 10079, "prevSalesPct": 35.49, "prevSalesBags": 9943, "weeklySales": 136, "declinedBy": -6867}]
 };
 </script>
 <!-- PROJ_DATA_END -->
@@ -760,6 +778,46 @@ const PROJ = {
         + (pipe ? '<span title="Bags on this month\'s quotes not invoiced yet">Pipeline <b style="color:#e2e8f0">' + fmt(pipe) + '</b> to invoice</span>' : '');
       strip.hidden = false;
     }
+    // Chart: bags per client — sold (paid share) · invoiced, not paid yet · quoted, still to invoice.
+    (function () {
+      var cv = document.getElementById('chart-corp-app');
+      if (!cv || !window.Chart) return;
+      var d = rows.map(function (r) {
+        var sold = Math.round(r.sold || 0);
+        return {r: r, sold: sold, unpaid: Math.max((r.invoiced || 0) - sold, 0), quote: toInvoice(r)};
+      }).filter(function (x) { return x.sold + x.unpaid + x.quote; })
+        .sort(function (a, b) { return (b.sold + b.unpaid + b.quote) - (a.sold + a.unpaid + a.quote); });
+      if (!d.length) return;
+      cv.parentNode.style.height = (d.length * 26 + 56) + 'px';
+      cv.closest('.corp-chart').hidden = false;
+      var seg = function (label, key, col) {
+        return {label: label, data: d.map(function (x) { return x[key]; }), backgroundColor: col,
+                borderColor: '#1e2130', borderWidth: 1, borderRadius: 3, borderSkipped: false, barThickness: 14};
+      };
+      window._corpAppChart = new Chart(cv, {
+        type: 'bar',
+        data: {labels: d.map(function (x) { return x.r.client; }),
+               datasets: [seg('Sold (paid)', 'sold', '#10b981'), seg('Invoiced, not paid yet', 'unpaid', '#f59e0b'),
+                          seg('Quoted, to invoice', 'quote', '#64748b')]},
+        options: {
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          scales: {x: {stacked: true, beginAtZero: true, grid: {color: 'rgba(45,49,72,0.6)'}, ticks: {font: {size: 10}},
+                       title: {display: true, text: 'bags', font: {size: 10}}},
+                   y: {stacked: true, grid: {display: false}, ticks: {color: '#cbd5e1', font: {size: 10}}}},
+          plugins: {
+            legend: {position: 'top', align: 'start', labels: {boxWidth: 10, padding: 10, font: {size: 10}}},
+            tooltip: {backgroundColor: '#1e2130', borderColor: '#2d3148', borderWidth: 1, titleColor: '#f8fafc', bodyColor: '#94a3b8',
+              filter: function (c) { return c.parsed.x > 0; },
+              callbacks: {
+                label: function (c) { return ' ' + c.dataset.label + ': ' + fmt(c.parsed.x) + ' bags'; },
+                footer: function (items) {
+                  var r = d[items[0].dataIndex].r;
+                  return r.agreedKes ? 'KES ' + fmt(r.paidKes) + ' paid of ' + fmt(r.agreedKes) + ' (' + Math.round(r.paidKes / r.agreedKes * 100) + '%)' : 'Not invoiced yet';
+                }}}
+          }
+        }
+      });
+    })();
     box.querySelector('.corp-head').textContent = 'Corporate by client (' + rows.length + ')'
       + (quoted ? ' · ' + quoted.toLocaleString() + ' bags quoted' : '');
     box.hidden = false;
@@ -785,8 +843,7 @@ const PROJ = {
           }).join('') + '</ul>';
       why.hidden = false;
     }
-    var pop = document.getElementById('sales-popover');
-    if (pop) pop.classList.add('has-corp');   // widen so the list sits beside the donut
+    document.getElementById('corp-section').hidden = document.getElementById('corp-divider').hidden = false;
   })();
   // Shop corporate: Odoo Sales quotes paid at the shop tills — paid when / where, balance owed,
   // which shop hunted the client (rules in lib/shop_corporate.py). A tab beside "Corporate app".
@@ -795,7 +852,6 @@ const PROJ = {
     var S = PERF.shopCorporate;
     if (!box || !S || !(S.rows || []).length) return;
     var pane = box.querySelector('[data-pane="shop"]'), tabs = box.querySelector('.corp-tabs');
-    var pop = document.getElementById('sales-popover');
     var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
     var fmt = function (v) { return Number(v || 0).toLocaleString(); };
@@ -878,6 +934,49 @@ const PROJ = {
         render();
       });
     });
+    // Chart: KES paid vs still owed per hunting shop — click a bar = click that shop's box (filters the table).
+    (function () {
+      var cv = document.getElementById('chart-corp-shop');
+      var d = shops.filter(function (s) { return s.paid || s.owed; });
+      if (!cv || !window.Chart || !d.length) return;
+      cv.parentNode.style.height = (d.length * 28 + 56) + 'px';
+      cv.closest('.corp-chart').hidden = false;
+      var seg = function (label, key, col) {
+        return {label: label, data: d.map(function (s) { return s[key] || 0; }), backgroundColor: col,
+                borderColor: '#1e2130', borderWidth: 1, borderRadius: 3, borderSkipped: false, barThickness: 16};
+      };
+      var k = function (v) { return v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e3 ? Math.round(v / 1e3) + 'k' : v; };
+      window._corpShopChart = new Chart(cv, {
+        type: 'bar',
+        data: {labels: d.map(function (s) { return s.shop; }),
+               datasets: [seg('Paid', 'paid', '#10b981'), seg('Owed', 'owed', '#ef4444')]},
+        options: {
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          onClick: function (e, els) {
+            if (!els.length) return;
+            var shop = d[els[0].index].shop;
+            Array.prototype.forEach.call(pane.querySelectorAll('.sc-box'), function (b) {
+              if (b.getAttribute('data-shop') === shop) b.click();
+            });
+          },
+          onHover: function (e, els) { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
+          scales: {x: {stacked: true, beginAtZero: true, grid: {color: 'rgba(45,49,72,0.6)'},
+                       ticks: {font: {size: 10}, callback: function (v) { return k(v); }},
+                       title: {display: true, text: 'KES', font: {size: 10}}},
+                   y: {stacked: true, grid: {display: false}, ticks: {color: '#cbd5e1', font: {size: 10}}}},
+          plugins: {
+            legend: {position: 'top', align: 'start', labels: {boxWidth: 10, padding: 10, font: {size: 10}}},
+            tooltip: {backgroundColor: '#1e2130', borderColor: '#2d3148', borderWidth: 1, titleColor: '#f8fafc', bodyColor: '#94a3b8',
+              callbacks: {
+                label: function (c) { return ' ' + c.dataset.label + ': KES ' + fmt(c.parsed.x); },
+                footer: function (items) {
+                  var s = d[items[0].dataIndex];
+                  return fmt(s.bags) + ' bags · ' + s.clients + ' client' + (s.clients === 1 ? '' : 's') + ' · click to filter';
+                }}}
+          }
+        }
+      });
+    })();
     var left = S.leftOut || [], lb = pane.querySelector('.sc-left');
     if (left.length) {
       lb.innerHTML = '<b style="color:#cbd5e1">Left out (already in the Corporate app):</b> ' + left.map(function (l) {
@@ -891,7 +990,8 @@ const PROJ = {
     var show = function (t) {
       Array.prototype.forEach.call(box.querySelectorAll('.corp-pane'), function (p) { p.hidden = p.getAttribute('data-pane') !== t; });
       Array.prototype.forEach.call(tabs.querySelectorAll('button'), function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === t); });
-      if (pop) pop.classList.toggle('sc-on', t === 'shop');
+      var ch = t === 'shop' ? window._corpShopChart : window._corpAppChart;
+      if (ch) ch.resize();
       try { localStorage.setItem('corpTab', t); } catch (e) {}
     };
     tabs.querySelector('[data-tab="shop"]').textContent = 'Shop corporate (' + rows.length + ')';
@@ -905,7 +1005,7 @@ const PROJ = {
     show(appRows ? (saved === 'shop' ? 'shop' : 'app') : 'shop');
     tabs.hidden = false;
     box.hidden = false;
-    if (pop) pop.classList.add('has-corp');
+    document.getElementById('corp-section').hidden = document.getElementById('corp-divider').hidden = false;
   })();
   setText('kpi-weekly-sales', PERF.weeklySalesTotal);
   // Shown in the Sales hover popover
@@ -1460,7 +1560,7 @@ window.addEventListener('DOMContentLoaded', function() {
       document.querySelectorAll('.psb-main > .section').forEach(function (sec, i) {
         var h = sec.querySelector('.section-header h2');
         if (!h) return;
-        out.push({ el: sec, num: String(i + 1), color: i ? '#22d3ee' : '#facc15', name: h.textContent.trim() });
+        out.push({ el: sec, num: String(i + 1), color: sec.id === 'corp-section' ? '#c084fc' : (i ? '#22d3ee' : '#facc15'), name: h.textContent.trim() });
         sec.querySelectorAll('.table-title').forEach(function (t) {   // e.g. Weekly Performance
           var box = t.closest('.card') || t;
           if (box.offsetParent !== null) out.push({ el: box, num: '·', sub: true, color: '#94a3b8', name: t.textContent.split(' — ')[0].trim() });

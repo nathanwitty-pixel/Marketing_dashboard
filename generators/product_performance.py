@@ -429,6 +429,29 @@ def load_posts(typ):
     return tally(rows_w), tally(rows_m)
 
 
+def posts_between(typ):
+    """fn(start, end) → {BAG: {"KE", "TZ", "UG": posts}} from marketing's daily posting sheets, so any past
+    window (last month, the month before) can be counted; None when the sheets can't be read."""
+    try:
+        marketing_posts.daily()
+    except Exception as e:                                   # noqa: BLE001
+        print(f"  Daily posting sheets unavailable ({e}) — past-period posting comparisons left out.")
+        return None
+    cache = {}
+
+    def fn(s, e):
+        if (s, e) not in cache:
+            out = collections.defaultdict(lambda: {"KE": 0, "TZ": 0, "UG": 0})
+            for (bt, col), by in marketing_posts.posts(s, e).items():
+                b = typ(f"{bt} {col}".strip()) or typ(bt)
+                if b:
+                    for m, k in (("KENYA", "KE"), ("SINZA", "TZ"), ("UGANDA", "UG")):
+                        out[b][k] += int(by.get(m, 0))
+            cache[(s, e)] = dict(out)
+        return cache[(s, e)]
+    return fn
+
+
 # ── why it moved ──────────────────────────────────────────────
 def explain(b, mkt, w, ctx):
     """{lw, pw, lwNb, pwNb, head, lines:[[group, dir, text]]} for bag b in market mkt — the period w["cur"]
@@ -509,9 +532,23 @@ def explain(b, mkt, w, ctx):
             for t in ctx["listings"].get(m, {}).get(b, [])[:2]:
                 lines.append(["Offer", "info", f"{'Sinza' if m == 'TZ' else 'Uganda'}: {t}"])
 
-    # Marketing — posts are counted a week in arrears and kept per last week / this month only.
+    # Marketing — posts are counted a week in arrears. Last week / last month: compared with the period before
+    # from marketing's daily posting sheets; the saved weekly history is only the fallback.
     pm = ctx["posts_m"].get(b, [0, 0])
-    if ctx["posts_w"] is not None and w["key"] == "lastweek":
+    pb = ctx.get("posts_between")
+    if pb is not None and w["key"] in ("lastweek", "lastmonth"):
+        def cnt(s, e):
+            v = pb(s, e).get(b, {})
+            return sum(v.values()) if mkt == "ALL" else v.get(mkt, 0)
+        p1v, p0v = cnt(w["s1"], w["e1"]), cnt(w["s0"], w["e0"])
+        where = "" if mkt in ("ALL", "KE") else " (outside Kenya)"
+        if p1v > p0v:
+            lines.append(["Marketing", "up", f"Posted more{where} — {p1v} posts {C} vs {p0v} {P}"])
+        elif p1v < p0v:
+            lines.append(["Marketing", "down", f"Posted less{where} — {p1v} posts {C} vs {p0v} {P}"])
+        else:
+            lines.append(["Marketing", "info", f"Same posting in both ({p1v} posts)" if p1v else f"Not posted{where} in either"])
+    elif ctx["posts_w"] is not None and w["key"] == "lastweek":
         col = 1 if mkt in ("TZ", "UG") else 0
         p1 = ctx["posts_w"].get(b, [0, 0])
         p1v = p1[0] + p1[1] if mkt == "ALL" else p1[col]
@@ -534,8 +571,8 @@ def explain(b, mkt, w, ctx):
         lines.append(["Marketing", "info", f"This week's posts are counted next week — last week: {p1[0] + p1[1]} posts"])
     if ctx["posts_w"] is not None and w["key"] != "lastmonth":
         lines.append(["Marketing", "info", f"{pm[0] + pm[1]} posts this month ({pm[0]} Kenya · {pm[1]} outside)"])
-    elif w["key"] == "lastmonth":
-        lines.append(["Marketing", "info", "Posts per past month aren't kept — no posting comparison"])
+    elif w["key"] == "lastmonth" and pb is None:
+        lines.append(["Marketing", "info", "Posting sheets couldn't be read — no posting comparison"])
 
     # Bulk
     for x in sorted(bulk, key=lambda x: -x["units"]):
@@ -605,6 +642,7 @@ def build(today=None):
     offers = Offers(typ)
     base_ctx = {"levels": levels, "disp": disp, "stock_now": stock_now, "offers": offers,
                 "posts_w": posts_w, "posts_m": posts_m or {}, "posts_prev": posts_prev,
+                "posts_between": posts_between(typ),
                 "listings": Offers.listings(today.strftime("%B"), typ)}
     words = {"lastweek": ("last week", "the week before"),
              "weekly": ("this week", "the same days last week"),
