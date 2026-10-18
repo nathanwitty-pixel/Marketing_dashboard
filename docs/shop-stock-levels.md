@@ -100,9 +100,22 @@ Source: the Odoo **dispatch module** (`denri_dispatch_*`), which every shop orde
   3. **Sold through** — of what arrived, the share sold at that shop within 14 days of the first receipt (only
      arrivals 14+ days ago).
 - **Fill** = sent ÷ asked (capped per line) — the warehouse's score, shown beside the shop's, never in it.
+- **Sent without a request** = per shop × product, warehouse sends into the shop's stock in the period (the Shops
+  menu's dispatch basis: FINWH / CBD → `<CODE>/Stock`) beyond what the shop asked for (dispatch + the old SRQ
+  module, asks from 14 days before the period count). "Never asked" = no ask for that product at all. Online shops
+  are left out. Shown with how many sold since they arrived and what's on the shelf now.
+- **Asked, not got** (18 Oct 2026) = per request line, asked − sent − still pending: what the shop asked for that
+  the warehouse closed without sending. Still-pending units are shown beside it but not counted as a miss yet.
+- **Got what it asked %** (18 Oct 2026, e.g. Hilton) — one figure for both directions:
+  **matched ÷ (matched + asked, not got + sent without a request)**, where matched = Σ min(asked, sent) per line.
+  100 % = the shop got exactly what it asked for and nothing else. Shown on each shop's row, as a check card,
+  and for all shops in the strip — it scores the asking/sending match, not the shop, so it is not in effectiveness.
+- **Requested but not converting** = requested bags received 14+ days ago that sold under 25 % of what arrived
+  within 14 days.
 - Page: period This month · Last month; one block per shop (effectiveness · fill · requests · asked · sent ·
   received · pending), opening to the three checks and a bag table (asked · suggested · sent · received ·
-  pending · stock when asked / Max · out / below min · sold in 14 days · offer). Hover a bag for each request.
+  pending · stock when asked / Max · out / below min · sold in 14 days · offer), then the **Asked, not got**,
+  **Sent without a request** and **Requested but not converting** tables. Hover a bag for each request.
 
 ## Production — shop requests vs approved list (18 Oct 2026)
 

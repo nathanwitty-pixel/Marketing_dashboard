@@ -23,6 +23,8 @@ Effectiveness % per shop (user's choice, 18 Oct 2026 — "blend of 3 checks"), u
                    (only lines received at least 14 days ago).
   Score = the average of the three. Dispatch FILL (sent ÷ asked, capped per line) is shown beside it — that is the
   warehouse's score, not the shop's.
+  GOT WHAT IT ASKED % covers both directions: matched (min(asked, sent) per line) ÷ (matched + ASKED, NOT GOT
+  (asked − sent − still pending) + SENT WITHOUT A REQUEST). Not part of effectiveness either.
 
 Production: the weekly "Approved list" (`denri_production_plan`, KE-…, UG-…, TZ-…) is the final submission to
 production. Per plan, the shops' requests placed since the country's previous list (up to the plan date) are set
@@ -255,7 +257,7 @@ def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, hav
 
     acc = collections.defaultdict(lambda: {"orders": set(), "req": 0.0, "sent": 0.0, "rec": 0.0, "pend": 0.0, "fill": 0.0,
                                            "need_ok": 0.0, "qty_ok": 0.0, "qty_base": 0.0, "st_sold": 0.0, "st_base": 0.0,
-                                           "low": 0.0, "offer": 0.0, "cur": 0.0, "mx": 0.0, "bags": {}})
+                                           "low": 0.0, "offer": 0.0, "cur": 0.0, "mx": 0.0, "short": 0.0, "bags": {}})
     for x in lines:
         a = acc[x["shop"]]
         a["orders"].add(x["root"])
@@ -265,6 +267,8 @@ def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, hav
         a["rec"] += x["rec"]
         a["pend"] += x["pend"]
         a["fill"] += sent
+        short = max(req - x["sent"] - x["pend"], 0.0)                 # asked, closed without being sent
+        a["short"] += short
         low = x["cur"] <= 0 or x["alert"] in ("stockout", "below_min") or (x["mn"] > 0 and x["cur"] <= x["mn"])
         off = offer(x["bag"], x["d"])
         if low:
@@ -291,7 +295,7 @@ def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, hav
         a["mx"] += x["mx"]
         b = a["bags"].setdefault(x["bag"], {"bag": x["bag"], "req": 0.0, "sent": 0.0, "rec": 0.0, "pend": 0.0, "cur": 0.0,
                                             "mx": 0.0, "sug": 0.0, "low": 0.0, "fit": 0.0, "fitBase": 0.0, "st": 0.0, "stBase": 0.0,
-                                            "orders": 0, "offer": "", "last": None, "lines": []})
+                                            "orders": 0, "offer": "", "last": None, "short": 0.0, "matched": 0.0, "lines": []})
         b["req"] += req
         b["sent"] += x["sent"]
         b["rec"] += x["rec"]
@@ -299,6 +303,8 @@ def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, hav
         b["cur"] += x["cur"]
         b["mx"] += x["mx"]
         b["orders"] += 1
+        b["short"] += short
+        b["matched"] += sent
         if low:
             b["low"] += req
         if fit is not None:
@@ -313,7 +319,7 @@ def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, hav
         b["last"] = max(b["last"] or x["d"], x["d"])
         if len(b["lines"]) < 12:
             b["lines"].append({"ref": x["ref"], "d": x["d"].isoformat(), "product": x["product"], "req": int(req),
-                               "sent": int(x["sent"]), "rec": int(x["rec"]), "pend": int(x["pend"]), "cur": int(x["cur"]),
+                               "sent": int(x["sent"]), "rec": int(x["rec"]), "pend": int(x["pend"]), "short": int(short), "cur": int(x["cur"]),
                                "inc": int(x["inc"]), "mn": int(x["mn"]), "mx": int(x["mx"]), "sug": int(x["sug"]), "alert": x["alert"],
                                "offer": off, "rcv": x["rcv"].isoformat() if x["rcv"] else None,
                                "sold14": None if st is None else int(st)})
@@ -353,7 +359,9 @@ def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, hav
         ua = sorted(unasked[shop].values(), key=lambda b: -b["extra"])
         out[shop] = {"orders": 0, "req": 0, "sent": 0, "rec": 0, "pend": 0, "fill": None, "recPct": None, "lowPct": None,
                      "offerPct": None, "checks": {"need": None, "qty": None, "sell": None}, "score": None,
-                     "sellBase": 0, "sug": 0, "bags": [], "notConverting": [], **_unasked_block(ua, have, shop)}
+                     "sellBase": 0, "sug": 0, "bags": [], "notConverting": [], "short": 0, "matched": 0, "notGot": [],
+                     **_unasked_block(ua, have, shop)}
+        out[shop]["match"] = _match(0, 0, out[shop]["unasked"])
     for shop, a in acc.items():
         checks = {"need": _pct(a["need_ok"], a["req"]), "qty": _pct(a["qty_ok"], a["qty_base"]),
                   "sell": _pct(a["st_sold"], a["st_base"])}
@@ -377,9 +385,22 @@ def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, hav
                                       "lines": [l for l in b["lines"] if l["sold14"] is not None]}
                                      for b in bags if b["stBase"] > 0 and b["st"] / b["stBase"] * 100 < NOT_CONVERTING_PCT],
                                     key=lambda r: (r["pct"] or 0, -r["rec"])),
+            "short": int(a["short"]), "matched": int(a["fill"]),
+            "notGot": sorted([{"bag": b["bag"], "req": int(b["req"]), "sent": int(b["sent"]), "matched": int(b["matched"]),
+                               "pend": int(b["pend"]), "short": int(b["short"]), "orders": b["orders"],
+                               "have": int(((have or {}).get(shop) or {}).get(b["bag"], 0)),
+                               "lines": [l for l in b["lines"] if l["short"] or l["pend"]]}
+                              for b in bags if b["short"] >= 1 or b["pend"] >= 1],
+                             key=lambda r: (-r["short"], -r["pend"])),
             **_unasked_block(sorted(unasked.get(shop, {}).values(), key=lambda b: -b["extra"]), have, shop),
         }
+        out[shop]["match"] = _match(a["fill"], a["short"], out[shop]["unasked"])
     return out
+
+
+def _match(matched, short, unasked):
+    """Got what it asked % — matched ÷ (matched + asked-not-got + sent-without-a-request); None with nothing to judge."""
+    return _pct(matched, matched + short + unasked)
 
 
 def _unasked_block(rows, have, shop):
