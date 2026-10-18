@@ -20386,7 +20386,7 @@
       "node_kind": "heading",
       "norm_label": "data",
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L131"
+      "source_location": "L134"
     },
     {
       "id": "docs_shop_stock_levels_each_shop_s_monthly_need_per_bag_the_way_we_did_the_targets",
@@ -20446,7 +20446,7 @@
       "node_kind": "heading",
       "norm_label": "page",
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L115"
+      "source_location": "L118"
     },
     {
       "id": "docs_shop_stock_levels_product_rating_and_core_5_vs_other_13_categories_18_oct_2026",
@@ -20470,7 +20470,7 @@
       "node_kind": "heading",
       "norm_label": "production \u2014 shop requests vs approved list (18 oct 2026)",
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L189"
+      "source_location": "L192"
     },
     {
       "id": "docs_shop_stock_levels_shop_requests_requested_vs_received_18_oct_2026",
@@ -20482,7 +20482,7 @@
       "node_kind": "heading",
       "norm_label": "shop requests \u2014 requested vs received (18 oct 2026)",
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L142"
+      "source_location": "L145"
     },
     {
       "id": "docs_shop_stock_levels_shop_stock_levels_min_max_per_shop_stocks_report_and_next_month_preparedness",
@@ -59255,7 +59255,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L115",
+      "source_location": "L118",
       "weight": 1.0
     },
     {
@@ -59277,7 +59277,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L131",
+      "source_location": "L134",
       "weight": 1.0
     },
     {
@@ -59288,7 +59288,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L142",
+      "source_location": "L145",
       "weight": 1.0
     },
     {
@@ -59299,7 +59299,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L189",
+      "source_location": "L192",
       "weight": 1.0
     },
     {
