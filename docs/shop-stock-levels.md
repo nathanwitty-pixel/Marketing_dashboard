@@ -79,3 +79,37 @@ section shows when it opens.
   usual exclusions (delivery, customisation, straps, samples, gift bags, KES discount, `sales_exclusions.txt`).
 - Bag type: `lib/runway_bags.type_fn()` (catalogue bag, else name minus colour words) — the same keys as the
   bag targets.
+
+## Shop requests — requested vs received (18 Oct 2026)
+
+Source: the Odoo **dispatch module** (`denri_dispatch_*`), which every shop orders through — `lib/shop_requests.py`.
+
+- **Request** = a shop's original order (`denri_dispatch_order`, request type *shop*, not a backorder, not cancelled)
+  from a retail shop. Unsent quantities move to backorders (`backorder_root_id`); sent / received / still pending
+  are summed over the request and its backorders, per product. Cancelled orders are left out — most are
+  "Cancelled from pending queue adjustment" (the shop re-ordered and the new order carries the quantity again).
+- **Stock before ordering** = the order line's own snapshot: on hand, incoming, Min / Max (dispatch stock policy),
+  Odoo's suggested quantity (Max − on hand − incoming) and its alert (stockout / below min / healthy).
+- **Offers** on the order date: Power Deal · Deal of the Week · timed offers · running combos (Kenya; the
+  Product Performance source).
+- **Effectiveness %** per shop = the average of three checks, units-weighted (user's choice, 18 Oct 2026):
+  1. **Right bag** — out of stock / at or below Min when asked, or on an offer while under half of Max
+     (Power Deal runs all month, so an offer alone isn't a reason).
+  2. **Right qty** — asked ÷ Odoo's suggested quantity (capped at 100 %). Odoo already blocks ordering above Max,
+     so the miss is **under-ordering** (Sep 2026: 14,858 asked against 43,683 suggested).
+  3. **Sold through** — of what arrived, the share sold at that shop within 14 days of the first receipt (only
+     arrivals 14+ days ago).
+- **Fill** = sent ÷ asked (capped per line) — the warehouse's score, shown beside the shop's, never in it.
+- Page: period This month · Last month; one block per shop (effectiveness · fill · requests · asked · sent ·
+  received · pending), opening to the three checks and a bag table (asked · suggested · sent · received ·
+  pending · stock when asked / Max · out / below min · sold in 14 days · offer). Hover a bag for each request.
+
+## Production — shop requests vs approved list (18 Oct 2026)
+
+The weekly **Approved list** (`denri_production_plan`, KE-… / UG-… / TZ-…; new-shop and corporate plans left out)
+is the final submission to production. Each list is set against the shops' requests of that country placed since
+the country's previous list, up to the plan date, per product:
+**Allowed in full** (approved ≥ asked) · **Cut** (approved < asked) · **Not allowed** (asked, not on the list) ·
+**Added** (on the list, no shop asked — the planner's choice). **Asks allowed %** = Σ min(asked, approved) ÷ asked;
+**approved beyond the asks** = approved − allowed. **Tailors** = units on the tailor plan (`denri_tailor_plan_line`).
+The last 6 lists per country; pick one from the list. Hover a product for the shops that asked.

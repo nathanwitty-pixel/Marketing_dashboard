@@ -320,5 +320,166 @@
     "says": "Move 8 from Kitengela (sold 0 in 14 days) to Hilton (sells 2.3 a day, 15 left)."
    }
   }
+ ],
+ "2026-10-18": [
+  {
+   "bag": "FEROZ",
+   "market": "kenya",
+   "action": "RESTOCK",
+   "says": "Sells 19.36 a day and has 1.1 days of stock left (21 units). Pause its posts until stock lands.",
+   "perDayBefore": 19.36,
+   "stockBefore": 21,
+   "move": null
+  },
+  {
+   "bag": "LAMORA",
+   "market": "kenya",
+   "action": "PUT_ON_OFFER",
+   "says": "88 in stock, sold 49 in 28 days — 50.3 days of stock. Try it as a Deal of the Week.",
+   "perDayBefore": 1.75,
+   "stockBefore": 88,
+   "move": null
+  },
+  {
+   "bag": "KAI",
+   "market": "kenya",
+   "action": "POST_MORE",
+   "says": "Posts turn into sales (100% of expected) but it was posted only 2 times (typical: 10). 31.4 days of stock — post it daily this week.",
+   "perDayBefore": 7.36,
+   "stockBefore": 231,
+   "move": null
+  },
+  {
+   "bag": "MEGA",
+   "market": "kenya",
+   "action": "POST_MORE",
+   "says": "Posts turn into sales (100% of expected) but it was posted only 4 times (typical: 10). 21.9 days of stock — post it daily this week.",
+   "perDayBefore": 6.39,
+   "stockBefore": 140,
+   "move": null
+  },
+  {
+   "bag": "LOLA",
+   "market": "kenya",
+   "action": "POST_MORE",
+   "says": "Posts turn into sales (100% of expected) but it was posted only 5 times (typical: 10). 18.3 days of stock — post it daily this week.",
+   "perDayBefore": 7.71,
+   "stockBefore": 141,
+   "move": null
+  },
+  {
+   "bag": "IMANI",
+   "market": "kenya",
+   "action": "PUT_ON_OFFER",
+   "says": "69 in stock, sold 12 in 28 days — 161 days of stock. Try it as a Deal of the Week.",
+   "perDayBefore": 0.43,
+   "stockBefore": 69,
+   "move": null
+  },
+  {
+   "bag": "GYM BAG",
+   "market": "kenya",
+   "action": "POST_MORE",
+   "says": "Posts turn into sales (100% of expected) but it was posted only 9 times (typical: 10). 37.8 days of stock — post it daily this week.",
+   "perDayBefore": 5.43,
+   "stockBefore": 205,
+   "move": null
+  },
+  {
+   "bag": "ANTITHEFT",
+   "market": "sinza",
+   "action": "RESTOCK",
+   "says": "Sells 2.07 a day and has 1.9 days of stock left (4 units). Pause its posts until stock lands.",
+   "perDayBefore": 2.07,
+   "stockBefore": 4,
+   "move": null
+  },
+  {
+   "bag": "TRECENTO",
+   "market": "kenya",
+   "action": "POST_MORE",
+   "says": "Posts turn into sales (100% of expected) but it was posted only 3 times (typical: 10). 23.4 days of stock — post it daily this week.",
+   "perDayBefore": 4.82,
+   "stockBefore": 113,
+   "move": null
+  },
+  {
+   "bag": "BIG MAN BAG",
+   "market": "kenya",
+   "action": "MOVE_STOCK",
+   "says": "Move 15 from Busia (sold 0 in 14 days) to Ktda (sells 1.8 a day, 6 left).",
+   "perDayBefore": null,
+   "stockBefore": null,
+   "move": {
+    "bag": "BIG MAN BAG",
+    "from": "BUSIA",
+    "to": "KTDA",
+    "qty": 15,
+    "toPerDay": 1.79,
+    "toStock": 6,
+    "says": "Move 15 from Busia (sold 0 in 14 days) to Ktda (sells 1.8 a day, 6 left)."
+   }
+  },
+  {
+   "bag": "CESS",
+   "market": "kenya",
+   "action": "PUT_ON_OFFER",
+   "says": "57 in stock, sold 32 in 28 days — 49.9 days of stock. Try it as a Deal of the Week.",
+   "perDayBefore": 1.14,
+   "stockBefore": 57,
+   "move": null
+  },
+  {
+   "bag": "FANNY PACK",
+   "market": "kenya",
+   "action": "PUT_ON_OFFER",
+   "says": "88 in stock, sold 26 in 28 days — 94.8 days of stock. Try it as a Deal of the Week.",
+   "perDayBefore": 0.93,
+   "stockBefore": 88,
+   "move": null
+  },
+  {
+   "bag": "ZELUS",
+   "market": "kenya",
+   "action": "PUT_ON_OFFER",
+   "says": "44 in stock, sold 9 in 28 days — 136.9 days of stock. Try it as a Deal of the Week.",
+   "perDayBefore": 0.32,
+   "stockBefore": 44,
+   "move": null
+  },
+  {
+   "bag": "LOOP BP",
+   "market": "kenya",
+   "action": "MOVE_STOCK",
+   "says": "Move 10 from Mombasa (sold 0 in 14 days) to Hilton (sells 1.1 a day, 4 left).",
+   "perDayBefore": null,
+   "stockBefore": null,
+   "move": {
+    "bag": "LOOP BP",
+    "from": "MOMBASA",
+    "to": "HILTON",
+    "qty": 10,
+    "toPerDay": 1.14,
+    "toStock": 4,
+    "says": "Move 10 from Mombasa (sold 0 in 14 days) to Hilton (sells 1.1 a day, 4 left)."
+   }
+  },
+  {
+   "bag": "GYM BAG",
+   "market": "kenya",
+   "action": "MOVE_STOCK",
+   "says": "Move 10 from Rongai (sold 0 in 14 days) to Ktda (sells 1.1 a day, 6 left).",
+   "perDayBefore": null,
+   "stockBefore": null,
+   "move": {
+    "bag": "GYM BAG",
+    "from": "RONGAI",
+    "to": "KTDA",
+    "qty": 10,
+    "toPerDay": 1.14,
+    "toStock": 6,
+    "says": "Move 10 from Rongai (sold 0 in 14 days) to Ktda (sells 1.1 a day, 6 left)."
+   }
+  }
  ]
 }

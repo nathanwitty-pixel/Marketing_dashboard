@@ -17,7 +17,7 @@ import webbrowser
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # project root → lib/
 from lib import paths
-from lib import db, queries, colours, oos_callbacks, product_targets, runway_bags
+from lib import db, queries, colours, oos_callbacks, product_targets, runway_bags, shop_requests
 from lib import stock as stock_lib
 
 HTML = paths.html("shop_stock_levels.html")
@@ -30,7 +30,7 @@ TILL_SHOP = {"STARMALL": "Starmall", "MOMBASA": "Mombasa", "NAKURU": "Nakuru", "
              "MERU": "Meru", "THIKA": "Thika", "HAZINA": "Hazina", "KITENGELA": "Kitengela", "NANYUKI": "Nanyuki",
              "KAKAMEGA": "Kakamega", "HILTON": "Hilton", "KISII": "Kisii", "KTDA SHOP": "Ktda", "KTDA": "Ktda",
              "BUSIA": "Busia", "RONGAI": "Rongai", "DAR-ES-ALAM": "Sinza", "SINZA": "Sinza", "UGANDA": "Uganda",
-             "WEBSITE SALES": "Website", "WEBSITE": "Website"}
+             "WEBSITE SALES": "Website", "WEBSITE": "Website", "WEBSITE STORE": "Website"}
 CODE_SHOP = {"STAR": "Starmall", "MSA": "Mombasa", "NAKS": "Nakuru", "ELD": "Eldoret", "KSM": "Kisumu", "MERU": "Meru",
              "THK": "Thika", "HAZ": "Hazina", "KITE": "Kitengela", "NAN": "Nanyuki", "KAK": "Kakamega", "HTN": "Hilton",
              "KSI": "Kisii", "KTDA": "Ktda", "BUSIA": "Busia", "RONG": "Rongai", "DAR": "Sinza", "UG": "Uganda",
@@ -233,6 +233,30 @@ def leads(typ, today):
     return out, {p: [w[0].isoformat(), w[1].isoformat()] for p, w in wins.items() if p in ("lastweek", "weekly", "monthly")}
 
 
+def dispatch_shop(name):
+    """Dispatch-module shop name (ELDORET, DAR-ES-ALAM, NYERI…) → the page's shop name."""
+    return _shop(name) or str(name or "").strip().title() or None
+
+
+def requests_block(today, typ):
+    """Shop requests vs received (this month · last month) and the production approved lists — or {} on failure."""
+    m1 = today.replace(day=1)
+    lm1 = (m1 - datetime.timedelta(days=1)).replace(day=1)
+    try:
+        offers = shop_requests._offers()
+        per = {"monthly": (m1, today, m1.strftime("%B %Y")),
+               "lastmonth": (lm1, m1 - datetime.timedelta(days=1), lm1.strftime("%B %Y"))}
+        out = {"sellDays": shop_requests.SELL_DAYS, "periods": {}}
+        for k, (s, e, label) in per.items():
+            out["periods"][k] = {"label": label, "from": s.isoformat(), "to": e.isoformat(),
+                                 "shops": shop_requests.requests(s, e, today, dispatch_shop, typ, offers)}
+        out["production"] = shop_requests.production(dispatch_shop, typ, today)
+        return out
+    except Exception as e:                                   # noqa: BLE001
+        print(f"  Shop requests: skipped ({e})")
+        return {}
+
+
 def build(today=None):
     today = today or datetime.date.today()
     m1 = today.replace(day=1)
@@ -312,7 +336,7 @@ def build(today=None):
             "shopTargets": {s: round(v) for s, v in shop_tgt.items()}, "outside": sorted(OUTSIDE), "online": sorted(ONLINE),
             "rows": rows, "wh": {b: int(q) for b, q in wh.items() if q},
             "whColours": {b: {c: int(q) for c, q in cs.items() if q} for b, cs in wh_cols.items()},
-            "leads": waiting, "leadWindows": lead_wins}
+            "leads": waiting, "leadWindows": lead_wins, "requests": requests_block(today, typ)}
 
 
 def inject(payload):
