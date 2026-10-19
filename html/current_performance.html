@@ -278,6 +278,9 @@
     #corp-clients .sc-kpi .pct { font-size: 0.66rem; font-weight: 700; padding: 0 0.35rem; border-radius: 999px; }
     #corp-clients .sc-bar { display: flex; height: 6px; border-radius: 999px; overflow: hidden; background: rgba(100,116,139,0.25); margin-bottom: 0.3rem; }
     #corp-clients .sc-bar span { display: block; height: 100%; }
+    #corp-clients .sc-bar { position: relative; }
+    #corp-clients .sc-bar .gone { position: absolute; top: -1px; bottom: -1px; width: 2px; background: #e2e8f0; border-radius: 1px; }
+    #corp-clients .sc-strip[hidden] { display: none; }
     #corp-clients .sc-leg { display: flex; flex-wrap: wrap; gap: 0.15rem 0.6rem; }
     #corp-clients .sc-leg i { display: inline-block; width: 7px; height: 7px; border-radius: 2px; margin-right: 0.25rem; vertical-align: 0; }
     #corp-clients .sc-shops { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.5rem; }
@@ -523,7 +526,7 @@
     </div>
     <div class="corp-pane" data-pane="app">
     <div class="corp-head card-label" style="margin-bottom:0.45rem"></div>
-    <div class="corp-target" hidden style="display:flex;flex-wrap:wrap;gap:0.35rem 0.9rem;margin:-0.1rem 0 0.55rem;padding:0.4rem 0.55rem;border-radius:8px;background:rgba(99,102,241,0.08);border:1px solid #2d3148;font-size:0.68rem;color:#94a3b8"></div>
+    <div class="corp-target sc-strip" hidden></div>
     <div class="corp-chart" hidden>
       <div class="corp-chart-title">Bags per client — where each order stands</div>
       <div style="position:relative"><canvas id="chart-corp-app" role="img" aria-label="Bags per corporate client: sold, invoiced but not paid, and quoted still to invoice"></canvas></div>
@@ -801,22 +804,54 @@ const PROJ = {
     var tot = { quoted: n(rows.reduce(function (a, r) { return a + toInvoice(r); }, 0)) + '<span style="display:block;font-size:0.58rem;font-weight:500;color:#94a3b8">to invoice</span>', invoiced: n(sum('invoiced')), sold: n(Math.round(sum('sold'))),
                 paid: tPct === null ? '–' : '<span style="color:' + (tPct >= 100 ? '#34d399' : (tPct > 0 ? '#fbbf24' : '#f87171')) + '">' + tPct + '%</span>' };
     Array.prototype.forEach.call(box.querySelectorAll('thead .ct'), function (el) { el.innerHTML = tot[el.getAttribute('data-t')] || ''; });
-    // Target strip: the month against the Odoo corporate target — bags sold, KES received, month gone, pipeline.
-    var T = PERF.corporateTarget, strip = box.querySelector('.corp-target');
-    if (T && strip && (T.bags || T.kes)) {
+    // KPI cards (same look as the Shop corporate tab): bags and KES against the Odoo corporate target (white line =
+    // share of the month gone), money collected vs owed on the invoices, and clients by payment state.
+    var T = PERF.corporateTarget || {}, strip = box.querySelector('.corp-target');
+    if (strip) {
       var now = new Date(), dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
       var gone = Math.round(now.getDate() / dim * 100);
       var pct = function (a, b) { return b ? Math.round(a / b * 100) : null; };
-      var badge = function (p) {
-        return p === null ? '–' : '<b style="color:' + (p >= gone ? '#34d399' : '#fbbf24') + '">' + p + '%</b>';
+      var pc0 = function (a, b) { return b ? Math.round(a / b * 100) : 0; };
+      var pill = function (p) { return p === null ? '' : '<span class="pct" style="color:' + (p >= gone ? '#34d399' : '#fbbf24') + ';background:'
+        + (p >= gone ? 'rgba(52,211,153,0.12)' : 'rgba(251,191,36,0.12)') + '" title="Green = at or ahead of the ' + gone + '% of the month gone">' + p + '% of target</span>'; };
+      // Bar scaled to the target (or to the total when past it); parts = [[value, colour]], marker at month gone.
+      var bar = function (parts, scale, mark) {
+        return '<div class="sc-bar">' + parts.map(function (p) {
+            var w = scale ? Math.min(p[0] / scale * 100, 100) : 0;
+            return w > 0 ? '<span style="width:' + w + '%;background:' + p[1] + '"></span>' : ''; }).join('')
+          + (mark ? '<i class="gone" style="left:calc(' + Math.min(gone, 100) + '% - 1px)" title="Month gone ' + gone + '% (day ' + now.getDate() + ' of ' + dim + ')"></i>' : '')
+          + '</div>';
       };
-      var soldB = Math.round(sum('sold')), recv = sum('receivedKes'), pipe = rows.reduce(function (a, r) { return a + toInvoice(r); }, 0);
-      strip.innerHTML =
-        '<span title="Odoo corporate target for the month (sales_pos_target)"><b style="color:#e2e8f0">Target</b> ' + fmt(T.bags) + ' bags · KES ' + fmt(T.kes) + '</span>'
-        + '<span title="Bags sold this month (Sold total) ÷ target bags">Bags <b style="color:#e2e8f0">' + fmt(soldB) + '</b> · ' + badge(pct(soldB, T.bags)) + '</span>'
-        + '<span title="Money received this month ÷ target KES">Received <b style="color:#e2e8f0">KES ' + fmt(recv) + '</b> · ' + badge(pct(recv, T.kes)) + '</span>'
-        + '<span title="Share of the month gone — green = at or ahead of it">Month gone <b style="color:#e2e8f0">' + gone + '%</b> (day ' + now.getDate() + ' of ' + dim + ')</span>'
-        + (pipe ? '<span title="Bags on this month\'s quotes not invoiced yet">Pipeline <b style="color:#e2e8f0">' + fmt(pipe) + '</b> to invoice</span>' : '');
+      var leg = function (items) { return '<div class="sc-leg">' + items.map(function (x) {
+        return '<span><i style="background:' + x[0] + '"></i>' + x[1] + '</span>'; }).join('') + '</div>'; };
+      var soldB = Math.round(sum('sold')), invB = sum('invoiced'), unpaidB = Math.max(invB - soldB, 0);
+      var pipe = rows.reduce(function (a, r) { return a + toInvoice(r); }, 0);
+      var recv = sum('receivedKes'), paidK = sum('paidKes'), owedK = Math.max(agreed - paidK, 0);
+      var st = {paid: 0, part: 0, unpaid: 0, quote: 0};
+      rows.forEach(function (r) {
+        st[!r.agreedKes ? 'quote' : r.paidKes >= r.agreedKes ? 'paid' : r.paidKes > 0 ? 'part' : 'unpaid']++;
+      });
+      var nC = rows.length, colP = pc0(paidK, agreed), bScale = Math.max(T.bags || 0, soldB + unpaidB + pipe);
+      var h = '';
+      h += '<div class="sc-kpi" title="Bags sold this month (Sold total) against the Odoo corporate target (sales_pos_target)"><div class="lbl">Bags sold vs target</div>'
+        + '<div class="big">' + fmt(soldB) + ' <small>' + (T.bags ? 'of ' + fmt(T.bags) + ' bags' : 'bags') + '</small>' + pill(pct(soldB, T.bags)) + '</div>'
+        + bar([[soldB, '#10b981'], [unpaidB, '#f59e0b'], [pipe, '#64748b']], bScale, !!T.bags)
+        + leg([['#10b981', 'Sold <b>' + pc0(soldB, T.bags || bScale) + '%</b>'], ['#f59e0b', 'Invoiced, unpaid <b>' + fmt(unpaidB) + '</b>'],
+               ['#64748b', 'To invoice <b>' + fmt(pipe) + '</b>']]) + '</div>';
+      if (T.kes) h += '<div class="sc-kpi" title="Money received this month ÷ target KES"><div class="lbl">Received vs target</div>'
+        + '<div class="big">KES ' + fmt(recv) + ' ' + pill(pct(recv, T.kes)) + '</div>'
+        + bar([[recv, '#3b82f6']], Math.max(T.kes, recv), true)
+        + leg([['#3b82f6', 'Target <b>KES ' + fmt(T.kes) + '</b>'], ['#e2e8f0', 'Month gone <b>' + gone + '%</b>']]) + '</div>';
+      if (agreed) h += '<div class="sc-kpi" title="Paid so far ÷ agreed amount (after WHT), over the invoices in this tab"><div class="lbl">Collected vs owed</div>'
+        + '<div class="big">' + colP + '% <small>collected · <span style="color:#f87171">KES ' + fmt(owedK) + ' owed (' + (100 - colP) + '%)</span></small></div>'
+        + bar([[paidK, '#22c55e'], [owedK, '#f87171']], agreed, false)
+        + leg([['#22c55e', 'Paid <b>KES ' + fmt(paidK) + '</b>'], ['#f87171', 'Agreed <b>KES ' + fmt(agreed) + '</b>']]) + '</div>';
+      h += '<div class="sc-kpi"><div class="lbl">Clients</div>'
+        + '<div class="big">' + nC + ' <small>' + pc0(st.paid, nC) + '% fully paid</small></div>'
+        + bar([[st.paid, '#22c55e'], [st.part, '#fbbf24'], [st.unpaid, '#f87171'], [st.quote, '#64748b']], nC, false)
+        + leg([['#22c55e', 'Paid <b>' + st.paid + '</b>'], ['#fbbf24', 'Part <b>' + st.part + '</b>'], ['#f87171', 'Not paid <b>' + st.unpaid + '</b>']]
+              .concat(st.quote ? [['#64748b', 'Quote only <b>' + st.quote + '</b>']] : [])) + '</div>';
+      strip.innerHTML = h;
       strip.hidden = false;
     }
     // Chart: bags per client — sold (paid share) · invoiced, not paid yet · quoted, still to invoice.

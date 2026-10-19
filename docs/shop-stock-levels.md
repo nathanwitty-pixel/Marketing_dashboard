@@ -129,6 +129,25 @@ section shows when it opens.
   Sinza / Uganda shops' short (CBD / VLD don't restock them) + max(Kenya shops' short − buffer, 0).
 - KPI pair: **prepared % without** = (need − short without) ÷ need, **prepared % with** = (need − short with) ÷ need.
 
+### Sales pace to month end (19 Oct 2026)
+
+A switch at the top of the preparedness section sets the pace at which each shop × bag sells until month end. That
+pace sets the **month-end balance** (have − pace × days left), the runs-out day and the **November short** on the whole
+page (stock monitor, stocks report, request list, preparedness). Default: **Optimistic**; remembered in the browser.
+
+| Pace | Units a day |
+|---|---|
+| **Target pace** | the target need a day (need ÷ days in month) — the old rule |
+| **Optimistic pace** | max(target a day, actual a day); actual = sold this month ÷ days gone (today included) |
+| **Month-end push** | actual a day × the **month-end lift** |
+
+**Month-end lift** (`month_end_lift`, generator): for each of the last 3 months, (shop units a day from today's
+day-of-month to month end) ÷ (units a day on day 1 … the day before), Website left out; the median, kept between
+1.0× and 1.5×. The months and their lifts show on hover.
+
+Each switch button shows its prepared % (shops only → with buffer). When the pace is not Target, the two prepared KPIs
+also show the target-pace % and the gap in points. Before the 15th (section closed) the page uses the Target pace.
+
 ### Product rating and core 5 vs other 13 categories (18 Oct 2026)
 
 - **Category** = `data/bag_tiers.csv` CATEGORY (the Bags on offer table). **Core 5** = BACKPACK · TRAVEL · HANDBAG ·

@@ -816,6 +816,10 @@ attachNpPopover('wk-pct-card',    'wk-pct-popover');
     '.cg-pop{position:fixed;z-index:9999;width:min(380px,calc(100vw - 24px));max-height:min(460px,calc(100vh - 24px));overflow:auto;' +
     'padding:0.65rem 0.8rem;border-radius:10px;background:#1e2130;border:1px solid #3d4a5c;color:#e2e8f0;font-size:0.74rem;line-height:1.5;' +
     'box-shadow:0 10px 28px rgba(0,0,0,0.35);display:none}' +
+    '.cg-pop .mv{display:flex;align-items:center;justify-content:space-between;margin:-0.3rem -0.35rem 0.25rem;padding:0.1rem 0.3rem;' +
+    'border-radius:6px;cursor:move;touch-action:none;user-select:none;color:#64748b;font-size:0.62rem}.cg-pop .mv:hover{background:rgba(99,102,241,0.12);color:#a5b4fc}' +
+    '.cg-pop .mv button{border:0;background:none;color:inherit;font:inherit;font-size:0.9rem;line-height:1;cursor:pointer;padding:0 0.2rem}.cg-pop .mv button:hover{color:#f87171}' +
+    '.cg-pop.moved{border-color:#6366f1}' +
     '.cg-pop .h{font-weight:700}.cg-pop .h .bg{color:#fcd34d;text-transform:uppercase;letter-spacing:0.03em}' +
     '.cg-pop .sec{margin-top:0.5rem;padding-top:0.4rem;border-top:1px solid #2d3148;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em}' +
     '.cg-pop .c{padding:0.35rem 0;border-bottom:1px solid rgba(45,49,72,0.6)}.cg-pop .c:last-child{border-bottom:0}' +
@@ -849,11 +853,12 @@ attachNpPopover('wk-pct-card',    'wk-pct-popover');
     var pop = document.createElement('div'); pop.className = 'cg-pop'; pop.setAttribute('role', 'tooltip');
     document.body.appendChild(pop);
     var open = null;
-    function close() { pop.style.display = 'none'; if (open) { open.classList.remove('on'); open.__tapped = false; } open = null; }
+    function close() { pop.style.display = 'none'; pop.classList.remove('moved'); if (open) { open.classList.remove('on'); open.__tapped = false; } open = null; }
     function show(el) {
       var html = popOf(el); if (!html || open === el) return;
+      if (open && pop.classList.contains('moved')) return;   // a moved popover stays put until closed with ×
       close();
-      pop.innerHTML = html;
+      pop.innerHTML = '<div class="mv" title="Drag to move · stays open until ×"><span>⠿ drag to move</span><button type="button" aria-label="Close">×</button></div>' + html;
       pop.style.display = 'block'; pop.style.left = '0px'; pop.style.top = '0px';
       var r = el.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
       var vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
@@ -875,20 +880,40 @@ attachNpPopover('wk-pct-card',    'wk-pct-popover');
       var t = tileOf(ev.target);
       if (t && t === open && !t.__tapped && !(ev.relatedTarget && (t.contains(ev.relatedTarget) || pop.contains(ev.relatedTarget)))) later();
     });
+    // Drag by the top bar (mouse or touch). Once moved it is pinned: no close on leave, scroll or outside click.
+    var drag = null;
+    pop.addEventListener('pointerdown', function (ev) {
+      if (ev.target.closest('.mv button')) { ev.preventDefault(); close(); return; }
+      if (!ev.target.closest('.mv')) return;
+      ev.preventDefault(); clearTimeout(hideT); clearTimeout(swapT);
+      drag = { dx: ev.clientX - pop.offsetLeft, dy: ev.clientY - pop.offsetTop };
+      pop.setPointerCapture(ev.pointerId);
+    });
+    pop.addEventListener('pointermove', function (ev) {
+      if (!drag) return;
+      var vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
+      pop.style.left = Math.max(0, Math.min(ev.clientX - drag.dx, vw - 40)) + 'px';
+      pop.style.top = Math.max(0, Math.min(ev.clientY - drag.dy, vh - 30)) + 'px';
+      if (!pop.classList.contains('moved')) { pop.classList.add('moved'); if (open) open.__tapped = true; }
+    });
+    pop.addEventListener('pointerup', function () { drag = null; });
+    pop.addEventListener('pointercancel', function () { drag = null; });
     pop.addEventListener('mouseenter', function () { clearTimeout(hideT); clearTimeout(swapT); });
     pop.addEventListener('mouseleave', function () { if (open && !open.__tapped) later(); });
     document.addEventListener('click', function (ev) {
       var t = tileOf(ev.target);
-      if (t) { if (open === t && t.__tapped) { close(); return; } show(t); t.__tapped = true; return; }
-      if (open && !pop.contains(ev.target)) close();
+      var moved = pop.classList.contains('moved');
+      if (t) { if (moved) { pop.classList.remove('moved'); close(); show(t); t.__tapped = true; return; }
+               if (open === t && t.__tapped) { close(); return; } show(t); t.__tapped = true; return; }
+      if (open && !moved && !pop.contains(ev.target)) close();
     });
     document.addEventListener('keydown', function (ev) {
       var t = tileOf(ev.target);
       if (ev.key === 'Escape') close();
       else if (t && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); open === t ? close() : show(t); }
     });
-    window.addEventListener('scroll', function (ev) { if (!pop.contains(ev.target)) close(); }, true);
-    window.addEventListener('resize', close);
+    window.addEventListener('scroll', function (ev) { if (!pop.contains(ev.target) && !pop.classList.contains('moved')) close(); }, true);
+    window.addEventListener('resize', function () { if (!pop.classList.contains('moved')) close(); });
     return { close: close };
   };
   var cgPop = document.createElement('div'); cgPop.className = 'cg-pop'; cgPop.setAttribute('role', 'tooltip');

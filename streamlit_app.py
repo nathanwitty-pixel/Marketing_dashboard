@@ -998,6 +998,14 @@ EMBED_FIX = """
   html, body { min-height:0 !important; height:auto !important; overflow-y:visible !important;
                overflow-x:hidden !important; max-width:100% !important; }
   .wrap, .container, .app-body, main, [class*="-wrap"] { min-height:0 !important; }
+  /* Smooth scrolling: the frame is stretched to the full page height, so the fixed "aura" layers
+     (filter: blur 58–126px + mix-blend) and every frosted card / sidebar (backdrop-filter) become
+     page-tall GPU layers re-composited on each scroll — long pages (Combos) stuttered. The gradients
+     are already soft, so drop the blur / blend here; cards keep their see-through background. */
+  .aura-layer-1, .aura-layer-2, .aura-layer-3 { filter:none !important; mix-blend-mode:normal !important;
+               will-change:auto !important; transform:none !important; }
+  .card, .panel, .kpi, .sec, .exec, .mini, .hsb { backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }
+  .psb-embedded .hsb { background-color:rgba(20,24,36,0.94) !important; }
   /* Mobile: fit the content to the phone width (no side cut-off), trim big padding. */
   @media (max-width: 640px){
     body { padding-left:0.6rem !important; padding-right:0.6rem !important; }

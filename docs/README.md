@@ -168,6 +168,9 @@ straight after it.
   swapping, and the swap is cancelled if the pointer reaches the popover. Moving down across the next row no
   longer replaces it.
 - Click or tap still pins.
+- **Movable (New Products tile / table popovers, `npTilePopover`, 19 Oct 2026):** drag the top bar ("⠿ drag to
+  move") to put the popover anywhere; once moved it stays put (no close on leave, scroll or outside click) until
+  **×**, Esc, or a click on another number.
 
 Covered:
 - `oos_chip.js` (📞 chips on New Products, Combos and Bags on Offer).

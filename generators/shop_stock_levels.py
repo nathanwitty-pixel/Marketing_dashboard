@@ -298,6 +298,39 @@ def requests_block(today, typ, have=None, targets=None):
         return {}
 
 
+PUSH_MONTHS = 3                     # month-end lift: from the same days of the last 3 closed months
+PUSH_CLAMP = (1.0, 1.5)             # kept between 1.0× (no lift) and 1.5×
+
+
+def month_end_lift(today, typ):
+    """How much faster the shops sell in the rest of the month than before it, from the last PUSH_MONTHS months:
+    (units a day from today's day-of-month to month end) ÷ (units a day on days 1 … day before). Median, clamped.
+    Returns (lift, [{"month", "lift"}]) — lift 1.0 when there is no history (e.g. on the 1st)."""
+    day, per = today.day, []
+    m = today.replace(day=1)
+    for _ in range(PUSH_MONTHS):
+        m = (m - datetime.timedelta(days=1)).replace(day=1)
+        dim = calendar.monthrange(m.year, m.month)[1]
+        if day < 2 or day > dim:
+            continue
+        try:
+            early, _ = sales(m, m.replace(day=day - 1), typ)
+            late, _ = sales(m.replace(day=day), m.replace(day=dim), typ)
+        except Exception as e:                               # noqa: BLE001
+            print(f"  Shop stock levels: month-end lift unavailable for {m:%b %Y} ({e})")
+            continue
+        tot = lambda d: sum(q for s, bs in d.items() if s not in ONLINE for q in bs.values())  # noqa: E731
+        e_rate, l_rate = tot(early) / (day - 1), tot(late) / (dim - day + 1)
+        if e_rate > 0:
+            per.append({"month": m.strftime("%b %Y"), "lift": round(l_rate / e_rate, 3)})
+    if not per:
+        return 1.0, per
+    lifts = sorted(p["lift"] for p in per)
+    mid = len(lifts) // 2
+    med = lifts[mid] if len(lifts) % 2 else (lifts[mid - 1] + lifts[mid]) / 2
+    return round(min(max(med, PUSH_CLAMP[0]), PUSH_CLAMP[1]), 3), per
+
+
 def last_month_need(m1, typ):
     """Last month's shop × bag target need (its own Odoo targets) for judging last month's requests — or None."""
     lm1 = (m1 - datetime.timedelta(days=1)).replace(day=1)
@@ -350,6 +383,8 @@ def build(today=None):
     else:
         nm_need = need
     nm_days = calendar.monthrange(nm1.year, nm1.month)[1]
+    # Sales pace scenarios for the rest of the month (Target / Optimistic / Push) — the page picks one.
+    lift, lift_per = month_end_lift(today, typ) if nm_open else (1.0, [])
 
     stock, stock_cols = shop_stock(typ)
     wh, wh_cols = warehouse_stock(typ)
@@ -398,6 +433,8 @@ def build(today=None):
 
     return {"generated": datetime.datetime.now().strftime("%d %b %Y %H:%M"),
             "month": m1.strftime("%B %Y"), "today": today.isoformat(), "daysIn": days_in, "daysLeft": days_left,
+            "daysGone": today.day,                 # days whose sales are in "sold" (today's so far included)
+            "pace": {"lift": lift, "liftMonths": lift_per, "clamp": list(PUSH_CLAMP)},
             "minDays": MIN_DAYS, "maxDays": MAX_DAYS, "warehouse": WAREHOUSE,
             "base": f"{b0.strftime('%d %b')} – {b1.strftime('%d %b %Y')}",
             "nextMonth": {"label": nm1.strftime("%B %Y"), "open": nm_open, "opensOn": m1.replace(day=NEXT_MONTH_FROM_DAY).isoformat(),
