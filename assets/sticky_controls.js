@@ -38,7 +38,9 @@
   // Embedded (Streamlit): the iframe is as tall as the page, so the parent scrolls. Null when the page scrolls itself.
   function embedHost() {
     if (!frame) return null;
-    if (document.documentElement.scrollHeight > window.innerHeight + 2) return null;
+    // streamlit_app.py marks the frame it stretches (data-dash-page): trust that. The height test alone flipped
+    // for a moment when pinning added the bar's margin before the frame re-fitted → pin / unpin every scroll step.
+    if (!frame.hasAttribute('data-dash-page') && document.documentElement.scrollHeight > window.innerHeight + 2) return null;
     try {
       var tb = window.parent.document.querySelector('.tn-bar'), inset = tb ? Math.max(0, tb.getBoundingClientRect().bottom) : 0;
       return { frameTop: frame.getBoundingClientRect().top, inset: inset };

@@ -819,7 +819,7 @@ attachNpPopover('wk-pct-card',    'wk-pct-popover');
     '.cg-pop .mv{display:flex;align-items:center;justify-content:space-between;margin:-0.3rem -0.35rem 0.25rem;padding:0.1rem 0.3rem;' +
     'border-radius:6px;cursor:move;touch-action:none;user-select:none;color:#64748b;font-size:0.62rem}.cg-pop .mv:hover{background:rgba(99,102,241,0.12);color:#a5b4fc}' +
     '.cg-pop .mv button{border:0;background:none;color:inherit;font:inherit;font-size:0.9rem;line-height:1;cursor:pointer;padding:0 0.2rem}.cg-pop .mv button:hover{color:#f87171}' +
-    '.cg-pop.moved{border-color:#6366f1}' +
+    '.cg-pop.moved{border-color:#6366f1}.cg-pop:has(.mv){cursor:move;user-select:none}' +
     '.cg-pop .h{font-weight:700}.cg-pop .h .bg{color:#fcd34d;text-transform:uppercase;letter-spacing:0.03em}' +
     '.cg-pop .sec{margin-top:0.5rem;padding-top:0.4rem;border-top:1px solid #2d3148;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em}' +
     '.cg-pop .c{padding:0.35rem 0;border-bottom:1px solid rgba(45,49,72,0.6)}.cg-pop .c:last-child{border-bottom:0}' +
@@ -872,6 +872,7 @@ attachNpPopover('wk-pct-card',    'wk-pct-popover');
     function later() { clearTimeout(hideT); clearTimeout(swapT); hideT = setTimeout(function () { if (open && !open.__tapped) close(); }, 220); }
     box.addEventListener('mouseover', function (ev) {
       var t = tileOf(ev.target); if (!t) return;
+      if (Date.now() - (pop.__xAt || 0) < 600) return;   // just closed with ×: the cell under the mouse doesn't reopen it
       clearTimeout(hideT); clearTimeout(swapT);
       if (open && open !== t && !open.__tapped) swapT = setTimeout(function () { show(t); }, 220);
       else show(t);
@@ -880,17 +881,24 @@ attachNpPopover('wk-pct-card',    'wk-pct-popover');
       var t = tileOf(ev.target);
       if (t && t === open && !t.__tapped && !(ev.relatedTarget && (t.contains(ev.relatedTarget) || pop.contains(ev.relatedTarget)))) later();
     });
-    // Drag by the top bar (mouse or touch). Once moved it is pinned: no close on leave, scroll or outside click.
+    // Drag it anywhere (mouse or touch; the top bar is the hint). It starts after 4 px, so a plain click
+    // still works. Once moved it is pinned: no close on leave, scroll or outside click — × / Esc closes.
     var drag = null;
     pop.addEventListener('pointerdown', function (ev) {
-      if (ev.target.closest('.mv button')) { ev.preventDefault(); close(); return; }
-      if (!ev.target.closest('.mv')) return;
-      ev.preventDefault(); clearTimeout(hideT); clearTimeout(swapT);
-      drag = { dx: ev.clientX - pop.offsetLeft, dy: ev.clientY - pop.offsetTop };
-      pop.setPointerCapture(ev.pointerId);
+      if (ev.target.closest('.mv button')) { ev.preventDefault(); close(); pop.__xAt = Date.now(); return; }
+      if (ev.button || ev.target.closest('a, button, input, select')) return;
+      if (ev.target.closest('.mv')) ev.preventDefault();
+      clearTimeout(hideT); clearTimeout(swapT);
+      drag = { x0: ev.clientX, y0: ev.clientY, dx: ev.clientX - pop.offsetLeft, dy: ev.clientY - pop.offsetTop, on: false, id: ev.pointerId };
     });
     pop.addEventListener('pointermove', function (ev) {
       if (!drag) return;
+      if (!drag.on) {
+        if (Math.abs(ev.clientX - drag.x0) + Math.abs(ev.clientY - drag.y0) < 4) return;
+        drag.on = true; try { pop.setPointerCapture(drag.id); } catch (e) {}
+        var s = window.getSelection && window.getSelection(); if (s) s.removeAllRanges();
+      }
+      ev.preventDefault();
       var vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
       pop.style.left = Math.max(0, Math.min(ev.clientX - drag.dx, vw - 40)) + 'px';
       pop.style.top = Math.max(0, Math.min(ev.clientY - drag.dy, vh - 30)) + 'px';

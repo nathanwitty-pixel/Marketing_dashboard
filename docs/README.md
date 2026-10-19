@@ -170,7 +170,13 @@ straight after it.
 - Click or tap still pins.
 - **Movable (New Products tile / table popovers, `npTilePopover`, 19 Oct 2026):** drag the top bar ("⠿ drag to
   move") to put the popover anywhere; once moved it stays put (no close on leave, scroll or outside click) until
-  **×**, Esc, or a click on another number.
+  **×**, Esc, or a click on another number. Drag works from anywhere on it (4 px threshold, so clicks still work).
+- **No hover while scrolling (Streamlit, 19 Oct 2026):** `streamlit_app.py` EMBED_FIX sets `html.st-scrolling`
+  (body `pointer-events:none`) until 200 ms after the last wheel / parent scroll, so popovers don't open as rows
+  pass under the mouse and the wheel isn't caught by tables with their own scroll bar.
+- **Scroll speed rules:** `v5_theme.js` re-checks only the element whose `style` changed (not its parent);
+  `page_sidebar.js` and `sticky_controls.js` treat the frame as embedded when it carries `data-dash-page`
+  (the height test flipped mid-scroll → sticky bars pinned / unpinned every step and the page jumped).
 
 Covered:
 - `oos_chip.js` (📞 chips on New Products, Combos and Bags on Offer).

@@ -176,7 +176,9 @@
   // against the parent's viewport instead, pin the aside with a transform, scroll the parent.
   function embedHost() {
     if (!st.frame) return null;
-    if (document.documentElement.scrollHeight > window.innerHeight + 2) return null;   // the page scrolls itself
+    // the page scrolls itself — unless streamlit_app.py marked the frame as stretched (data-dash-page); the height
+    // test alone flips for a moment whenever content grows before the frame re-fits
+    if (!st.frame.hasAttribute('data-dash-page') && document.documentElement.scrollHeight > window.innerHeight + 2) return null;
     try {
       // The host's sticky top bar (Streamlit's .tn-bar) covers the top of the viewport: stay below it.
       var bar = window.parent.document.querySelector('.tn-bar'), inset = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0;
@@ -196,7 +198,8 @@
     var a = st.aside, lay = a.parentElement;
     var want = -host.frameTop + host.inset + 16 - lay.getBoundingClientRect().top;
     var max = Math.max(0, lay.offsetHeight - a.offsetHeight);
-    a.style.transform = 'translateY(' + Math.round(Math.max(0, Math.min(max, want))) + 'px)';
+    var tf = 'translateY(' + Math.round(Math.max(0, Math.min(max, want))) + 'px)';
+    if (a.style.transform !== tf) a.style.transform = tf;   // no write (and no style mutation) when it hasn't moved
   }
   // Smooth unless the viewer asked for reduced motion.
   function behaviour() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'; }

@@ -1006,6 +1006,9 @@ EMBED_FIX = """
                will-change:auto !important; transform:none !important; }
   .card, .panel, .kpi, .sec, .exec, .mini, .hsb { backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }
   .psb-embedded .hsb { background-color:rgba(20,24,36,0.94) !important; }
+  /* While the page is scrolling (script below): no hover — popovers don't open as rows pass
+     under the mouse, and the wheel keeps scrolling the page instead of catching in a table box. */
+  html.st-scrolling body { pointer-events:none !important; }
   /* Mobile: fit the content to the phone width (no side cut-off), trim big padding. */
   @media (max-width: 640px){
     body { padding-left:0.6rem !important; padding-right:0.6rem !important; }
@@ -1045,6 +1048,12 @@ EMBED_FIX = """
   // constantly while charts animate and were the main source of the jank.
   try { new MutationObserver(schedule)
         .observe(document.documentElement, {subtree:true, childList:true}); } catch(e){}
+  // Scrolling flag: set on the wheel / parent scroll, cleared 200 ms after the last one.
+  var sT = null, H = document.documentElement;
+  function scrolling(){ if(!H.classList.contains('st-scrolling')) H.classList.add('st-scrolling');
+    clearTimeout(sT); sT = setTimeout(function(){ H.classList.remove('st-scrolling'); }, 200); }
+  window.addEventListener('wheel', scrolling, {passive:true});
+  try { parent.document.addEventListener('scroll', scrolling, {capture:true, passive:true}); } catch(e){}
 })();
 </script>
 """
