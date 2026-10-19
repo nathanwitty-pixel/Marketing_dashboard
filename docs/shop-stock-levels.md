@@ -36,6 +36,31 @@ month will be short of.
   the Kenya shops) is shown only here, as what can cover the send-now today. Sinza and Uganda are restocked
   from their own stores — send-now shows the units, no warehouse figure.
 
+## Stock monitor — grouped, and what each shop should request (19 Oct 2026)
+
+Every shop block (e.g. KTDA) lists its bags **grouped by status** — Out of stock → Below min → Over max → OK → Stock,
+no need — then **by category inside each status** (core 5 first; `data/bag_tiers.csv`), each group with its
+**% covered** = Σ min(have, Max) ÷ Σ Max (how much of the stock the shop should hold it actually holds), then the bags.
+The Show filter (Needs action / All) still decides which bags are listed. **Bags as tiles** (19 Oct 2026): under each category row
+the bags are tiles, ranked inside the category by this month's need (**#1** = the bag the shop needs most); a tile
+shows the status, **send now** (big), then have, Min, Max, sold, need, month-end and people waiting as labelled values
+(no dots); its top edge takes the status colour; click / tap for the full detail. The month-end balance is shown in words (19 Oct 2026): **Short by 31 Oct** with the
+number of sales the shop can't make before month end at the target pace (when have − daily need × days left is
+negative), or **Left on 31 Oct** with what will remain for next month; hovering it (and the bag's detail) gives the
+sum — e.g. Claire Handbag at KTDA: stock 0 − 1.06 a day × 13 days = −14 → *Short by 31 Oct 14*, still to sell 25,
+send now 23 covers it and the rest carries into November. Each **category row collapses / expands** its tiles (click the row; ▾ open, ▸ closed); open by default, remembered while the page is open. **Status rows collapse too** (Out of stock, Below min…: click the row to hide or show everything inside it), and each shop has **Collapse all groups / Expand all groups** buttons for its statuses and categories. The column headings (Bag, Status, Have, Min, Max, Sold / need, Month-end, Waiting, Send now) repeat, small and muted, just above every category row so they stay next to the numbers when scrolling.
+
+**Request list** (per shop, in the block): what the shop should ask for, in line with what it must sell through
+**November**, so whatever is left at the end of October is used next month:
+
+| Column | Rule |
+|---|---|
+| **Request now** | bags at or below Min: refill to Max (= send now) **if November still needs the bag**; if November has no need for it, only what is still to sell this month beyond the shelf (max(still to sell − have, 0), capped at the refill) — nothing is sent that would be stranded |
+| **Ask before 1 Nov** | what November will still be short after this month: max(short for November − request now, 0) |
+
+Listed core 5 first, then by request; totals per shop. **Shown as a closed section** (19 Oct 2026): the header carries the totals (request now, ask before 1 Nov, bags); it opens only when clicked, so the shop block stays short; remembered per shop while the page is open. Still to sell = max(need − sold, 0); November need = the
+November row need (from the KES 66.6M revenue target).
+
 ## Stocks report
 
 | Column | Meaning |
@@ -49,6 +74,14 @@ month will be short of.
 | **Waiting** | out-of-stock call-backs (online + walk-in) for that bag at that shop, still waiting, asked in the chosen Leads period (`lib/oos_callbacks`); only requests for a bag we sell or stock (free-text repairs / spare parts are left out) |
 
 ### Bag health (by bag, 18 Oct 2026)
+
+**Grouped (19 Oct 2026):** the table is grouped by **health category** first (Out of stock → Low cover → Overstocked →
+Healthy → Dead stock), then by **bag category inside each health group** (core 5 first) with its **% covered**
+(Σ over the shops of min(have, Max) ÷ Σ Max), then the bags. Each group and category row carries the summed numbers. **Tiles and collapse (19 Oct 2026):** the bags under each category are tiles ranked by
+this month's need (#1 gold) showing the health, **missing this month** (big), Health %, Covered %, have, need, sold,
+still to sell, the month-end balance in words (Short by / Left on 31 Oct, the sum on hover), shops out and the
+warehouse; health groups and categories collapse / expand (click the row), plus Collapse all / Expand all groups; the
+column headings repeat above every category.
 
 Each bag, folded across the shops (have, need, sold and each shop's Min / Max summed), gets **one category**:
 
@@ -113,9 +146,16 @@ section shows when it opens.
 - **The table is grouped by rating** (18 Oct 2026), most urgent first: ★ → ★★★★★, one collapsible block per rating
   (★ and ★★ open) with its bag count, need, short with buffer and cover %. Inside each rating the bags are grouped
   **by category** (core-5 categories first, then by short), each category with a subtotal row; bags within a
-  category by short with buffer.
+  category by short with buffer. The column headings repeat (small, muted) just above every category row, so the
+  headings are always next to the numbers in a long table. **Tiles and collapse (19 Oct 2026):** the bags under each category are tiles ranked by November need (#1
+gold) showing the stars, covered shops only → with buffer, **short after buffer** (big), November need, shops only, with
+CBD + VLD, buffer, the month-end balance in words, short with shops only and shops short; each category row collapses /
+expands its tiles, the rating groups as before, plus Collapse all / Expand all groups.
 
 ## Page
+
+**The filter bar is static** (19 Oct 2026, user's call): it stays at the top of the page and does not follow the reader (sticky controls removed here).
+
 
 - **Controls:** Leads period (Last week · This week · This month · Lifetime — the periods the other pages use) ·
   Show (Needs action · All) · find a bag. No shop filter (16 Oct 2026): every shop is its own block.
@@ -189,6 +229,47 @@ Source: the Odoo **dispatch module** (`denri_dispatch_*`), which every shop orde
   pending · stock when asked / Max · out / below min · sold in 14 days · offer), then the **Asked, not got**,
   **Sent without a request** and **Requested but not converting** tables. Hover a bag for each request.
 
+## Shop vs shop and regions — request checks compared (18 Oct 2026)
+
+At the top of the Shop requests section (same period switch):
+
+- **Shop vs shop** — one row per shop: effectiveness · right bag · right qty · sold through · dispatch fill · asked vs
+  target · got what it asked, each as a % chip, plus units asked. Each column is ranked: the best shop's chip is
+  marked **#1** and the worst **last**; click a column heading to sort by it (default: effectiveness). A dash = the
+  check had nothing to judge.
+- **Regions** (`docs/shop-regions.md`, the source of truth — `lib/shop_regions.py`): the same checks per region, each
+  **units-weighted** from its shops (right bag by units asked, right qty by Odoo's suggestion, sold through by units
+  received 14+ days ago, fill by units asked, asked vs target by the target refill, got what it asked by matched +
+  not got + unasked). Effectiveness = the average of the region's three shop checks.
+- **Dispatch balance** per region: share of all units **asked** · share of units **sent** · share of the **target
+  refill** (what the targets said to bring in) → **balance** = share sent − share of target refill, in points
+  (+ = the region got more than its target share, − = less), plus sent without a request and asked, not got.
+
+## Requests by category (18 Oct 2026)
+
+Category = `data/bag_tiers.csv` (core 5 first). One table for all shops (under Dispatch balance) and one inside each
+shop's block, same period switch. Per category, summed from the per-bag lists:
+
+| Group | Columns | Reads as |
+|---|---|---|
+| **Target vs asks** | target refill · asked · **asked vs target %** (Σ min(asked, refill) ÷ Σ refill) · **under-asked** (refill − asked within it, + "needed, not asked") | which category the shops under-ask against their targets |
+| **Left out** | **asked, not got** · **left out %** = asked, not got ÷ asked | which category the warehouse leaves out most |
+| **Sent without a request** | units · **sold since arriving** · **moved %** = sold ÷ unasked units | does sending a bag nobody asked for create demand (it sells straight away) or sit |
+| **Requested but not converting** | bags · received · sold within 14 days · **converting %** | which categories shops ask for in anticipation that don't sell yet |
+
+## Shop requests and Production — Region / Shop filter and tiles (19 Oct 2026)
+
+- **Shop requests:** a **Region** and a **Shop** filter in the top bar (regions from `docs/shop-regions.md`) narrow
+  everything in the section (totals strip, shop vs shop, regions, dispatch balance, by category). The shops are
+  **tiles** ranked by units asked: effectiveness (big), fill, got what it asked, asked vs target, asked, sent,
+  received, pending, not got, unasked; edge colour by effectiveness (green 75 %+, amber 50–74 %, red under 50 %).
+  Click a tile (or pick one shop in the filter) to open that shop's full detail underneath; click it again to close.
+- **Production:** the same **Region / Shop** filter. Filtered, a product's **asked** = the chosen shops' asks only,
+  and its **allowed** = the product's allowed units shared out by those shops' part of the asks (the approved list is
+  per product, not per shop); approved stays the whole list's figure. Products are **tiles** ranked by units asked:
+  status, % of asks allowed (big), asked, approved, allowed, tailors, priority, number of shops and the top shops
+  asking (in words).
+
 ## Production — shop requests vs approved list (18 Oct 2026)
 
 The weekly **Approved list** (`denri_production_plan`, KE-… / UG-… / TZ-…; new-shop and corporate plans left out)
@@ -197,4 +278,16 @@ the country's previous list, up to the plan date, per product:
 **Allowed in full** (approved ≥ asked) · **Cut** (approved < asked) · **Not allowed** (asked, not on the list) ·
 **Added** (on the list, no shop asked — the planner's choice). **Asks allowed %** = Σ min(asked, approved) ÷ asked;
 **approved beyond the asks** = approved − allowed. **Tailors** = units on the tailor plan (`denri_tailor_plan_line`).
-The last 6 lists per country; pick one from the list. Hover a product for the shops that asked.
+The last **16** lists per country (about four months). **Period** (18 Oct 2026): pick the country, then **One list**
+(choose it) · **This month** · **Last month** · **Date range** (from – to, by list date) — the lists inside the period
+are added together per product (each list's asks window starts the day after the previous list, so they don't
+overlap). Hover a product for the shops that asked.
+- **Asks allowed %** = Σ min(asked, approved) ÷ Σ asked: of every unit the shops asked for, the share that made it onto
+  the approved production list. 28 % = of each 100 bags asked, 28 were put into production; the other 72 were cut or
+  not allowed. Approved units beyond the asks (planner's choice) don't raise it.
+  In a period (several lists) asks and approvals are added up **per product first**, so a bag cut in one list and
+  approved the next week counts as allowed — October 2026: the last list alone 28 %, the month's three lists 56 %.
+- **By category** (`data/bag_tiers.csv`): asked · approved · allowed · **allowed %** · not allowed (asked − allowed) ·
+  added (approved − allowed).
+- **By region** (`docs/shop-regions.md`): each region's asks; its allowed units = each product's allowed units shared
+  out by the shops' part of that product's asks (the list is per product, not per shop) → **allowed %** per region.

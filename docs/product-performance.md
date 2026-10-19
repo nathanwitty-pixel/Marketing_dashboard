@@ -7,6 +7,9 @@
 
 ## What the page shows
 
+**The filter bar follows the reader** (Market, Period, Share by; 19 Oct 2026): it pins at the top while scrolling, so
+the period can be changed beside any chart (`assets/sticky_controls.js`, docs/sticky-controls.md).
+
 **Sidebar** ([page sidebar](README.md#page-sidebar)): Bag of the Week, Top-selling bags, Categories, Colours.
 
 **Controls (top of the page, drive every section below):**
@@ -51,6 +54,34 @@ bulk order itself, with the without-bulk figures.
 
 The top 15 bags for the chosen market + period, each with its **% of all bags sold** (or of revenue), a share
 bar, units, revenue, and the change in share vs the previous period (pp). The rest are one **Other bags** row.
+**Top 5 categories — suggestions (19 Oct 2026):** under each top-3 / bottom-3 bag, one action from its shop stock now,
+units sold in the period, Kenya offers this month and posts. **Top 3:** stock 0 → *Sold out: restock now* · stock below
+the units it sold → *Restock* · no posts last week → *Keep it posted* · stock over 6× its sales and not on offer →
+*Feature it on Deal of the Week* · else *Protect stock and keep posting*. **Bottom 3:** stock ≤ 2 → *Let it run out, do
+not reorder* · not posted this month → *Post it first* · not on offer → *Put it on an offer or in a combo with the
+category's top seller* · on offer and still slow → *Check price or design, or clear it*.
+
+**Popovers and wording (19 Oct 2026):** values sit in small tables (columns), never strung together with dots; the
+change column is titled **Week on week** (weekly views) / **Month on month** (monthly) / *vs previous* (custom).
+
+**Support score (19 Oct 2026, user's choice — weights 40 / 30 / 30):** every "why it moved" box opens with a score
+out of 100 for how much **support** the bag had in the period vs the one before:
+
+| Pillar | Points | Rule |
+|---|---|---|
+| **Stock** | 40 | 40 × the share of days it was in stock this period (in stock every day = 40) |
+| **Offer** | 30 | Kenya offers (Power Deal · Deal of the Week · timed offers): kept or added = **30**; one ended, or none in either period = **15**. Sinza / Uganda: not scored (no offer history) |
+| **Marketing** | 30 | posts this period ÷ posts the period before × 30, capped at 30; none in either = 15. Only when both periods' posts are known (last week · last month) |
+
+A pillar that can't be judged is left out and the total is scaled to 100. **Verdict** = the score against the sales
+change (bulk orders aside): support ≥ 70 and up = **Working — keep going** · < 70 and up = **Selling on its own —
+strong demand** · ≥ 70 and down = **Demand problem — check price / design** · < 70 and down = **Support pulled — put
+back the offer / posts** · a change under max(3 units, 10 % of the period before) = **Steady**. Payload `why[...][BAG].score = {total, stock, offer, mkt, verdict}`.
+
+**The ▲ / ▼ marks (19 Oct 2026):** **pp** = percentage points of the **share of sales** — ▲ green = a bigger slice
+(10.0 % → 10.1 % = +0.1 pp), ▼ red = a smaller slice, grey 0.0 = same (under 0.05 pp). Share, not units: a bag can
+sell more and still go red if the rest grew faster. Every mark has a hover with the share before → after; the
+% marks (units / revenue) hover with before → after and the % change. The table hint carries the same legend.
 Hover / tap a bag: units, revenue, both shares, previous period, Kenya / Sinza / Uganda split, its top colours,
 its stock now, its offer tags and posts — and the same *Why it moved* lines (for the chosen period) as the Bag of the Week.
 

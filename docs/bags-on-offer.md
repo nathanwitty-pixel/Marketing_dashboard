@@ -49,6 +49,9 @@ money comes from*, Offer type summary) covers all three countries, Tanzania and 
 
 ## Period selector (Monthly / Weekly / Last week / Custom)
 
+**The Period selector follows the reader** (19 Oct 2026): it pins at the top while scrolling, so the period can be changed beside any chart (`assets/sticky_controls.js`, docs/sticky-controls.md).
+
+
 A **Period** dropdown (top right, same wording as New Products) switches the whole page. All three
 are pre-computed by the generator into `BOO.periods.{monthly, weekly, lastweek}`:
 

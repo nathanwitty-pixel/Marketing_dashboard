@@ -103,9 +103,11 @@
   <div class="card">
     <h2>Seasonality <span style="font-size:0.72rem;color:#64748b;font-weight:400">— 2025 combo calendar (Kenya)</span></h2>
     <div class="cap" id="se-cap"></div>
+    <div class="se-ctl" style="padding:0.3rem 0.4rem;margin:0 -0.4rem">
     <input id="se-search" type="text" placeholder="Search a bag (e.g. Nizana) to see its combos and how they performed…"
            style="width:100%;max-width:420px;background:#161824;border:1px solid #2d3148;color:#e2e8f0;border-radius:6px;padding:0.4rem 0.6rem;font-size:0.78rem;margin-bottom:0.7rem;outline:none">
     <div id="se-count" style="font-size:0.72rem;color:#64748b;margin-bottom:0.4rem"></div>
+    </div>
     <div class="tbl-wrap"><table id="se-table"><thead></thead><tbody></tbody></table></div>
     <div id="se-legend" style="margin-top:0.6rem;font-size:0.7rem;color:#64748b"></div>
   </div>
@@ -633,5 +635,8 @@
     }
   });
 </script>
+<!-- Filter bar follows the reader (docs/sticky-controls.md) -->
+<script src="../assets/sticky_controls.js"></script>
+<script>StickyControls.init({ selector: '.se-ctl', within: '.card' });</script>
 </body>
 </html>

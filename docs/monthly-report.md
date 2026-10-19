@@ -5,6 +5,9 @@
 
 ## What the page shows
 
+**The New Products Sort follows the reader** (19 Oct 2026): it pins at the top while the New Products section is on screen (`assets/sticky_controls.js`, docs/sticky-controls.md).
+
+
 **Sidebar** ([page sidebar](README.md#page-sidebar)) — Bottom line, then each numbered section with its own badge colour. The snippet is `PAGE_SIDEBAR` in `monthly_report.py`, since that script writes the whole page.
 
 An executive monthly report that runs each area through a four-step framework:

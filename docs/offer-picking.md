@@ -79,6 +79,9 @@ A planning menu for **which offers/combos to run**. The page **leads with the Fo
 
 ## Pricing — WAS vs NOW, from the offers sheet
 
+**The Seasonality search follows the reader** (19 Oct 2026): the bag search box and its count pin at the top while the Seasonality table is on screen (`assets/sticky_controls.js`, docs/sticky-controls.md).
+
+
 The **offers sheet** (`_read_offers`, `OFFERS_SHEET_ID`) gives every bag two prices:
 col **D = full price** and col **F = offer price**, plus col **C = category**. The catalog
 (`_build_catalog`) stores per bag `valueWas` (full D) and `valueNow` (offer F); bags not on

@@ -973,5 +973,8 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+<!-- Filter bar follows the reader (docs/sticky-controls.md) -->
+<script src="../assets/sticky_controls.js"></script>
+<script>StickyControls.init({ selector: '.filter-bar', within: '.table-wrap', watch: true });</script>
 </body>
 </html>

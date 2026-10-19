@@ -240,9 +240,9 @@
     "semantic_hash": ""
   },
   "docs/README.md": {
-    "mtime": 1792161612.4404376,
-    "seen": 1792161630.7175567,
-    "ast_hash": "aa8de389305f4b95abc4bb5ca8291a6e",
+    "mtime": 1792375992.1878045,
+    "seen": 1792377620.6732805,
+    "ast_hash": "784c525a9c51470fca404ac893c63d3d",
     "semantic_hash": ""
   },
   "docs/current-performance.md": {
@@ -258,27 +258,27 @@
     "semantic_hash": ""
   },
   "docs/monthly-report.md": {
-    "mtime": 1791957760.9751968,
-    "seen": 1791961636.5971253,
-    "ast_hash": "14dedaf9c66e3f5661253f17fe2e6c56",
+    "mtime": 1792377023.8388722,
+    "seen": 1792377620.6733103,
+    "ast_hash": "d7043384e24fc9472357bec8be61336b",
     "semantic_hash": ""
   },
   "docs/new-products.md": {
-    "mtime": 1792161612.4414375,
-    "seen": 1792161630.7175875,
-    "ast_hash": "f28c775d688c32778948e23e191e7c25",
+    "mtime": 1792376735.7441683,
+    "seen": 1792377620.6733139,
+    "ast_hash": "b5dadd1f70bc480c8776f575818872c9",
     "semantic_hash": ""
   },
   "docs/offer-picking.md": {
-    "mtime": 1791129086.531177,
-    "seen": 1791961636.5971274,
-    "ast_hash": "88022f794c787ff1a81d77e6084906f6",
+    "mtime": 1792376997.5850563,
+    "seen": 1792377620.673319,
+    "ast_hash": "f0162e10f6463a10e9d0efb2de6435a3",
     "semantic_hash": ""
   },
   "docs/posting-yields.md": {
-    "mtime": 1792161612.4414375,
-    "seen": 1792161630.7175968,
-    "ast_hash": "c1299c3da95b536ffed25387aab5c1d0",
+    "mtime": 1792376796.324877,
+    "seen": 1792377620.6733232,
+    "ast_hash": "64b423000fdb3f3e22c5131edbf0dbdd",
     "semantic_hash": ""
   },
   "docs/product-matching.md": {
@@ -294,15 +294,15 @@
     "semantic_hash": ""
   },
   "docs/reporting-history.md": {
-    "mtime": 1791957760.9807274,
-    "seen": 1791961636.5971334,
-    "ast_hash": "83e991fe8b2c8e1b48302bf7714d8f48",
+    "mtime": 1792377061.752898,
+    "seen": 1792377620.6733563,
+    "ast_hash": "c94ddd9337be8fbb59cdd93c75bc864f",
     "semantic_hash": ""
   },
   "docs/self-made-combos.md": {
-    "mtime": 1792351381.5984347,
-    "seen": 1792351395.6178906,
-    "ast_hash": "d044ae4e47ccaf8f8442919778494ddd",
+    "mtime": 1792376478.804961,
+    "seen": 1792377620.6733613,
+    "ast_hash": "67a75a17fb654abee3417c243f228221",
     "semantic_hash": ""
   },
   "docs/shop-regions.md": {
@@ -312,15 +312,15 @@
     "semantic_hash": ""
   },
   "docs/shops-efficiency.md": {
-    "mtime": 1791957760.9818017,
-    "seen": 1791961636.5971382,
-    "ast_hash": "1603e6fbb0dcf8b40225820ce23edcb1",
+    "mtime": 1792376922.3262968,
+    "seen": 1792377620.6733866,
+    "ast_hash": "b72119f87dc0f3b888e638de81731ee2",
     "semantic_hash": ""
   },
   "docs/timed-offers.md": {
-    "mtime": 1791957760.9828117,
-    "seen": 1791961636.597139,
-    "ast_hash": "653d495ff4b99d14365fd2cb0aa87012",
+    "mtime": 1792376956.4678504,
+    "seen": 1792377620.6733937,
+    "ast_hash": "3bb872b10714f91f742fe9a667de39c3",
     "semantic_hash": ""
   },
   "export/self_made_combos_bundle/README.md": {
@@ -366,9 +366,9 @@
     "semantic_hash": ""
   },
   "docs/bags-on-offer.md": {
-    "mtime": 1792156447.659928,
-    "seen": 1792156521.9114704,
-    "ast_hash": "2eb9805299a515f3345639ad663565ef",
+    "mtime": 1792376418.145398,
+    "seen": 1792377620.6732917,
+    "ast_hash": "fe3f20ae288a0d1142ba064d7e5e8a54",
     "semantic_hash": ""
   },
   "lib/new_products_list.py": {
@@ -756,8 +756,8 @@
     "semantic_hash": ""
   },
   "data/bags_offer_source.json": {
-    "mtime": 1792351672.7777925,
-    "seen": 1792351727.2352629,
+    "mtime": 1792379004.8031733,
+    "seen": 1792379464.9531693,
     "ast_hash": "05f0223ef32c2ac1d436b66abb095f8d",
     "semantic_hash": ""
   },
@@ -768,8 +768,8 @@
     "semantic_hash": ""
   },
   "data/bags_offer_source_2026-10.json": {
-    "mtime": 1792351672.779418,
-    "seen": 1792351727.235271,
+    "mtime": 1792379004.8089573,
+    "seen": 1792379464.953179,
     "ast_hash": "05f0223ef32c2ac1d436b66abb095f8d",
     "semantic_hash": ""
   },
@@ -792,21 +792,21 @@
     "semantic_hash": ""
   },
   "data/combos_by_shop.json": {
-    "mtime": 1792351672.772354,
-    "seen": 1792351727.2352843,
+    "mtime": 1792375049.0897615,
+    "seen": 1792375836.7295368,
     "ast_hash": "322317ecdff91e608c7702896ecd4aed",
     "semantic_hash": ""
   },
   "data/growth_history.json": {
-    "mtime": 1792348427.0278387,
-    "seen": 1792350151.3401542,
-    "ast_hash": "4b20197519bc9f0185544c8528cc44df",
+    "mtime": 1792377498.1170275,
+    "seen": 1792377620.6724653,
+    "ast_hash": "efafb678685a22b7ed53293d235f871b",
     "semantic_hash": ""
   },
   "data/month_boundary.json": {
-    "mtime": 1792348427.020152,
-    "seen": 1792350151.3401566,
-    "ast_hash": "046907cf57781930e50d4cefb80425ef",
+    "mtime": 1792377498.1099153,
+    "seen": 1792377620.6724765,
+    "ast_hash": "92c941de93b2f4a1b9b9f3f096d09341",
     "semantic_hash": ""
   },
   "data/monthly_report_history.json": {
@@ -816,15 +816,15 @@
     "semantic_hash": ""
   },
   "data/monthly_sales_db.json": {
-    "mtime": 1792348016.4071894,
-    "seen": 1792350151.3401606,
-    "ast_hash": "3c199f5b622939f9e63fa38c7121aacd",
+    "mtime": 1792377442.0908055,
+    "seen": 1792377620.672497,
+    "ast_hash": "09e60d56714e9acc5fe3530c5b8899e8",
     "semantic_hash": ""
   },
   "data/new_products_weekly_history.json": {
-    "mtime": 1792339532.6727624,
-    "seen": 1792340868.7106574,
-    "ast_hash": "40d50655a931cb3b73bc78c3fb77f5dc",
+    "mtime": 1792374792.1619341,
+    "seen": 1792374839.2817461,
+    "ast_hash": "64369605f20b718a5f5b6671a5e4118d",
     "semantic_hash": ""
   },
   "data/np_custom_range.json": {
@@ -852,15 +852,15 @@
     "semantic_hash": ""
   },
   "data/previous_snapshot.json": {
-    "mtime": 1792348427.1015484,
-    "seen": 1792350151.3401716,
-    "ast_hash": "cdbd4f9c820ca1f28cefc4b9f325ede0",
+    "mtime": 1792377498.172638,
+    "seen": 1792377620.672571,
+    "ast_hash": "952e921097a298d4d02e69447d6cfa1e",
     "semantic_hash": ""
   },
   "data/push_planner_history.json": {
-    "mtime": 1792340695.213066,
-    "seen": 1792340868.710672,
-    "ast_hash": "ad63471af3f66c9f10f82c82c582f70c",
+    "mtime": 1792378931.952354,
+    "seen": 1792379464.9532485,
+    "ast_hash": "c27da41f9123c37a91cf46494198a630",
     "semantic_hash": ""
   },
   "data/reject_overrides.json": {
@@ -906,15 +906,15 @@
     "semantic_hash": ""
   },
   "data/weekly_history.json": {
-    "mtime": 1792348498.52914,
-    "seen": 1792350151.3401873,
+    "mtime": 1792377538.24977,
+    "seen": 1792377620.6726587,
     "ast_hash": "aa1ead3f04b44ea8b2c9e7ed03fb0497",
     "semantic_hash": ""
   },
   "data/weekly_sales_db.json": {
-    "mtime": 1792347994.359062,
-    "seen": 1792350151.3401892,
-    "ast_hash": "69d6b3d629519fd0383fbd98a319233e",
+    "mtime": 1792377419.3845036,
+    "seen": 1792377620.6726644,
+    "ast_hash": "5416f47f1ccb85f0bbbc13bc863bb574",
     "semantic_hash": ""
   },
   "generators/bag_signals.py": {
@@ -1002,9 +1002,9 @@
     "semantic_hash": ""
   },
   "generators/self_made_combos.py": {
-    "mtime": 1792351096.6085114,
-    "seen": 1792351395.6176808,
-    "ast_hash": "94299c1977f8c961284027a006c75f3d",
+    "mtime": 1792352124.0926392,
+    "seen": 1792352248.4838269,
+    "ast_hash": "add5601eb9597bd9c58a3ab9576f2116",
     "semantic_hash": ""
   },
   "generators/shop_launch.py": {
@@ -1170,27 +1170,27 @@
     "semantic_hash": ""
   },
   "html/bags_on_offer.html": {
-    "mtime": 1792351715.0874193,
-    "seen": 1792351727.235879,
-    "ast_hash": "ce74e16f3f63ea2486788fe34fab1cd7",
+    "mtime": 1792379017.845836,
+    "seen": 1792379464.9537494,
+    "ast_hash": "ad8c8d0282420e758fd53ad868c14833",
     "semantic_hash": ""
   },
   "html/current_performance.html": {
-    "mtime": 1792349383.8347132,
-    "seen": 1792350151.340463,
-    "ast_hash": "66e6c6bd4425f0054e3c708b8d5fdcc7",
+    "mtime": 1792377538.6182373,
+    "seen": 1792377620.6734407,
+    "ast_hash": "1b003d6abc470822884c48c61e80c6a2",
     "semantic_hash": ""
   },
   "html/forward_projections.html": {
-    "mtime": 1792348498.533128,
-    "seen": 1792350151.3404646,
-    "ast_hash": "73b1af13fdffadb38c09c49165e251ab",
+    "mtime": 1792377538.2531128,
+    "seen": 1792377620.673446,
+    "ast_hash": "4c9e5bfe2d961eca23efea8533dac45e",
     "semantic_hash": ""
   },
   "html/history.html": {
-    "mtime": 1791957761.1194832,
-    "seen": 1791961636.5971515,
-    "ast_hash": "0494f36c3673d4e547bf305357c11c1e",
+    "mtime": 1792377061.762097,
+    "seen": 1792377620.673451,
+    "ast_hash": "8b2a95a7204479ebee57a9e4063e27b2",
     "semantic_hash": ""
   },
   "html/insights.html": {
@@ -1200,33 +1200,33 @@
     "semantic_hash": ""
   },
   "html/monthly_report.html": {
-    "mtime": 1791957761.1194832,
-    "seen": 1791961636.5971532,
-    "ast_hash": "a77b78246220b5f5f7f3dfc66d5217ec",
+    "mtime": 1792377023.844691,
+    "seen": 1792377620.6734602,
+    "ast_hash": "79e205bae87fb6f77a307acab3a62eee",
     "semantic_hash": ""
   },
   "html/new_products.html": {
-    "mtime": 1792339776.2957032,
-    "seen": 1792340868.7111628,
-    "ast_hash": "db6d3d6e2182eb9c8f7c7cdf0811966b",
+    "mtime": 1792376735.7667215,
+    "seen": 1792377620.6734633,
+    "ast_hash": "7224a225f1f2395be29d94673e4dbdcf",
     "semantic_hash": ""
   },
   "html/offer_picking.html": {
-    "mtime": 1792061459.7134266,
-    "seen": 1792076120.6830153,
-    "ast_hash": "cee12949e76edf146b5504f76474029e",
+    "mtime": 1792376997.6963263,
+    "seen": 1792377620.6734667,
+    "ast_hash": "a654d2d4732d4a68b45751cb3429a651",
     "semantic_hash": ""
   },
   "html/posting_yields.html": {
-    "mtime": 1792162481.2186823,
-    "seen": 1792162486.6583161,
-    "ast_hash": "599b98152e9aa33d8d47bf0e0c45dba6",
+    "mtime": 1792376796.3549366,
+    "seen": 1792377620.673472,
+    "ast_hash": "a5aa30cac3196576699ccc454368953e",
     "semantic_hash": ""
   },
   "html/push_planner.html": {
-    "mtime": 1792340891.941939,
-    "seen": 1792343212.7136347,
-    "ast_hash": "edaacae791dd149f13d64f44ec38a458",
+    "mtime": 1792378931.9798348,
+    "seen": 1792379464.9537737,
+    "ast_hash": "8197f0dabf1781b0cdb730d1f824a033",
     "semantic_hash": ""
   },
   "html/reject_sales.html": {
@@ -1236,9 +1236,9 @@
     "semantic_hash": ""
   },
   "html/self_made_combos.html": {
-    "mtime": 1792351672.7657528,
-    "seen": 1792351727.2359207,
-    "ast_hash": "4b0f7b125ea9c861ada728fc3512d9b5",
+    "mtime": 1792376478.8392646,
+    "seen": 1792377620.6734917,
+    "ast_hash": "9fba442fe5493814c90ca7213cc35296",
     "semantic_hash": ""
   },
   "html/shell.html": {
@@ -1254,15 +1254,15 @@
     "semantic_hash": ""
   },
   "html/shops_efficiency.html": {
-    "mtime": 1792339711.0259936,
-    "seen": 1792340868.711197,
-    "ast_hash": "4652a52e42330b623a0bdddaf96b52f6",
+    "mtime": 1792376922.3565736,
+    "seen": 1792377620.6735132,
+    "ast_hash": "e5717b9a62a64a6ade4b60e2cf2b2ea6",
     "semantic_hash": ""
   },
   "html/timed_offers.html": {
-    "mtime": 1792351055.715645,
-    "seen": 1792351395.6179504,
-    "ast_hash": "28541cb107d17e753564a674039fee4a",
+    "mtime": 1792376956.6496503,
+    "seen": 1792377620.6735191,
+    "ast_hash": "fc245f318603b53d5eefdcab133c27ba",
     "semantic_hash": ""
   },
   "notes/MONTH_END.md": {
@@ -1320,45 +1320,45 @@
     "semantic_hash": ""
   },
   "lib/runway_bags.py": {
-    "mtime": 1792145574.7961483,
-    "seen": 1792145930.8734703,
-    "ast_hash": "36537c6857f992133a6ee67d8f8404fb",
+    "mtime": 1792354180.9068835,
+    "seen": 1792355146.503164,
+    "ast_hash": "ca4efac6f0c23e7175aac8a4b70b878c",
     "semantic_hash": ""
   },
   "generators/product_performance.py": {
-    "mtime": 1792333085.3838775,
-    "seen": 1792333409.2222598,
-    "ast_hash": "3404a4f0c7610586f295ebf15aa1027e",
+    "mtime": 1792375513.6470087,
+    "seen": 1792375836.7297182,
+    "ast_hash": "808d16c2c6de95596b25c55bec2c758a",
     "semantic_hash": ""
   },
   "docs/product-performance.md": {
-    "mtime": 1792333094.5911694,
-    "seen": 1792333409.222864,
-    "ast_hash": "63ae9f5eacd4daf44dde8c481ddbafb8",
+    "mtime": 1792376098.3099685,
+    "seen": 1792377620.6733348,
+    "ast_hash": "d2b38db86932822a126ddf1f65fb43d9",
     "semantic_hash": ""
   },
   "html/product_performance.html": {
-    "mtime": 1792348563.4949164,
-    "seen": 1792350151.340477,
-    "ast_hash": "af43be24a7c51e1d4b42736839afbb21",
+    "mtime": 1792376188.8007922,
+    "seen": 1792377620.673477,
+    "ast_hash": "2048f04c2b263348a2a8e3990394f714",
     "semantic_hash": ""
   },
   "generators/shop_stock_levels.py": {
-    "mtime": 1792350883.1902342,
-    "seen": 1792350968.6637342,
-    "ast_hash": "368d20e9583cf7a4c5c4f32be978aa70",
+    "mtime": 1792355084.2455819,
+    "seen": 1792355146.5031035,
+    "ast_hash": "8b2b9780675e0ba77d793dcc039154ee",
     "semantic_hash": ""
   },
   "docs/shop-stock-levels.md": {
-    "mtime": 1792351455.871519,
-    "seen": 1792351574.6850421,
-    "ast_hash": "598aedc0ca9aa41669413fa5db894956",
+    "mtime": 1792379344.6119564,
+    "seen": 1792379464.953717,
+    "ast_hash": "01504ec7bd05052f9ce60a0d26271420",
     "semantic_hash": ""
   },
   "html/shop_stock_levels.html": {
-    "mtime": 1792351490.1237898,
-    "seen": 1792351574.6851354,
-    "ast_hash": "d01abeca2fc95dd0c1db1283ebb5d0de",
+    "mtime": 1792379445.123456,
+    "seen": 1792379464.9537866,
+    "ast_hash": "4b6686e529ba9ed40757b0ef2d6eeb52",
     "semantic_hash": ""
   },
   "lib/marketing_posts.py": {
@@ -1374,15 +1374,51 @@
     "semantic_hash": ""
   },
   "lib/shop_requests.py": {
-    "mtime": 1792349188.4950857,
-    "seen": 1792350151.3402932,
-    "ast_hash": "b2b7b1f8742107bbcb11435e20fae9c5",
+    "mtime": 1792355084.244583,
+    "seen": 1792355146.5031726,
+    "ast_hash": "e359d6d46fcf8876ffcb6c874be399a8",
     "semantic_hash": ""
   },
   "notes/STOCK_LEVELS_NOV_PROGRESS.md": {
     "mtime": 1792350158.9291737,
     "seen": 1792350430.8957026,
     "ast_hash": "aeded50f9b917f7e88b4ba6cab457f43",
+    "semantic_hash": ""
+  },
+  "lib/shop_regions.py": {
+    "mtime": 1792352124.0192268,
+    "seen": 1792352248.4839478,
+    "ast_hash": "f780b75904619ed512bca681e1c1d0f0",
+    "semantic_hash": ""
+  },
+  "assets/sticky_controls.js": {
+    "mtime": 1792377365.410056,
+    "seen": 1792377620.6723135,
+    "ast_hash": "ce40a8cfe3b2845c4fbf5c6413f99562",
+    "semantic_hash": ""
+  },
+  "notes/sticky_test/run.py": {
+    "mtime": 1792376676.87258,
+    "seen": 1792377620.6730442,
+    "ast_hash": "a095be9b01694e4453a17eeba7a7e5cf",
+    "semantic_hash": ""
+  },
+  "notes/sticky_test/run_all.py": {
+    "mtime": 1792378006.5738022,
+    "seen": 1792378048.0050788,
+    "ast_hash": "2cf6b0fe5e067be759da63a25890491e",
+    "semantic_hash": ""
+  },
+  "docs/sticky-controls.md": {
+    "mtime": 1792378006.5727878,
+    "seen": 1792378048.0054655,
+    "ast_hash": "6ff10f3aab27f9a9be100e03348a0007",
+    "semantic_hash": ""
+  },
+  "notes/STICKY_CONTROLS_PROGRESS.md": {
+    "mtime": 1792378006.691591,
+    "seen": 1792378048.0056462,
+    "ast_hash": "41422be4dd8d5164d7bfb59add3e80fe",
     "semantic_hash": ""
   }
 }

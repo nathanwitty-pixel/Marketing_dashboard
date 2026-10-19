@@ -485,6 +485,8 @@ def explain(b, mkt, w, ctx):
         else:
             lines.append(["Stock", "info", f"{st1['disp']:,} dispatched into the shops {C}{big} — "
                                            f"stock was already enough ({st1['start']:,} at the start)"])
+    stock_pts = round(40 * min(r1, 1.0))                   # support score — stock (40)
+    offer_pts = mkt_pts = None
     now = ctx["stock_now"].get(mkt, {}).get(b, 0)
     lines.append(["Stock", "info", f"Shop stock {st0['start']:,} at the start of {P} → {st1['start']:,} at the start of {C} → {now:,} now"])
 
@@ -527,6 +529,10 @@ def explain(b, mkt, w, ctx):
             lines.append(["Offer", d, f"{int(c1):,} sold inside running combos {C} vs {int(c0):,} {P}{names}"])
         if not any_offer:
             lines.append(["Offer", "info", "Not on any Kenya offer in either — full-price sales"])
+        # support score — offer (30): kept / added = 30; one ended, or none either period = 15
+        off_cur = bool(o1["power"] or o1["dow"] or o1["timed"])
+        off_ended = bool((o0["power"] and not o1["power"]) or (o0["dow"] and not o1["dow"]) or (t0 - t1))
+        offer_pts = 15 if (off_ended or not off_cur) else 30
     if mkt in ("ALL", "TZ", "UG"):
         for m in ("TZ", "UG") if mkt == "ALL" else (mkt,):
             for t in ctx["listings"].get(m, {}).get(b, [])[:2]:
@@ -542,6 +548,7 @@ def explain(b, mkt, w, ctx):
             return sum(v.values()) if mkt == "ALL" else v.get(mkt, 0)
         p1v, p0v = cnt(w["s1"], w["e1"]), cnt(w["s0"], w["e0"])
         where = "" if mkt in ("ALL", "KE") else " (outside Kenya)"
+        mkt_pts = (15 if not (p1v or p0v) else 30 if not p0v else round(30 * min(p1v / p0v, 1.0)))   # support score — marketing (30)
         if p1v > p0v:
             lines.append(["Marketing", "up", f"Posted more{where} — {p1v} posts {C} vs {p0v} {P}"])
         elif p1v < p0v:
@@ -557,6 +564,8 @@ def explain(b, mkt, w, ctx):
         if mkt == "ALL" and p0v is not None:
             p1v = p1[0]                                      # history is Kenya posts only — compare like with like
         where = "" if mkt in ("ALL", "KE") else " (outside Kenya)"
+        if p0v is not None:
+            mkt_pts = (15 if not (p1v or p0v) else 30 if not p0v else round(30 * min(p1v / p0v, 1.0)))   # support score — marketing (30)
         if p0v is None:
             lines.append(["Marketing", "info", f"Posted {p1v} time{'s' if p1v != 1 else ''}{where} {C} ({P} isn't recorded)"
                           if p1v else f"Not posted{where} {C}"])
@@ -570,7 +579,7 @@ def explain(b, mkt, w, ctx):
         p1 = ctx["posts_w"].get(b, [0, 0])
         lines.append(["Marketing", "info", f"This week's posts are counted next week — last week: {p1[0] + p1[1]} posts"])
     if ctx["posts_w"] is not None and w["key"] != "lastmonth":
-        lines.append(["Marketing", "info", f"{pm[0] + pm[1]} posts this month ({pm[0]} Kenya · {pm[1]} outside)"])
+        lines.append(["Marketing", "info", f"{pm[0] + pm[1]} posts this month ({pm[0]} in Kenya, {pm[1]} outside)"])
     elif w["key"] == "lastmonth" and pb is None:
         lines.append(["Marketing", "info", "Posting sheets couldn't be read — no posting comparison"])
 
@@ -595,9 +604,18 @@ def explain(b, mkt, w, ctx):
             if hit:
                 head = hit[2]
                 break
+    parts = [(stock_pts, 40), (offer_pts, 30), (mkt_pts, 30)]
+    got = [(v, m) for v, m in parts if v is not None]
+    total = round(sum(v for v, _ in got) / sum(m for _, m in got) * 100) if got else None
+    ok = total is not None and total >= 70
+    steady = abs(delta) < max(3, 0.1 * max(pw_nb, 1))       # a small wobble isn't a move
+    verdict = ("Steady" if steady else
+               ("Working — keep going" if ok else "Selling on its own — strong demand") if delta > 0 else
+               ("Demand problem — check price / design" if ok else "Support pulled — put back the offer / posts"))
+    score = {"total": total, "stock": stock_pts, "offer": offer_pts, "mkt": mkt_pts, "verdict": verdict}
     return {"lw": int(lw), "pw": int(pw), "lwNb": int(lw_nb), "pwNb": int(pw_nb), "bulk": bool(bulk),
             "head": head or ("No single driver — steady demand" if delta >= 0 else "No single driver found — demand eased"),
-            "lines": lines}
+            "lines": lines, "score": score}
 
 
 # ── build ─────────────────────────────────────────────────────

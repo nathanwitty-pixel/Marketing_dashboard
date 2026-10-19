@@ -6,6 +6,9 @@
 
 ## What the page shows
 
+**Each section's controls follow the reader** (19 Oct 2026): the header row with Segment, Period, Group and Sort of Marketing & Sales Alignment, Dead stock and the region cards pins at the top while that section is on screen, for Kenya, Sinza and Uganda (`assets/sticky_controls.js`, docs/sticky-controls.md).
+
+
 **Sidebar** ([page sidebar](README.md#page-sidebar)) — **Regions** picker (Kenya · Sinza · Uganda) replaces the three in-page tab rows (hidden; one click switches all of them), then the region's headline cards and its Accuracy / Dead Stock groups with folding sub-items.
 
 How well marketing's **posting** lines up with actual **sales**, per region (Kenya /

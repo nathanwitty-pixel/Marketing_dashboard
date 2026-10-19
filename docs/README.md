@@ -61,6 +61,8 @@ Every Chart.js chart on every page gets a chart-type menu from the shared
 `scripts/build_all.py` re-bakes every page headlessly (no server, no browser tab).
 Every menu page also gets the shared **page sidebar** from `page_sidebar.js` — see
 [Page sidebar](#page-sidebar) below.
+Pages with a filter bar also pin it at the top while scrolling with `sticky_controls.js` —
+see [docs/sticky-controls.md](sticky-controls.md).
 
 ## Page sidebar
 

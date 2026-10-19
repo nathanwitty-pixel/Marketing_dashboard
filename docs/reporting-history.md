@@ -7,6 +7,9 @@
 
 ## What the page shows
 
+**The New Products Sort follows the reader** (19 Oct 2026): it pins at the top while the New Products section of the chosen month is on screen, also after a month change redraws it (`assets/sticky_controls.js`, docs/sticky-controls.md).
+
+
 **Sidebar** ([page sidebar](README.md#page-sidebar)) — **Months** picker (calendar tile, % of target, colour meter) replaces the month buttons, then Bottom line + the month's numbered sections.
 
 The frozen monthly snapshots stored in Supabase — the read side of the Supabase

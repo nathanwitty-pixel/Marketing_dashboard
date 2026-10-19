@@ -191,32 +191,9 @@ _SHOP_REGION_DEFAULT = {
 
 
 def _load_shop_regions():
-    """Read the Shop → Region table from docs/shop-regions.md so the mapping can be
-    maintained there. Parses the markdown table under the heading that mentions "shop"
-    (first column = shop, second = region). Falls back to the built-in default."""
-    path = paths.doc("shop-regions.md")
-    try:
-        lines = open(path, encoding="utf-8").read().splitlines()
-    except OSError:
-        return dict(_SHOP_REGION_DEFAULT)
-    out, in_section = {}, False
-    for ln in lines:
-        s = ln.strip()
-        if s.startswith("#"):                                    # heading → enter/leave the shops table
-            in_section = "shop" in s.lower()
-            continue
-        if not (in_section and s.startswith("|")):
-            continue
-        cells = [c.strip() for c in s.strip("|").split("|")]
-        if len(cells) < 2:
-            continue
-        shop, region = cells[0], cells[1]
-        if not shop or not region:
-            continue
-        if shop.upper() == "SHOP" or set(shop) <= set("-: "):    # header / separator row
-            continue
-        out[shop.upper()] = region
-    return out or dict(_SHOP_REGION_DEFAULT)
+    """Shop → Region from docs/shop-regions.md (lib/shop_regions); the built-in default if unreadable."""
+    from lib import shop_regions
+    return shop_regions.load(_SHOP_REGION_DEFAULT)
 
 
 _SHOP_REGION = _load_shop_regions()

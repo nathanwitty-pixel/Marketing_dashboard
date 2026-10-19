@@ -103,6 +103,34 @@ def sold_by_type(names, start, end, typ):
     return out
 
 
+def shop_sales_by_type(names, start, end, typ):
+    """{TYPE: {"kes", "shops": {SHOP: {"n", "kes"}}}} for the runway types over [start, end] — POS lines by till,
+    the Sold rules (combo sub-lines included; they carry little or no KES — the combo line holds the money)."""
+    from lib import db, queries
+    want = set(names)
+    out = {n: {"kes": 0, "shops": {}} for n in names}
+    params = {"start_date": start.isoformat(), "end_date": end.isoformat()}
+    base = ("SELECT upper(pc.\"name\") AS shop, l.full_product_name AS product, SUM(l.qty)::numeric AS bags, "
+            "SUM(l.price_subtotal_incl)::numeric AS value FROM pos_order_line l JOIN pos_order o ON o.id = l.order_id "
+            "JOIN pos_session ps ON ps.id = o.session_id JOIN pos_config pc ON pc.id = ps.config_id "
+            "WHERE " + queries._BAGS_WHERE + " GROUP BY 1, 2")
+    for sql in (base, base.replace("COALESCE(l.sub_product_line, false)   = false",
+                                   "COALESCE(l.sub_product_line, false)   = true")):
+        df = db.run_query(sql, params)
+        for r in (df.itertuples() if df is not None else []):
+            t = typ(r.product)
+            if t not in want:
+                continue
+            shop = str(r.shop or "").strip().title() or "?"
+            x = out[t]["shops"].setdefault(shop, {"n": 0, "kes": 0})
+            x["n"] += int(round(float(r.bags or 0)))
+            x["kes"] += int(round(float(r.value or 0)))
+            out[t]["kes"] += int(round(float(r.value or 0)))
+    for t in out:
+        out[t]["shops"] = {k: v for k, v in out[t]["shops"].items() if v["n"] or v["kes"]}
+    return out
+
+
 def stock_by_type(names, typ):
     """({TYPE: Kenya shop on-hand}, {TYPE: Sinza + Uganda on-hand}) — live Odoo."""
     from lib import stock
@@ -130,7 +158,10 @@ def build(windows, today=None):
         for per, (s, e) in windows.items():
             sold[per] = sold_by_type(names, s, min(e, today), typ)
         sold["lifetime"] = sold_by_type(names, min(datetime.date.fromisoformat(b["created"]) for b in bags), today, typ)
+        first = min(datetime.date.fromisoformat(b["created"]) for b in bags)
+        shops = {per: shop_sales_by_type(names, s, min(e, today), typ) for per, (s, e) in windows.items()}
+        shops["lifetime"] = shop_sales_by_type(names, first, today, typ)
         ke, out = stock_by_type(names, typ)
         for b in bags:
             b["stockKe"], b["stockOut"] = ke.get(b["name"], 0), out.get(b["name"], 0)
-    return {"days": RUNWAY_DAYS, "bags": bags, "sold": sold}
+    return {"days": RUNWAY_DAYS, "bags": bags, "sold": sold, "shops": shops if names else {}}

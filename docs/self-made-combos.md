@@ -10,6 +10,9 @@
 
 ## What the page shows
 
+**The filter bars follow the reader** (19 Oct 2026): the 📞 Out of stock call-back period bar pins at the top while scrolling, and the Type switch (Combos, Power Deals) pins under it while the Kenya view is on screen (`assets/sticky_controls.js`, docs/sticky-controls.md).
+
+
 **Sidebar** ([page sidebar](README.md#page-sidebar)) — **Regions** picker (Kenya · Sinza · Uganda — sub-lines from `runTotals` / `regions[*].totalStock`) replaces the in-page region buttons (hidden; the picker clicks them), then the visible region's sections; Combos ↔ Power Deals rebuilds the list.
 
 Three areas, all scoped to the **current live month** (`report_month.live_month_window()`):

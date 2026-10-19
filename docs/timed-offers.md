@@ -11,6 +11,9 @@
 
 ## What the page shows
 
+**Each panel's Sort and Group by follow the reader** (19 Oct 2026): they pin at the top while their panel is on screen, for every offer on the page (`assets/sticky_controls.js`, docs/sticky-controls.md).
+
+
 **Sidebar** ([page sidebar](README.md#page-sidebar)) — each offer numbered (named "KES 300 Off (CBD)" style so same-titled offers stay distinct), its panels as sub-items that fold away while another offer is on screen.
 
 **Every** timed-offer **campaign** running in the month, **stacked** on one page (Kenya):

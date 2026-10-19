@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) 
 from lib import paths
 from lib import db, queries, colours, oos_callbacks, product_targets, runway_bags, shop_requests
 from lib import stock as stock_lib
+from lib import shop_regions
 
 HTML = paths.html("shop_stock_levels.html")
 MIN_DAYS, MAX_DAYS = 7, 21          # min = 7 days of need, max = 21 days (user's choice, 16 Oct 2026)
@@ -220,6 +221,7 @@ def buffer_stock(typ):
     return out
 
 
+PRODUCTION_LISTS = 16        # approved lists kept per country (~4 months) for the Production period / date range
 CORE_CATEGORIES = ("BACKPACK", "TRAVEL", "HANDBAG", "MAN BAG", "SLING")   # ~75 % of bags sold (user, 18 Oct 2026)
 
 
@@ -285,7 +287,11 @@ def requests_block(today, typ, have=None, targets=None):
                                  "shops": shop_requests.requests(s, e, today, dispatch_shop, typ, offers,
                                                                   code_shop=CODE_SHOP.get, have=have, no_shelf=ONLINE,
                                                                   target=(targets or {}).get(k))}
-        out["production"] = shop_requests.production(dispatch_shop, typ, today)
+        try:
+            out["production"] = shop_requests.production(dispatch_shop, typ, today, keep=PRODUCTION_LISTS)
+        except Exception as e:                               # noqa: BLE001
+            print(f"  Production lists: skipped ({e})")
+            out["production"] = []
         return out
     except Exception as e:                                   # noqa: BLE001
         print(f"  Shop requests: skipped ({e})")
@@ -402,6 +408,7 @@ def build(today=None):
             "shopTargets": {s: round(v) for s, v in shop_tgt.items()}, "outside": sorted(OUTSIDE), "online": sorted(ONLINE),
             "rows": rows, "wh": {b: int(q) for b, q in wh.items() if q},
             "cats": bag_categories(), "core": list(CORE_CATEGORIES),
+            "regions": shop_regions.load(),
             "buffer": {loc: {b: int(q) for b, q in bs.items() if q} for loc, bs in buf.items()},
             "whColours": {b: {c: int(q) for c, q in cs.items() if q} for b, cs in wh_cols.items()},
             "leads": waiting, "leadWindows": lead_wins, "requests": requests_block(today, typ, {sh: dict(bs) for sh, bs in stock.items()},

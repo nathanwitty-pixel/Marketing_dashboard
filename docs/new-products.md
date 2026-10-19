@@ -7,6 +7,9 @@
 
 ## What the page shows
 
+**Each section's controls follow the reader** (19 Oct 2026): the header row with the Period (and View / Sort) of Sales by Shop, Sold vs Target, Runway Bags, Top 10 and Colour Movement pins at the top while that section is on screen (`assets/sticky_controls.js`, docs/sticky-controls.md).
+
+
 **Sidebar** ([page sidebar](README.md#page-sidebar)) — one entry per block — Overview, Weekly Sales vs Marketing Posts, Weekly Performance, Sales by Shop, Sold vs Remaining to Target, Runway Bags, Top 10, Colour Movement & Stock Guidance.
 
 Per new-product KPIs (target vs sold vs deficit), monthly and weekly sales split
@@ -80,6 +83,13 @@ A separate metric — **not** part of the New Products list, its target or its t
   (no stock yet → dispatch; sold out → restock; in shops, not selling → post it; else keep posting).
   Hidden when there are no runway bags. Payload `NP.runway = {days, bags:[{name, created, category,
   stockKe, stockOut}], sold:{period:{BAG: n}}}`.
+- **Where sold and revenue** (18 Oct 2026): per period, each runway bag's units and **KES** per shop (POS till =
+  `pos_config`, same line rules as Sold; combo sub-lines count as units and carry whatever value the line holds —
+  usually the combo's own line has the money, so a bag sold inside a combo adds units, little KES).
+  Hover list: bag · created · sold · KES · top shops. Tile popup: revenue in **Sold**, and a **Where sold** section
+  (shop · units · KES) for the chosen period. Payload `NP.runway.shops = {period: {TYPE: {kes, shops: {SHOP: {n, kes}}}}}`.
+- **Client feedback:** not shown yet — Odoo holds almost none (`denri_crm_feedback` 1 row, Jul 2026;
+  `pos_feedback_redemption` 6 coupon redemptions pointing at a feedback sheet). Needs the feedback source.
 - First list (16 Oct 2026): Zela, Viana, Veya, Noria, Mila, Kiana, Aven, Sejeh Basket (8 Oct, handbags),
   Ankara HB, Ankara Sleeve, Leather Sleeve, Belt Leather (8–9 Oct).
 

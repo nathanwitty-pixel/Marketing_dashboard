@@ -6,6 +6,9 @@
 
 ## What the page shows
 
+**Each table's filters follow the reader** (19 Oct 2026): the Shop, Category and Bag type filters of every Stocks Remaining table pin at the top while that table is on screen, also after the page redraws them (`assets/sticky_controls.js`, docs/sticky-controls.md).
+
+
 **Sidebar** ([page sidebar](README.md#page-sidebar)) — every block title / card / table rendered at runtime (period prefix dropped — the Weekly/Monthly toggle says it; clashing names keep "· weekly"/"· monthly"); the toggle rebuilds the list.
 
 How well each Kenya shop converts the bags it holds and the bags dispatched to it.

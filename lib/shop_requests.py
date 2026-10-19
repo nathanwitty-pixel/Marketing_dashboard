@@ -422,6 +422,7 @@ def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, hav
                       "rec": int(b["rec"]), "pend": int(b["pend"]), "cur": round(b["cur"] / b["orders"], 1),
                       "mx": round(b["mx"] / b["orders"], 1), "sug": int(b["sug"]), "lowPct": _pct(b["low"], b["req"]),
                       "fitPct": _pct(b["fit"], b["fitBase"]), "sellPct": _pct(b["st"], b["stBase"]),
+                      "tGap": int(b["tGap"]), "tIn": int(b["tIn"]), "tOver": int(b["tOver"] + b["tOff"]),
                       "offer": b["offer"], "last": b["last"].isoformat() if b["last"] else None,
                       "lines": b["lines"]} for b in bags],
             "notConverting": sorted([{"bag": b["bag"], "rec": int(b["stBase"]), "sold14": int(b["st"]),
@@ -519,7 +520,9 @@ def production(shop_name, typ, today, keep=6):
     lo = min(p["from"] for p in plans)
     hi = max(p["d"] for p in plans)
     df = db.run_query(REQUESTS_SQL, {"s": lo.isoformat(), "e": hi.isoformat()})
-    reqs = [] if df is None else [r for r in df.itertuples()]
+    if df is None:                                            # a cancelled query would show every ask as 0
+        raise RuntimeError("Odoo unreachable (shop requests for the approved lists)")
+    reqs = [r for r in df.itertuples()]
 
     out = []
     for p in sorted(plans, key=lambda p: (p["d"], p["name"]), reverse=True):
