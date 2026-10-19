@@ -80,7 +80,7 @@ Healthy → Dead stock), then by **bag category inside each health group** (core
 (Σ over the shops of min(have, Max) ÷ Σ Max), then the bags. Each group and category row carries the summed numbers. **Tiles and collapse (19 Oct 2026):** the bags under each category are tiles ranked by
 this month's need (#1 gold) showing the health, **missing this month** (big), Health %, Covered %, have, need, sold,
 still to sell, the month-end balance in words (Short by / Left on 31 Oct, the sum on hover), shops out and the
-warehouse; health groups and categories collapse / expand (click the row), plus Collapse all / Expand all groups; the
+warehouse; **Dead stock is always listed as its own group** (also under Needs action, 19 Oct 2026); health groups and categories collapse / expand (click the row), plus Collapse all / Expand all groups; the
 column headings repeat above every category.
 
 Each bag, folded across the shops (have, need, sold and each shop's Min / Max summed), gets **one category**:
@@ -150,7 +150,7 @@ section shows when it opens.
   headings are always next to the numbers in a long table. **Tiles and collapse (19 Oct 2026):** the bags under each category are tiles ranked by November need (#1
 gold) showing the stars, covered shops only → with buffer, **short after buffer** (big), November need, shops only, with
 CBD + VLD, buffer, the month-end balance in words, short with shops only and shops short; each category row collapses /
-expands its tiles, the rating groups as before, plus Collapse all / Expand all groups.
+expands its tiles, the rating groups as before, plus Collapse all / Expand all groups. The **Total (all bags)** row sits right under the column headings, at the top of the table.
 
 ## Page
 

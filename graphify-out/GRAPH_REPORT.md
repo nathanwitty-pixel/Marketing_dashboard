@@ -1,7 +1,7 @@
 # Graph Report - Marketing_dashboard  (2026-10-19)
 
 ## Corpus Check
-- 207 files · ~937,609 words
+- 207 files · ~937,638 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 18 file(s) not represented in the graph (top: .csv 11, (none) 2, .toml 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a538bd80`
+- Built from commit: `36bb515e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -51,7 +51,7 @@
 - streamlit_app.py
 - moves
 - monthly_report.py
-- history.py
+- design-taste-frontend (anti-slop frontend skill)
 - chronos_train.py
 - stock.py
 - build_payload
@@ -69,7 +69,7 @@
 - Self-made combos vs Running combos portable bundle README
 - start_server
 - Month-End Routine
-- design-taste-frontend (anti-slop frontend skill)
+- Bags on offer vs not on offer
 - algorithmic-art skill
 - dataviz-charts skill
 - bag_classifier
@@ -86,7 +86,7 @@
 - Shop Stock Levels — min / max per shop, stocks report and next-month preparedness
 - TTL disk-cache rationale (.odoo_cache/)
 - welcome_screen.js
-- Bags on offer vs not on offer
+- history.py
 - self_made_combos_bundle/lib/report_month.py
 - marketing_dashboard.sql
 - product_performance.py
@@ -120,9 +120,9 @@
 - current_performance.html
 - attach
 - self_made_combos.py generator (build_payload + SQL + injection)
-- shop_regions.py
-- Pricing rule — two tiers (BAND cost cutoff) + hand pins
 - run_scripts
+- Pricing rule — two tiers (BAND cost cutoff) + hand pins
+- timed_offers.py (generator)
 - New Products Analytics (doc)
 - Ralph task — only three sheet tabs left
 - scripts/receipt_combos.py
@@ -153,14 +153,15 @@
 - run_query
 - denri_mkt_timed_offer* Supabase tables
 - Shop Launch
-- _bag_stock
+- Marketing Dashboard — Google Sheets access & setup (doc)
 - Product / name matching (doc)
 - _apply_receipt_offers
 - custom_range.py
-- Semantic color rules (green=good, amber=risk, red=critical, cyan=info)
+- shop_regions.py
 - paths.py
-- timed_offers.py (generator)
-- Marketing Dashboard — Google Sheets access & setup (doc)
+- _bag_stock
+- Semantic color rules (green=good, amber=risk, red=critical, cyan=info)
+- lib
 - generate_insights.py
 - _bags_not_on_offer
 - Shop Stock Levels — November finish (Ralph loop, started 18 Oct 2026)
@@ -168,7 +169,6 @@
 - _seasonality
 - Sticky controls — filter bar follows the reader (Ralph loop, started 19 Oct 2026)
 - colours.py
-- lib
 
 ## God Nodes (most connected - your core abstractions)
 1. `run_query()` - 64 edges
@@ -331,9 +331,9 @@ Nodes (10): Actions (one per bag × market, then ranked), moves(), Kenya shop �
 Cohesion: 0.16
 Nodes (8): _cause(), esc(), fmt(), ladder_strip(), pct(), monthly_report.py…, _smc_srow(), _stock_rows()
 
-### Community 35 - "history.py"
-Cohesion: 0.31
-Nodes (10): fetch_months(), bucket(), inject(), main(), _num(), history.py — build the dashboard History page from Supabase. Reads the…, psycopg2 numerics come back as Decimal — make them JSON-friendly. Whole numbers…, Like _num, but leaves booleans alone and renders dates as ISO strings — the… (+2 more)
+### Community 35 - "design-taste-frontend (anti-slop frontend skill)"
+Cohesion: 0.18
+Nodes (12): design-taste-frontend (related skill), design-taste-frontend (anti-slop frontend skill), Brief-First Process (8-step design workflow), Hard Bans (typography, color, layout, code, content clichés), Pre-Flight Checklist (90+ items), Redesign Protocol (upgrading existing UI), Three Dials — DESIGN_VARIANCE, MOTION_INTENSITY, VISUAL_DENSITY, Three AI-generated design clusters (calibration reference) (+4 more)
 
 ### Community 36 - "chronos_train.py"
 Cohesion: 0.12
@@ -399,9 +399,9 @@ Nodes (8): start_server(), copyfile(), do_GET(), end_headers(), finish(), handle
 Cohesion: 0.14
 Nodes (12): _collect_comments(), _html_text(), Automatic (no need to remember), Live vs. archive — how the current month and past months split, Month-End Routine, Notes & gotchas, Optional: schedule it, Run it by hand (+4 more)
 
-### Community 53 - "design-taste-frontend (anti-slop frontend skill)"
+### Community 53 - "Bags on offer vs not on offer"
 Cohesion: 0.18
-Nodes (12): design-taste-frontend (related skill), design-taste-frontend (anti-slop frontend skill), Brief-First Process (8-step design workflow), Hard Bans (typography, color, layout, code, content clichés), Pre-Flight Checklist (90+ items), Redesign Protocol (upgrading existing UI), Three Dials — DESIGN_VARIANCE, MOTION_INTENSITY, VISUAL_DENSITY, Three AI-generated design clusters (calibration reference) (+4 more)
+Nodes (11): Bags on offer vs not on offer, Buckets, Corporate-lead till orders, Laptop sleeves are bags (27 Sep 2026), Layout (laptop / tablet / phone), Period selector (Monthly / Weekly / Last week / Custom), Regenerate, Shop birthdays (+3 more)
 
 ### Community 54 - "algorithmic-art skill"
 Cohesion: 0.47
@@ -463,9 +463,9 @@ Nodes (16): Bag health (by bag, 18 Oct 2026), Data, Each shop's monthly need per
 Cohesion: 0.67
 Nodes (3): DENRI_FORCE_FRESH=1 env var, lib/db.run_query_cached() TTL disk cache, TTL disk-cache rationale (.odoo_cache/)
 
-### Community 70 - "Bags on offer vs not on offer"
-Cohesion: 0.18
-Nodes (11): Bags on offer vs not on offer, Buckets, Corporate-lead till orders, Laptop sleeves are bags (27 Sep 2026), Layout (laptop / tablet / phone), Period selector (Monthly / Weekly / Last week / Custom), Regenerate, Shop birthdays (+3 more)
+### Community 70 - "history.py"
+Cohesion: 0.31
+Nodes (10): fetch_months(), bucket(), inject(), main(), _num(), history.py — build the dashboard History page from Supabase. Reads the…, psycopg2 numerics come back as Decimal — make them JSON-friendly. Whole numbers…, Like _num, but leaves booleans alone and renders dates as ISO strings — the… (+2 more)
 
 ### Community 71 - "self_made_combos_bundle/lib/report_month.py"
 Cohesion: 0.17
@@ -599,17 +599,17 @@ Nodes (5): attach(), page(), behaviour(), injectCss(), reveal()
 Cohesion: 0.29
 Nodes (7): lib/report_month.py live_month_window(), Menu 4: Self made combos vs running combos, bag_original_prices.json full-price catalogue, self_made_combos.build_payload(month_start, month_end) function, lib/report_month.py (which month are we reporting?), self_made_combos.html static page (reads const SMC), self_made_combos.py generator (build_payload + SQL + injection)
 
-### Community 104 - "shop_regions.py"
-Cohesion: 0.29
-Nodes (6): _load_shop_regions(), Shop → Region from docs/shop-regions.md (lib/shop_regions); the built-in…, doc(), load(), lib/shop_regions.py — Shop → Region from docs/shop-regions.md (the source of…, {SHOP (upper): region} parsed from the markdown table under the heading that…
+### Community 104 - "run_scripts"
+Cohesion: 0.36
+Nodes (8): _is_quota_error(), _is_transient(), A one-off network hiccup worth an immediate retry — a Google Sheets read…, _run_one(), run_scripts(), _handle_refresh(), _run_ref(), _timeout_for()
 
 ### Community 105 - "Pricing rule — two tiers (BAND cost cutoff) + hand pins"
 Cohesion: 0.33
 Nodes (6): "Below cost" flag, "No BOM" flag, "Pinned" flag, Pricing rule — two tiers (BAND cost cutoff) + hand pins, reject_overrides.json (hand-pinned prices), "Thin" margin flag
 
-### Community 106 - "run_scripts"
-Cohesion: 0.36
-Nodes (8): _is_quota_error(), _is_transient(), A one-off network hiccup worth an immediate retry — a Google Sheets read…, _run_one(), run_scripts(), _handle_refresh(), _run_ref(), _timeout_for()
+### Community 106 - "timed_offers.py (generator)"
+Cohesion: 0.29
+Nodes (7): month_end.py (rollover archiver), monthly_report_history.json, monthly_report.py._read_timed_offers(), renderOffer(TO, root) function, Timed Offers Analytics (doc), timed_offers.html (output), timed_offers.py (generator)
 
 ### Community 107 - "New Products Analytics (doc)"
 Cohesion: 0.25
@@ -675,9 +675,9 @@ Nodes (20): corporate_from_db(), corporate_target_from_db(), Current month's cor
 Cohesion: 0.29
 Nodes (6): Config, Launch day, Marketing posts, Sales, Shop Launch, What the page shows
 
-### Community 153 - "_bag_stock"
-Cohesion: 0.40
-Nodes (5): _bag_stock(), _combo_bags(), _norm_bag(), Space/punctuation-insensitive key so 'MINIZURI' matches 'MINI ZURI'., Component bags of an offer, each with its stock, sorted most-stock first.
+### Community 153 - "Marketing Dashboard — Google Sheets access & setup (doc)"
+Cohesion: 0.29
+Nodes (7): timed_offers_config.json (config), Vercel hosted version (static snapshot), Secrets excluded via .gitignore / .vercelignore, Marketing Dashboard — Google Sheets access & setup (doc), Timed Offers snapshot-over-window workflow, vercel.json, Vercel static deployment (serves committed HTML, no build step)
 
 ### Community 154 - "Product / name matching (doc)"
 Cohesion: 0.33
@@ -691,21 +691,21 @@ Nodes (6): _apply_receipt_offers(), Kenya's combosGoal for a Sinza / Uganda mark
 Cohesion: 0.14
 Nodes (18): block(), from_argv(), label(), load(), month_share(), path(), Per-page Custom period: the From – To dates a page was last built for. Each…, (from, to) dates for the page's Custom period, or None. Swapped if reversed;… (+10 more)
 
-### Community 157 - "Semantic color rules (green=good, amber=risk, red=critical, cyan=info)"
-Cohesion: 0.50
-Nodes (4): Design Tokens (colors, typography, spacing), Semantic color rules (green=good, amber=risk, red=critical, cyan=info), Analytics Dashboard specific rules (VISUAL_DENSITY: dense), Region colour palette (reference for Executive Dashboard)
+### Community 157 - "shop_regions.py"
+Cohesion: 0.29
+Nodes (6): _load_shop_regions(), Shop → Region from docs/shop-regions.md (lib/shop_regions); the built-in…, doc(), load(), lib/shop_regions.py — Shop → Region from docs/shop-regions.md (the source of…, {SHOP (upper): region} parsed from the markdown table under the heading that…
 
 ### Community 158 - "paths.py"
 Cohesion: 0.17
 Nodes (10): generator(), lib/paths.py — where every kind of file lives. Use these instead of building…, clear_timed_offers(), main(), month_end.py — the end-of-month archival routine.…, YYYY-MM to archive. Explicit DENRI_REPORT_MONTH wins; otherwise the month that…, After the closing month's timed offers are safely in Supabase, empty the config…, run() (+2 more)
 
-### Community 159 - "timed_offers.py (generator)"
-Cohesion: 0.29
-Nodes (7): month_end.py (rollover archiver), monthly_report_history.json, monthly_report.py._read_timed_offers(), renderOffer(TO, root) function, Timed Offers Analytics (doc), timed_offers.html (output), timed_offers.py (generator)
+### Community 159 - "_bag_stock"
+Cohesion: 0.40
+Nodes (5): _bag_stock(), _combo_bags(), _norm_bag(), Space/punctuation-insensitive key so 'MINIZURI' matches 'MINI ZURI'., Component bags of an offer, each with its stock, sorted most-stock first.
 
-### Community 160 - "Marketing Dashboard — Google Sheets access & setup (doc)"
-Cohesion: 0.29
-Nodes (7): timed_offers_config.json (config), Vercel hosted version (static snapshot), Secrets excluded via .gitignore / .vercelignore, Marketing Dashboard — Google Sheets access & setup (doc), Timed Offers snapshot-over-window workflow, vercel.json, Vercel static deployment (serves committed HTML, no build step)
+### Community 160 - "Semantic color rules (green=good, amber=risk, red=critical, cyan=info)"
+Cohesion: 0.50
+Nodes (4): Design Tokens (colors, typography, spacing), Semantic color rules (green=good, amber=risk, red=critical, cyan=info), Analytics Dashboard specific rules (VISUAL_DENSITY: dense), Region colour palette (reference for Executive Dashboard)
 
 ### Community 162 - "generate_insights.py"
 Cohesion: 0.24
@@ -737,7 +737,7 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `run_query()` connect `run_query` to `forward_projections.py`, `lib/receipt_combos.py`, `generators/self_made_combos.py`, `product_targets.py`, `shop_corporate.py`, `runway_bags.py`, `oos_callbacks.py`, `build_payload`, `shop_launch.py`, `current_performance.py`, `fetch`, `shop_stock_levels.py`, `lib/db.py`, `_apply_receipt_offers`, `queries.py`, `_enrich_deals`, `_bags_not_on_offer`, `chronos_train.py`, `stock.py`, `build_payload`, `_seasonality`, `shops_efficiency.py`, `_enrich_deals`, `_combo_button_usage`, `product_performance.py`, `check_connection`, `fetch_new_products_data`, `shop_requests.py`, `fetch_posting_data`, `_combo_button_usage`?**
   _High betweenness centrality (0.053) - this node is a cross-community bridge._
-- **Why does `bag_classifier()` connect `bag_classifier` to `generators/self_made_combos.py`, `Bags on offer vs not on offer`, `push_planner.py`, `oos_callbacks.py`, `data`, `fetch`, `Product (bag) targets`, `_apply_receipt_offers`, `Push Planner (`push_planner.py` → `push_planner.html`, `PP`)`?**
+- **Why does `bag_classifier()` connect `bag_classifier` to `generators/self_made_combos.py`, `push_planner.py`, `oos_callbacks.py`, `data`, `Bags on offer vs not on offer`, `fetch`, `Product (bag) targets`, `_apply_receipt_offers`, `Push Planner (`push_planner.py` → `push_planner.html`, `PP`)`?**
   _High betweenness centrality (0.046) - this node is a cross-community bridge._
 - **Why does `Bags on offer vs not on offer` connect `Bags on offer vs not on offer` to `reject_sales.py`, `lib/receipt_combos.py`, `generators/self_made_combos.py`, `shop-birthdays.md`, `oos_callbacks.py`?**
   _High betweenness centrality (0.044) - this node is a cross-community bridge._
