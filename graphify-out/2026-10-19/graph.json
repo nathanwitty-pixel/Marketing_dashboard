@@ -20833,7 +20833,7 @@
       "node_kind": "heading",
       "norm_label": "bag health (by bag, 18 oct 2026)",
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L76"
+      "source_location": "L81"
     },
     {
       "id": "docs_shop_stock_levels_data",
@@ -20845,7 +20845,7 @@
       "node_kind": "heading",
       "norm_label": "data",
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L174"
+      "source_location": "L179"
     },
     {
       "id": "docs_shop_stock_levels_each_shop_s_monthly_need_per_bag_the_way_we_did_the_targets",
@@ -20881,7 +20881,7 @@
       "node_kind": "heading",
       "norm_label": "next month (preparedness) \u2014 from the 15th",
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L103"
+      "source_location": "L108"
     },
     {
       "id": "docs_shop_stock_levels_november_preparedness_shops_only_vs_with_cbd_vld_buffer_stock_18_oct_2026",
@@ -20893,7 +20893,7 @@
       "node_kind": "heading",
       "norm_label": "november preparedness \u2014 shops only vs with cbd + vld (buffer stock, 18 oct 2026)",
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L116"
+      "source_location": "L121"
     },
     {
       "id": "docs_shop_stock_levels_page",
@@ -20905,7 +20905,7 @@
       "node_kind": "heading",
       "norm_label": "page",
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L155"
+      "source_location": "L160"
     },
     {
       "id": "docs_shop_stock_levels_product_rating_and_core_5_vs_other_13_categories_18_oct_2026",
@@ -20917,7 +20917,7 @@
       "node_kind": "heading",
       "norm_label": "product rating and core 5 vs other 13 categories (18 oct 2026)",
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L127"
+      "source_location": "L132"
     },
     {
       "id": "docs_shop_stock_levels_production_shop_requests_vs_approved_list_18_oct_2026",
@@ -20929,7 +20929,7 @@
       "node_kind": "heading",
       "norm_label": "production \u2014 shop requests vs approved list (18 oct 2026)",
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L273"
+      "source_location": "L278"
     },
     {
       "id": "docs_shop_stock_levels_requests_by_category_18_oct_2026",
@@ -20941,7 +20941,7 @@
       "node_kind": "heading",
       "norm_label": "requests by category (18 oct 2026)",
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L248"
+      "source_location": "L253"
     },
     {
       "id": "docs_shop_stock_levels_shop_requests_and_production_region_shop_filter_and_tiles_19_oct_2026",
@@ -20953,7 +20953,7 @@
       "node_kind": "heading",
       "norm_label": "shop requests and production \u2014 region / shop filter and tiles (19 oct 2026)",
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L260"
+      "source_location": "L265"
     },
     {
       "id": "docs_shop_stock_levels_shop_requests_requested_vs_received_18_oct_2026",
@@ -20965,7 +20965,7 @@
       "node_kind": "heading",
       "norm_label": "shop requests \u2014 requested vs received (18 oct 2026)",
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L185"
+      "source_location": "L190"
     },
     {
       "id": "docs_shop_stock_levels_shop_stock_levels_min_max_per_shop_stocks_report_and_next_month_preparedness",
@@ -20989,7 +20989,7 @@
       "node_kind": "heading",
       "norm_label": "shop vs shop and regions \u2014 request checks compared (18 oct 2026)",
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L232"
+      "source_location": "L237"
     },
     {
       "id": "docs_shop_stock_levels_stock_monitor_grouped_and_what_each_shop_should_request_19_oct_2026",
@@ -21013,7 +21013,7 @@
       "node_kind": "heading",
       "norm_label": "stocks report",
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L64"
+      "source_location": "L69"
     },
     {
       "id": "assets_welcome_screen",
@@ -60330,7 +60330,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L155",
+      "source_location": "L160",
       "weight": 1.0
     },
     {
@@ -60341,7 +60341,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L174",
+      "source_location": "L179",
       "weight": 1.0
     },
     {
@@ -60352,7 +60352,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L185",
+      "source_location": "L190",
       "weight": 1.0
     },
     {
@@ -60363,7 +60363,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L232",
+      "source_location": "L237",
       "weight": 1.0
     },
     {
@@ -60374,7 +60374,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L248",
+      "source_location": "L253",
       "weight": 1.0
     },
     {
@@ -60396,7 +60396,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L260",
+      "source_location": "L265",
       "weight": 1.0
     },
     {
@@ -60407,7 +60407,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L273",
+      "source_location": "L278",
       "weight": 1.0
     },
     {
@@ -60429,7 +60429,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L64",
+      "source_location": "L69",
       "weight": 1.0
     },
     {
@@ -60440,7 +60440,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L103",
+      "source_location": "L108",
       "weight": 1.0
     },
     {
@@ -60451,7 +60451,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L116",
+      "source_location": "L121",
       "weight": 1.0
     },
     {
@@ -60462,7 +60462,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L127",
+      "source_location": "L132",
       "weight": 1.0
     },
     {
@@ -60473,7 +60473,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-stock-levels.md",
-      "source_location": "L76",
+      "source_location": "L81",
       "weight": 1.0
     },
     {
@@ -80877,5 +80877,5 @@
       "source_file": "docs/product-matching.md"
     }
   ],
-  "built_at_commit": "36bb515e1dd0785582977d65b72760c14b0ee02f"
+  "built_at_commit": "b1f947186b60b7c006ec131f48b0ae9cc1c40bbb"
 }

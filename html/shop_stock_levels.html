@@ -133,7 +133,7 @@
     table.grp-t tr.g2 td { background: rgba(30,33,48,0.6); font-weight: 700; font-size: 0.74rem; }
 
     table.grp-t tr.tl > td { padding: 0.5rem 0.4rem 0.8rem; border-bottom: none; }
-    .mt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr)); gap: 0.6rem; }
+    .mt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.6rem; }
     .mt-tile { background: #161824; border: 1px solid #2d3148; border-top: 3px solid #475569; border-radius: 10px; padding: 0.55rem 0.65rem; cursor: pointer; }
     .mt-tile:hover, .mt-tile:focus { border-color: #3d4468; outline: none; }
     .mt-tile.oos { border-top-color: #ef4444; } .mt-tile.low { border-top-color: #f59e0b; } .mt-tile.ok { border-top-color: #10b981; }
@@ -145,9 +145,10 @@
     .mt-st { margin: 0.3rem 0 0.2rem; } .mt-st .st { font-size: 0.56rem; }
     .mt-big { display: flex; align-items: baseline; gap: 0.35rem; margin: 0.1rem 0 0.35rem; }
     .mt-big b { font-size: 1.35rem; color: #7dd3fc; font-variant-numeric: tabular-nums; } .mt-big span { font-size: 0.64rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
-    .mt-vals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.2rem 0.4rem; }
-    .mv span { display: block; font-size: 0.56rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; }
-    .mv b { font-size: 0.78rem; color: #e2e8f0; font-variant-numeric: tabular-nums; } .mv b.muted { color: #94a3b8; }
+    .mt-vals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.25rem 0.45rem; }
+    .mt-tile { min-width: 0; overflow: hidden; } .mv { min-width: 0; }
+    .mv span { display: block; font-size: 0.56rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em; line-height: 1.2; white-space: normal; overflow-wrap: anywhere; }
+    .mv b { display: block; font-size: 0.78rem; color: #e2e8f0; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .mv b.muted { color: #94a3b8; }
     .mv b.neg { color: #f87171; } .mv b.pos { color: #34d399; } .mv b.wait { color: #fcd34d; }
 
     table.grp-t tr.ctog { cursor: pointer; } table.grp-t tr.ctog:hover td { background: rgba(45,49,72,0.6); }
@@ -179,6 +180,8 @@
     .mon-legend .ml-g > div { font-size: 0.72rem; color: #94a3b8; line-height: 1.4; }
     .mon-legend .ml-g > div > b:first-of-type, .mon-legend .ml-g > div > span:first-child { margin-right: 0.35rem; }
     .mon-legend .ml-g > div > span + b, .mon-legend .ml-g > div > b + b { color: #e2e8f0; margin-right: 0.3rem; }
+
+    .tw .mt-grid { position: sticky; left: 0; max-width: calc(100vw - 90px); }   /* tiles stay in view in a wide, scrolling table */
 </style>
 </head>
 <body>
@@ -787,7 +790,7 @@ const SSL = {"generated":"19 Oct 2026 09:13","month":"October 2026","today":"202
         var xs = cats[c].sort(function (a, b) { return b.shortWith - a.shortWith || b.nm - a.nm; }), CT = sumOf(xs);
         h += colHead('colrep');
         var nk = k + '|' + c, nOpen = !(state.npShut || {})[nk];
-        h += '<tr class="chead nctog" data-ck="' + esc(nk) + '" title="Click to collapse or expand this category"><td class="bn" style="color:' + (CORE.indexOf(c) >= 0 ? '#7dd3fc' : '#94a3b8') + '"><span class="caret">' + (nOpen ? '▾' : '▸') + '</span> ' + esc(cap(c)) + (CORE.indexOf(c) >= 0 ? ' <span class="muted" style="font-weight:600">core</span>' : '') + ' <span class="muted" style="font-weight:600">· ' + xs.length + '</span></td>' + nums(CT) + '<td></td></tr>';
+        h += '<tr class="chead nctog" data-ck="' + esc(nk) + '" title="Click to collapse or expand this category"><td class="bn" style="color:' + (CORE.indexOf(c) >= 0 ? '#7dd3fc' : '#94a3b8') + '"><span class="caret">' + (nOpen ? '▾' : '▸') + '</span> ' + esc(cap(c)) + (CORE.indexOf(c) >= 0 ? ' <span class="muted" style="font-weight:600">core</span>' : '') + ' <span class="muted" style="font-weight:600">(' + xs.length + ')</span></td>' + nums(CT) + '<td></td></tr>';
         // bags as tiles, ranked inside the category by November need (spec: Product rating › tiles)
         var ranked = xs.slice().sort(function (a2, b2) { return b2.nm - a2.nm || b2.shortWith - a2.shortWith; });
         h += '<tr class="tl"' + (nOpen ? '' : ' hidden') + ' data-tk="' + esc(nk) + '"><td colspan="10"><div class="mt-grid">' + ranked.map(function (x, ri) {
