@@ -169,6 +169,13 @@
     #ss-rq select, #ss-pr select { background: #161824; color: #e2e8f0; border: 1px solid #2d3148; border-radius: 6px; padding: 0.22rem 0.45rem; font: inherit; font-size: 0.74rem; }
 
     #ss-prep-t thead tr.tot-top td { font-weight: 800; background: #1e2130; border-bottom: 2px solid #2d3148; padding: 0.45rem 0.6rem; }
+
+    .mon-legend { margin-top: 0.6rem; border: 1px solid #2d3148; border-radius: 10px; padding: 0.55rem 0.7rem; background: rgba(22,24,36,0.6); }
+    .mon-legend .ml-t { font-size: 0.62rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 0.35rem; }
+    .mon-legend .ml-g { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0.35rem 1rem; }
+    .mon-legend .ml-g > div { font-size: 0.72rem; color: #94a3b8; line-height: 1.4; }
+    .mon-legend .ml-g > div > b:first-of-type, .mon-legend .ml-g > div > span:first-child { margin-right: 0.35rem; }
+    .mon-legend .ml-g > div > span + b, .mon-legend .ml-g > div > b + b { color: #e2e8f0; margin-right: 0.3rem; }
 </style>
 </head>
 <body>
@@ -357,7 +364,16 @@ const SSL = {"generated":"19 Oct 2026 08:11","month":"October 2026","today":"202
     list.sort(function (a, b) { return RANK[a.r.status] - RANK[b.r.status] || b.w - a.w || b.r.need - a.r.need; });
     document.getElementById('ss-mon-hint').innerHTML = '<b>Min</b> = ' + D.minDays + ' days of need, <b>Max</b> = ' + D.maxDays + ' days (need = the shop\'s share of the month\'s bag targets). At or below Min → <b>send now</b> up to Max. '
       + (state.show === 'action' ? 'Showing what <b>needs action</b> — out of stock, below min, or someone waiting (' + LP[state.leads] + '). ' : 'Showing every bag each shop has or needs. ')
-      + 'One block per shop — open it for its bags; hover / tap a bag for colours and who is waiting. <b>Website</b> is an online shop with no shelf, so it shows only the customers waiting.';
+      + 'One block per shop — open it for its bags; hover / tap a bag for colours and who is waiting. <b>Website</b> is an online shop with no shelf, so it shows only the customers waiting.'
+      + '<div class="mon-legend"><div class="ml-t">Each shop\'s header line, left to right</div>'
+      + '<div class="ml-g">'
+      + '<div><span class="sc r">%</span><b>Stock health</b> how much of the shop\'s target need sits within Min to Max, weighted by need (100% = every bag in range). Low = many bags empty, low or overstocked.</div>'
+      + '<div><span class="st oos">out</span><b>Out of stock</b> bags the shop needs this month with 0 on the shelf.</div>'
+      + '<div><span class="st low">below min</span><b>Below min</b> bags at or under ' + D.minDays + ' days of need: refill them.</div>'
+      + '<div><span class="st over">over max</span><b>Over max</b> bags holding more than ' + D.maxDays + ' days of need: move or push them, do not send more.</div>'
+      + '<div><b style="color:#7dd3fc">send now</b><b>Send now</b> units to bring every out-of-stock and below-min bag back up to Max.</div>'
+      + '<div><b class="wait">waiting</b><b>Waiting</b> customers who asked for a bag the shop did not have and have not bought since (WhatsApp online + walk-in leads), for the Leads period picked above.</div>'
+      + '</div></div>';
     // One block per shop: shops with the most out-of-stock / below-min first.
     var by = {};
     list.forEach(function (x) { (by[x.r.shop] = by[x.r.shop] || []).push(x); });

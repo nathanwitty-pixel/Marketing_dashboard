@@ -1350,15 +1350,15 @@
     "semantic_hash": ""
   },
   "docs/shop-stock-levels.md": {
-    "mtime": 1792379344.6119564,
-    "seen": 1792379464.953717,
-    "ast_hash": "01504ec7bd05052f9ce60a0d26271420",
+    "mtime": 1792386786.4241714,
+    "seen": 1792386811.697042,
+    "ast_hash": "e1a888e91e8bedab9dddc9b94fd31216",
     "semantic_hash": ""
   },
   "html/shop_stock_levels.html": {
-    "mtime": 1792379445.123456,
-    "seen": 1792379464.9537866,
-    "ast_hash": "4b6686e529ba9ed40757b0ef2d6eeb52",
+    "mtime": 1792386786.422461,
+    "seen": 1792386811.697101,
+    "ast_hash": "43ec6828d690cef2e0c85dcfec144661",
     "semantic_hash": ""
   },
   "lib/marketing_posts.py": {

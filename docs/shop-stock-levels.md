@@ -38,6 +38,11 @@ month will be short of.
 
 ## Stock monitor — grouped, and what each shop should request (19 Oct 2026)
 
+**Header-line legend (19 Oct 2026):** the section intro explains each item of a shop's header line — Stock health %
+(target need within Min–Max, need-weighted), out (needed, 0 on the shelf), below min (at or under 7 days: refill),
+over max (more than 21 days: move / push, don't send), send now (units to bring out / below-min bags up to Max) and
+waiting (customers still waiting for a bag the shop didn't have, for the chosen Leads period) (chip styles shown, no fixed numbers).
+
 Every shop block (e.g. KTDA) lists its bags **grouped by status** — Out of stock → Below min → Over max → OK → Stock,
 no need — then **by category inside each status** (core 5 first; `data/bag_tiers.csv`), each group with its
 **% covered** = Σ min(have, Max) ÷ Σ Max (how much of the stock the shop should hold it actually holds), then the bags.

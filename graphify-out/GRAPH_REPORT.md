@@ -1,7 +1,7 @@
 # Graph Report - Marketing_dashboard  (2026-10-19)
 
 ## Corpus Check
-- 207 files · ~937,638 words
+- 207 files · ~938,032 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 18 file(s) not represented in the graph (top: .csv 11, (none) 2, .toml 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `36bb515e`
+- Built from commit: `b1f94718`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -736,11 +736,11 @@ Nodes (5): family(), _load(), _norm(), lib/colours.py — colour FAMILY of a pro
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `run_query()` connect `run_query` to `forward_projections.py`, `lib/receipt_combos.py`, `generators/self_made_combos.py`, `product_targets.py`, `shop_corporate.py`, `runway_bags.py`, `oos_callbacks.py`, `build_payload`, `shop_launch.py`, `current_performance.py`, `fetch`, `shop_stock_levels.py`, `lib/db.py`, `_apply_receipt_offers`, `queries.py`, `_enrich_deals`, `_bags_not_on_offer`, `chronos_train.py`, `stock.py`, `build_payload`, `_seasonality`, `shops_efficiency.py`, `_enrich_deals`, `_combo_button_usage`, `product_performance.py`, `check_connection`, `fetch_new_products_data`, `shop_requests.py`, `fetch_posting_data`, `_combo_button_usage`?**
-  _High betweenness centrality (0.053) - this node is a cross-community bridge._
+  _High betweenness centrality (0.052) - this node is a cross-community bridge._
 - **Why does `bag_classifier()` connect `bag_classifier` to `generators/self_made_combos.py`, `push_planner.py`, `oos_callbacks.py`, `data`, `Bags on offer vs not on offer`, `fetch`, `Product (bag) targets`, `_apply_receipt_offers`, `Push Planner (`push_planner.py` → `push_planner.html`, `PP`)`?**
-  _High betweenness centrality (0.046) - this node is a cross-community bridge._
+  _High betweenness centrality (0.042) - this node is a cross-community bridge._
 - **Why does `Bags on offer vs not on offer` connect `Bags on offer vs not on offer` to `reject_sales.py`, `lib/receipt_combos.py`, `generators/self_made_combos.py`, `shop-birthdays.md`, `oos_callbacks.py`?**
-  _High betweenness centrality (0.044) - this node is a cross-community bridge._
+  _High betweenness centrality (0.037) - this node is a cross-community bridge._
 - **Are the 3 inferred relationships involving `fetch()` (e.g. with `classify()` and `oos_key()`) actually correct?**
   _`fetch()` has 3 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `PERF`, `graphify`, `Use in another project` to the rest of the system?**
