@@ -269,9 +269,17 @@
       background: transparent; border: 1px solid #334155; border-radius: 999px; padding: 0.15rem 0.65rem; }
     #corp-clients .corp-tabs button.on { color: #e2e8f0; background: rgba(99,102,241,0.18); border-color: #6366f1; }
     /* Shop corporate tab */
-    #corp-clients .sc-strip { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; margin: -0.1rem 0 0.45rem; padding: 0.4rem 0.55rem;
-      border-radius: 8px; background: rgba(99,102,241,0.08); border: 1px solid #2d3148; font-size: 0.68rem; }
+    #corp-clients .sc-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.45rem; margin: -0.1rem 0 0.5rem; }
     #corp-clients .sc-strip b { color: #e2e8f0; }
+    #corp-clients .sc-kpi { padding: 0.45rem 0.6rem; border-radius: 8px; background: rgba(99,102,241,0.08); border: 1px solid #2d3148; font-size: 0.64rem; color: #94a3b8; }
+    #corp-clients .sc-kpi .lbl { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; }
+    #corp-clients .sc-kpi .big { display: flex; align-items: baseline; gap: 0.4rem; margin: 0.1rem 0 0.3rem; font-size: 1rem; font-weight: 700; color: #e2e8f0; }
+    #corp-clients .sc-kpi .big small { font-size: 0.62rem; font-weight: 600; color: #94a3b8; }
+    #corp-clients .sc-kpi .pct { font-size: 0.66rem; font-weight: 700; padding: 0 0.35rem; border-radius: 999px; }
+    #corp-clients .sc-bar { display: flex; height: 6px; border-radius: 999px; overflow: hidden; background: rgba(100,116,139,0.25); margin-bottom: 0.3rem; }
+    #corp-clients .sc-bar span { display: block; height: 100%; }
+    #corp-clients .sc-leg { display: flex; flex-wrap: wrap; gap: 0.15rem 0.6rem; }
+    #corp-clients .sc-leg i { display: inline-block; width: 7px; height: 7px; border-radius: 2px; margin-right: 0.25rem; vertical-align: 0; }
     #corp-clients .sc-shops { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.5rem; }
     #corp-clients .sc-box { border: 1px solid #2d3148; border-radius: 7px; padding: 0.2rem 0.45rem; font-size: 0.64rem; line-height: 1.35; }
     #corp-clients .sc-box b { display: block; color: #e2e8f0; font-size: 0.7rem; }
@@ -903,11 +911,30 @@ const PROJ = {
     var co = shops.filter(function (s) { return s.shop === 'Corporate'; })[0] || {paid: 0, bags: 0, owed: 0};
     var tot = function (a, k) { return a.reduce(function (x, s) { return x + (s[k] || 0); }, 0); };
     var noQuote = rows.filter(function (r) { return !(r.quotes || []).length; }).length;
+    var pc = function (a, b) { return b ? Math.round(a / b * 100) : 0; };
+    var bar = function (parts) { return '<div class="sc-bar">' + parts.map(function (p) {
+      return p[0] ? '<span style="width:' + p[0] + '%;background:' + p[1] + '"></span>' : ''; }).join('') + '</div>'; };
+    var leg = function (items) { return '<div class="sc-leg">' + items.map(function (x) {
+      return '<span><i style="background:' + x[0] + '"></i>' + x[1] + '</span>'; }).join('') + '</div>'; };
+    var paid = tot(shops, 'paid'), owed = tot(shops, 'owed'), billed = paid + owed;
+    var shP = pc(tot(sh, 'paid'), paid), coP = paid ? 100 - shP : 0, colP = pc(paid, billed);
+    var nSt = function (k) { return rows.filter(function (r) { return r.status === k; }).length; };
+    var nPaid = nSt('paid'), nPart = nSt('part'), nUn = nSt('unpaid'), n = rows.length;
     pane.querySelector('.sc-strip').innerHTML =
-      '<span>Paid at tills <b>KES ' + fmt(tot(shops, 'paid')) + '</b> · <b>' + fmt(tot(shops, 'bags')) + '</b> bags'
-        + ' (shops ' + fmt(tot(sh, 'paid')) + ' · Corporate ' + fmt(co.paid) + ')</span>'
-      + '<span>Shops owed <b style="color:#f87171">KES ' + fmt(tot(sh, 'owed')) + '</b> · Corporate owed <b style="color:#f87171">' + fmt(co.owed) + '</b></span>'
-      + (noQuote ? '<span class="sc-flag">' + noQuote + ' paid with no quote in Odoo</span>' : '');
+      '<div class="sc-kpi"><div class="lbl">Paid at tills</div>'
+        + '<div class="big">KES ' + fmt(paid) + ' <small>' + fmt(tot(shops, 'bags')) + ' bags</small></div>'
+        + bar([[shP, '#3b82f6'], [coP, '#a855f7']])
+        + leg([['#3b82f6', 'Shops <b>' + shP + '%</b> · ' + fmt(tot(sh, 'paid'))], ['#a855f7', 'Corporate <b>' + coP + '%</b> · ' + fmt(co.paid)]]) + '</div>'
+      + '<div class="sc-kpi"><div class="lbl">Collected vs owed</div>'
+        + '<div class="big">' + colP + '% <small>collected · <span style="color:#f87171">KES ' + fmt(owed) + ' owed (' + (billed ? 100 - colP : 0) + '%)</span></small></div>'
+        + bar([[colP, '#22c55e'], [billed ? 100 - colP : 0, '#f87171']])
+        + leg([['#f87171', 'Shops owed <b>' + fmt(tot(sh, 'owed')) + '</b>'], ['#a855f7', 'Corporate owed <b>' + fmt(co.owed) + '</b>']]) + '</div>'
+      + '<div class="sc-kpi"><div class="lbl">Clients</div>'
+        + '<div class="big">' + n + ' <small>' + pc(nPaid, n) + '% fully paid</small></div>'
+        + bar([[pc(nPaid, n), '#22c55e'], [pc(nPart, n), '#fbbf24'], [nUn ? 100 - pc(nPaid, n) - pc(nPart, n) : 0, '#f87171']])
+        + leg([['#22c55e', 'Paid <b>' + nPaid + '</b>'], ['#fbbf24', 'Part <b>' + nPart + '</b>'], ['#f87171', 'Not paid <b>' + nUn + '</b>']])
+        + (noQuote ? '<div class="sc-flag" style="margin-top:0.2rem">⚠ ' + noQuote + ' of ' + n + ' (' + pc(noQuote, n) + '%) paid with no quote in Odoo</div>' : '')
+        + '</div>';
 
     // One box per hunting shop (Corporate last, kept out of the shop totals).
     pane.querySelector('.sc-shops').innerHTML = shops.map(function (s) {
