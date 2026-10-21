@@ -33,6 +33,7 @@ PAGES = {
     "shops_efficiency.html":    ("shops",    ["shops"]),
     "push_planner.html":        ("shops",    ["shops"]),
     "shop_launch.html":         ("shops",    ["shops"]),
+    "footfall_marketing.html":  ("shops",    ["shops"]),
 }
 MKT_LABEL = {"KENYA": "Kenya", "SINZA": "Tanzania", "UGANDA": "Uganda"}
 

@@ -25,6 +25,9 @@ marketing logs posts only on each bag's TOTAL row (no colour) → those come thr
 - **Weekly:** `ads_weekly.csv` + `ads_notes.csv` — marketing's Weekly Ads Performance Report (Drive .pptx).
   Shown on every page as the Ads impact panel — spec: [ads-impact.md](ads-impact.md).
 
+**Footfall (Oct 2026):** `denri_footfall_count` (visitors per shop per day) joined to walk-in POS orders,
+WhatsApp chats, posts and ads on the Footfall and Marketing page — spec: [footfall-marketing.md](footfall-marketing.md).
+
 **Odoo** — sales, stock, dispatch, combos rung, WhatsApp call-backs. If Odoo is down, those figures are
 empty (no sheet fallback any more). **Local files** — `bom_costs.json` and `offers_prices.json` (Offer
 Picking costs / prices), `product_catalog.csv`, `bag_original_prices.json`, `bag_names.csv`.

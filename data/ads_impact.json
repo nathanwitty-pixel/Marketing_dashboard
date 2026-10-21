@@ -6745,6 +6745,428 @@
    },
    "lead": "What the ads cost per bag sold in each market, and which branches are cheap or dear to advertise."
   },
+  "footfall_marketing.html": {
+   "week": "11–17 Oct",
+   "tiles": [
+    {
+     "k": "Ad spend",
+     "v": "≈KES 247,129",
+     "n": "-4% week on week, all markets and channels",
+     "tone": ""
+    },
+    {
+     "k": "Messages",
+     "v": "3,153",
+     "n": "+7% week on week, KES 65 each",
+     "tone": "up"
+    },
+    {
+     "k": "Ads as % of revenue",
+     "v": "2.9%",
+     "n": "was 3.0% the week before, KES 8,408,139 revenue",
+     "tone": ""
+    },
+    {
+     "k": "Ad cost per bag sold",
+     "v": "KES 67",
+     "n": "was KES 61, 3,695 bags sold",
+     "tone": "down"
+    }
+   ],
+   "tables": [
+    {
+     "title": "By market, week of 11–17 Oct",
+     "head": [
+      "Market",
+      "Ad spend",
+      "Messages",
+      "KES per message",
+      "Bags",
+      "Orders",
+      "Revenue",
+      "Ads % of revenue",
+      "Ad cost per bag",
+      "Messages, week on week",
+      "Orders, week on week"
+     ],
+     "rows": [
+      [
+       "Kenya",
+       "≈KES 213,664",
+       "2,653",
+       "KES 68",
+       "3,553",
+       "2,414",
+       "KES 8,100,933",
+       {
+        "t": "2.6%",
+        "c": ""
+       },
+       {
+        "t": "KES 60",
+        "c": ""
+       },
+       {
+        "t": "+7%",
+        "c": "up"
+       },
+       {
+        "t": "-13%",
+        "c": "down"
+       }
+      ],
+      [
+       "Tanzania",
+       "≈KES 14,969",
+       "441",
+       "KES 34",
+       "105",
+       "56",
+       "KES 204,240",
+       {
+        "t": "7.3%",
+        "c": "down"
+       },
+       {
+        "t": "KES 143",
+        "c": ""
+       },
+       {
+        "t": "+9%",
+        "c": "up"
+       },
+       {
+        "t": "+19%",
+        "c": "up"
+       }
+      ],
+      [
+       "Uganda",
+       "≈KES 18,496",
+       "59",
+       "KES 160",
+       "37",
+       "25",
+       "KES 102,966",
+       {
+        "t": "18.0%",
+        "c": "down"
+       },
+       {
+        "t": "KES 500",
+        "c": "down"
+       },
+       {
+        "t": "-11%",
+        "c": "down"
+       },
+       {
+        "t": "-4%",
+        "c": "down"
+       }
+      ]
+     ]
+    }
+   ],
+   "actions": [
+    {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 14 bags and 9 orders in the first 3 days, against 12 bags and 9 orders on the same days a week earlier (+17%). No drop so far, so those ads weren't driving till sales."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Kenya",
+     "text": "Meta Weekly Offers spent only about 78% of the branch budgets. New bi-weekly creatives (11 Oct) cut cost per message from KES 95 to 89."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.7% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Weekly Offers, dearest branches per message: Starmall KES 179, Meru KES 116, Kakamega KES 110. New creatives for Starmall, Meru, Busia and Kisumu; revive Thika's \"Happy hour\" (KES 43, lost about 90 messages when paused)."
+    },
+    {
+     "kind": "win",
+     "market": "Kenya",
+     "text": "Weekly Offers, cheapest branches per message: Eldoret KES 65, Nakuru KES 67, KTDA KES 69 (183 messages)."
+    }
+   ],
+   "foot": "Ads from marketing's Weekly Ads Performance Report, week of 11–17 Oct (Sun–Sat). USD channels (Google, X) at ≈KES 129 per $. Sales from Odoo, posts from the posting sheets. Ads and sales are compared by week and market; no ad is linked to a single till sale.",
+   "chart": {
+    "scope": "All ads",
+    "weeks": [
+     "20–26 Sep",
+     "27 Sep–3 Oct",
+     "4–10 Oct",
+     "11–17 Oct"
+    ],
+    "markets": [
+     "Kenya",
+     "Tanzania",
+     "Uganda"
+    ],
+    "series": {
+     "spend": {
+      "Kenya": [
+       206553.0,
+       215210.7,
+       222880.5,
+       213663.9
+      ],
+      "Tanzania": [
+       16672.0,
+       12878.0,
+       16035.0,
+       14969.0
+      ],
+      "Uganda": [
+       15326.4,
+       12062.7,
+       19505.3,
+       18495.7
+      ]
+     },
+     "chatSpend": {
+      "Kenya": [
+       206553.0,
+       203780.0,
+       189347.0,
+       181134.0
+      ],
+      "Tanzania": [
+       16672.0,
+       12878.0,
+       16035.0,
+       14969.0
+      ],
+      "Uganda": [
+       7518.0,
+       5396.0,
+       10483.0,
+       9467.0
+      ]
+     },
+     "messages": {
+      "Kenya": [
+       3178.0,
+       2817.0,
+       2471.0,
+       2653.0
+      ],
+      "Tanzania": [
+       423.0,
+       452.0,
+       405.0,
+       441.0
+      ],
+      "Uganda": [
+       73.0,
+       30.0,
+       66.0,
+       59.0
+      ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3553
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8100933
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
+      ]
+     }
+    },
+    "campaigns": [
+     {
+      "name": "Google Demand Gen",
+      "market": "Kenya",
+      "spend": 13584,
+      "usd": true,
+      "results": 4447.0,
+      "type": "website users",
+      "chat": false,
+      "cpr": null,
+      "avg3": null
+     },
+     {
+      "name": "Google Performance Max",
+      "market": "Kenya",
+      "spend": 18946,
+      "usd": true,
+      "results": 39.1,
+      "type": "purchases",
+      "chat": false,
+      "cpr": null,
+      "avg3": null
+     },
+     {
+      "name": "Meta Corporate offers",
+      "market": "Kenya",
+      "spend": 5607,
+      "usd": false,
+      "results": 99.0,
+      "type": "messages",
+      "chat": true,
+      "cpr": 56.6,
+      "avg3": null
+     },
+     {
+      "name": "Meta Monthly Offers",
+      "market": "Kenya",
+      "spend": 17176,
+      "usd": false,
+      "results": 310.0,
+      "type": "messages",
+      "chat": true,
+      "cpr": 55.4,
+      "avg3": 61.1
+     },
+     {
+      "name": "Meta New Bags",
+      "market": "Kenya",
+      "spend": 9480,
+      "usd": false,
+      "results": 90.0,
+      "type": "messages",
+      "chat": true,
+      "cpr": 105.3,
+      "avg3": 115.5
+     },
+     {
+      "name": "Meta Weekly Offers",
+      "market": "Kenya",
+      "spend": 117371,
+      "usd": false,
+      "results": 1322.0,
+      "type": "messages",
+      "chat": true,
+      "cpr": 88.8,
+      "avg3": 81.3
+     },
+     {
+      "name": "TikTok Hot Picks",
+      "market": "Kenya",
+      "spend": 8750,
+      "usd": false,
+      "results": 189.0,
+      "type": "conversions",
+      "chat": true,
+      "cpr": 46.3,
+      "avg3": 44.9
+     },
+     {
+      "name": "TikTok Monthly Offers",
+      "market": "Kenya",
+      "spend": 22750,
+      "usd": false,
+      "results": 643.0,
+      "type": "conversions",
+      "chat": true,
+      "cpr": 35.4,
+      "avg3": 38.0
+     },
+     {
+      "name": "Meta Monthly Offers (TZ)",
+      "market": "Tanzania",
+      "spend": 14969,
+      "usd": false,
+      "results": 441.0,
+      "type": "messages",
+      "chat": true,
+      "cpr": 33.9,
+      "avg3": 35.6
+     },
+     {
+      "name": "Meta Monthly Offers (UG)",
+      "market": "Uganda",
+      "spend": 9467,
+      "usd": false,
+      "results": 59.0,
+      "type": "messages",
+      "chat": true,
+      "cpr": 160.5,
+      "avg3": 138.4
+     },
+     {
+      "name": "X website traffic (UG)",
+      "market": "Uganda",
+      "spend": 9029,
+      "usd": true,
+      "results": 1106.0,
+      "type": "engaged sessions",
+      "chat": false,
+      "cpr": null,
+      "avg3": null
+     }
+    ]
+   },
+   "lead": "What the ads cost per bag sold in each market, and which branches are cheap or dear to advertise."
+  },
   "_default": {
    "week": "11–17 Oct",
    "tiles": [
