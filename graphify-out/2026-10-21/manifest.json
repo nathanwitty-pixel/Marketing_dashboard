@@ -168,9 +168,9 @@
     "semantic_hash": ""
   },
   "streamlit_app.py": {
-    "mtime": 1792394529.2134917,
-    "seen": 1792397167.23626,
-    "ast_hash": "d42fa5670866835515c3138e7346e8c2",
+    "mtime": 1792573842.497705,
+    "seen": 1792574151.4369216,
+    "ast_hash": "78d886c2295a6a5b39dfb44383c977ba",
     "semantic_hash": ""
   },
   ".claude/skills/algorithmic-art.md": {
@@ -240,9 +240,9 @@
     "semantic_hash": ""
   },
   "docs/README.md": {
-    "mtime": 1792394529.0578377,
-    "seen": 1792397167.2363176,
-    "ast_hash": "05b9cb43c342c84824eb94252e3fbf99",
+    "mtime": 1792573607.3142548,
+    "seen": 1792574151.4370062,
+    "ast_hash": "0e84aa0eb412076a96d350f25e70a41c",
     "semantic_hash": ""
   },
   "docs/current-performance.md": {
@@ -408,9 +408,9 @@
     "semantic_hash": ""
   },
   "dashboard_pages.json": {
-    "mtime": 1792148253.4264722,
-    "seen": 1792148337.376317,
-    "ast_hash": "9b3fb91d66b168b075fd2e000465b442",
+    "mtime": 1792573849.8691614,
+    "seen": 1792574151.4366305,
+    "ast_hash": "a8794953adbc1fe101e4fe1e3e228db7",
     "semantic_hash": ""
   },
   "lib/laya.py": {
@@ -1338,9 +1338,9 @@
     "semantic_hash": ""
   },
   "html/product_performance.html": {
-    "mtime": 1792565942.740379,
-    "seen": 1792567563.9229639,
-    "ast_hash": "1b2fa2b2c3fd58c5f1fdbf73041670b9",
+    "mtime": 1792573426.8677003,
+    "seen": 1792574151.437086,
+    "ast_hash": "becc01297e150d8bc8a3ddde2fb4795c",
     "semantic_hash": ""
   },
   "generators/shop_stock_levels.py": {
@@ -1425,6 +1425,36 @@
     "mtime": 1792567293.1797404,
     "seen": 1792567563.9227786,
     "ast_hash": "3f981d78ccbbb897c638309a4695b060",
+    "semantic_hash": ""
+  },
+  "assets/ads_panel.js": {
+    "mtime": 1792574074.4988923,
+    "seen": 1792574151.4366078,
+    "ast_hash": "c51a6f5cce8fada391acbc5c1b38eb63",
+    "semantic_hash": ""
+  },
+  "data/ads_impact.json": {
+    "mtime": 1792574002.1091807,
+    "seen": 1792574151.436633,
+    "ast_hash": "f7389fa904df9dd59835f9496f801c01",
+    "semantic_hash": ""
+  },
+  "generators/ads_impact.py": {
+    "mtime": 1792573975.121171,
+    "seen": 1792574151.4367213,
+    "ast_hash": "2fc2724ac864fc67eac5a215b9ef17ad",
+    "semantic_hash": ""
+  },
+  "lib/ads.py": {
+    "mtime": 1792573645.833464,
+    "seen": 1792574151.4367774,
+    "ast_hash": "b61f6463c7bbed040d4040af3f4272b5",
+    "semantic_hash": ""
+  },
+  "docs/ads-impact.md": {
+    "mtime": 1792573606.2326221,
+    "seen": 1792574151.4370089,
+    "ast_hash": "06c37e665bf0537820eb63d550159687",
     "semantic_hash": ""
   }
 }

@@ -1,0 +1,40 @@
+week_start,platform,market,campaign,focus,currency,spend,results,result_type,impressions,clicks
+2026-09-20,Meta,KENYA,Weekly Offers,offers,KES,149186,2109,messages,1856899,31915
+2026-09-27,Meta,KENYA,Weekly Offers,offers,KES,148293,1788,messages,2012980,30835
+2026-10-04,Meta,KENYA,Weekly Offers,offers,KES,135302,1426,messages,1573293,23171
+2026-10-11,Meta,KENYA,Weekly Offers,offers,KES,117371,1322,messages,1546325,19987
+2026-09-20,Meta,KENYA,Monthly Offers,offers,KES,18893,327,messages,169249,5808
+2026-09-27,Meta,KENYA,Monthly Offers,offers,KES,17867,232,messages,182423,5009
+2026-10-04,Meta,KENYA,Monthly Offers,offers,KES,17931,336,messages,239699,11332
+2026-10-11,Meta,KENYA,Monthly Offers,offers,KES,17176,310,messages,158695,10957
+2026-09-20,Meta,KENYA,New Bags | Sales,new_bags,KES,10475,106,messages,68987,847
+2026-09-27,Meta,KENYA,New Bags | Sales,new_bags,KES,10498,98,messages,80503,924
+2026-10-04,Meta,KENYA,New Bags | Sales,new_bags,KES,9854,63,messages,81108,795
+2026-10-11,Meta,KENYA,New Bags | Sales,new_bags,KES,9480,90,messages,66665,948
+2026-10-11,Meta,KENYA,Corporate offers,corporate,KES,5607,99,messages,43559,1180
+2026-09-20,Meta,SINZA,Tanzania Monthly Offers,offers,KES,16672,423,messages,138253,2127
+2026-09-27,Meta,SINZA,Tanzania Monthly Offers,offers,KES,12878,452,messages,136878,1886
+2026-10-04,Meta,SINZA,Tanzania Monthly Offers,offers,KES,16035,405,messages,164280,2525
+2026-10-11,Meta,SINZA,Tanzania Monthly Offers,offers,KES,14969,441,messages,259401,2955
+2026-09-20,Meta,UGANDA,Uganda Monthly Offers,offers,KES,7518,73,messages,26307,455
+2026-09-27,Meta,UGANDA,Uganda Monthly Offers,offers,KES,5396,30,messages,27287,333
+2026-10-04,Meta,UGANDA,Uganda Monthly Offers,offers,KES,10483,66,messages,51790,727
+2026-10-11,Meta,UGANDA,Uganda Monthly Offers,offers,KES,9467,59,messages,49475,724
+2026-09-20,TikTok,KENYA,Hot Picks,offers,KES,14000,360,conversions,389028,2589
+2026-09-27,TikTok,KENYA,Hot Picks,offers,KES,13991,318,conversions,392337,2353
+2026-10-04,TikTok,KENYA,Hot Picks,offers,KES,11672,206,conversions,250350,1767
+2026-10-11,TikTok,KENYA,Hot Picks,offers,KES,8750,189,conversions,217199,2019
+2026-09-20,TikTok,KENYA,Monthly Offers,offers,KES,13999,276,conversions,331896,2833
+2026-09-27,TikTok,KENYA,Monthly Offers,offers,KES,13131,381,conversions,295632,7848
+2026-10-04,TikTok,KENYA,Monthly Offers,offers,KES,14588,440,conversions,324545,17784
+2026-10-11,TikTok,KENYA,Monthly Offers,offers,KES,22750,643,conversions,536469,20700
+2026-09-27,Google,KENYA,Performance Max,website,USD,43.05,6.8,purchases,37063,704
+2026-10-04,Google,KENYA,Performance Max,website,USD,152.90,41.8,purchases,108563,3541
+2026-10-11,Google,KENYA,Performance Max,website,USD,146.87,39.1,purchases,135185,4073
+2026-09-27,Google,KENYA,Demand Gen,website,USD,45.56,283,website users,80730,533
+2026-10-04,Google,KENYA,Demand Gen,website,USD,107.05,746,website users,263944,1605
+2026-10-11,Google,KENYA,Demand Gen,website,USD,105.30,4447,website users,459737,15752
+2026-09-20,X,UGANDA,UG Monthly Offers | Traffic,website,USD,60.53,1003,engaged sessions,483574,2200
+2026-09-27,X,UGANDA,UG Monthly Offers | Traffic,website,USD,51.68,905,engaged sessions,452988,2183
+2026-10-04,X,UGANDA,UG Monthly Offers | Traffic,website,USD,69.94,1119,engaged sessions,626920,2857
+2026-10-11,X,UGANDA,UG Monthly Offers | Traffic,website,USD,69.99,1106,engaged sessions,661765,2607

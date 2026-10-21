@@ -18,7 +18,8 @@
         "weekly_sales.py",
         "monthly_sales.py",
         "current_performance.py",
-        "forward_projections.py"
+        "forward_projections.py",
+        "ads_impact.py"
       ],
       "icon": "monitoring",
       "purpose": "Month-to-date sales vs target — live from Odoo POS & Sheets",
@@ -138,7 +139,8 @@
       "html": "posting_yields.html",
       "title": "Posting – Sales Yields from Accurate Posting",
       "scripts": [
-        "posting_yields.py"
+        "posting_yields.py",
+        "ads_impact.py"
       ],
       "icon": "campaign",
       "purpose": "Sales yield earned from accurate marketing posting",

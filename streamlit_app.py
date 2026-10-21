@@ -1093,6 +1093,21 @@ if os.path.exists(html_path):
         _v5_mtimes.append(int(os.path.getmtime(paths.asset("kpi_drag.js"))))
     except OSError:
         pass
+    # Ads impact panel (ads_panel.js) on every page, with this page's section of data/ads_impact.json
+    # (generators/ads_impact.py — spec docs/ads-impact.md). No file / no section → nothing shown.
+    try:
+        with open(paths.data("ads_impact.json"), encoding="utf-8") as _fh:
+            _ads_all = _json.load(_fh).get("pages", {})
+        _ads_sec = _ads_all.get(os.path.basename(html_path)) or _ads_all.get("_default")
+        if _ads_sec:
+            with open(paths.asset("ads_panel.js"), encoding="utf-8") as _fh:
+                _ads_js = _fh.read().replace("</script", "<\\/script")
+            _v5_block += ('<script>window.ADS_IMPACT=' + _json.dumps(_ads_sec).replace("</", "<\\/") + ';</script>'
+                          '<script>/* ads_panel.js */\n' + _ads_js + '\n</script>')
+            _v5_mtimes += [int(os.path.getmtime(paths.data("ads_impact.json"))),
+                           int(os.path.getmtime(paths.asset("ads_panel.js")))]
+    except (OSError, ValueError):
+        pass
     if "</body>" in html:
         html = html.replace("</body>", _v5_block + EMBED_FIX + "</body>", 1)
     else:

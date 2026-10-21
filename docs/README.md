@@ -22,6 +22,8 @@ marketing logs posts only on each bag's TOTAL row (no colour) → those come thr
 **Monthly uploads (the user sends them, Claude transcribes):**
 - `offers_monthly.csv` — Kenya / Sinza / Uganda combos and singles with prices (the old COMBOS tab).
 - `deals_kenya.csv` — Kenya Power Deals + Deals of the Week from the poster images (the old deals sheet).
+- **Weekly:** `ads_weekly.csv` + `ads_notes.csv` — marketing's Weekly Ads Performance Report (Drive .pptx).
+  Shown on every page as the Ads impact panel — spec: [ads-impact.md](ads-impact.md).
 
 **Odoo** — sales, stock, dispatch, combos rung, WhatsApp call-backs. If Odoo is down, those figures are
 empty (no sheet fallback any more). **Local files** — `bom_costs.json` and `offers_prices.json` (Offer
