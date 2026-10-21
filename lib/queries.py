@@ -87,6 +87,10 @@ MASTER_BAGS_SOLD = _load_sql("master_bags_sold.sql")
 # Params :start_date / :end_date over the payment date.
 CORPORATE_BAGS = _load_sql("corporate_bags.sql")
 
+# Bag revenue split by how the bags were sold (single / combo / gift / discounts), with combo
+# money taken from the '+' wrapper line. Forward Projections revenue + Price per bag card.
+BAG_REVENUE = _load_sql("bag_revenue.sql")
+
 # Same rule, one row per client/company: quoted · invoiced · paid · sold in the period.
 # Feeds the Sales card's "Corporate by client" list. Params :start_date / :end_date.
 CORPORATE_CLIENTS = _load_sql("corporate_clients.sql")

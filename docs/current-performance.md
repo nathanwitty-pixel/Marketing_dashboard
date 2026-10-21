@@ -136,6 +136,53 @@ total (312.5 → 312) while the table rounded each client (187.5 → 188, total 
 shows the **totals** beside each name: Quoted · Invoiced · Paid (all paid ÷ all agreed, after WHT) · Sold.
 They stay in view while you scroll.
 
+## Forward Projections — revenue (21 Oct 2026, user's call)
+
+Each projection card shows the **revenue** it lands on, under the % of target, so the bags % and
+the money read together:
+
+- **Standard** → POS **bag revenue** month-to-date (`sql/bag_revenue.sql`) × velocity factor. Same
+  pace and month as the bags %. Bag revenue = the same bag lines as the Sales card, **plus the
+  combo '+' wrapper lines** (a combo's price sits on the wrapper; the bags inside are KES 0
+  sub-lines, `parent_id`), minus 'KES discount' lines. Delivery / customisation / straps / samples
+  stay out. **Not** `monthlyValue`: that drops the wrapper, so combo bags counted as KES 0 and
+  revenue read ~6% low (fixed 21 Oct 2026).
+- **Forecasted** → (POS revenue + corporate KES received) × velocity factor. Corporate KES =
+  `kes` in `sql/corporate_bags.sql`: money paid on Corporate-app invoices in the month, capped at
+  each invoice's agreed amount (after WHT). That's the same payments that give the corporate bags.
+- **Revenue target** = the month's Odoo `sales_pos_target` amount (scope pos + corporate), or
+  `REVENUE_TARGETS` in `lib/product_targets.py` when Odoo has none. When there's a target, the
+  card also shows the projected revenue as a % of it. With no target, it shows only the KES.
+- Postgres down / no live month figure → the revenue line is left off (no stale number).
+
+PROJ fields: `standardRevenue`, `forecastedRevenue`, `revenueTarget`, `standardRevenuePct`,
+`forecastedRevenuePct`, `corporateKes`.
+
+**Price per bag card** (full width, under the two projection cards) explains why the revenue %
+and the bags % differ, so the reader can judge it:
+
+- **Target price per bag** = revenue target ÷ bag target (what the targets assume a bag brings in).
+- **Actual price per bag** = POS bag revenue ÷ bags sold, month to date.
+- **Gap** = actual ÷ target − 1. Above target → revenue % runs ahead of bags %; below → it trails.
+  revenue % ≈ bags % × (1 + gap).
+- A table splits the month by how bags were sold: **single bags, combos, gift bags, discounts**,
+  with bags, revenue, KES per bag and each row's gap to the target price. That shows what's
+  lifting or pulling down the average.
+- Bags and revenue show **so far → month end** (× velocity factor, same pace as the cards).
+- **Gift bags have their own target (21 Oct 2026, user's call).** The Odoo bag target has no gift
+  bags, so the KES ~2,000 price and the headline Actual price per bag cover **single bags + combos
+  (after discounts)** only. Gift bags are judged on their own target: the average month of the three
+  complete months before (`product_targets.base_period`, Oct 2026 → Jul–Sep: 251 a month) at their
+  own average price then (KES 194). The row shows "294 of 251 target" and "−2.2% vs KES 194".
+- **Effect at month end (KES)** = the row's projected revenue − what its target expects: projected
+  bags × KES ~2,000 for single bags / combos, gift target × gift price for gift bags, 0 for
+  discounts. **Effect on revenue rate (pts)** = that ÷ revenue target × 100. The total = how far
+  month-end revenue sits above / below what the targets expect for the bags on course to be sold.
+- **Bags still to sell for revenue target** = (revenue target − revenue so far) ÷ actual price per bag.
+- The card's top strip is **green** when bags sell at or above the target price, **red** below.
+- Rows are computed in `forward_projections.py` (`priceMix.rows`); the page only renders them.
+- Hidden when there's no revenue target or no live revenue. PROJ field: `priceMix`.
+
 ## Data sources
 
 - **MONTHLY_TARGET** sheet: col C target, D sales, E deficit (summed).

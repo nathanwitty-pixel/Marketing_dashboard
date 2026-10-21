@@ -29,5 +29,7 @@ SELECT COUNT(*)                                                                 
        -- whole bags paid for, rounded down per invoice (same rule as corporate_clients.sql, so the
        -- Sales card and the client table always agree); the tiny epsilon guards float error (12.9999 → 13)
        COALESCE(SUM(FLOOR((bags * LEAST(paid / NULLIF(agreed, 0), 1))::numeric + 0.000001)), 0)::int AS bags,
-       COALESCE(SUM(bags), 0)::int                                                   AS invoiced_bags
+       COALESCE(SUM(bags), 0)::int                                                   AS invoiced_bags,
+       -- KES received in the period, capped at each invoice's agreed amount (Forward Projections revenue)
+       COALESCE(SUM(LEAST(paid, agreed)), 0)::float                                  AS kes
 FROM paid

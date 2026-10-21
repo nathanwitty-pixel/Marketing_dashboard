@@ -97,6 +97,8 @@
     .card.orange::before { background: #f97316; }
     .card.rose::before   { background: #f43f5e; }
     .card.amber::before  { background: #f59e0b; }
+    .card.green::before  { background: #10b981; }
+    .card.red::before    { background: #ef4444; }
 
     .card-label {
       font-size: 0.72rem;
@@ -121,6 +123,59 @@
     .card-value.indigo { color: #818cf8; }
     .card-value.orange { color: #fb923c; }
     .card-value.rose   { color: #fb7185; }
+
+    /* Projection cards: bags sold rate + revenue rate side by side, with labelled bars */
+    .proj-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.4rem; }
+    .proj-metric + .proj-metric { border-left: 1px solid rgba(148,163,184,0.15); padding-left: 1rem; }
+    .pj-k { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #64748b; margin-bottom: 0.2rem; }
+    .proj-metric .card-value { margin-bottom: 0.2rem; }
+    .proj-metric { min-width: 0; }
+    .card:has(.proj-pair) { container-type: inline-size; }
+    @container (max-width: 360px) {
+      .proj-pair { gap: 0.6rem; }
+      .proj-metric + .proj-metric { padding-left: 0.6rem; }
+      .proj-metric .card-value { font-size: 1.45rem; }
+      .pj-bar { grid-template-columns: 54px 1fr; }
+    }
+    .proj-bars { margin: 0.6rem 0 0.5rem; display: grid; gap: 0.45rem; }
+    .pj-bar { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: 0.6rem; }
+    .pj-bar-k { font-size: 0.72rem; font-weight: 600; color: #94a3b8; }
+    .pj-track { position: relative; height: 20px; border-radius: 999px; background: rgba(148,163,184,0.12); }
+    .pj-fill { height: 100%; width: 0; border-radius: 999px; transition: width .7s ease; }
+    .pj-pct { position: absolute; top: 50%; transform: translateY(-50%); font-size: 0.72rem; font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .pj-pct.in  { color: #0b1020; }
+    .pj-pct.out { color: #e2e8f0; }
+    .card.cyan   .pj-fill.bags { background: linear-gradient(90deg, rgba(8,145,178,0.55), rgba(34,211,238,0.55)); }
+    .card.cyan   .pj-fill.rev  { background: linear-gradient(90deg, #0891b2, #22d3ee); }
+    .card.indigo .pj-fill.bags { background: linear-gradient(90deg, rgba(99,102,241,0.55), rgba(165,180,252,0.55)); }
+    .card.indigo .pj-fill.rev  { background: linear-gradient(90deg, #6366f1, #a5b4fc); }
+    .proj-targets { font-size: 0.76rem; color: #94a3b8; margin-bottom: 0.5rem; }
+    @media (max-width: 560px) { .proj-pair { gap: 0.6rem; } .proj-metric + .proj-metric { padding-left: 0.6rem; } .proj-metric .card-value { font-size: 1.6rem; } }
+    /* Price per bag — why revenue % and bags % differ (Forward Projections) */
+        .price-card { margin-bottom: 2rem; }
+    .pm-stats {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 0.75rem; margin: 0.6rem 0 0.9rem;
+    }
+    .pm-stat { background: rgba(148,163,184,0.06); border: 1px solid rgba(148,163,184,0.12); border-radius: 10px; padding: 0.6rem 0.75rem; }
+    .pm-stat .k { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #64748b; }
+    .pm-stat .v { font-size: 1.3rem; font-weight: 800; color: #e2e8f0; margin-top: 0.15rem; }
+    .pm-stat .n { font-size: 0.74rem; color: #94a3b8; margin-top: 0.1rem; line-height: 1.4; }
+    .pm-up   { color: #34d399 !important; }
+    .pm-down { color: #fb7185 !important; }
+    .pm-verdict { font-size: 0.86rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 0.8rem; }
+    .pm-verdict strong { color: #f1f5f9; }
+    .pm-table-wrap { overflow-x: auto; margin-bottom: 0.7rem; }
+    .pm-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; min-width: 680px; }
+    .pm-table th { text-align: right; font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase; color: #64748b; font-weight: 700; padding: 0.4rem 0.5rem; border-bottom: 1px solid rgba(148,163,184,0.18); }
+    .pm-table td { text-align: right; padding: 0.42rem 0.4rem; color: #cbd5e1; border-bottom: 1px solid rgba(148,163,184,0.08); font-variant-numeric: tabular-nums; }
+    .pm-table th:first-child, .pm-table td:first-child { text-align: left; }
+    .pm-table td:not(:first-child) { white-space: nowrap; }
+    .pm-table td:first-child { min-width: 170px; }
+    .pm-th-sub { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.02em; text-transform: none; color: #475569; }
+    .pm-proj { display: block; font-size: 0.7rem; color: #64748b; margin-top: 0.1rem; }
+    .pm-note { font-size: 0.68rem; color: #64748b; line-height: 1.35; margin-top: 0.15rem; max-width: 340px; white-space: normal; }
+    .pm-table tr.pm-total td { font-weight: 800; color: #f1f5f9; border-top: 1px solid rgba(148,163,184,0.25); border-bottom: none; }
 
     .card-sub {
       font-size: 0.78rem;
@@ -247,18 +302,43 @@
   <div class="card-grid">
 
     <div class="card cyan">
-      <div class="card-label">Standard Projection<br/><span style="font-size:0.65rem;color:#475569;">% of Total Target</span></div>
-      <div class="card-value cyan" id="kpi-standard"></div>
-      <div class="card-sub" id="kpi-standard-sub"></div>
+      <div class="card-label">Standard Projection<br/><span style="font-size:0.65rem;color:#475569;">Bags and revenue vs target</span></div>
+      <div class="proj-pair">
+        <div class="proj-metric">
+          <div class="pj-k">Bags sold rate</div>
+          <div class="card-value cyan" id="kpi-standard"></div>
+          <div class="card-sub" id="kpi-standard-sub"></div>
+        </div>
+        <div class="proj-metric" id="kpi-standard-rev" hidden>
+          <div class="pj-k">Revenue rate</div>
+          <div class="card-value cyan rev-pct"></div>
+          <div class="card-sub rev-value"></div>
+        </div>
+      </div>
+      <div class="proj-bars" id="kpi-standard-bars"></div>
+      <div class="proj-targets" id="kpi-standard-targets"></div>
       <div class="card-interpretation">Based on maintaining the current sales velocity and product mix.</div>
     </div>
 
     <div class="card indigo primary">
-      <div class="card-label">Forecasted Projection<br/><span style="font-size:0.65rem;color:#475569;">% of Total Target</span></div>
-      <div class="card-value indigo" id="kpi-forecasted"></div>
-      <div class="card-sub" id="kpi-forecasted-sub"></div>
+      <div class="card-label">Forecasted Projection<br/><span style="font-size:0.65rem;color:#475569;">Bags and revenue vs target</span></div>
+      <div class="proj-pair">
+        <div class="proj-metric">
+          <div class="pj-k">Bags sold rate</div>
+          <div class="card-value indigo" id="kpi-forecasted"></div>
+          <div class="card-sub" id="kpi-forecasted-sub"></div>
+        </div>
+        <div class="proj-metric" id="kpi-forecasted-rev" hidden>
+          <div class="pj-k">Revenue rate</div>
+          <div class="card-value indigo rev-pct"></div>
+          <div class="card-sub rev-value"></div>
+        </div>
+      </div>
+      <div class="proj-bars" id="kpi-forecasted-bars"></div>
+      <div class="proj-targets" id="kpi-forecasted-targets"></div>
       <div class="card-interpretation">Based on maintaining the current sales velocity and product mix with corporate in mind.</div>
     </div>
+
 
     <div class="card orange">
       <div class="card-label">Bare Minimum<br/>(Bags to be Sold)</div>
@@ -281,25 +361,50 @@
 
   </div>
 
+  <div class="card green price-card" id="price-mix" hidden>
+    <div class="card-label">Price per Bag<br/><span style="font-size:0.65rem;color:#475569;">Why the revenue % and the bags % differ</span></div>
+    <div class="pm-stats">
+      <div class="pm-stat"><div class="k">Target price per bag</div><div class="v" id="pm-target"></div><div class="n" id="pm-target-n"></div></div>
+      <div class="pm-stat"><div class="k">Actual price per bag</div><div class="v" id="pm-actual"></div><div class="n">Single bags and combos this month, after discounts</div></div>
+      <div class="pm-stat"><div class="k">Price gap</div><div class="v" id="pm-gap"></div><div class="n" id="pm-gap-n"></div></div>
+      <div class="pm-stat"><div class="k">Bags still to sell for revenue target</div><div class="v" id="pm-need"></div><div class="n" id="pm-need-n"></div></div>
+    </div>
+    <div class="pm-verdict" id="pm-verdict"></div>
+    <div class="pm-table-wrap">
+      <table class="pm-table">
+        <thead><tr><th>Sold as</th><th>Bags<br/><span class="pm-th-sub">so far, month end</span></th><th>Share of bags</th><th>Revenue<br/><span class="pm-th-sub">so far, month end</span></th><th>KES per bag<br/><span class="pm-th-sub">vs target price</span></th><th>Effect at month end<br/><span class="pm-th-sub">vs target price</span></th><th>Effect on revenue rate<br/><span class="pm-th-sub">points</span></th></tr></thead>
+        <tbody id="pm-rows"></tbody>
+      </table>
+    </div>
+    <div class="card-interpretation">The bag target and its price (revenue target &divide; bag target) cover single bags and combos. Gift bags are not in the bag target, so they are judged on their own target: the average month of the last three, at their own price. Month end = so far &times; the same pace as the projection cards. Effect at month end = what each group will bring in minus what its target expects. Effect on revenue rate = that amount as points of the revenue target. Combo revenue is the combo's price, shared across the bags inside it.</div>
+  </div>
+
 </div>
 
 <!-- PROJ_DATA_START -->
 <script>
 const PROJ = {
-  currentDay:               18,
+  currentDay:               20,
   daysInMonth:              31,
   projMonth:                "October",
-  velocityFactor:           "1.72x",
+  velocityFactor:           "1.55x",
   totalTarget:              "28,013",
-  totalSales:               "10,220",
-  standardProjection:       "62.83%",
-  forecastedProjection:     "64.84%",
-  corporateBags:            "326",
+  totalSales:               "10,872",
+  standardProjection:       "60.16%",
+  forecastedProjection:     "62.00%",
+  corporateBags:            "333",
+  corporateKes:             "KES 801,356",
+  standardRevenue:          "KES 36,030,573",
+  forecastedRevenue:        "KES 37,272,675",
+  revenueTarget:            "KES 56,030,805",
+  standardRevenuePct:       "64.30%",
+  forecastedRevenuePct:     "66.52%",
+  priceMix:                 {"targetPpb": 2000, "actualPpb": 2169, "gapPct": 8.4, "mainBags": 10702, "bagsPct": 38.81, "revPct": 41.49, "velocity": 1.55, "revenueTarget": 56030805, "giftBase": {"from": "Jul", "to": "Sep", "bags": 251, "ppb": 194}, "rows": [{"label": "Single bags", "bags": 9358, "kes": 20372838, "projBags": 14505, "projKes": 31577899, "ppb": 2177, "targetPpb": 2000, "targetBags": null, "gapPct": 8.8, "share": 85.9, "expectedKes": 29012288, "effectKes": 2565611, "effectPts": 4.58}, {"label": "Combos", "bags": 1344, "kes": 2875255, "projBags": 2083, "projKes": 4456645, "ppb": 2139, "targetPpb": 2000, "targetBags": null, "gapPct": 7.0, "share": 12.3, "expectedKes": 4166757, "effectKes": 289888, "effectPts": 0.52}, {"label": "Gift bags", "bags": 190, "kes": 36138, "projBags": 294, "projKes": 56014, "ppb": 190, "targetPpb": 194, "targetBags": 251, "gapPct": -2.2, "share": 1.7, "expectedKes": 48803, "effectKes": 7211, "effectPts": 0.01}, {"label": "Discounts", "bags": 0, "kes": -38700, "projBags": 0, "projKes": -59985, "ppb": null, "targetPpb": null, "targetBags": null, "gapPct": null, "share": null, "expectedKes": 0, "effectKes": -59985, "effectPts": -0.11}], "total": {"label": "All bags", "bags": 10892, "kes": 23245531, "projBags": 16882, "projKes": 36030573, "ppb": 2134, "share": 100.0, "expectedKes": 33227848, "effectKes": 2802725, "effectPts": 5.0}},
   bareMinimum:              "7,003",
   bareMinimumGrowthPct:     "25.00%",
-  declinedBy:               "-6,727",
-  weeklySalesTotal:         "276",
-  weeklyHistory:            [{"weekStart": "2026-10-01", "label": "Wk 1", "month": "Oct", "salesPct": 7.24, "salesBags": 2027, "prevSalesPct": 0.0, "prevSalesBags": 0, "weeklySales": 2027, "declinedBy": -4976}, {"weekStart": "2026-10-04", "label": "Wk 2", "month": "Oct", "salesPct": 22.3, "salesBags": 6248, "prevSalesPct": 7.24, "prevSalesBags": 2027, "weeklySales": 4221, "declinedBy": -2782}, {"weekStart": "2026-10-11", "label": "Wk 3", "month": "Oct", "salesPct": 35.49, "salesBags": 9943, "prevSalesPct": 22.3, "prevSalesBags": 6248, "weeklySales": 3695, "declinedBy": -3308}, {"weekStart": "2026-10-18", "label": "Wk 4", "month": "Oct", "salesPct": 36.49, "salesBags": 10222, "prevSalesPct": 35.49, "prevSalesBags": 9943, "weeklySales": 279, "declinedBy": -6724}]
+  declinedBy:               "-6,074",
+  weeklySalesTotal:         "929",
+  weeklyHistory:            [{"weekStart": "2026-10-01", "label": "Wk 1", "month": "Oct", "salesPct": 7.24, "salesBags": 2027, "prevSalesPct": 0.0, "prevSalesBags": 0, "weeklySales": 2027, "declinedBy": -4976}, {"weekStart": "2026-10-04", "label": "Wk 2", "month": "Oct", "salesPct": 22.3, "salesBags": 6248, "prevSalesPct": 7.24, "prevSalesBags": 2027, "weeklySales": 4221, "declinedBy": -2782}, {"weekStart": "2026-10-11", "label": "Wk 3", "month": "Oct", "salesPct": 35.49, "salesBags": 9943, "prevSalesPct": 22.3, "prevSalesBags": 6248, "weeklySales": 3695, "declinedBy": -3308}, {"weekStart": "2026-10-18", "label": "Wk 4", "month": "Oct", "salesPct": 38.88, "salesBags": 10892, "prevSalesPct": 35.49, "prevSalesBags": 9943, "weeklySales": 949, "declinedBy": -6054}]
 };
 </script>
 <!-- PROJ_DATA_END -->
@@ -336,6 +441,101 @@ const PROJ = {
   set('kpi-forecasted', PROJ.forecastedProjection);
   if (PROJ.corporateBags && PROJ.corporateBags !== "0")
     sub('kpi-forecasted-sub', `incl. ${PROJ.corporateBags} corporate bags`);
+
+  /* Projected revenue — same pace as the bags %, so bags and money read together */
+  (function () {
+    function bar(label, pct, cls) {
+      var w = parseFloat(pct);
+      if (isNaN(w)) return '';
+      var f = Math.min(w, 100), inside = f >= 22;
+      var pos = inside ? 'right:calc(' + (100 - f) + '% + 8px)' : 'left:calc(' + f + '% + 8px)';
+      return '<div class="pj-bar"><span class="pj-bar-k">' + label + '</span><div class="pj-track">' +
+        '<div class="pj-fill ' + cls + '" style="width:' + f + '%"></div>' +
+        '<span class="pj-pct ' + (inside ? 'in' : 'out') + '" style="' + pos + '">' + pct + '</span></div></div>';
+    }
+    function card(k, bagsPct, value, pct, extra) {
+      var box = document.getElementById('kpi-' + k + '-rev');
+      if (box && value && pct) {
+        box.querySelector('.rev-pct').textContent = pct;
+        box.querySelector('.rev-value').textContent = value;
+        box.hidden = false;
+      }
+      var bars = document.getElementById('kpi-' + k + '-bars');
+      if (bars) bars.innerHTML = bar('Bags', bagsPct, 'bags') + (value ? bar('Revenue', pct, 'rev') : '');
+      var t = document.getElementById('kpi-' + k + '-targets');
+      if (t) t.textContent = 'Targets: ' + PROJ.totalTarget + ' bags' +
+        (PROJ.revenueTarget ? ' and ' + PROJ.revenueTarget : '') + (value && extra ? ', revenue ' + extra : '');
+    }
+    card('standard', PROJ.standardProjection, PROJ.standardRevenue, PROJ.standardRevenuePct, '');
+    card('forecasted', PROJ.forecastedProjection, PROJ.forecastedRevenue, PROJ.forecastedRevenuePct,
+         PROJ.corporateKes ? 'incl. ' + PROJ.corporateKes + ' corporate' : '');
+  })();
+
+  /* Price per bag — why the revenue % and the bags % differ */
+  (function () {
+    var m = PROJ.priceMix, card = document.getElementById('price-mix');
+    if (!m || !card || !m.rows) return;
+    function n(x) { return Math.round(x).toLocaleString('en-US'); }
+    function kes(x) { return (x < 0 ? '-' : '') + 'KES ' + n(Math.abs(x)); }
+    function sgn(p) { return (p > 0 ? '+' : '') + p.toFixed(1) + '%'; }
+    function sp(p) { return (p > 0 ? '+' : '') + p.toFixed(2); }
+    function cls(p) { return p > 0 ? 'pm-up' : (p < 0 ? 'pm-down' : ''); }
+    var up = m.gapPct >= 0, diff = Math.abs(m.actualPpb - m.targetPpb);
+    var left = Math.max((m.revenueTarget - m.total.kes) / m.actualPpb, 0);
+
+    document.getElementById('pm-target').textContent = kes(m.targetPpb);
+    document.getElementById('pm-target-n').textContent = PROJ.revenueTarget + ' revenue target ÷ ' + PROJ.totalTarget + ' bags';
+    document.getElementById('pm-actual').textContent = kes(m.actualPpb);
+    var g = document.getElementById('pm-gap');
+    g.textContent = sgn(m.gapPct); g.className = 'v ' + cls(m.gapPct);
+    document.getElementById('pm-gap-n').textContent = 'KES ' + n(diff) + (up ? ' more' : ' less') + ' a bag than the targets assume';
+    document.getElementById('pm-need').textContent = n(left);
+    document.getElementById('pm-need-n').textContent = 'at ' + kes(m.actualPpb) + ' a bag, for the ' + kes(Math.max(m.revenueTarget - m.total.kes, 0)) + ' still to bring in';
+
+    var rows = m.rows.filter(function (r) { return r.bags || r.kes; });
+    var byEffect = rows.slice().sort(function (a, b) { return a.effectKes - b.effectKes; });
+    var drag = byEffect[0], lift = byEffect[byEffect.length - 1];
+
+    var v = 'So far this month bags are <strong>' + m.bagsPct.toFixed(2) + '%</strong> of the bag target and revenue is <strong>' +
+      m.revPct.toFixed(2) + '%</strong> of the revenue target. Single bags and combos are bringing in <strong class="' + cls(m.gapPct) + '">' +
+      kes(m.actualPpb) + '</strong> a bag against the <strong>' + kes(m.targetPpb) + '</strong> the targets assume (' + sgn(m.gapPct) + '). ';
+    v += up
+      ? 'That means revenue is running <strong class="pm-up">ahead</strong> of bags, and hitting the bag target at this price would beat the revenue target. '
+      : 'That means revenue is running <strong class="pm-down">behind</strong> bags: even if the bag target is hit, revenue would fall short unless the price per bag recovers. ';
+    if (lift && lift.effectKes > 0) v += 'Biggest lift: <strong>' + lift.label + '</strong> (' + kes(lift.effectKes) + ' above target by month end). ';
+    if (drag && drag.effectKes < 0) v += 'Biggest drag: <strong>' + drag.label + '</strong> (' + kes(-drag.effectKes) + ' below target by month end).';
+    v += '<br/>Altogether, month-end revenue sits <strong class="' + cls(m.total.effectKes) + '">' + (m.total.effectKes > 0 ? '+' : '') + kes(m.total.effectKes) +
+      ' (' + sp(m.total.effectPts) + ' points)</strong> ' + (m.total.effectKes >= 0 ? 'above' : 'below') +
+      ' what the targets expect for the bags we are on course to sell.';
+    document.getElementById('pm-verdict').innerHTML = v;
+
+    function note(r) {
+      if (r.label === 'Gift bags' && r.targetBags)
+        return 'Judged on their own target, not ' + kes(m.targetPpb) + ': ' + n(r.targetBags) + ' a month at ' + kes(r.targetPpb) +
+          ' each (the ' + m.giftBase.from + ' to ' + m.giftBase.to + ' average), so ' + kes(r.expectedKes) + ' expected. On course for ' +
+          n(r.projBags) + ' bringing in ' + kes(r.projKes) + '.';
+      if (r.label === 'Gift bags')
+        return 'No gift bag target yet, so judged at their own price.';
+      if (r.label === 'Discounts')
+        return 'KES 300 off the bill at the till, about ' + kes(-r.projKes) + ' by month end. Real money given away.';
+      return '';
+    }
+    function tr(r, total) {
+      var nt = total ? '' : note(r), e = r.effectKes;
+      var bagsSub = r.bags ? n(r.projBags) + (r.targetBags ? ' of ' + n(r.targetBags) + ' target' : '') : '';
+      return '<tr' + (total ? ' class="pm-total"' : '') + '><td>' + r.label + (nt ? '<div class="pm-note">' + nt + '</div>' : '') + '</td>' +
+        '<td>' + (r.bags ? n(r.bags) + '<span class="pm-proj">' + bagsSub + '</span>' : '') + '</td>' +
+        '<td>' + (r.share != null ? r.share.toFixed(1) + '%' : '') + '</td>' +
+        '<td>' + kes(r.kes) + '<span class="pm-proj">' + kes(r.projKes) + '</span></td>' +
+        '<td>' + (r.ppb != null ? kes(r.ppb) : '') +
+          (r.gapPct != null ? '<span class="pm-proj"><span class="' + cls(r.gapPct) + '">' + sgn(r.gapPct) + '</span> vs ' + kes(r.targetPpb) + '</span>' : '') + '</td>' +
+        '<td class="' + cls(e) + '">' + (e > 0 ? '+' : '') + kes(e) + '</td>' +
+        '<td class="' + cls(e) + '">' + sp(r.effectPts) + '</td></tr>';
+    }
+    document.getElementById('pm-rows').innerHTML = rows.map(function (r) { return tr(r, false); }).join('') + tr(m.total, true);
+    card.classList.toggle('green', up); card.classList.toggle('red', !up);
+    card.hidden = false;
+  })();
 
   // Bare Minimum
   set('kpi-bare', PROJ.bareMinimum);
