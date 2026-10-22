@@ -71,6 +71,37 @@ match `KENYA_SHOPS`. The panel is client-side and hides itself if there's no dat
 > Note: the client reads the page's `const SE` directly (a top-level `const` is **not** on
 > `window`), so the panel script guards with `typeof SE !== 'undefined'`, not `window.SE`.
 
+## Stock record accuracy (22 Oct 2026, user's call)
+
+Which shops keep their stock sheet honest: every time a shop's stock cell on the STOCK_LEVELS sheet goes
+**negative** (more sold than the sheet says it had), a fix is logged. Fewer fixes for the bags a shop sells =
+better record keeping.
+
+- **Source:** Google spreadsheet *STOCKS LEVELS 2026* (`1xWmk1CJldzs8H7G8QcNk7Q7xDbQMQpN454jy-bm-teY`), tab
+  **NEGATIVE FIX LOG**, read only by `lib/negative_fixes.py` (allowed in `tests/test_sheet_reads.py`). Columns:
+  Time (date, month/day/year), Mode, Shop, Sheet, Row, Item (col B), Negative, Cell adjusted, Old value, New
+  value, Status. The log starts **4 Oct 2026**.
+- **Which rows count:** Mode **APPLIED** only (PREVIEW rows are dry runs that repeat the applied ones), and not
+  `SKIPPED - total row`. Shop names are stripped of spaces.
+- **Shop mapping to the tills (bags sold):** KTDA → `ktda shop`; SINZA → `sinza` + `dar-es-alam`; UGANDA →
+  `uganda`; every other shop → its lower-case name. Bags sold = Odoo POS with the `sql/bags_sold_total.sql`
+  filters, grouped by till.
+- **Periods** (the dashboard schedule): **Last week** (default, the full Sun–Sat week before this one), This
+  week, This month, Last month, each against the period before of the same length, plus **Since the log
+  started** (4 Oct 2026 → today; its "before" is empty).
+- **Measures per shop:** fixes; negative units; **fixes per 1,000 bags sold** (the ranking measure, lower is
+  better, worked out **without big one-offs**); days with at least one fix; **repeat items** (shop-items fixed
+  in the period that had already been fixed earlier since the log started); big one-offs.
+- **Big one-off:** a single fix of **10+ units**. Listed with ⚠ (shop, item, date, units), left out of the
+  ranking measure, and the fixes including them are shown too.
+- **Ranking:** best first by fixes per 1,000 bags (without big one-offs); a shop with no fixes is best; a shop
+  that sold no bags in the period is listed last with no rate.
+- **Where it shows:** the **Stock record accuracy** panel on this page, with its own period select: a ranked
+  bar chart (green = best third, red = worst third, the number on each bar, a green / red change badge against
+  the period before), a table (Shop, Fixes, Negative units, Bags sold, Fixes per 1,000 bags, Days with fixes,
+  Repeat items, change), the Repeat items list and the ⚠ Big one-offs list. Also from the command line:
+  `python scripts/negative_fixes_report.py --period lastweek|thisweek|thismonth|lastmonth|sincelog`.
+
 ## Data sources
 
 Spreadsheet `1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0`, all in

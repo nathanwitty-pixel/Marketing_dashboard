@@ -25,6 +25,10 @@ marketing logs posts only on each bag's TOTAL row (no colour) → those come thr
 - **Weekly:** `ads_weekly.csv` + `ads_notes.csv` — marketing's Weekly Ads Performance Report (Drive .pptx).
   Shown on every page as the Ads impact panel — spec: [ads-impact.md](ads-impact.md).
 
+**Stock record accuracy (Oct 2026):** the **NEGATIVE FIX LOG** tab of *STOCKS LEVELS 2026* (`1xWmk1CJ…`, read only by
+`lib/negative_fixes.py`) ranks shops by negative-stock fixes per 1,000 bags sold on Shops Efficiency — spec:
+[shops-efficiency.md](shops-efficiency.md#stock-record-accuracy-22-oct-2026-users-call).
+
 **Footfall (Oct 2026):** `denri_footfall_count` (visitors per shop per day) joined to walk-in POS orders,
 WhatsApp chats, posts and ads on the Footfall and Marketing page — spec: [footfall-marketing.md](footfall-marketing.md).
 

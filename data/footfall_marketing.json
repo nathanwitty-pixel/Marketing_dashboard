@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-21",
+ "generated": "2026-10-22",
  "weeks": [
   {
    "start": "2026-06-28",
@@ -108,8 +108,8 @@
   },
   {
    "k": "WhatsApp ad-lead conversion",
-   "v": "7.5%",
-   "pts": -3.3,
+   "v": "7.6%",
+   "pts": -3.2,
    "good": "up",
    "n": "1,302 paid-ad chats (was 10.8%)"
   }
@@ -4164,8 +4164,8 @@
      "lowCount": false,
      "partial": false,
      "waChats": 155,
-     "waBought": 13,
-     "waConv": 8.4,
+     "waBought": 14,
+     "waConv": 9.0,
      "waReply": 1.0,
      "postsLast": 448.0,
      "posts": 883.0,
@@ -6180,8 +6180,8 @@
      "lowCount": false,
      "partial": true,
      "waChats": 124,
-     "waBought": 15,
-     "waConv": 12.1,
+     "waBought": 16,
+     "waConv": 12.9,
      "waReply": 1.0,
      "postsLast": 591.0,
      "posts": 448.0,
@@ -7491,7 +7491,7 @@
    "conversion": 52.6,
    "rpv": 1347,
    "waChats": 473,
-   "waConv": 8.9,
+   "waConv": 9.1,
    "waReply": 1.0,
    "lowWeeks": 0,
    "bulkOrders": 0,
@@ -7519,7 +7519,7 @@
    "conversion": 47.9,
    "rpv": 1239,
    "waChats": 637,
-   "waConv": 12.9,
+   "waConv": 13.0,
    "waReply": 1.0,
    "lowWeeks": 0,
    "bulkOrders": 0,
