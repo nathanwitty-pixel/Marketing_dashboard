@@ -1,7 +1,7 @@
 /* ads_panel.js — the "Ads impact" panel on every page (spec: docs/ads-impact.md).
    Data: window.ADS_IMPACT = this page's section of data/ads_impact.json (injected by streamlit_app.py):
      { week, lead, tiles:[{k,v,n,tone}], tables:[{title, head:[], rows:[[cell|{t,c}]], note}], actions:[{kind, market, text}], foot }
-   Draws a card at the top of the page: headline tiles always visible; "Details" opens the tables and every action.
+   Draws a card at the end of the page (22 Oct 2026, user's call — the last thing on every menu): headline tiles always visible; "Details" opens the tables and every action.
    Colours use the page palette (dark); v5_theme.js remaps the <style> for the light theme. */
 (function () {
   var S = window.ADS_IMPACT;
@@ -17,7 +17,7 @@
 
   var css = document.createElement('style');
   css.textContent =
-    '.ads-panel{position:relative;background:#1a1d2b;border:1px solid #2d3148;border-radius:14px;padding:1.1rem 1.25rem 1rem;margin:0 0 1.6rem;color:#cbd5e1;overflow:hidden}' +
+    '.ads-panel{position:relative;background:#1a1d2b;border:1px solid #2d3148;border-radius:14px;padding:1.1rem 1.25rem 1rem;margin:1.6rem 0 1.6rem;color:#cbd5e1;overflow:hidden}' +
     '.ads-panel::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#f59e0b,#ec4899,#8b5cf6)}' +
     '.ads-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:0.4rem 0.8rem;margin-bottom:0.2rem}' +
     '.ads-pill{font-size:0.62rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#fbbf24;border:1px solid rgba(251,191,36,0.45);border-radius:999px;padding:0.1rem 0.55rem}' +
@@ -106,21 +106,34 @@
       det.hidden = !det.hidden;
       btn.textContent = det.hidden ? label : 'Hide details';
     });
-    // Above the page's first section; pages without one get it at the top of the body.
-    // Climb out of side-by-side (flex / grid) layouts so the panel always spans the page width.
-    var first = document.querySelector('.section, section:not(#ads-panel), main, .container');
-    while (first && first.parentNode && first.parentNode !== document.body &&
-           /flex|grid/.test(getComputedStyle(first.parentNode).display)) first = first.parentNode;
-    if (first && first.parentNode && /flex|grid/.test(getComputedStyle(first.parentNode).display))
-      first.insertBefore(box, first.firstChild);           // e.g. body is flex: go inside the page wrapper
-    else if (first && first.parentNode) first.parentNode.insertBefore(box, first);
-    else document.body.insertBefore(box, document.body.firstChild);
+    // The last thing on the page (22 Oct 2026). Find the page's top-level block that holds the first
+    // section (a child of the page column / body). Pages that are a list of sections side by side at
+    // that level get the panel after the last one; pages with one wrapper (.wrap, .container, main)
+    // get it at the end of that wrapper, so it always spans the page width.
+    var root = document.querySelector('.psb-main') || document.body;
+    var top = document.querySelector('.section, section:not(#ads-panel), main, .container');
+    while (top && top.parentNode && top.parentNode !== root && top.parentNode !== document.body) top = top.parentNode;
+    if (!top || !top.parentNode) root.appendChild(box);
+    else {
+      var par = top.parentNode, cs = getComputedStyle(par);
+      var secs = [].filter.call(par.children, function (c) { return c !== box && c.matches('.section, section, main'); });
+      if (secs.length > 1) {
+        var stacked = !/flex|grid/.test(cs.display) || (/flex/.test(cs.display) && /^column/.test(cs.flexDirection));
+        if (stacked) par.appendChild(box); else secs[secs.length - 1].appendChild(box);
+      } else top.appendChild(box);
+    }
     if (S.chart) withChart(charts);
     // page_sidebar.js turns the page into a grid (sidebar | page column) — possibly after this ran,
-    // and it may pick the panel up as a grid item. Keep the panel at the top of the page column.
+    // and it may pick the panel up as a grid item. Keep the panel at the end of the page column, and
+    // move it back to the end if the page adds more content after it (late-built sections).
+    function lastShown(el) {
+      var c = el.lastElementChild;
+      while (c && (c.tagName === 'SCRIPT' || c.tagName === 'STYLE' || c.tagName === 'TEMPLATE')) c = c.previousElementSibling;
+      return c;
+    }
     function settle() {
-      var main = document.querySelector('.psb-main');
-      if (main && box.parentNode !== main) main.insertBefore(box, main.firstChild);
+      var main = document.querySelector('.psb-main') || box.parentNode;
+      if (main && (box.parentNode !== main || lastShown(main) !== box)) main.appendChild(box);
     }
     settle();
     window.addEventListener('load', settle);

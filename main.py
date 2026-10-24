@@ -31,12 +31,13 @@ SCRIPTS = [
     ("Weekly Sales (Postgres)", "weekly_sales.py"),
     ("Monthly Sales (Postgres)", "monthly_sales.py"),
     ("Current Performance",    "current_performance.py"),
-    ("Forward Projections",    "forward_projections.py"),
     ("New Products Analytics", "new_products.py"),
     ("Timed Offers Analytics", "timed_offers.py"),
     ("Self Made Combos",       "self_made_combos.py"),
     # Reads bags_offer_source.json that self_made_combos.py just wrote — keep it right after.
     ("Bags On vs Off Offer",   "bags_on_offer.py"),
+    # Reads offer_mix.json that bags_on_offer.py just wrote (Price per Bag card) — keep it after.
+    ("Forward Projections",    "forward_projections.py"),
     # Min / max per shop from the month's bag + shop targets, stock, OOS leads (docs/shop-stock-levels.md).
     ("Shop Stock Levels",      "shop_stock_levels.py"),
     ("Posting Yields",         "posting_yields.py"),

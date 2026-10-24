@@ -23,11 +23,22 @@ money comes from*, Offer type summary) covers all three countries, Tanzania and 
 | **Combos** | ✓ running combos (combo button) | ✓ running combos (receipts) | ✓ running combos (receipts) | on offer |
 | **Deal of wk** | ✓ | — | — | on offer |
 | **Corporate** | ✓ (invoices) | — | — | others |
-| **Mid-month offers** | new products + timed offers | listed singles + new products | listed singles + new products | on offer |
+| **Mid-month offers** | new products + timed offers + runway bags | listed singles + new products | listed singles + new products | on offer |
 | **Samples** | ✓ | — | — | others |
 | **Gift bags** | ✓ | — | — | others |
 
 - **On offer = Power deals + Combos + Deal of wk + Mid-month offers.** Others = Corporate + Samples + Gift bags.
+- **Deal of the Week from 25 Oct 2026** = the regional lists (docs/self-made-combos.md › Regional Deals of the Week).
+  A Kenya single sale counts as Deal of wk only at a shop in that region, in the weeks from 25 Oct.
+- **Corporate** = paid customer invoices in Odoo Accounting (`CORPORATE_SQL`). *Fixed 22 Oct 2026:* invoices a shop
+  made from a till receipt (`pos_order.account_move`, e.g. INV/2026/00146 from BUSIA/1537) are left out. Those bags
+  are already in the till lines, so they were counted twice.
+- **Runway bags are a Mid-month offer (22 Oct 2026, user's call).** A Kenya till line whose name the offer lists
+  don't know, but whose style is a runway bag (`lib/runway_bags`: first created in Odoo in the last 30 days),
+  goes to Mid-month offers tagged `Runway` instead of Unclassified. Each Mid-month sale is also tagged with its
+  part (Runway bags → New products → Timed offers in Kenya; New products / Listed singles in TZ / UG): period
+  field `midParts`. Unclassified lines are listed with their money in `unclassifiedBags`. The month's split is
+  saved to `data/offer_mix.json` for the Price per Bag card (docs/current-performance.md).
 - A Kenya single sale counts in the first that applies: **Power Deal → Deal of the Week → Mid-month offer**
   (sold inside a timed-offer campaign, or a new product), else **not on offer**. A combo bag bought on its own
   is still not on offer.

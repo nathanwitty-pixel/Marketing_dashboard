@@ -12,6 +12,9 @@ marketing posts, corporate payments), so every page shows what the ads cost, wha
   - `data/ads_notes.csv` — the report's takeaways and next steps: `week_start`, `tags`
     (`;`-separated: all / offers / combos / new_bags / corporate / shops / website), `market`,
     `kind` (win / watch / do / event), `text`.
+- **Placement (22 Oct 2026, user's call):** the panel is the **last thing on every page** (`assets/ads_panel.js`):
+  after the last section when the page is a list of sections, else at the end of the page's wrapper. It is left
+  out of drag-to-reorder (`#ads-panel` in `kpi_drag.js` SKIP), so a saved layout can't move it back up.
 - **Generator:** `generators/ads_impact.py` → `data/ads_impact.json` (one section per page html).
   Runs with Current Performance and Posting Yields (`dashboard_pages.json`); the other pages read the file.
 - **Shown by:** `assets/ads_panel.js`, injected on **every page** by `streamlit_app.py` (same place as the

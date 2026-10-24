@@ -92,6 +92,8 @@ WITH qinv AS (
     FROM account_move am
     WHERE am.move_type = 'out_invoice' AND am.state = 'posted'
       AND am.invoice_date BETWEEN :s AND :e
+      -- an invoice a shop made from a till receipt (pos_order.account_move) is already a till sale
+      AND NOT EXISTS (SELECT 1 FROM pos_order po WHERE po.account_move = am.id)
       AND ( am.payment_state IN ('paid', 'in_payment')
             OR (am.amount_total > 0 AND am.amount_residual / am.amount_total <= 0.25) )
 )
@@ -400,8 +402,8 @@ def _market_records(lo, hi, infer, new_of, new_names):
     bag = lambda b: "LAPTOP SLEEVE" if b == "*SLEEVE" else b
     agg = {}
 
-    def add(d, mkt, row, units, rev, bags, parts):
-        a = agg.setdefault((d, mkt, row, parts), [0, 0.0, 0])
+    def add(d, mkt, row, units, rev, bags, parts, part=None):
+        a = agg.setdefault((d, mkt, row, parts, part), [0, 0.0, 0])
         a[0] += units
         a[1] += rev
         a[2] += bags
@@ -432,11 +434,12 @@ def _market_records(lo, hi, infer, new_of, new_names):
                     left += [(b, rev / len(bs)) for b in bs]
             for b, unit in left:
                 row = "MID" if b in listed[mn] or b in new_set else "OFF"
-                add(d, label, row, 1, unit / fx, 1, ((bag(b), 1.0),))
+                add(d, label, row, 1, unit / fx, 1, ((bag(b), 1.0),),
+                    ("New products" if b in new_set else "Listed singles") if row == "MID" else None)
         print(f"  {label:9}        : {len(recs)} receipts (KES at {fx} {cur} = 1)")
     side = {"OFF": "off", "COMBOS": "on", "MID": "on"}
     return [{"d": d, "mkt": mkt, "row": row, "side": side[row], "units": a[0], "revenue": round(a[1]),
-             "bags": a[2], "parts": parts} for (d, mkt, row, parts), a in agg.items()]
+             "bags": a[2], "parts": parts, "part": part} for (d, mkt, row, parts, part), a in agg.items()]
 
 
 def _pick_target(rows, shop, period, start, end):
@@ -477,6 +480,18 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
     tot = {"on": blank(), "off": blank(), "oth": blank(), "unc": blank()}
     others = {"Gift bags": blank(), "Samples": blank(), "Corporate": blank()}
     trend, by_source, on_bags, off_bags, unc_names, shops = {}, {}, {}, {}, set(), {}
+    unc_bags = {}                                            # {product: units / revenue} for "Not yet sorted"
+    mid_parts = {}                                           # {part: {units, revenue, bags: {bag: [u, rev]}}}
+
+    def add_mid(part, bag, u, rev, country="Kenya"):
+        mp = mid_parts.setdefault(part, {"units": 0, "revenue": 0, "bags": {}, "countries": set()})
+        if u:
+            mp["countries"].add(country)
+        mp["units"] += u
+        mp["revenue"] += rev
+        c = mp["bags"].setdefault(bag or "?", [0, 0])
+        c[0] += u
+        c[1] += rev
     # Offer type × category / tier / tree / country: {row: {"cat": {CAT: [units, rev]}, …, "mkt": {COUNTRY: [units, rev]}}}
     mtx = {k: {"cat": {}, "tier": {}, "tree": {}, "mkt": {}} for k, _l in OFFER_ROWS}
     by_week = {}                                             # {week no: {row: [units, rev]}} (Monthly only)
@@ -535,8 +550,14 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
             others[srcs[0]]["revenue"] += rev
         else:
             unc_names.add(r["name"])
+            ub = unc_bags.setdefault(r["name"], blank())
+            ub["units"] += u
+            ub["revenue"] += rev
         row = ("OFF" if side == "off" else _ROW_OF_SOURCE.get(srcs[0]) if side == "on"
                else _ROW_OF_OTHER.get(srcs[0]) if side == "oth" else None)
+        if row == "MID":
+            add_mid("Runway bags" if "Runway" in offers else "New products" if is_new else "Timed offers",
+                    bag, u, rev)
         if row:
             add_mtx(row, seg_of(r["name"], side, bag, srcs), u, rev)
             if w["trend"] == "week":                         # offer type per week of the month
@@ -564,6 +585,8 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
         msh[side]["revenue"] += rev
         if row == "COMBOS":
             market_bags += r["bags"]
+        if row == "MID":
+            add_mid(r.get("part") or "Listed singles", r["parts"][0][0] if r["parts"] else "?", u, rev, r["mkt"])
         add_mtx(row, r["segs"], u, rev, r["mkt"])
         if w["trend"] == "week":
             c = by_week.setdefault(tkey(r["d"]), {}).setdefault(row, [0, 0])
@@ -729,6 +752,13 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
         "inCombosByBag": in_combos,
         "unclassifiedNames": sorted(unc_names)[:40],
         "unclassifiedCount": len(unc_names),
+        "midParts": [{"part": k, "units": round(v["units"], 2), "revenue": round(v["revenue"]),
+                      "countries": [c for c in COUNTRIES if c in v["countries"]],
+                      "bags": sorted(({"bag": b, "units": round(c[0], 2), "revenue": round(c[1])}
+                                      for b, c in v["bags"].items()), key=lambda x: -x["revenue"])}
+                     for k, v in sorted(mid_parts.items(), key=lambda kv: -kv[1]["revenue"])],
+        "unclassifiedBags": [{"name": k, "units": round(v["units"], 2), "revenue": round(v["revenue"])}
+                             for k, v in sorted(unc_bags.items(), key=lambda kv: -abs(kv[1]["revenue"]))],
         "trend": trend_rows,
         "sources": src_rows,
         "offerTypes": _offer_types(mtx),
@@ -887,10 +917,27 @@ def fetch():
             print(f"  {ms:%B %Y} days   : " + ("its archived offer list" if src_m else "no archive — this month's list"))
         return by_month[ms]
 
+    # Runway bags (lib/runway_bags: styles first created in Odoo in the last 30 days) aren't on the
+    # offer lists yet, so they'd land in "Not yet sorted". They count as a Mid-month offer of their own
+    # (22 Oct 2026, user's call), tagged "Runway" so the Price per Bag card can show them apart.
+    try:
+        from lib import runway_bags as _rwb
+        _rw_typ = _rwb.type_fn()
+        _rw_set = {b["name"] for b in _rwb.runway_bags(typ=_rw_typ)}
+    except Exception:                                        # noqa: BLE001 — Odoo down: no runway split
+        _rw_typ, _rw_set = None, set()
+    print(f"  Runway bags      : {len(_rw_set)} styles")
+
     def classify(name, shop=None, d=None, timed=None):
         if d is not None and d < m_start:
-            return classify_for(d)(name, shop, d, timed)
-        return classify_cur(name, shop, d, timed)
+            res = classify_for(d)(name, shop, d, timed)
+        else:
+            res = classify_cur(name, shop, d, timed)
+        if res[0] == "unc" and _rw_set:
+            t = _rw_typ(name)
+            if t in _rw_set:
+                return ("on", t, ["Mid-month offer"], False, ["Mid-month offer", "Runway"])
+        return res
 
     # Corporate-lead till orders count for the shop like any till sale (lib/shop_corporate; user, 16 Oct 2026).
     params = {"s": lo.isoformat(), "e": hi.isoformat()}
@@ -1175,6 +1222,37 @@ def inject(payload):
         f.write(html)
 
 
+# The month's on / off offer split, for the Price per Bag card (forward_projections.py reads it).
+OFFER_MIX_JSON = paths.data("offer_mix.json")
+_ON_KEYS = ("POWER", "COMBOS", "DOW", "MID")          # = totals.on (Corporate, Samples, Gift bags are 'others')
+
+
+def save_offer_mix(payload):
+    p = payload["periods"].get("monthly")
+    if not p:
+        return
+    ot = p["offerTypes"]
+    rows = []
+    for r in ot["rows"]:
+        bags = []
+        for key, c in ot["tree"].get(r["key"], {}).items():
+            tier, cat, name = (key.split("|", 2) + ["", ""])[:3]
+            if c["units"] or c["revenue"]:
+                bags.append({"bag": name or cat.title(), "category": cat, "tier": tier,
+                             "units": c["units"], "revenue": c["revenue"]})
+        bags.sort(key=lambda b: -b["revenue"])
+        mk = [c for c in COUNTRIES if (ot["mkt"].get(r["key"], {}).get(c) or {}).get("units")]
+        where = ("Kenya, Tanzania, Uganda" if len(mk) == 3 else ", ".join(mk) + (" only" if len(mk) == 1 else "")) if mk else None
+        rows.append({"key": r["key"], "label": r["label"], "on": r["key"] in _ON_KEYS, "where": where,
+                     "units": round(sum(b["units"] for b in bags), 2),
+                     "revenue": round(sum(b["revenue"] for b in bags)), "bags": bags})
+    with open(OFFER_MIX_JSON, "w", encoding="utf-8") as f:
+        json.dump({"month": payload["month"], "generated": payload["generated"], "range": p["range"],
+                   "rows": rows, "unclassified": p["totals"]["unc"],
+                   "unclassifiedBags": p.get("unclassifiedBags", []),
+                   "midParts": p.get("midParts", [])}, f, ensure_ascii=False, indent=1)
+
+
 def fmt(n):
     return f"{int(round(n or 0)):,}"
 
@@ -1190,6 +1268,7 @@ def main():
     if payload is None:
         return
     inject(payload)
+    save_offer_mix(payload)
     print(f"bags_on_offer.html updated — {payload['month']} (Kenya, Tanzania, Uganda).")
     for key, p in payload["periods"].items():
         t = p["totals"]

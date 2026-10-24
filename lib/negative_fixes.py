@@ -94,6 +94,9 @@ def read(sh=None) -> list[dict]:
         return next(i for i, h in enumerate(hd) if h.startswith(name))
     iT, iM, iS, iR, iI, iN, iSt = (col("time"), col("mode"), col("shop"), col("row"), col("item"),
                                    col("negative"), col("status"))
+    # Optional "Bag" column (24 Oct 2026, user's call): the fix script logs the bag's name — the name row above
+    # the colour rows in STOCK_LEVELS col B. When present, an item reads "bag colour"; older rows keep the colour.
+    iB = next((i for i, h in enumerate(hd) if h.startswith("bag") or h.startswith("product")), None)
     out = []
     for n, r in enumerate(rows[1:], start=2):
         r = r + [""] * (len(hd) - len(r))
@@ -103,7 +106,10 @@ def read(sh=None) -> list[dict]:
         shop = r[iS].strip().upper()
         if not d or not shop:
             continue
-        out.append({"date": d, "shop": shop, "row": r[iR].strip(), "item": r[iI].strip(),
+        colour = r[iI].strip()
+        bag = r[iB].strip() if iB is not None else ""
+        item = (bag + " " + colour).strip() if bag and colour.upper() not in bag.upper() else (bag or colour)
+        out.append({"date": d, "shop": shop, "row": r[iR].strip(), "item": item, "bag": bag, "colour": colour,
                     "units": abs(_int(r[iN])), "status": r[iSt].strip(), "line": n})
     out.sort(key=lambda x: (x["date"], x["line"]))
     _CACHE = out

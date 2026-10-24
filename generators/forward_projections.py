@@ -60,6 +60,22 @@ def _corporate_bags(year, month):
     return 0, 0
 
 
+def _corporate_lines(year, month):
+    """The corporate app bags behind _corporate_bags(), one row per product with its clients
+    (sql/corporate_bag_lines.sql). [] when Postgres isn't reachable."""
+    try:
+        from lib import db, queries
+        df = db.run_query(queries.CORPORATE_BAG_LINES,
+                          {"start_date": date(year, month, 1).isoformat(),
+                           "end_date":   date(year, month, calendar.monthrange(year, month)[1]).isoformat()})
+        if df is not None and not df.empty:
+            return [{"product": r["product"], "bags": float(r["bags"] or 0), "kes": float(r["kes"] or 0),
+                     "clients": r["clients"] or ""} for _, r in df.iterrows()]
+    except Exception:
+        pass
+    return []
+
+
 def _bag_revenue(year, month):
     return _bag_revenue_range(date(year, month, 1), date(year, month, calendar.monthrange(year, month)[1]))
 
@@ -347,6 +363,127 @@ if bag_rev and bag_rev["bags"] and revenue_target and total_target:
         "total": total,
     }
 
+    # On offer vs not on offer — the Bags On vs Off Offer page's sorting of the same month's bags
+    # (data/offer_mix.json, written by bags_on_offer.py), judged on the same prices: KES ~2,000 a bag,
+    # gift bags on their own target, samples expect nothing (not in the bag target). Each offer row
+    # carries the bags inside it.
+    try:
+        with open(paths.data("offer_mix.json"), encoding="utf-8") as _f:
+            _om = json.load(_f)
+    except (OSError, ValueError):
+        _om = None
+    if _om and _om.get("month") == proj_ref.strftime("%B %Y"):
+        # Corporate app bags (paid invoices, not POS) — the same bags and KES the Forecasted card adds.
+        _capp = _corporate_lines(proj_ref.year, proj_ref.month)
+        _capp_bags = sum(c["bags"] for c in _capp)
+        # The till's KES 300 discount line has qty 1 but isn't a bag: keep its money, drop its count.
+        _disc_units = sum(u["units"] for u in _om.get("unclassifiedBags", []) if "DISCOUNT" in u["name"].upper())
+        _unc = dict(_om["unclassified"], units=_om["unclassified"]["units"] - _disc_units)
+        _all = sum(r["units"] for r in _om["rows"]) + _unc["units"] + _capp_bags   # _unc = the non-discount lines
+
+        def _orow(label, units, kes, key=None, on=None, bags=None):
+            if key == "GIFT":
+                tppb, tb = gift_target_ppb, (gift_target_bags or None)
+            elif key == "SAMPLE":
+                tppb, tb = 0, None
+            else:
+                tppb, tb = target_ppb, None
+            r = _row(label, units, kes, tppb, tb)
+            r["bags"] = round(units)
+            r["projBags"] = round(units * vel)
+            r["share"] = round(units / _all * 100, 1) if units and _all else None
+            r["key"], r["on"] = key, on
+            if key == "UNC":            # the till discount: no bags, nothing expected, so its effect = the money off
+                r.update(gapPct=None, targetPpb=None, ppb=None, share=None)
+            if bags is not None and key in ("CAPP", "UNC", "PART"):
+                r["items"] = bags            # already shaped (bag, sub, bags, kes, ppb, gapPct)
+            elif bags is not None:
+                r["items"] = [{"bag": b["bag"], "category": b["category"], "tier": b["tier"],
+                               "bags": round(b["units"], 1), "kes": b["revenue"],
+                               "ppb": round(b["revenue"] / b["units"]) if b["units"] else None,
+                               "gapPct": round((b["revenue"] / b["units"] / tppb - 1) * 100, 1)
+                                         if b["units"] and tppb else None}
+                              for b in bags]
+            return r
+
+        _on = [r for r in _om["rows"] if r["on"]]
+        # bag → (category, tier) from the offer page's tree, so the Mid-month parts' bags group by category too
+        _cat_of = {b["bag"]: (b["category"], b["tier"]) for r in _om["rows"] for b in r["bags"]
+                   if b["category"] and b["category"] != "UNASSIGNED"}
+        groups = []
+        for r in _om["rows"]:
+            lbl = "Corporate (Odoo invoices)" if r["key"] == "CORP" else r["label"]
+            groups.append(_orow(lbl, r["units"], r["revenue"], r["key"], r["on"], r["bags"]))
+            if r["key"] == "MID":
+                # What the Mid-month offers are made of: new products, runway bags, timed offers (Kenya),
+                # the month's listed singles (Tanzania / Uganda). Rows sit under Mid-month offers.
+                _part_lbl = {mp["part"]: f'{mp["part"]} ({", ".join(mp.get("countries") or ["Kenya"])})'
+                             for mp in _om.get("midParts", [])}
+                groups[-1]["parts"] = [
+                    _orow(_part_lbl.get(mp["part"], mp["part"]), mp["units"], mp["revenue"], "PART", True,
+                          [{"bag": b["bag"], "category": _cat_of.get(b["bag"], ("", ""))[0],
+                            "tier": _cat_of.get(b["bag"], ("", ""))[1],
+                            "bags": round(b["units"], 1), "kes": b["revenue"],
+                            "ppb": round(b["revenue"] / b["units"]) if b["units"] else None,
+                            "gapPct": round((b["revenue"] / b["units"] / target_ppb - 1) * 100, 1) if b["units"] else None}
+                           for b in mp["bags"]])
+                    for mp in _om.get("midParts", [])]
+                if groups[-1]["parts"]:
+                    groups[-1].pop("items", None)        # its bags are listed under each part instead
+            if r["key"] == "CORP" and _capp:
+                items = [{"bag": c["product"].title() if c["product"] != "Fees and other" else c["product"],
+                          "sub": c["clients"], "bags": round(c["bags"], 1), "kes": round(c["kes"]),
+                          "ppb": round(c["kes"] / c["bags"]) if c["bags"] else None,
+                          "gapPct": round((c["kes"] / c["bags"] / target_ppb - 1) * 100, 1) if c["bags"] else None}
+                         for c in _capp]
+                groups.append(_orow("Corporate app", _capp_bags, sum(c["kes"] for c in _capp),
+                                    "CAPP", None, items))
+        # "Not yet sorted" is only the KES 300 till discount line (money off the bill, not bags). The few
+        # other unsorted lines are items the offer lists don't know (PPM, Passport Holder…) sold at full
+        # price, so they're added to Not on offer, each listed with why.
+        _ub = _om.get("unclassifiedBags", [])
+        _disc = [u for u in _ub if "DISCOUNT" in u["name"].upper()]
+        _rest = [u for u in _ub if "DISCOUNT" not in u["name"].upper()]
+        _off = next((g for g in groups if g["key"] == "OFF"), None)
+        if _off is not None and _rest:
+            _orig = next(r for r in _om["rows"] if r["key"] == "OFF")
+            _extra = [{"bag": u["name"], "category": "NOT IN THE BAG LIST YET", "tier": "full price",
+                       "units": u["units"], "revenue": u["revenue"]} for u in _rest]
+            groups[groups.index(_off)] = _orow(_off["label"], _orig["units"] + sum(u["units"] for u in _rest),
+                                               _orig["revenue"] + sum(u["revenue"] for u in _rest),
+                                               "OFF", False, _orig["bags"] + _extra)
+        if _disc:
+            _dk = sum(u["revenue"] for u in _disc)
+            _dn = round(sum(u["units"] for u in _disc))
+            groups.append(_orow("KES 300 till discount", 0, _dk, "UNC", None,
+                                [{"bag": "KES 300 discount on total amount", "bags": 0, "kes": _dk, "ppb": None,
+                                  "gapPct": None, "sub": f"given {_dn} times this month"}]))
+        _where = {r["key"]: r.get("where") for r in _om["rows"]}
+        for g in groups:
+            if g["key"] == "CAPP":
+                g["where"] = "Kenya (Corporate app)"
+            elif _where.get(g["key"]):
+                g["where"] = _where[g["key"]]
+            for pt in g.get("parts") or []:
+                pt["where"] = None              # the label says where
+        on_total = _orow("On offer", sum(r["units"] for r in _on), sum(r["revenue"] for r in _on), "ON", True)
+        off = next((g for g in groups if g["key"] == "OFF"), None)
+        price_mix["offerMix"] = {
+            "generated": _om["generated"],
+            "range":     _om["range"],
+            "on":        on_total,
+            "rows":      groups,
+            "total":     {"label": "All bags", "bags": round(_all),
+                          "kes": sum(g["kes"] for g in groups),
+                          "projBags": sum(g["projBags"] for g in groups),
+                          "projKes": sum(g["projKes"] for g in groups),
+                          "ppb": round(sum(g["kes"] for g in groups) / _all) if _all else None,
+                          "share": 100.0,
+                          "effectKes": sum(g["effectKes"] for g in groups),
+                          "effectPts": round(sum(g["effectKes"] for g in groups) / revenue_target * 100, 2)},
+            "offPpb":    off["ppb"] if off else None,
+        }
+
 # 3. Bare Minimum = monthly target ÷ perfect weeks in the month
 bare_minimum       = round(total_target / perfect_weeks) if perfect_weeks else 0
 bare_minimum_value = bare_minimum
@@ -579,7 +716,7 @@ def _inject(path):
         content = f.read()
     content = re.sub(
         r"<!-- PROJ_DATA_START -->.*?<!-- PROJ_DATA_END -->",
-        inline_script,
+        lambda _m: inline_script,     # a function, so backslashes in the JSON (–) stay literal
         content,
         flags=re.DOTALL
     )

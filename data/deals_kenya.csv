@@ -1,215 +1,311 @@
-Tier,Month,Product,Location,Type,Original,Current,Discount,Poster name,Poster
-Tier 1,October,Belt Bag,Kitengela,Deal of the Week,1400,1000,400,Belt bag,Kitengela
-Tier 1,October,Zane Man,Kitengela,Deal of the Week,1600,1200,400,Zane man bag,Kitengela
-Tier 1,October,School Bag,Kitengela,Deal of the Week,2100,1700,400,School bag,Kitengela
-Tier 1,October,Mini Zuri,Kitengela,Deal of the Week,2600,2200,400,Mini zuri,Kitengela
-Tier 1,October,Zoezi,Kitengela,Deal of the Week,3600,3200,400,Zoezi bag,Kitengela
-Tier 1,October,Oval Handbag,Kitengela,Deal of the Week,1600,1200,400,Oval handbag,Kitengela
-Tier 1,October,Reo Travel,Kisii,Deal of the Week,2800,2400,400,Reo travel,Kisii
-Tier 1,October,Big Man Bag,Kisii,Deal of the Week,2100,1700,400,Big man bag,Kisii
-Tier 1,October,Fayola,Kisii,Deal of the Week,2100,1700,400,Fayola messenger,Kisii
-Tier 1,October,Mini Zuri,Kisii,Deal of the Week,2600,2200,400,Mini zuri,Kisii
-Tier 1,October,Mini Umbra,Kisii,Deal of the Week,1600,1200,400,Mini umbra,Kisii
-Tier 1,October,Tyler,Kisii,Deal of the Week,2600,2200,400,Tyler backpack,Kisii
-Tier 1,October,Reo Travel,Busia,Deal of the Week,2800,2400,400,Reo travel,Busia
-Tier 1,October,Mini Umbra,Busia,Deal of the Week,1600,1200,400,Mini umbra,Busia
-Tier 1,October,Claire Handbag,Busia,Deal of the Week,3000,2600,400,Claire handbag,Busia
-Tier 1,October,Mini Zuri,Busia,Deal of the Week,2600,2200,400,Mini zuri,Busia
-Tier 1,October,Big Man Bag,Busia,Deal of the Week,2100,1700,400,Big man bag,Busia
-Tier 1,October,Butterfly Sling,Busia,Deal of the Week,1600,1200,400,Butterfly sling,Busia
-Tier 1,October,Pioneer,Starmall,Deal of the Week,2600,2200,400,Pioneer backpack,Nairobi Town
-Tier 1,October,Big Man Bag,Starmall,Deal of the Week,2100,1700,400,Big man bag,Nairobi Town
-Tier 1,October,Claire Handbag,Starmall,Deal of the Week,3000,2600,400,Claire handbag,Nairobi Town
-Tier 1,October,Trecento,Starmall,Deal of the Week,2100,1700,400,Trecento,Nairobi Town
-Tier 1,October,Gym Bag,Starmall,Deal of the Week,2600,2200,400,Gym bag,Nairobi Town
-Tier 1,October,Butterfly Sling,Starmall,Deal of the Week,1600,1200,400,Butterfly sling,Nairobi Town
-Tier 1,October,Pioneer,Hazina,Deal of the Week,2600,2200,400,Pioneer backpack,Nairobi Town
-Tier 1,October,Big Man Bag,Hazina,Deal of the Week,2100,1700,400,Big man bag,Nairobi Town
-Tier 1,October,Claire Handbag,Hazina,Deal of the Week,3000,2600,400,Claire handbag,Nairobi Town
-Tier 1,October,Trecento,Hazina,Deal of the Week,2100,1700,400,Trecento,Nairobi Town
-Tier 1,October,Gym Bag,Hazina,Deal of the Week,2600,2200,400,Gym bag,Nairobi Town
-Tier 1,October,Butterfly Sling,Hazina,Deal of the Week,1600,1200,400,Butterfly sling,Nairobi Town
-Tier 1,October,Pioneer,Hilton,Deal of the Week,2600,2200,400,Pioneer backpack,Nairobi Town
-Tier 1,October,Big Man Bag,Hilton,Deal of the Week,2100,1700,400,Big man bag,Nairobi Town
-Tier 1,October,Claire Handbag,Hilton,Deal of the Week,3000,2600,400,Claire handbag,Nairobi Town
-Tier 1,October,Trecento,Hilton,Deal of the Week,2100,1700,400,Trecento,Nairobi Town
-Tier 1,October,Gym Bag,Hilton,Deal of the Week,2600,2200,400,Gym bag,Nairobi Town
-Tier 1,October,Butterfly Sling,Hilton,Deal of the Week,1600,1200,400,Butterfly sling,Nairobi Town
-Tier 1,October,Pioneer,KTDA,Deal of the Week,2600,2200,400,Pioneer backpack,Nairobi Town
-Tier 1,October,Big Man Bag,KTDA,Deal of the Week,2100,1700,400,Big man bag,Nairobi Town
-Tier 1,October,Claire Handbag,KTDA,Deal of the Week,3000,2600,400,Claire handbag,Nairobi Town
-Tier 1,October,Trecento,KTDA,Deal of the Week,2100,1700,400,Trecento,Nairobi Town
-Tier 1,October,Gym Bag,KTDA,Deal of the Week,2600,2200,400,Gym bag,Nairobi Town
-Tier 1,October,Butterfly Sling,KTDA,Deal of the Week,1600,1200,400,Butterfly sling,Nairobi Town
-Tier 1,October,Pioneer,Website,Deal of the Week,2600,2200,400,Pioneer backpack,Website
-Tier 1,October,Neo Man,Website,Deal of the Week,1600,1200,400,Neo man bag,Website
-Tier 1,October,Aria Sling,Website,Deal of the Week,1600,1200,400,Aria sling,Website
-Tier 1,October,Aurora,Website,Deal of the Week,2100,1700,400,Aurora handbag,Website
-Tier 1,October,Fabela,Website,Deal of the Week,2400,2000,400,Fabela travel,Website
-Tier 1,October,Brief Case,Website,Deal of the Week,2800,2400,400,Briefcase,Website
-Tier 1,October,Oval Handbag,Kakamega,Deal of the Week,1600,1200,400,Oval handbag,Kakamega
-Tier 1,October,Big Man Bag,Kakamega,Deal of the Week,2100,1700,400,Big man bag,Kakamega
-Tier 1,October,College HB,Kakamega,Deal of the Week,2600,2200,400,College handbag,Kakamega
-Tier 1,October,Fabela,Kakamega,Deal of the Week,2400,2000,400,Fabela travel,Kakamega
-Tier 1,October,Neo Man,Kakamega,Deal of the Week,1600,1200,400,Neo man bag,Kakamega
-Tier 1,October,Belt Bag,Kakamega,Deal of the Week,1400,1000,400,Belt bag,Kakamega
-Tier 1,October,Reo Travel,Eldoret,Deal of the Week,2800,2400,400,Reo travel,Eldoret
-Tier 1,October,Big Man Bag,Eldoret,Deal of the Week,2100,1700,400,Big man bag,Eldoret
-Tier 1,October,Lola,Eldoret,Deal of the Week,2100,1800,300,Lola handbag,Eldoret
-Tier 1,October,Fabela,Eldoret,Deal of the Week,2400,2000,400,Fabela travel,Eldoret
-Tier 1,October,Kate,Eldoret,Deal of the Week,1600,1200,400,Kate sling,Eldoret
-Tier 1,October,Pioneer,Eldoret,Deal of the Week,2600,2200,400,Pioneer backpack,Eldoret
-Tier 1,October,Kate,Mombasa,Deal of the Week,1600,1200,400,Kate sling,Mombasa
-Tier 1,October,Big Man Bag,Mombasa,Deal of the Week,2100,1700,400,Big man bag,Mombasa
-Tier 1,October,Lola,Mombasa,Deal of the Week,2100,1800,300,Lola handbag,Mombasa
-Tier 1,October,Fabela,Mombasa,Deal of the Week,2400,2000,400,Fabela travel,Mombasa
-Tier 1,October,School Bag,Mombasa,Deal of the Week,2100,1700,400,School bag,Mombasa
-Tier 1,October,Remi,Mombasa,Deal of the Week,2700,2300,400,Remi backpack,Mombasa
-Tier 1,October,Belt Bag,Rongai,Deal of the Week,1400,1000,400,Belt bag,Rongai
-Tier 1,October,Mini Umbra,Rongai,Deal of the Week,1600,1200,400,Mini umbra,Rongai
-Tier 1,October,Claire Handbag,Rongai,Deal of the Week,3000,2600,400,Claire handbag,Rongai
-Tier 1,October,Karina,Rongai,Deal of the Week,2500,2100,400,Karina handbag,Rongai
-Tier 1,October,Fabela,Rongai,Deal of the Week,2400,2000,400,Fabela travel,Rongai
-Tier 1,October,School Bag,Rongai,Deal of the Week,2100,1700,400,School bag,Rongai
-Tier 1,October,Kate,Thika,Deal of the Week,1600,1200,400,Kate sling,Thika
-Tier 1,October,Oval Handbag,Thika,Deal of the Week,1600,1200,400,Oval handbag,Thika
-Tier 1,October,Fayola,Thika,Deal of the Week,2100,1700,400,Fayola messenger,Thika
-Tier 1,October,Fabela,Thika,Deal of the Week,2400,2000,400,Fabela travel,Thika
-Tier 1,October,Big Man Bag,Thika,Deal of the Week,2100,1700,400,Big man bag,Thika
-Tier 1,October,Kai,Thika,Deal of the Week,2800,2400,400,Kai backpack,Thika
-Tier 1,October,Neo Man,Meru,Deal of the Week,1600,1200,400,Neo man bag,Meru
-Tier 1,October,Belt Bag,Meru,Deal of the Week,1400,1000,400,Belt bag,Meru
-Tier 1,October,Mini Zuri,Meru,Deal of the Week,2600,2200,400,Mini zuri,Meru
-Tier 1,October,Fabela,Meru,Deal of the Week,2400,2000,400,Fabela travel,Meru
-Tier 1,October,Big Man Bag,Meru,Deal of the Week,2100,1700,400,Big man bag,Meru
-Tier 1,October,Kai,Meru,Deal of the Week,2800,2400,400,Kai backpack,Meru
-Tier 1,October,Reo Travel,Nakuru,Deal of the Week,2800,2400,400,Reo travel,Nakuru
-Tier 1,October,Kate,Nakuru,Deal of the Week,1600,1200,400,Kate sling,Nakuru
-Tier 1,October,Liam,Nakuru,Deal of the Week,2100,1700,400,Liam travel,Nakuru
-Tier 1,October,Double Press,Nakuru,Deal of the Week,2600,2200,400,Doublepress backpack,Nakuru
-Tier 1,October,Neo Man,Nakuru,Deal of the Week,1600,1200,400,Neo man bag,Nakuru
-Tier 1,October,Oval Handbag,Nakuru,Deal of the Week,1600,1200,400,Oval handbag,Nakuru
-Tier 1,October,Pioneer,Nanyuki,Deal of the Week,2600,2200,400,Pioneer backpack,Nanyuki
-Tier 1,October,Big Man Bag,Nanyuki,Deal of the Week,2100,1700,400,Big man bag,Nanyuki
-Tier 1,October,Lola,Nanyuki,Deal of the Week,2100,1800,300,Lola handbag,Nanyuki
-Tier 1,October,Fabela,Nanyuki,Deal of the Week,2400,2000,400,Fabela travel,Nanyuki
-Tier 1,October,Belt Bag,Nanyuki,Deal of the Week,1400,1000,400,Belt bag,Nanyuki
-Tier 1,October,Kate,Nanyuki,Deal of the Week,1600,1200,400,Kate sling,Nanyuki
-Tier 1,October,Belt Bag,Kisumu,Deal of the Week,1400,1000,400,Belt bag,Kisumu
-Tier 1,October,Mega,Kisumu,Deal of the Week,3000,2600,400,Mega backpack,Kisumu
-Tier 1,October,Fayola,Kisumu,Deal of the Week,2100,1700,400,Fayola messenger,Kisumu
-Tier 1,October,Liam,Kisumu,Deal of the Week,2100,1700,400,Liam travel,Kisumu
-Tier 1,October,Trecento,Kisumu,Deal of the Week,2100,1700,400,Trecento,Kisumu
-Tier 1,October,Amaya,Kisumu,Deal of the Week,3500,3100,400,Amaya handbag,Kisumu
-All,October,Antitheft,All,Power Deals,2600,2200,400,Antitheft,Power Deals list
-All,October,Aria Sling,All,Power Deals,1600,1200,400,Aria Sling,Power Deals list
-All,October,Aurora,All,Power Deals,2100,1700,400,Aurora,Power Deals list
-All,October,Bonita,All,Power Deals,3900,3000,900,Bonita,Power Deals list
-All,October,Code 3,All,Power Deals,2100,1800,300,Code 3,Power Deals list
-All,October,Jumbo,All,Power Deals,3600,2800,800,Jumbo,Power Deals list
-All,October,Moon Bag,All,Power Deals,1600,1200,400,Moon Bag,Power Deals list
-All,October,Nizana,All,Power Deals,1600,1200,400,Nizana,Power Deals list
-All,October,Prime,All,Power Deals,2800,2400,400,Prime,Power Deals list
-All,October,Standard Travel,All,Power Deals,2600,2200,400,Standard,Power Deals list
-Tier 2,October,Pioneer,Website,Deal of the Week,2600,2200,400,Pioneer backpack,Website
-Tier 2,October,Luna,Website,Deal of the Week,1600,1200,400,Luna man bag,Website
-Tier 2,October,Lola,Website,Deal of the Week,2100,1800,300,Lola handbag,Website
-Tier 2,October,Double Press,Website,Deal of the Week,2600,2200,400,Doublepress backpack,Website
-Tier 2,October,Big Man Bag,Website,Deal of the Week,2100,1700,400,Big man bag,Website
-Tier 2,October,Gym Bag,Website,Deal of the Week,2600,2200,400,Gym bag,Website
-Tier 2,October,Kai,Hazina,Deal of the Week,2800,2400,400,Kai backpack,Nairobi Town
-Tier 2,October,Neo Man,Hazina,Deal of the Week,1600,1200,400,Neo man bag,Nairobi Town
-Tier 2,October,Reo Travel,Hazina,Deal of the Week,2800,2400,400,Reo travel,Nairobi Town
-Tier 2,October,Trecento,Hazina,Deal of the Week,2100,1700,400,Trecento,Nairobi Town
-Tier 2,October,Fayola,Hazina,Deal of the Week,2100,1700,400,Fayola messenger,Nairobi Town
-Tier 2,October,Remi,Hazina,Deal of the Week,2700,2300,400,Remi backpack,Nairobi Town
-Tier 2,October,Kai,Hilton,Deal of the Week,2800,2400,400,Kai backpack,Nairobi Town
-Tier 2,October,Neo Man,Hilton,Deal of the Week,1600,1200,400,Neo man bag,Nairobi Town
-Tier 2,October,Reo Travel,Hilton,Deal of the Week,2800,2400,400,Reo travel,Nairobi Town
-Tier 2,October,Trecento,Hilton,Deal of the Week,2100,1700,400,Trecento,Nairobi Town
-Tier 2,October,Fayola,Hilton,Deal of the Week,2100,1700,400,Fayola messenger,Nairobi Town
-Tier 2,October,Remi,Hilton,Deal of the Week,2700,2300,400,Remi backpack,Nairobi Town
-Tier 2,October,Kai,KTDA,Deal of the Week,2800,2400,400,Kai backpack,Nairobi Town
-Tier 2,October,Neo Man,KTDA,Deal of the Week,1600,1200,400,Neo man bag,Nairobi Town
-Tier 2,October,Reo Travel,KTDA,Deal of the Week,2800,2400,400,Reo travel,Nairobi Town
-Tier 2,October,Trecento,KTDA,Deal of the Week,2100,1700,400,Trecento,Nairobi Town
-Tier 2,October,Fayola,KTDA,Deal of the Week,2100,1700,400,Fayola messenger,Nairobi Town
-Tier 2,October,Remi,KTDA,Deal of the Week,2700,2300,400,Remi backpack,Nairobi Town
-Tier 2,October,Kai,Starmall,Deal of the Week,2800,2400,400,Kai backpack,Nairobi Town
-Tier 2,October,Neo Man,Starmall,Deal of the Week,1600,1200,400,Neo man bag,Nairobi Town
-Tier 2,October,Reo Travel,Starmall,Deal of the Week,2800,2400,400,Reo travel,Nairobi Town
-Tier 2,October,Trecento,Starmall,Deal of the Week,2100,1700,400,Trecento,Nairobi Town
-Tier 2,October,Fayola,Starmall,Deal of the Week,2100,1700,400,Fayola messenger,Nairobi Town
-Tier 2,October,Remi,Starmall,Deal of the Week,2700,2300,400,Remi backpack,Nairobi Town
-Tier 2,October,Kai,Mombasa,Deal of the Week,2800,2400,400,Kai backpack,Mombasa
-Tier 2,October,Belt Bag,Mombasa,Deal of the Week,1400,1000,400,Belt bag,Mombasa
-Tier 2,October,Trecento,Mombasa,Deal of the Week,2100,1700,400,Trecento,Mombasa
-Tier 2,October,Liam,Mombasa,Deal of the Week,2100,1700,400,Liam travel,Mombasa
-Tier 2,October,Neo Man,Mombasa,Deal of the Week,1600,1200,400,Neo man bag,Mombasa
-Tier 2,October,Sierra Handbag,Mombasa,Deal of the Week,2800,2400,400,Sierra handbag,Mombasa
-Tier 2,October,Cathy Handbag,Thika,Deal of the Week,2000,1600,400,Cathy handbag,Thika
-Tier 2,October,Pioneer,Thika,Deal of the Week,2600,2200,400,Pioneer backpack,Thika
-Tier 2,October,Liam,Thika,Deal of the Week,2100,1700,400,Liam travel,Thika
-Tier 2,October,Trecento,Thika,Deal of the Week,2100,1700,400,Trecento,Thika
-Tier 2,October,Big Man Bag,Thika,Deal of the Week,2100,1700,400,Big man bag,Thika
-Tier 2,October,Kai,Thika,Deal of the Week,2800,2400,400,Kai backpack,Thika
-Tier 2,October,Fabela,Meru,Deal of the Week,2400,2000,400,Fabela travel,Meru
-Tier 2,October,Belt Bag,Meru,Deal of the Week,1400,1000,400,Belt bag,Meru
-Tier 2,October,Mini Zuri,Meru,Deal of the Week,2600,2200,400,Mini zuri,Meru
-Tier 2,October,Double Press,Meru,Deal of the Week,2600,2200,400,Doublepress backpack,Meru
-Tier 2,October,Big Man Bag,Meru,Deal of the Week,2100,1700,400,Big man bag,Meru
-Tier 2,October,Kai,Meru,Deal of the Week,2800,2400,400,Kai backpack,Meru
-Tier 2,October,Fabela,Nakuru,Deal of the Week,2400,2000,400,Fabela travel,Nakuru
-Tier 2,October,Belt Bag,Nakuru,Deal of the Week,1400,1000,400,Belt bag,Nakuru
-Tier 2,October,Oval Handbag,Nakuru,Deal of the Week,1600,1200,400,Oval handbag,Nakuru
-Tier 2,October,Lola,Nakuru,Deal of the Week,2100,1800,300,Lola handbag,Nakuru
-Tier 2,October,Neo Man,Nakuru,Deal of the Week,1600,1200,400,Neo man bag,Nakuru
-Tier 2,October,Kai,Nakuru,Deal of the Week,2800,2400,400,Kai backpack,Nakuru
-Tier 2,October,Belt Bag,Nanyuki,Deal of the Week,1400,1000,400,Belt bag,Nanyuki
-Tier 2,October,Big Man Bag,Nanyuki,Deal of the Week,2100,1700,400,Big man bag,Nanyuki
-Tier 2,October,Oval Handbag,Nanyuki,Deal of the Week,1600,1200,400,Oval handbag,Nanyuki
-Tier 2,October,Trecento,Nanyuki,Deal of the Week,2100,1700,400,Trecento,Nanyuki
-Tier 2,October,Gym Bag,Nanyuki,Deal of the Week,2600,2200,400,Gym bag,Nanyuki
-Tier 2,October,Kai,Nanyuki,Deal of the Week,2800,2400,400,Kai backpack,Nanyuki
-Tier 2,October,Sierra Handbag,Kisumu,Deal of the Week,2700,2300,400,Sierra handbag,Kisumu
-Tier 2,October,Zane Man,Kisumu,Deal of the Week,1600,1200,400,Zane man bag,Kisumu
-Tier 2,October,Jade,Kisumu,Deal of the Week,3100,2700,400,Jade briefcase,Kisumu
-Tier 2,October,Cathy Handbag,Kisumu,Deal of the Week,2000,1600,400,Cathy handbag,Kisumu
-Tier 2,October,Fabela,Kisumu,Deal of the Week,2400,2000,400,Fabela travel,Kisumu
-Tier 2,October,Kai,Kisumu,Deal of the Week,2800,2400,400,Kai backpack,Kisumu
-Tier 2,October,Reo Travel,Kisii,Deal of the Week,2800,2400,400,Reo travel,Kisii
-Tier 2,October,Big Man Bag,Kisii,Deal of the Week,2100,1700,400,Big man bag,Kisii
-Tier 2,October,Lola,Kisii,Deal of the Week,2100,1800,300,Lola handbag,Kisii
-Tier 2,October,Cosmo,Kisii,Deal of the Week,1900,1500,400,Cosmo backpack,Kisii
-Tier 2,October,Oval Handbag,Kisii,Deal of the Week,1600,1200,400,Oval handbag,Kisii
-Tier 2,October,Remi,Kisii,Deal of the Week,2700,2300,400,Remi backpack,Kisii
-Tier 2,October,Fabela,Busia,Deal of the Week,2400,2000,400,Fabela travel,Busia
-Tier 2,October,Belt Bag,Busia,Deal of the Week,1400,1000,400,Belt bag,Busia
-Tier 2,October,School Bag,Busia,Deal of the Week,2100,1700,400,School bag,Busia
-Tier 2,October,Trecento,Busia,Deal of the Week,2100,1700,400,Trecento,Busia
-Tier 2,October,Zane Man,Busia,Deal of the Week,1600,1200,400,Zane man bag,Busia
-Tier 2,October,Kai,Busia,Deal of the Week,2800,2400,400,Kai backpack,Busia
-Tier 2,October,Remi,Kakamega,Deal of the Week,2700,2300,400,Remi backpack,Kakamega
-Tier 2,October,Kate,Kakamega,Deal of the Week,1600,1200,400,Kate sling,Kakamega
-Tier 2,October,Sierra Handbag,Kakamega,Deal of the Week,2700,2300,400,Sierra handbag,Kakamega
-Tier 2,October,Liam,Kakamega,Deal of the Week,2100,1700,400,Liam travel,Kakamega
-Tier 2,October,Cairo,Kakamega,Deal of the Week,2100,1700,400,Cairo backpack,Kakamega
-Tier 2,October,Brief Case,Kakamega,Deal of the Week,2800,2400,400,Briefcase,Kakamega
-Tier 2,October,Reo Travel,Eldoret,Deal of the Week,2800,2400,400,Reo travel,Eldoret
-Tier 2,October,Big Man Bag,Eldoret,Deal of the Week,2100,1700,400,Big man bag,Eldoret
-Tier 2,October,Sierra Handbag,Eldoret,Deal of the Week,2700,2300,400,Sierra handbag,Eldoret
-Tier 2,October,Fabela,Eldoret,Deal of the Week,2400,2000,400,Fabela travel,Eldoret
-Tier 2,October,Trecento,Eldoret,Deal of the Week,2100,1700,400,Trecento,Eldoret
-Tier 2,October,Kai,Eldoret,Deal of the Week,2800,2400,400,Kai backpack,Eldoret
-Tier 2,October,Pioneer,Kitengela,Deal of the Week,2600,2200,400,Pioneer backpack,Kitengela
-Tier 2,October,Zane Man,Kitengela,Deal of the Week,1600,1200,400,Zane man bag,Kitengela
-Tier 2,October,Double Press,Kitengela,Deal of the Week,2600,2200,400,Doublepress backpack,Kitengela
-Tier 2,October,Liam,Kitengela,Deal of the Week,2100,1700,400,Liam travel,Kitengela
-Tier 2,October,Fabela,Kitengela,Deal of the Week,2400,2000,400,Fabela travel,Kitengela
-Tier 2,October,Baby Bag,Kitengela,Deal of the Week,4600,4200,400,Baby bag,Kitengela
-Tier 2,October,Kate,Rongai,Deal of the Week,1600,1200,400,Kate sling,Rongai
-Tier 2,October,Belt Bag,Rongai,Deal of the Week,1400,1000,400,Belt bag,Rongai
-Tier 2,October,Lola,Rongai,Deal of the Week,2100,1800,300,Lola handbag,Rongai
-Tier 2,October,Big Man Bag,Rongai,Deal of the Week,2100,1700,400,Big man bag,Rongai
-Tier 2,October,Fabela,Rongai,Deal of the Week,2400,2000,400,Fabela travel,Rongai
-Tier 2,October,Kai,Rongai,Deal of the Week,2800,2400,400,Kai backpack,Rongai
+Tier,Month,Product,Location,Type,Original,Current,Discount,Poster name,Poster,Start,End
+Tier 1,October,Belt Bag,Kitengela,Deal of the Week,1400,1000,400,Belt bag,Kitengela,,
+Tier 1,October,Zane Man,Kitengela,Deal of the Week,1600,1200,400,Zane man bag,Kitengela,,
+Tier 1,October,School Bag,Kitengela,Deal of the Week,2100,1700,400,School bag,Kitengela,,
+Tier 1,October,Mini Zuri,Kitengela,Deal of the Week,2600,2200,400,Mini zuri,Kitengela,,
+Tier 1,October,Zoezi,Kitengela,Deal of the Week,3600,3200,400,Zoezi bag,Kitengela,,
+Tier 1,October,Oval Handbag,Kitengela,Deal of the Week,1600,1200,400,Oval handbag,Kitengela,,
+Tier 1,October,Reo Travel,Kisii,Deal of the Week,2800,2400,400,Reo travel,Kisii,,
+Tier 1,October,Big Man Bag,Kisii,Deal of the Week,2100,1700,400,Big man bag,Kisii,,
+Tier 1,October,Fayola,Kisii,Deal of the Week,2100,1700,400,Fayola messenger,Kisii,,
+Tier 1,October,Mini Zuri,Kisii,Deal of the Week,2600,2200,400,Mini zuri,Kisii,,
+Tier 1,October,Mini Umbra,Kisii,Deal of the Week,1600,1200,400,Mini umbra,Kisii,,
+Tier 1,October,Tyler,Kisii,Deal of the Week,2600,2200,400,Tyler backpack,Kisii,,
+Tier 1,October,Reo Travel,Busia,Deal of the Week,2800,2400,400,Reo travel,Busia,,
+Tier 1,October,Mini Umbra,Busia,Deal of the Week,1600,1200,400,Mini umbra,Busia,,
+Tier 1,October,Claire Handbag,Busia,Deal of the Week,3000,2600,400,Claire handbag,Busia,,
+Tier 1,October,Mini Zuri,Busia,Deal of the Week,2600,2200,400,Mini zuri,Busia,,
+Tier 1,October,Big Man Bag,Busia,Deal of the Week,2100,1700,400,Big man bag,Busia,,
+Tier 1,October,Butterfly Sling,Busia,Deal of the Week,1600,1200,400,Butterfly sling,Busia,,
+Tier 1,October,Pioneer,Starmall,Deal of the Week,2600,2200,400,Pioneer backpack,Nairobi Town,,
+Tier 1,October,Big Man Bag,Starmall,Deal of the Week,2100,1700,400,Big man bag,Nairobi Town,,
+Tier 1,October,Claire Handbag,Starmall,Deal of the Week,3000,2600,400,Claire handbag,Nairobi Town,,
+Tier 1,October,Trecento,Starmall,Deal of the Week,2100,1700,400,Trecento,Nairobi Town,,
+Tier 1,October,Gym Bag,Starmall,Deal of the Week,2600,2200,400,Gym bag,Nairobi Town,,
+Tier 1,October,Butterfly Sling,Starmall,Deal of the Week,1600,1200,400,Butterfly sling,Nairobi Town,,
+Tier 1,October,Pioneer,Hazina,Deal of the Week,2600,2200,400,Pioneer backpack,Nairobi Town,,
+Tier 1,October,Big Man Bag,Hazina,Deal of the Week,2100,1700,400,Big man bag,Nairobi Town,,
+Tier 1,October,Claire Handbag,Hazina,Deal of the Week,3000,2600,400,Claire handbag,Nairobi Town,,
+Tier 1,October,Trecento,Hazina,Deal of the Week,2100,1700,400,Trecento,Nairobi Town,,
+Tier 1,October,Gym Bag,Hazina,Deal of the Week,2600,2200,400,Gym bag,Nairobi Town,,
+Tier 1,October,Butterfly Sling,Hazina,Deal of the Week,1600,1200,400,Butterfly sling,Nairobi Town,,
+Tier 1,October,Pioneer,Hilton,Deal of the Week,2600,2200,400,Pioneer backpack,Nairobi Town,,
+Tier 1,October,Big Man Bag,Hilton,Deal of the Week,2100,1700,400,Big man bag,Nairobi Town,,
+Tier 1,October,Claire Handbag,Hilton,Deal of the Week,3000,2600,400,Claire handbag,Nairobi Town,,
+Tier 1,October,Trecento,Hilton,Deal of the Week,2100,1700,400,Trecento,Nairobi Town,,
+Tier 1,October,Gym Bag,Hilton,Deal of the Week,2600,2200,400,Gym bag,Nairobi Town,,
+Tier 1,October,Butterfly Sling,Hilton,Deal of the Week,1600,1200,400,Butterfly sling,Nairobi Town,,
+Tier 1,October,Pioneer,KTDA,Deal of the Week,2600,2200,400,Pioneer backpack,Nairobi Town,,
+Tier 1,October,Big Man Bag,KTDA,Deal of the Week,2100,1700,400,Big man bag,Nairobi Town,,
+Tier 1,October,Claire Handbag,KTDA,Deal of the Week,3000,2600,400,Claire handbag,Nairobi Town,,
+Tier 1,October,Trecento,KTDA,Deal of the Week,2100,1700,400,Trecento,Nairobi Town,,
+Tier 1,October,Gym Bag,KTDA,Deal of the Week,2600,2200,400,Gym bag,Nairobi Town,,
+Tier 1,October,Butterfly Sling,KTDA,Deal of the Week,1600,1200,400,Butterfly sling,Nairobi Town,,
+Tier 1,October,Pioneer,Website,Deal of the Week,2600,2200,400,Pioneer backpack,Website,,
+Tier 1,October,Neo Man,Website,Deal of the Week,1600,1200,400,Neo man bag,Website,,
+Tier 1,October,Aria Sling,Website,Deal of the Week,1600,1200,400,Aria sling,Website,,
+Tier 1,October,Aurora,Website,Deal of the Week,2100,1700,400,Aurora handbag,Website,,
+Tier 1,October,Fabela,Website,Deal of the Week,2400,2000,400,Fabela travel,Website,,
+Tier 1,October,Brief Case,Website,Deal of the Week,2800,2400,400,Briefcase,Website,,
+Tier 1,October,Oval Handbag,Kakamega,Deal of the Week,1600,1200,400,Oval handbag,Kakamega,,
+Tier 1,October,Big Man Bag,Kakamega,Deal of the Week,2100,1700,400,Big man bag,Kakamega,,
+Tier 1,October,College HB,Kakamega,Deal of the Week,2600,2200,400,College handbag,Kakamega,,
+Tier 1,October,Fabela,Kakamega,Deal of the Week,2400,2000,400,Fabela travel,Kakamega,,
+Tier 1,October,Neo Man,Kakamega,Deal of the Week,1600,1200,400,Neo man bag,Kakamega,,
+Tier 1,October,Belt Bag,Kakamega,Deal of the Week,1400,1000,400,Belt bag,Kakamega,,
+Tier 1,October,Reo Travel,Eldoret,Deal of the Week,2800,2400,400,Reo travel,Eldoret,,
+Tier 1,October,Big Man Bag,Eldoret,Deal of the Week,2100,1700,400,Big man bag,Eldoret,,
+Tier 1,October,Lola,Eldoret,Deal of the Week,2100,1800,300,Lola handbag,Eldoret,,
+Tier 1,October,Fabela,Eldoret,Deal of the Week,2400,2000,400,Fabela travel,Eldoret,,
+Tier 1,October,Kate,Eldoret,Deal of the Week,1600,1200,400,Kate sling,Eldoret,,
+Tier 1,October,Pioneer,Eldoret,Deal of the Week,2600,2200,400,Pioneer backpack,Eldoret,,
+Tier 1,October,Kate,Mombasa,Deal of the Week,1600,1200,400,Kate sling,Mombasa,,
+Tier 1,October,Big Man Bag,Mombasa,Deal of the Week,2100,1700,400,Big man bag,Mombasa,,
+Tier 1,October,Lola,Mombasa,Deal of the Week,2100,1800,300,Lola handbag,Mombasa,,
+Tier 1,October,Fabela,Mombasa,Deal of the Week,2400,2000,400,Fabela travel,Mombasa,,
+Tier 1,October,School Bag,Mombasa,Deal of the Week,2100,1700,400,School bag,Mombasa,,
+Tier 1,October,Remi,Mombasa,Deal of the Week,2700,2300,400,Remi backpack,Mombasa,,
+Tier 1,October,Belt Bag,Rongai,Deal of the Week,1400,1000,400,Belt bag,Rongai,,
+Tier 1,October,Mini Umbra,Rongai,Deal of the Week,1600,1200,400,Mini umbra,Rongai,,
+Tier 1,October,Claire Handbag,Rongai,Deal of the Week,3000,2600,400,Claire handbag,Rongai,,
+Tier 1,October,Karina,Rongai,Deal of the Week,2500,2100,400,Karina handbag,Rongai,,
+Tier 1,October,Fabela,Rongai,Deal of the Week,2400,2000,400,Fabela travel,Rongai,,
+Tier 1,October,School Bag,Rongai,Deal of the Week,2100,1700,400,School bag,Rongai,,
+Tier 1,October,Kate,Thika,Deal of the Week,1600,1200,400,Kate sling,Thika,,
+Tier 1,October,Oval Handbag,Thika,Deal of the Week,1600,1200,400,Oval handbag,Thika,,
+Tier 1,October,Fayola,Thika,Deal of the Week,2100,1700,400,Fayola messenger,Thika,,
+Tier 1,October,Fabela,Thika,Deal of the Week,2400,2000,400,Fabela travel,Thika,,
+Tier 1,October,Big Man Bag,Thika,Deal of the Week,2100,1700,400,Big man bag,Thika,,
+Tier 1,October,Kai,Thika,Deal of the Week,2800,2400,400,Kai backpack,Thika,,
+Tier 1,October,Neo Man,Meru,Deal of the Week,1600,1200,400,Neo man bag,Meru,,
+Tier 1,October,Belt Bag,Meru,Deal of the Week,1400,1000,400,Belt bag,Meru,,
+Tier 1,October,Mini Zuri,Meru,Deal of the Week,2600,2200,400,Mini zuri,Meru,,
+Tier 1,October,Fabela,Meru,Deal of the Week,2400,2000,400,Fabela travel,Meru,,
+Tier 1,October,Big Man Bag,Meru,Deal of the Week,2100,1700,400,Big man bag,Meru,,
+Tier 1,October,Kai,Meru,Deal of the Week,2800,2400,400,Kai backpack,Meru,,
+Tier 1,October,Reo Travel,Nakuru,Deal of the Week,2800,2400,400,Reo travel,Nakuru,,
+Tier 1,October,Kate,Nakuru,Deal of the Week,1600,1200,400,Kate sling,Nakuru,,
+Tier 1,October,Liam,Nakuru,Deal of the Week,2100,1700,400,Liam travel,Nakuru,,
+Tier 1,October,Double Press,Nakuru,Deal of the Week,2600,2200,400,Doublepress backpack,Nakuru,,
+Tier 1,October,Neo Man,Nakuru,Deal of the Week,1600,1200,400,Neo man bag,Nakuru,,
+Tier 1,October,Oval Handbag,Nakuru,Deal of the Week,1600,1200,400,Oval handbag,Nakuru,,
+Tier 1,October,Pioneer,Nanyuki,Deal of the Week,2600,2200,400,Pioneer backpack,Nanyuki,,
+Tier 1,October,Big Man Bag,Nanyuki,Deal of the Week,2100,1700,400,Big man bag,Nanyuki,,
+Tier 1,October,Lola,Nanyuki,Deal of the Week,2100,1800,300,Lola handbag,Nanyuki,,
+Tier 1,October,Fabela,Nanyuki,Deal of the Week,2400,2000,400,Fabela travel,Nanyuki,,
+Tier 1,October,Belt Bag,Nanyuki,Deal of the Week,1400,1000,400,Belt bag,Nanyuki,,
+Tier 1,October,Kate,Nanyuki,Deal of the Week,1600,1200,400,Kate sling,Nanyuki,,
+Tier 1,October,Belt Bag,Kisumu,Deal of the Week,1400,1000,400,Belt bag,Kisumu,,
+Tier 1,October,Mega,Kisumu,Deal of the Week,3000,2600,400,Mega backpack,Kisumu,,
+Tier 1,October,Fayola,Kisumu,Deal of the Week,2100,1700,400,Fayola messenger,Kisumu,,
+Tier 1,October,Liam,Kisumu,Deal of the Week,2100,1700,400,Liam travel,Kisumu,,
+Tier 1,October,Trecento,Kisumu,Deal of the Week,2100,1700,400,Trecento,Kisumu,,
+Tier 1,October,Amaya,Kisumu,Deal of the Week,3500,3100,400,Amaya handbag,Kisumu,,
+All,October,Antitheft,All,Power Deals,2600,2200,400,Antitheft,Power Deals list,,
+All,October,Aria Sling,All,Power Deals,1600,1200,400,Aria Sling,Power Deals list,,
+All,October,Aurora,All,Power Deals,2100,1700,400,Aurora,Power Deals list,,
+All,October,Bonita,All,Power Deals,3900,3000,900,Bonita,Power Deals list,,
+All,October,Code 3,All,Power Deals,2100,1800,300,Code 3,Power Deals list,,
+All,October,Jumbo,All,Power Deals,3600,2800,800,Jumbo,Power Deals list,,
+All,October,Moon Bag,All,Power Deals,1600,1200,400,Moon Bag,Power Deals list,,
+All,October,Nizana,All,Power Deals,1600,1200,400,Nizana,Power Deals list,,
+All,October,Prime,All,Power Deals,2800,2400,400,Prime,Power Deals list,,
+All,October,Standard Travel,All,Power Deals,2600,2200,400,Standard,Power Deals list,,
+Tier 2,October,Pioneer,Website,Deal of the Week,2600,2200,400,Pioneer backpack,Website,,2026-10-24
+Tier 2,October,Luna,Website,Deal of the Week,1600,1200,400,Luna man bag,Website,,2026-10-24
+Tier 2,October,Lola,Website,Deal of the Week,2100,1800,300,Lola handbag,Website,,2026-10-24
+Tier 2,October,Double Press,Website,Deal of the Week,2600,2200,400,Doublepress backpack,Website,,2026-10-24
+Tier 2,October,Big Man Bag,Website,Deal of the Week,2100,1700,400,Big man bag,Website,,2026-10-24
+Tier 2,October,Gym Bag,Website,Deal of the Week,2600,2200,400,Gym bag,Website,,2026-10-24
+Tier 2,October,Kai,Hazina,Deal of the Week,2800,2400,400,Kai backpack,Nairobi Town,,2026-10-24
+Tier 2,October,Neo Man,Hazina,Deal of the Week,1600,1200,400,Neo man bag,Nairobi Town,,2026-10-24
+Tier 2,October,Reo Travel,Hazina,Deal of the Week,2800,2400,400,Reo travel,Nairobi Town,,2026-10-24
+Tier 2,October,Trecento,Hazina,Deal of the Week,2100,1700,400,Trecento,Nairobi Town,,2026-10-24
+Tier 2,October,Fayola,Hazina,Deal of the Week,2100,1700,400,Fayola messenger,Nairobi Town,,2026-10-24
+Tier 2,October,Remi,Hazina,Deal of the Week,2700,2300,400,Remi backpack,Nairobi Town,,2026-10-24
+Tier 2,October,Kai,Hilton,Deal of the Week,2800,2400,400,Kai backpack,Nairobi Town,,2026-10-24
+Tier 2,October,Neo Man,Hilton,Deal of the Week,1600,1200,400,Neo man bag,Nairobi Town,,2026-10-24
+Tier 2,October,Reo Travel,Hilton,Deal of the Week,2800,2400,400,Reo travel,Nairobi Town,,2026-10-24
+Tier 2,October,Trecento,Hilton,Deal of the Week,2100,1700,400,Trecento,Nairobi Town,,2026-10-24
+Tier 2,October,Fayola,Hilton,Deal of the Week,2100,1700,400,Fayola messenger,Nairobi Town,,2026-10-24
+Tier 2,October,Remi,Hilton,Deal of the Week,2700,2300,400,Remi backpack,Nairobi Town,,2026-10-24
+Tier 2,October,Kai,KTDA,Deal of the Week,2800,2400,400,Kai backpack,Nairobi Town,,2026-10-24
+Tier 2,October,Neo Man,KTDA,Deal of the Week,1600,1200,400,Neo man bag,Nairobi Town,,2026-10-24
+Tier 2,October,Reo Travel,KTDA,Deal of the Week,2800,2400,400,Reo travel,Nairobi Town,,2026-10-24
+Tier 2,October,Trecento,KTDA,Deal of the Week,2100,1700,400,Trecento,Nairobi Town,,2026-10-24
+Tier 2,October,Fayola,KTDA,Deal of the Week,2100,1700,400,Fayola messenger,Nairobi Town,,2026-10-24
+Tier 2,October,Remi,KTDA,Deal of the Week,2700,2300,400,Remi backpack,Nairobi Town,,2026-10-24
+Tier 2,October,Kai,Starmall,Deal of the Week,2800,2400,400,Kai backpack,Nairobi Town,,2026-10-24
+Tier 2,October,Neo Man,Starmall,Deal of the Week,1600,1200,400,Neo man bag,Nairobi Town,,2026-10-24
+Tier 2,October,Reo Travel,Starmall,Deal of the Week,2800,2400,400,Reo travel,Nairobi Town,,2026-10-24
+Tier 2,October,Trecento,Starmall,Deal of the Week,2100,1700,400,Trecento,Nairobi Town,,2026-10-24
+Tier 2,October,Fayola,Starmall,Deal of the Week,2100,1700,400,Fayola messenger,Nairobi Town,,2026-10-24
+Tier 2,October,Remi,Starmall,Deal of the Week,2700,2300,400,Remi backpack,Nairobi Town,,2026-10-24
+Tier 2,October,Kai,Mombasa,Deal of the Week,2800,2400,400,Kai backpack,Mombasa,,2026-10-24
+Tier 2,October,Belt Bag,Mombasa,Deal of the Week,1400,1000,400,Belt bag,Mombasa,,2026-10-24
+Tier 2,October,Trecento,Mombasa,Deal of the Week,2100,1700,400,Trecento,Mombasa,,2026-10-24
+Tier 2,October,Liam,Mombasa,Deal of the Week,2100,1700,400,Liam travel,Mombasa,,2026-10-24
+Tier 2,October,Neo Man,Mombasa,Deal of the Week,1600,1200,400,Neo man bag,Mombasa,,2026-10-24
+Tier 2,October,Sierra Handbag,Mombasa,Deal of the Week,2800,2400,400,Sierra handbag,Mombasa,,2026-10-24
+Tier 2,October,Cathy Handbag,Thika,Deal of the Week,2000,1600,400,Cathy handbag,Thika,,2026-10-24
+Tier 2,October,Pioneer,Thika,Deal of the Week,2600,2200,400,Pioneer backpack,Thika,,2026-10-24
+Tier 2,October,Liam,Thika,Deal of the Week,2100,1700,400,Liam travel,Thika,,2026-10-24
+Tier 2,October,Trecento,Thika,Deal of the Week,2100,1700,400,Trecento,Thika,,2026-10-24
+Tier 2,October,Big Man Bag,Thika,Deal of the Week,2100,1700,400,Big man bag,Thika,,2026-10-24
+Tier 2,October,Kai,Thika,Deal of the Week,2800,2400,400,Kai backpack,Thika,,2026-10-24
+Tier 2,October,Fabela,Meru,Deal of the Week,2400,2000,400,Fabela travel,Meru,,2026-10-24
+Tier 2,October,Belt Bag,Meru,Deal of the Week,1400,1000,400,Belt bag,Meru,,2026-10-24
+Tier 2,October,Mini Zuri,Meru,Deal of the Week,2600,2200,400,Mini zuri,Meru,,2026-10-24
+Tier 2,October,Double Press,Meru,Deal of the Week,2600,2200,400,Doublepress backpack,Meru,,2026-10-24
+Tier 2,October,Big Man Bag,Meru,Deal of the Week,2100,1700,400,Big man bag,Meru,,2026-10-24
+Tier 2,October,Kai,Meru,Deal of the Week,2800,2400,400,Kai backpack,Meru,,2026-10-24
+Tier 2,October,Fabela,Nakuru,Deal of the Week,2400,2000,400,Fabela travel,Nakuru,,2026-10-24
+Tier 2,October,Belt Bag,Nakuru,Deal of the Week,1400,1000,400,Belt bag,Nakuru,,2026-10-24
+Tier 2,October,Oval Handbag,Nakuru,Deal of the Week,1600,1200,400,Oval handbag,Nakuru,,2026-10-24
+Tier 2,October,Lola,Nakuru,Deal of the Week,2100,1800,300,Lola handbag,Nakuru,,2026-10-24
+Tier 2,October,Neo Man,Nakuru,Deal of the Week,1600,1200,400,Neo man bag,Nakuru,,2026-10-24
+Tier 2,October,Kai,Nakuru,Deal of the Week,2800,2400,400,Kai backpack,Nakuru,,2026-10-24
+Tier 2,October,Belt Bag,Nanyuki,Deal of the Week,1400,1000,400,Belt bag,Nanyuki,,2026-10-24
+Tier 2,October,Big Man Bag,Nanyuki,Deal of the Week,2100,1700,400,Big man bag,Nanyuki,,2026-10-24
+Tier 2,October,Oval Handbag,Nanyuki,Deal of the Week,1600,1200,400,Oval handbag,Nanyuki,,2026-10-24
+Tier 2,October,Trecento,Nanyuki,Deal of the Week,2100,1700,400,Trecento,Nanyuki,,2026-10-24
+Tier 2,October,Gym Bag,Nanyuki,Deal of the Week,2600,2200,400,Gym bag,Nanyuki,,2026-10-24
+Tier 2,October,Kai,Nanyuki,Deal of the Week,2800,2400,400,Kai backpack,Nanyuki,,2026-10-24
+Tier 2,October,Sierra Handbag,Kisumu,Deal of the Week,2700,2300,400,Sierra handbag,Kisumu,,2026-10-24
+Tier 2,October,Zane Man,Kisumu,Deal of the Week,1600,1200,400,Zane man bag,Kisumu,,2026-10-24
+Tier 2,October,Jade,Kisumu,Deal of the Week,3100,2700,400,Jade briefcase,Kisumu,,2026-10-24
+Tier 2,October,Cathy Handbag,Kisumu,Deal of the Week,2000,1600,400,Cathy handbag,Kisumu,,2026-10-24
+Tier 2,October,Fabela,Kisumu,Deal of the Week,2400,2000,400,Fabela travel,Kisumu,,2026-10-24
+Tier 2,October,Kai,Kisumu,Deal of the Week,2800,2400,400,Kai backpack,Kisumu,,2026-10-24
+Tier 2,October,Reo Travel,Kisii,Deal of the Week,2800,2400,400,Reo travel,Kisii,,2026-10-24
+Tier 2,October,Big Man Bag,Kisii,Deal of the Week,2100,1700,400,Big man bag,Kisii,,2026-10-24
+Tier 2,October,Lola,Kisii,Deal of the Week,2100,1800,300,Lola handbag,Kisii,,2026-10-24
+Tier 2,October,Cosmo,Kisii,Deal of the Week,1900,1500,400,Cosmo backpack,Kisii,,2026-10-24
+Tier 2,October,Oval Handbag,Kisii,Deal of the Week,1600,1200,400,Oval handbag,Kisii,,2026-10-24
+Tier 2,October,Remi,Kisii,Deal of the Week,2700,2300,400,Remi backpack,Kisii,,2026-10-24
+Tier 2,October,Fabela,Busia,Deal of the Week,2400,2000,400,Fabela travel,Busia,,2026-10-24
+Tier 2,October,Belt Bag,Busia,Deal of the Week,1400,1000,400,Belt bag,Busia,,2026-10-24
+Tier 2,October,School Bag,Busia,Deal of the Week,2100,1700,400,School bag,Busia,,2026-10-24
+Tier 2,October,Trecento,Busia,Deal of the Week,2100,1700,400,Trecento,Busia,,2026-10-24
+Tier 2,October,Zane Man,Busia,Deal of the Week,1600,1200,400,Zane man bag,Busia,,2026-10-24
+Tier 2,October,Kai,Busia,Deal of the Week,2800,2400,400,Kai backpack,Busia,,2026-10-24
+Tier 2,October,Remi,Kakamega,Deal of the Week,2700,2300,400,Remi backpack,Kakamega,,2026-10-24
+Tier 2,October,Kate,Kakamega,Deal of the Week,1600,1200,400,Kate sling,Kakamega,,2026-10-24
+Tier 2,October,Sierra Handbag,Kakamega,Deal of the Week,2700,2300,400,Sierra handbag,Kakamega,,2026-10-24
+Tier 2,October,Liam,Kakamega,Deal of the Week,2100,1700,400,Liam travel,Kakamega,,2026-10-24
+Tier 2,October,Cairo,Kakamega,Deal of the Week,2100,1700,400,Cairo backpack,Kakamega,,2026-10-24
+Tier 2,October,Brief Case,Kakamega,Deal of the Week,2800,2400,400,Briefcase,Kakamega,,2026-10-24
+Tier 2,October,Reo Travel,Eldoret,Deal of the Week,2800,2400,400,Reo travel,Eldoret,,2026-10-24
+Tier 2,October,Big Man Bag,Eldoret,Deal of the Week,2100,1700,400,Big man bag,Eldoret,,2026-10-24
+Tier 2,October,Sierra Handbag,Eldoret,Deal of the Week,2700,2300,400,Sierra handbag,Eldoret,,2026-10-24
+Tier 2,October,Fabela,Eldoret,Deal of the Week,2400,2000,400,Fabela travel,Eldoret,,2026-10-24
+Tier 2,October,Trecento,Eldoret,Deal of the Week,2100,1700,400,Trecento,Eldoret,,2026-10-24
+Tier 2,October,Kai,Eldoret,Deal of the Week,2800,2400,400,Kai backpack,Eldoret,,2026-10-24
+Tier 2,October,Pioneer,Kitengela,Deal of the Week,2600,2200,400,Pioneer backpack,Kitengela,,2026-10-24
+Tier 2,October,Zane Man,Kitengela,Deal of the Week,1600,1200,400,Zane man bag,Kitengela,,2026-10-24
+Tier 2,October,Double Press,Kitengela,Deal of the Week,2600,2200,400,Doublepress backpack,Kitengela,,2026-10-24
+Tier 2,October,Liam,Kitengela,Deal of the Week,2100,1700,400,Liam travel,Kitengela,,2026-10-24
+Tier 2,October,Fabela,Kitengela,Deal of the Week,2400,2000,400,Fabela travel,Kitengela,,2026-10-24
+Tier 2,October,Baby Bag,Kitengela,Deal of the Week,4600,4200,400,Baby bag,Kitengela,,2026-10-24
+Tier 2,October,Kate,Rongai,Deal of the Week,1600,1200,400,Kate sling,Rongai,,2026-10-24
+Tier 2,October,Belt Bag,Rongai,Deal of the Week,1400,1000,400,Belt bag,Rongai,,2026-10-24
+Tier 2,October,Lola,Rongai,Deal of the Week,2100,1800,300,Lola handbag,Rongai,,2026-10-24
+Tier 2,October,Big Man Bag,Rongai,Deal of the Week,2100,1700,400,Big man bag,Rongai,,2026-10-24
+Tier 2,October,Fabela,Rongai,Deal of the Week,2400,2000,400,Fabela travel,Rongai,,2026-10-24
+Tier 2,October,Kai,Rongai,Deal of the Week,2800,2400,400,Kai backpack,Rongai,,2026-10-24
+Tier 3,October,Kai,Starmall,Deal of the Week,2800,2400,400,Kai backpack,Nairobi Region,2026-10-25,
+Tier 3,October,Zane Man,Starmall,Deal of the Week,1600,1200,400,Zane man bag,Nairobi Region,2026-10-25,
+Tier 3,October,Safiri Travel,Starmall,Deal of the Week,3600,3200,400,Safiri travel,Nairobi Region,2026-10-25,
+Tier 3,October,Oval Handbag,Starmall,Deal of the Week,1600,1200,400,Oval handbag,Nairobi Region,2026-10-25,
+Tier 3,October,Fabela,Starmall,Deal of the Week,2400,2000,400,Fabela travel,Nairobi Region,2026-10-25,
+Tier 3,October,Mini Umbra,Starmall,Deal of the Week,1600,1200,400,Mini umbra,Nairobi Region,2026-10-25,
+Tier 3,October,Kai,Hilton,Deal of the Week,2800,2400,400,Kai backpack,Nairobi Region,2026-10-25,
+Tier 3,October,Zane Man,Hilton,Deal of the Week,1600,1200,400,Zane man bag,Nairobi Region,2026-10-25,
+Tier 3,October,Safiri Travel,Hilton,Deal of the Week,3600,3200,400,Safiri travel,Nairobi Region,2026-10-25,
+Tier 3,October,Oval Handbag,Hilton,Deal of the Week,1600,1200,400,Oval handbag,Nairobi Region,2026-10-25,
+Tier 3,October,Fabela,Hilton,Deal of the Week,2400,2000,400,Fabela travel,Nairobi Region,2026-10-25,
+Tier 3,October,Mini Umbra,Hilton,Deal of the Week,1600,1200,400,Mini umbra,Nairobi Region,2026-10-25,
+Tier 3,October,Kai,KTDA,Deal of the Week,2800,2400,400,Kai backpack,Nairobi Region,2026-10-25,
+Tier 3,October,Zane Man,KTDA,Deal of the Week,1600,1200,400,Zane man bag,Nairobi Region,2026-10-25,
+Tier 3,October,Safiri Travel,KTDA,Deal of the Week,3600,3200,400,Safiri travel,Nairobi Region,2026-10-25,
+Tier 3,October,Oval Handbag,KTDA,Deal of the Week,1600,1200,400,Oval handbag,Nairobi Region,2026-10-25,
+Tier 3,October,Fabela,KTDA,Deal of the Week,2400,2000,400,Fabela travel,Nairobi Region,2026-10-25,
+Tier 3,October,Mini Umbra,KTDA,Deal of the Week,1600,1200,400,Mini umbra,Nairobi Region,2026-10-25,
+Tier 3,October,Kai,Hazina,Deal of the Week,2800,2400,400,Kai backpack,Nairobi Region,2026-10-25,
+Tier 3,October,Zane Man,Hazina,Deal of the Week,1600,1200,400,Zane man bag,Nairobi Region,2026-10-25,
+Tier 3,October,Safiri Travel,Hazina,Deal of the Week,3600,3200,400,Safiri travel,Nairobi Region,2026-10-25,
+Tier 3,October,Oval Handbag,Hazina,Deal of the Week,1600,1200,400,Oval handbag,Nairobi Region,2026-10-25,
+Tier 3,October,Fabela,Hazina,Deal of the Week,2400,2000,400,Fabela travel,Nairobi Region,2026-10-25,
+Tier 3,October,Mini Umbra,Hazina,Deal of the Week,1600,1200,400,Mini umbra,Nairobi Region,2026-10-25,
+Tier 3,October,Kai,Thika,Deal of the Week,2800,2400,400,Kai backpack,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Big Man Bag,Thika,Deal of the Week,2100,1700,400,Big man bag,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Fabela,Thika,Deal of the Week,2400,2000,400,Fabela travel,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Lola,Thika,Deal of the Week,2100,1800,300,Lola handbag,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Gym Bag,Thika,Deal of the Week,2600,2200,400,Gym bag,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Oval Handbag,Thika,Deal of the Week,1600,1200,400,Oval handbag,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Kai,Kitengela,Deal of the Week,2800,2400,400,Kai backpack,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Big Man Bag,Kitengela,Deal of the Week,2100,1700,400,Big man bag,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Fabela,Kitengela,Deal of the Week,2400,2000,400,Fabela travel,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Lola,Kitengela,Deal of the Week,2100,1800,300,Lola handbag,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Gym Bag,Kitengela,Deal of the Week,2600,2200,400,Gym bag,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Oval Handbag,Kitengela,Deal of the Week,1600,1200,400,Oval handbag,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Kai,Rongai,Deal of the Week,2800,2400,400,Kai backpack,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Big Man Bag,Rongai,Deal of the Week,2100,1700,400,Big man bag,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Fabela,Rongai,Deal of the Week,2400,2000,400,Fabela travel,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Lola,Rongai,Deal of the Week,2100,1800,300,Lola handbag,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Gym Bag,Rongai,Deal of the Week,2600,2200,400,Gym bag,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Oval Handbag,Rongai,Deal of the Week,1600,1200,400,Oval handbag,Nairobi Metropolitan Region,2026-10-25,
+Tier 3,October,Pioneer,Meru,Deal of the Week,2600,2200,400,Pioneer backpack,Central Region,2026-10-25,
+Tier 3,October,Kate,Meru,Deal of the Week,1600,1200,400,Kate sling,Central Region,2026-10-25,
+Tier 3,October,Oval Handbag,Meru,Deal of the Week,1600,1200,400,Oval handbag,Central Region,2026-10-25,
+Tier 3,October,Zipped Lunchset,Meru,Deal of the Week,1600,1200,400,Zipped lunchbag,Central Region,2026-10-25,
+Tier 3,October,Fabela,Meru,Deal of the Week,2400,2000,400,Fabela travel,Central Region,2026-10-25,
+Tier 3,October,Lola,Meru,Deal of the Week,2100,1800,300,Lola handbag,Central Region,2026-10-25,
+Tier 3,October,Pioneer,Nanyuki,Deal of the Week,2600,2200,400,Pioneer backpack,Central Region,2026-10-25,
+Tier 3,October,Kate,Nanyuki,Deal of the Week,1600,1200,400,Kate sling,Central Region,2026-10-25,
+Tier 3,October,Oval Handbag,Nanyuki,Deal of the Week,1600,1200,400,Oval handbag,Central Region,2026-10-25,
+Tier 3,October,Zipped Lunchset,Nanyuki,Deal of the Week,1600,1200,400,Zipped lunchbag,Central Region,2026-10-25,
+Tier 3,October,Fabela,Nanyuki,Deal of the Week,2400,2000,400,Fabela travel,Central Region,2026-10-25,
+Tier 3,October,Lola,Nanyuki,Deal of the Week,2100,1800,300,Lola handbag,Central Region,2026-10-25,
+Tier 3,October,Kai,Eldoret,Deal of the Week,2800,2400,400,Kai backpack,Rift Valley Region,2026-10-25,
+Tier 3,October,Zane Man,Eldoret,Deal of the Week,1600,1200,400,Zane man bag,Rift Valley Region,2026-10-25,
+Tier 3,October,Fabela,Eldoret,Deal of the Week,2400,2000,400,Fabela travel,Rift Valley Region,2026-10-25,
+Tier 3,October,Oval Handbag,Eldoret,Deal of the Week,1600,1200,400,Oval handbag,Rift Valley Region,2026-10-25,
+Tier 3,October,Pioneer,Eldoret,Deal of the Week,2600,2200,400,Pioneer backpack,Rift Valley Region,2026-10-25,
+Tier 3,October,Sierra Handbag,Eldoret,Deal of the Week,2700,2300,400,Sierra handbag,Rift Valley Region,2026-10-25,
+Tier 3,October,Kai,Nakuru,Deal of the Week,2800,2400,400,Kai backpack,Rift Valley Region,2026-10-25,
+Tier 3,October,Zane Man,Nakuru,Deal of the Week,1600,1200,400,Zane man bag,Rift Valley Region,2026-10-25,
+Tier 3,October,Fabela,Nakuru,Deal of the Week,2400,2000,400,Fabela travel,Rift Valley Region,2026-10-25,
+Tier 3,October,Oval Handbag,Nakuru,Deal of the Week,1600,1200,400,Oval handbag,Rift Valley Region,2026-10-25,
+Tier 3,October,Pioneer,Nakuru,Deal of the Week,2600,2200,400,Pioneer backpack,Rift Valley Region,2026-10-25,
+Tier 3,October,Sierra Handbag,Nakuru,Deal of the Week,2700,2300,400,Sierra handbag,Rift Valley Region,2026-10-25,
+Tier 3,October,Zane Man,Busia,Deal of the Week,1600,1200,400,Zane man bag,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Jade,Busia,Deal of the Week,3100,2700,400,Jade briefcase,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Lola,Busia,Deal of the Week,2100,1800,300,Lola handbag,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Remi,Busia,Deal of the Week,2700,2300,400,Remi backpack,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Kate,Busia,Deal of the Week,1600,1200,400,Kate sling,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Reo Travel,Busia,Deal of the Week,2800,2400,400,Reo travel,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Zane Man,Kakamega,Deal of the Week,1600,1200,400,Zane man bag,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Jade,Kakamega,Deal of the Week,3100,2700,400,Jade briefcase,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Lola,Kakamega,Deal of the Week,2100,1800,300,Lola handbag,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Remi,Kakamega,Deal of the Week,2700,2300,400,Remi backpack,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Kate,Kakamega,Deal of the Week,1600,1200,400,Kate sling,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Reo Travel,Kakamega,Deal of the Week,2800,2400,400,Reo travel,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Zane Man,Kisumu,Deal of the Week,1600,1200,400,Zane man bag,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Jade,Kisumu,Deal of the Week,3100,2700,400,Jade briefcase,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Lola,Kisumu,Deal of the Week,2100,1800,300,Lola handbag,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Remi,Kisumu,Deal of the Week,2700,2300,400,Remi backpack,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Kate,Kisumu,Deal of the Week,1600,1200,400,Kate sling,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Reo Travel,Kisumu,Deal of the Week,2800,2400,400,Reo travel,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Zane Man,Kisii,Deal of the Week,1600,1200,400,Zane man bag,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Jade,Kisii,Deal of the Week,3100,2700,400,Jade briefcase,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Lola,Kisii,Deal of the Week,2100,1800,300,Lola handbag,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Remi,Kisii,Deal of the Week,2700,2300,400,Remi backpack,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Kate,Kisii,Deal of the Week,1600,1200,400,Kate sling,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Reo Travel,Kisii,Deal of the Week,2800,2400,400,Reo travel,Western and Nyanza Region,2026-10-25,
+Tier 3,October,Kai,Mombasa,Deal of the Week,2800,2400,400,Kai backpack,Coastal Region,2026-10-25,
+Tier 3,October,Big Man Bag,Mombasa,Deal of the Week,2100,1700,400,Big man bag,Coastal Region,2026-10-25,
+Tier 3,October,Oval Handbag,Mombasa,Deal of the Week,1600,1200,400,Oval handbag,Coastal Region,2026-10-25,
+Tier 3,October,Belt Bag,Mombasa,Deal of the Week,1400,1000,400,Belt bag,Coastal Region,2026-10-25,
+Tier 3,October,Mini Umbra,Mombasa,Deal of the Week,1600,1200,400,Mini umbra,Coastal Region,2026-10-25,
+Tier 3,October,Fabela,Mombasa,Deal of the Week,2400,2000,400,Fabela travel,Coastal Region,2026-10-25,

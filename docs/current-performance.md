@@ -165,7 +165,18 @@ and the bags % differ, so the reader can judge it:
 - **Actual price per bag** = POS bag revenue ÷ bags sold, month to date.
 - **Gap** = actual ÷ target − 1. Above target → revenue % runs ahead of bags %; below → it trails.
   revenue % ≈ bags % × (1 + gap).
-- A table splits the month by how bags were sold: **single bags, combos, gift bags, discounts**,
+- **22 Oct 2026 (user's call):** the single bags / combos / gift bags / discounts table is **no longer shown**. The
+  On offer vs not on offer table carries the data. The verdict's Biggest lift / drag and the month-end
+  "Altogether" figure now come from that table (`priceMix.offerMix`). `priceMix.rows` is still computed
+  (the headline Actual price per bag uses it). Rows opened in the On offer table list their bags **grouped by
+  category** (subtotal row per category, biggest revenue first, then its bags). Corporate app and the till
+  discount stay flat lists.
+  - **Collapse / expand:** click a row to open its categories, click a category to open its bags.
+    **Expand all** / **Collapse all** buttons sit next to the table heading.
+  - **Hover** on Effect at month end: projected KES minus what the targets expect (projected bags x target price,
+    or gift bags' own target), worked out in words. Hover on Effect on revenue rate: that KES / revenue target x 100,
+    e.g. +4.11 = +KES 2,304,620 / KES 56,030,805 x 100. All the rows' points add up to the All bags total.
+- (Old, not shown) A table split the month by how bags were sold: **single bags, combos, gift bags, discounts**,
   with bags, revenue, KES per bag and each row's gap to the target price. That shows what's
   lifting or pulling down the average.
 - Bags and revenue show **so far → month end** (× velocity factor, same pace as the cards).
@@ -182,6 +193,30 @@ and the bags % differ, so the reader can judge it:
 - The card's top strip is **green** when bags sell at or above the target price, **red** below.
 - Rows are computed in `forward_projections.py` (`priceMix.rows`); the page only renders them.
 - Hidden when there's no revenue target or no live revenue. PROJ field: `priceMix`.
+- **On offer vs not on offer** (22 Oct 2026, under the table): the same month's bags sorted the way the
+  Bags On vs Off Offer page sorts them (`bags_on_offer.py` writes `data/offer_mix.json`, monthly period).
+  Rows: Not on offer, **On offer** (= Power deals + Combos + Deal of wk + Mid-month offers, each shown under
+  it), then Corporate, Samples, Gift bags, Not yet sorted. Same columns and prices as the table above:
+  KES ~2,000 a bag, gift bags on their own target, samples expect nothing, Not yet sorted (returns and
+  unmatched names) is not judged (effect 0). **Click a row to see the bags inside it**: each bag's bags,
+  share of the row, revenue, KES per bag and gap to the target price. A verdict line compares the offer
+  and full-price KES per bag. Totals can differ a little from the table above (different sorting, and the
+  offer page's build time is shown). `main.py` runs Forward Projections after Bags On vs Off Offer so the
+  split is fresh. PROJ field: `priceMix.offerMix`.
+  - **Mid-month offers** is split into its parts, each its own row with its own bags: **New products**,
+    **Runway bags**, **Timed offers** (Kenya), **Listed singles** (Tanzania / Uganda).
+  - **Corporate app** row: bags on Corporate app invoices (`sql/corporate_bag_lines.sql`, same paid-share rule
+    as `corporate_bags.sql`; the received KES is shared across each invoice's lines by subtotal, so it adds
+    up to the Forecasted card's corporate KES). Click for each bag and its client(s); fees are one row with 0
+    bags. Not POS, so All bags here is above the table above. **Corporate (Odoo invoices)** is a separate row (below).
+  - **KES 300 till discount** (was "Not yet sorted", 22 Oct 2026, user's call): only the till's KES 300 discount
+    line. No bags, nothing expected, so its effect = the money off (same as Discounts in the table above).
+    The few other unsorted lines (PPM, Passport Holder…: names with no bag type) are added to **Not on offer**
+    and listed there as "not in the bag list yet".
+  - Each row shows **where it sells** (Kenya only / Kenya, Tanzania, Uganda), from the offer page's country
+    split. Mid-month parts carry it in the label, e.g. "Timed offers (Kenya)", "Listed singles (Tanzania, Uganda)".
+  - **Corporate (Odoo invoices)** = the offer page's Corporate row: paid customer invoices in Odoo Accounting
+    (Sales orders, S-numbers), not the Corporate app. Hidden when 0.
 
 ## Data sources
 

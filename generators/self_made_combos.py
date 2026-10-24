@@ -474,12 +474,41 @@ GROUP BY 1, 2, 3
 """
 
 
-def dow_tier_weeks(tier, max_wk):
-    """Sun-Sat week numbers a Deal-of-the-Week tier runs in: Tier 1 = Wk 1–2, Tier 2 = Wk 3
-    onward (to the month's last week). Unknown tier → every week."""
+def _as_day(v):
+    """'2026-10-25' / date / None → date or None."""
+    if not v:
+        return None
+    if isinstance(v, datetime.date):
+        return v
+    try:
+        return datetime.date.fromisoformat(str(v).strip()[:10])
+    except ValueError:
+        return None
+
+
+def dow_tier_weeks(tier, max_wk, start=None, end=None, month_start=None):
+    """Sun-Sat week numbers a Deal-of-the-Week runs in. With a Start / End date (deals_kenya.csv
+    cols K / L, e.g. the regional deals from 25 Oct 2026) and the month's first day: every week
+    of the month that overlaps [Start, End] (no End = to the month end). Otherwise by tier:
+    Tier 1 = Wk 1–2, Tier 2 = Wk 3 onward (to the month's last week). Unknown tier → every week."""
     m = re.search(r"\d", str(tier or ""))
     t = m.group() if m else ""
     last = max(max_wk, 5)
+    start, end, ms = _as_day(start), _as_day(end), _as_day(month_start)
+    if ms and (start or end):
+        anchor = ms - datetime.timedelta(days=(ms.weekday() + 1) % 7)       # Sunday on/before the 1st
+        nxt = (ms.replace(day=28) + datetime.timedelta(days=4)).replace(day=1)
+        m_end = nxt - datetime.timedelta(days=1)
+        last = (m_end - anchor).days // 7 + 1
+        lo, hi = max(start or ms, ms), min(end or m_end, m_end)
+        hits = [k for k in range(1, last + 1)
+                if anchor + datetime.timedelta(days=7 * (k - 1)) <= hi
+                and anchor + datetime.timedelta(days=7 * (k - 1) + 6) >= lo]
+        if start:
+            return hits
+        # End only (e.g. Tier 2 stopped on 24 Oct): the tier's own weeks, cut at the End date
+        tier_wks = [1, 2] if t == "1" else list(range(3, last + 1)) if t == "2" else list(range(1, last + 1))
+        return [k for k in tier_wks if k in hits]
     if t == "1":
         return [1, 2]
     if t == "2":
@@ -507,6 +536,7 @@ def _enrich_deals(deals, m_start, m_end, stock_map, combo_bags=None):
             name_wk.setdefault(nm, {})[w] = u
             max_wk = max(max_wk, w)
     deals["curWeek"] = max_wk
+    deals["monthStart"] = m_start.isoformat()
     stock_items = list(stock_map.items())
 
     # Per-shop sold (this month) and per-shop live stock, so a Deal of the Week card
@@ -605,7 +635,7 @@ def _enrich_deals(deals, m_start, m_end, stock_map, combo_bags=None):
             # A Deal of the Week runs only at its locations, in its tier's weeks — count
             # exactly those sales (the Kenya-wide month is kept for reference).
             it["kenyaSold"], it["kenyaRevenue"] = it["sold"], it["revenue"]
-            win = set(dow_tier_weeks(it.get("tier"), max_wk))
+            win = set(dow_tier_weeks(it.get("tier"), max_wk, it.get("start"), it.get("end"), m_start))
             it["windowWeeks"] = sorted(w for w in win if w <= max(max_wk, 1))
             locs = it.get("locations") or []
             u = v = 0
@@ -697,11 +727,29 @@ def _enrich_deals(deals, m_start, m_end, stock_map, combo_bags=None):
                 "inProgress": _maxwk in weeks_in_window,   # window includes the live (partial) week
                 "runRate": round(units / elapsed, 1) if elapsed else 0.0}
 
-    _t1 = _tier_agg("1", [1, 2]); _t1["label"] = "Tier 1"; _t1["window"] = "Wk 1–2"
-    _t2weeks = list(range(3, max(_maxwk, 4) + 1))              # Wk 3 onward (the remaining weeks)
-    _t2 = _tier_agg("2", _t2weeks); _t2["label"] = "Tier 2"
-    _t2["window"] = "Wk 3–%d" % max(_maxwk, 4) if max(_maxwk, 4) > 3 else "Wk 3+"
-    deals["tierCompare"] = {"maxWk": _maxwk, "tiers": [_t1, _t2]}
+    def _tier_window(tier_key, default):
+        """A tier's weeks: from its deals' Start / End dates when they have them, else the default."""
+        it = next((d for d in deals.get("dealOfWeek", []) if _tdigit(d.get("tier")) == tier_key), None)
+        if it and (it.get("start") or it.get("end")):
+            return dow_tier_weeks(it.get("tier"), _maxwk, it.get("start"), it.get("end"), m_start)
+        return default
+
+    def _wlabel(ws):
+        return ("Wk %d" % ws[0]) if len(ws) == 1 else ("Wk %d–%d" % (ws[0], ws[-1])) if ws else "—"
+
+    _w1 = _tier_window("1", [1, 2])
+    _t1 = _tier_agg("1", _w1); _t1["label"] = "Tier 1"; _t1["window"] = _wlabel(_w1)
+    _w2 = _tier_window("2", list(range(3, max(_maxwk, 4) + 1)))   # Wk 3 onward, or to its End date
+    _t2 = _tier_agg("2", _w2); _t2["label"] = "Tier 2"; _t2["window"] = _wlabel(_w2)
+    _tiers = [_t1, _t2]
+    if any(_tdigit(d.get("tier")) == "3" for d in deals.get("dealOfWeek", [])):
+        # Tier 3 = the regional Deals of the Week (one list per region, from 25 Oct 2026)
+        _w3 = _tier_window("3", [])
+        _t3 = _tier_agg("3", _w3); _t3["label"] = "Regional"
+        _st = next((d.get("start") for d in deals["dealOfWeek"] if _tdigit(d.get("tier")) == "3"), None)
+        _t3["window"] = ("From " + _as_day(_st).strftime("%d %b").lstrip("0")) if _st else _wlabel(_w3)
+        _tiers.append(_t3)
+    deals["tierCompare"] = {"maxWk": _maxwk, "tiers": _tiers}
 
     # Cross-sell: which Power Deals are ALSO run as a Deal of the Week (same bag).
     # Matched by product name, so each card can show the same bag's rival pricing —
@@ -730,10 +778,23 @@ def _local_deal_rows(month_name):
     try:
         import csv
         with open(DEALS_CSV, encoding="utf-8", newline="") as f:
-            rows = [r[:8] for r in csv.reader(f)]
+            rows = [(r + [""] * 12)[:12] for r in csv.reader(f)]
     except OSError:
         return None
-    body = [r for r in rows[1:] if len(r) >= 8 and r[1].strip().lower() == month_name.lower()]
+    # A row with a Start date (col K) runs in every month its [Start, End] overlaps (no End = until
+    # replaced, e.g. the regional Deals of the Week from 25 Oct 2026), whatever its Month says.
+    import calendar as _cal
+    _mi = {n.lower(): i for i, n in enumerate(_cal.month_name) if n}.get(month_name.lower())
+
+    def _in_month(r):
+        st, en = _as_day(r[10]), _as_day(r[11])
+        if not st or not _mi:
+            return r[1].strip().lower() == month_name.lower()
+        y = st.year if _mi >= st.month else st.year + 1
+        ms = datetime.date(y, _mi, 1)
+        me = datetime.date(y, _mi, _cal.monthrange(y, _mi)[1])
+        return st <= me and (en is None or en >= ms)
+    body = [r for r in rows[1:] if r[2].strip() and _in_month(r)]
     if not body:
         return None
     print(f"  Deals for {month_name}: deals_kenya.csv (from the posters) — {len(body)} rows")
@@ -778,17 +839,21 @@ def _read_deals(month_name):
                                      str(r[3]).strip(), str(r[4]).strip())
         loc = LOC_ALIASES.get(loc.lower(), loc)
         prod = PRODUCT_RENAME.get(re.sub(r"\s+", " ", prod.lower()), prod)
-        if not prod or mon.lower() != month_name.lower():
+        if not prod:
             continue
         item = {"tier": tier, "product": prod, "location": loc,
                 "orig": _pn(r[5]), "now": _pn(r[6]), "disc": _pn(r[7])}
+        st, en = (_as_day(r[10]) if len(r) > 10 else None), (_as_day(r[11]) if len(r) > 11 else None)
         if typ.lower().startswith("power"):
             power.append(item)
         elif typ.lower().startswith("deal"):
             dow_rows += 1
             k = (prod.upper(), tier.upper())
             e = dow.setdefault(k, {"product": prod, "tier": tier, "orig": item["orig"],
-                                   "now": item["now"], "disc": item["disc"], "locations": []})
+                                   "now": item["now"], "disc": item["disc"], "locations": [],
+                                   "start": st.isoformat() if st else None,
+                                   "end": en.isoformat() if en else None,
+                                   "region": str(r[9]).strip() if st and len(r) > 9 else None})
             if loc and loc not in e["locations"]:
                 e["locations"].append(loc)
 
@@ -2432,7 +2497,8 @@ def write_bags_offer_source(payload):
                # Where / when each Deal of the Week runs — a single sale is a DoW sale
                # only at these shops in these Sun-Sat weeks.
                "dowRuns": [{"product": d.get("product", ""), "tier": d.get("tier"),
-                            "weeks": dow_tier_weeks(d.get("tier"), deals.get("curWeek", 1) or 1),
+                            "weeks": dow_tier_weeks(d.get("tier"), deals.get("curWeek", 1) or 1,
+                                                    d.get("start"), d.get("end"), deals.get("monthStart")),
                             "locations": d.get("locations") or []}
                            for d in deals.get("dealOfWeek", [])],
                "bagsNotOnOffer": payload.get("bagsNotOnOffer", {}),
