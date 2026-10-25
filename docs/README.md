@@ -23,7 +23,7 @@ marketing logs posts only on each bag's TOTAL row (no colour) → those come thr
 - `offers_monthly.csv` — Kenya / Sinza / Uganda combos and singles with prices (the old COMBOS tab).
 - `deals_kenya.csv` — Kenya Power Deals + Deals of the Week from the poster images (the old deals sheet).
 - **Weekly:** `ads_weekly.csv` + `ads_notes.csv` — marketing's Weekly Ads Performance Report (Drive .pptx).
-  Shown on every page as the Ads impact panel — spec: [ads-impact.md](ads-impact.md).
+  Was the Ads impact panel on every page; **hidden on every page since 26 Oct 2026** — spec: [ads-impact.md](ads-impact.md).
 
 **Stock record accuracy (Oct 2026):** the **NEGATIVE FIX LOG** tab of *STOCKS LEVELS 2026* (`1xWmk1CJ…`, read only by
 `lib/negative_fixes.py`) ranks shops by negative-stock fixes per 1,000 bags sold on Shops Efficiency — spec:
@@ -63,6 +63,18 @@ Sheets reads are the other big cost: `offer_data.build` (cached per run) fetches
 ranges (COMBOS, MONTHLY_TARGET, STOCK_LEVELS) in **one `values_batch_get`** instead of a
 `worksheet()` lookup + read per sheet — ~5s → ~3s. Together these took a self_made_combos
 refresh from ~50s to ~32s.
+
+**DuckDB till snapshot (26 Oct 2026, user's call).** Heavy till-sales queries read a local snapshot instead of
+the replica. `lib/snapshot.py` pulls, in one go, the last **150 days** of `pos_order` and its lines (already
+through `POS_LINES`, so combo refunds are fixed) plus the small lookup tables (`pos_session`, `pos_config`,
+`product_product`, `product_template`, `product_category`) into versioned Parquet files under `.snapshots/`
+(gitignored), then swaps `.snapshots/current.json` to point at them. `db.run_query_snap(sql, params)` runs the
+page's **own SQL unchanged** in an in-memory DuckDB over those files (`POS_LINES(p) pl` → the snapshot's fixed
+lines; `:name` → `$name`). It falls back to live Postgres when the snapshot is missing, older than **30 min**
+(a manual Refresh renews it if older than **5 min**), doesn't cover the dates asked for, or the SQL needs a table
+it doesn't hold. A failed refresh keeps the old snapshot; the last 3 are kept. Proof: `tests/test_snapshot.py`
+runs live vs snapshot for a fixed past window and compares. Used by: Timed offers (its sales / daily / price /
+bulk queries).
 
 ## How the dashboard is built
 

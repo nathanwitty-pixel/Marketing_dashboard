@@ -84,24 +84,28 @@ WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', '
 GROUP BY 1, 2
 """
 
-# Corporate sales per day — customer invoices, same qualifying rule as sql/corporate_bags.sql
-# (posted out_invoice; paid / in payment, or at most 25% still outstanding).
+# Corporate sales per day — the Denri Corporate app, same source and rule as sql/corporate_bags.sql (the Sales
+# card): an invoice's bags × the share of its agreed amount paid, on the payment date (a deposit before the
+# invoice counts on the invoice date); whole bags per invoice per day; KES received capped at the agreed amount.
 CORPORATE_SQL = """
-WITH qinv AS (
-    SELECT am.id, am.invoice_date
-    FROM account_move am
-    WHERE am.move_type = 'out_invoice' AND am.state = 'posted'
-      AND am.invoice_date BETWEEN :s AND :e
-      -- an invoice a shop made from a till receipt (pos_order.account_move) is already a till sale
-      AND NOT EXISTS (SELECT 1 FROM pos_order po WHERE po.account_move = am.id)
-      AND ( am.payment_state IN ('paid', 'in_payment')
-            OR (am.amount_total > 0 AND am.amount_residual / am.amount_total <= 0.25) )
+WITH inv AS (
+    SELECT i.id, i.date_invoice,
+           GREATEST(i.amount_total - COALESCE(i.wht_amount, 0), 0) AS agreed,
+           (SELECT COALESCE(SUM(l.qty), 0) FROM denri_corporate_invoice_line l
+             WHERE l.invoice_id = i.id
+               AND COALESCE(l.product, '') !~* '(fee|sponsor|origination|sample)') AS bags
+    FROM denri_corporate_invoice i
+    WHERE i.status NOT IN ('draft', 'cancelled')
+), pay AS (
+    SELECT inv.id, inv.bags, inv.agreed, GREATEST(p.date, inv.date_invoice)::date AS d, SUM(p.amount) AS paid
+    FROM inv JOIN denri_corporate_payment p ON p.invoice_id = inv.id
+    WHERE GREATEST(p.date, inv.date_invoice) BETWEEN :s AND :e
+    GROUP BY 1, 2, 3, 4
 )
-SELECT qinv.invoice_date AS d, COALESCE(SUM(aml.quantity), 0)::int AS units,
-       ROUND(COALESCE(SUM(aml.price_total), 0))::bigint AS revenue
-FROM account_move_line aml JOIN qinv ON qinv.id = aml.move_id
-WHERE aml.display_type IS NULL AND aml.product_id IS NOT NULL
-GROUP BY 1
+SELECT d, COALESCE(SUM(FLOOR((bags * LEAST(paid / NULLIF(agreed, 0), 1))::numeric + 0.000001)), 0)::int AS units,
+       ROUND(COALESCE(SUM(LEAST(paid, agreed)), 0))::bigint AS revenue
+FROM pay
+GROUP BY d
 """
 
 # Odoo revenue targets (per till, plus the corporate row) overlapping the date range.

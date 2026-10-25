@@ -1,5 +1,9 @@
 # Ads impact — on every page (21 Oct 2026, user's call)
 
+> **Hidden on every page since 26 Oct 2026 (user's call).** `SHOW_ADS_IMPACT = False` in `streamlit_app.py`, and
+> `ads_impact.py` is out of the Current Performance / Posting Yields refresh lists in `dashboard_pages.json`. To bring
+> it back: set it to `True`, add `ads_impact.py` back to those two pages' `scripts`, and refresh. Data files are kept.
+
 The weekly **Ads Performance Report** (marketing's .pptx on Drive, Sun–Sat weeks, e.g.
 *Denri_Weekly_Ads_Report_11-17_Oct_2026*) joined to what the dashboard already knows (Odoo sales,
 marketing posts, corporate payments), so every page shows what the ads cost, what moved, and what to do.

@@ -176,6 +176,14 @@ def _cache_path(sql: str, params: dict | None) -> str:
     return os.path.join(_CACHE_DIR, hashlib.sha1(raw.encode("utf-8")).hexdigest() + ".pkl")
 
 
+def run_query_snap(sql: str, params: dict | None = None, ttl_min: float = 30) -> pd.DataFrame | None:
+    """A till-sales query answered from the local DuckDB snapshot (lib/snapshot.py) when it can be,
+    else run_query_cached on Postgres. Same result either way (tests/test_snapshot.py)."""
+    from lib import snapshot
+    df = snapshot.query(sql, params)
+    return df if df is not None else run_query_cached(sql, params, ttl_min)
+
+
 def run_query_cached(sql: str, params: dict | None = None, ttl_min: float = 30) -> pd.DataFrame | None:
     """run_query with a TTL disk cache. Identical to run_query for callers, but a repeated
     identical (sql, params) within ttl_min minutes is read from disk instead of Odoo.

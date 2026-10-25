@@ -30,9 +30,11 @@ money comes from*, Offer type summary) covers all three countries, Tanzania and 
 - **On offer = Power deals + Combos + Deal of wk + Mid-month offers.** Others = Corporate + Samples + Gift bags.
 - **Deal of the Week from 25 Oct 2026** = the regional lists (docs/self-made-combos.md › Regional Deals of the Week).
   A Kenya single sale counts as Deal of wk only at a shop in that region, in the weeks from 25 Oct.
-- **Corporate** = paid customer invoices in Odoo Accounting (`CORPORATE_SQL`). *Fixed 22 Oct 2026:* invoices a shop
-  made from a till receipt (`pos_order.account_move`, e.g. INV/2026/00146 from BUSIA/1537) are left out. Those bags
-  are already in the till lines, so they were counted twice.
+- **Corporate** = the **Denri Corporate app** (`denri_corporate_invoice` / `_line` / `_payment`), the same source and
+  rule as the Sales card (`sql/corporate_bags.sql`): an invoice's bags × the share of its agreed amount paid, counted
+  on the payment date (a deposit before the invoice counts on the invoice date), whole bags per invoice per day;
+  revenue = KES received, capped at the agreed amount (`CORPORATE_SQL`). *Fixed 26 Oct 2026:* the page still read
+  Odoo Accounting customer invoices, which no longer hold corporate sales, so the row was empty (Oct: 865 bags missing).
 - **Runway bags are a Mid-month offer (22 Oct 2026, user's call).** A Kenya till line whose name the offer lists
   don't know, but whose style is a runway bag (`lib/runway_bags`: first created in Odoo in the last 30 days),
   goes to Mid-month offers tagged `Runway` instead of Unclassified. Each Mid-month sale is also tagged with its
@@ -111,7 +113,7 @@ and straps excluded; customized bags count like any bag, as on Sales) and every 
 | **On offer** | a single bag sold inside a **timed offer** campaign, or that resolves to a bag that is a **running-combo component**, a **Deal of the Week** or a **Power Deal** | `Timed offer` / `Combo component` / `Deal of the Week` / `Power Deal` (several allowed; money counted **once** — see *Counted by how it was sold*) |
 | **Not on offer** | a single bag that resolves to a catalogue bag on no offer | — |
 | **Not on offer** | a **new product** (`data/new_products.txt` — the New Products list; the sheet's col I ticks are no longer read) that is on no offer, **even if it isn't in the price catalogue yet** (e.g. LaFemme) | `NEW` |
-| **Others** | **gift bags** (POS `name ILIKE 'gift bag%'`), **samples** (`SAMPLE…`) and **corporate** sales (customer invoices, same qualifying rule as `sql/corporate_bags.sql`: posted `out_invoice`, paid / in payment or ≤25 % outstanding; product lines; `price_total`) | `Gift bags` / `Samples` / `Corporate` |
+| **Others** | **gift bags** (POS `name ILIKE 'gift bag%'`), **samples** (`SAMPLE…`) and **corporate** sales (Denri Corporate app, paid share on the payment date — see *Corporate* above) | `Gift bags` / `Samples` / `Corporate` |
 | **Unclassified** | a single POS product that matches no catalogue bag and no new product | footnote count/revenue |
 
 - A new product that **is** on an offer (Sep 2026: **Lola** — combo component, **Zoezi** — deal)

@@ -261,7 +261,7 @@ def odoo_window_sales(bags, start, end, market):
       AND COALESCE(pcat."name",'') NOT ILIKE '%Pos%'
     GROUP BY pt."name"
     """
-    df = db.run_query_cached(q, params, ttl_min=ODOO_CACHE_MIN)
+    df = db.run_query_snap(q, params, ttl_min=ODOO_CACHE_MIN)
     if df is None or df.empty:
         return out, True
     for _, r in df.iterrows():
@@ -316,7 +316,7 @@ def odoo_daily_kenya(bags, start, end, name_sql=None):
       AND ({like_clauses})
     GROUP BY 1 ORDER BY 1
     """
-    df = db.run_query_cached(q, params, ttl_min=ODOO_CACHE_MIN)
+    df = db.run_query_snap(q, params, ttl_min=ODOO_CACHE_MIN)
     if df is not None and not df.empty:
         for _, r in df.iterrows():
             out[str(r["d"])] = int(r["bags"] or 0)
@@ -355,7 +355,7 @@ def odoo_bag_prices(bags, start, end):
       AND COALESCE(pcat."name",'') NOT ILIKE '%Pos%'
     """ + _QTY_SQL + _SHOP_SQL + _TIME_SQL + _PRICE_SQL + _NAME_SQL
     # per offer-bag — fetch all products, bucket in Python (only configured bags kept)
-    df = db.run_query_cached(f'SELECT pt."name" AS product, SUM(pl.qty)::int AS qty, '
+    df = db.run_query_snap(f'SELECT pt."name" AS product, SUM(pl.qty)::int AS qty, '
                              f'SUM(pl.price_subtotal_incl)::numeric AS val {base} '
                              f'GROUP BY pt."name"', params, ttl_min=ODOO_CACHE_MIN)
     if df is not None and not df.empty:
@@ -365,7 +365,7 @@ def odoo_bag_prices(bags, start, end):
                 prices[b]["qty"] += int(r["qty"] or 0)
                 prices[b]["val"] += float(r["val"] or 0)
     # catalogue-wide avg
-    dfc = db.run_query_cached(f'SELECT ROUND(SUM(pl.price_subtotal_incl)/NULLIF(SUM(pl.qty),0)) AS avg {base}',
+    dfc = db.run_query_snap(f'SELECT ROUND(SUM(pl.price_subtotal_incl)/NULLIF(SUM(pl.qty),0)) AS avg {base}',
                               {"s": start, "e": end}, ttl_min=ODOO_CACHE_MIN)
     if dfc is not None and not dfc.empty and dfc.iloc[0]["avg"] is not None:
         catalog = int(dfc.iloc[0]["avg"])
@@ -401,9 +401,9 @@ def odoo_bulk_lines(start, end):
     {_SHOP_SQL}{_TIME_SQL}{_PRICE_SQL}{_NAME_SQL}
       AND COALESCE(pt."name",'') NOT LIKE '%+%'
       AND COALESCE(pcat."name",'') NOT ILIKE '%Pos%'
-    GROUP BY 1, 2, 3, 4 ORDER BY 1
+    GROUP BY 1, 2, 3, 4 ORDER BY 1, 2, 4
     """
-    df = db.run_query_cached(q, {"s": start, "e": end, "bulk": BULK_LINE_QTY}, ttl_min=ODOO_CACHE_MIN)
+    df = db.run_query_snap(q, {"s": start, "e": end, "bulk": BULK_LINE_QTY}, ttl_min=ODOO_CACHE_MIN)
     if df is None or df.empty:
         return out
     for _, r in df.iterrows():
@@ -544,7 +544,7 @@ def reject_variants(start, end):
       AND COALESCE(pcat."name",'') NOT ILIKE '%Pos%'
     GROUP BY pt."name"
     """
-    df = db.run_query_cached(q, {"s": start, "e": end}, ttl_min=ODOO_CACHE_MIN)
+    df = db.run_query_snap(q, {"s": start, "e": end}, ttl_min=ODOO_CACHE_MIN)
     rows = []
     if df is not None and not df.empty:
         for _, r in df.iterrows():
@@ -729,7 +729,7 @@ def odoo_bag_daily_value(bags, start, end):
          '  AND COALESCE(pt."name",\'\') NOT ILIKE \'%sample%\' '
          '  AND COALESCE(pcat."name",\'\') NOT ILIKE \'%Pos%\' '
          f'  AND ({like}) GROUP BY 1, 2')
-    df = db.run_query_cached(q, params, ttl_min=ODOO_CACHE_MIN)
+    df = db.run_query_snap(q, params, ttl_min=ODOO_CACHE_MIN)
     if df is not None and not df.empty:
         for _, r in df.iterrows():
             b = _bucket(r["product"])

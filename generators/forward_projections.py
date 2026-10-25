@@ -379,7 +379,8 @@ if bag_rev and bag_rev["bags"] and revenue_target and total_target:
         # The till's KES 300 discount line has qty 1 but isn't a bag: keep its money, drop its count.
         _disc_units = sum(u["units"] for u in _om.get("unclassifiedBags", []) if "DISCOUNT" in u["name"].upper())
         _unc = dict(_om["unclassified"], units=_om["unclassified"]["units"] - _disc_units)
-        _all = sum(r["units"] for r in _om["rows"]) + _unc["units"] + _capp_bags   # _unc = the non-discount lines
+        _all = (sum(r["units"] for r in _om["rows"] if r["key"] != "CORP")       # CORP = the Corporate app, added once below
+                + _unc["units"] + _capp_bags)                                    # _unc = the non-discount lines
 
         def _orow(label, units, kes, key=None, on=None, bags=None):
             if key == "GIFT":
@@ -412,8 +413,10 @@ if bag_rev and bag_rev["bags"] and revenue_target and total_target:
                    if b["category"] and b["category"] != "UNASSIGNED"}
         groups = []
         for r in _om["rows"]:
-            lbl = "Corporate (Odoo invoices)" if r["key"] == "CORP" else r["label"]
-            groups.append(_orow(lbl, r["units"], r["revenue"], r["key"], r["on"], r["bags"]))
+            # The offer page's Corporate row is the Corporate app too (26 Oct 2026), so only the per-bag
+            # "Corporate app" row below is shown — never both.
+            if r["key"] != "CORP":
+                groups.append(_orow(r["label"], r["units"], r["revenue"], r["key"], r["on"], r["bags"]))
             if r["key"] == "MID":
                 # What the Mid-month offers are made of: new products, runway bags, timed offers (Kenya),
                 # the month's listed singles (Tanzania / Uganda). Rows sit under Mid-month offers.
@@ -551,7 +554,8 @@ def odoo_weekly_breakdown():
     m_start, m_end = report_month.live_month_window()
     ws      = m_start - timedelta(days=(m_start.weekday() + 1) % 7)   # Sunday of the week holding the 1st
 
-    entries, idx, cum = [], 0, 0
+    weeks = []                                            # (seg_start, label, till bags, corporate bags)
+    idx = 0
     while ws <= m_end:
         we        = ws + timedelta(days=6)                # Saturday
         seg_start = max(ws, m_start)
@@ -559,25 +563,38 @@ def odoo_weekly_breakdown():
         if seg_start <= seg_end:                          # this Sun–Sat week has in-month days
             idx += 1
             if seg_start <= today:                        # …and it has already started
+                win = {"start_date": seg_start.isoformat(), "end_date": seg_end.isoformat()}
                 df = db.run_query(queries.BAGS_SOLD_TOTAL,   # same total definition as monthly Sales
-                                  {"start_date": seg_start.isoformat(),
-                                   "end_date":   seg_end.isoformat(),
-                                   "excluded":   queries.excluded_products()})
-                bags = int(round(float(df.iloc[0]["bags"]))) if df is not None and not df.empty else 0
-                prev_cum = cum
-                cum += bags
-                entries.append({
-                    "weekStart":    seg_start.isoformat(),
-                    "label":        "Wk " + str(idx),
-                    "month":        today.strftime("%b"),
-                    "salesPct":     round((cum / total_target * 100) if total_target else 0, 2),
-                    "salesBags":    cum,
-                    "prevSalesPct": round((prev_cum / total_target * 100) if total_target else 0, 2),
-                    "prevSalesBags": prev_cum,
-                    "weeklySales":  bags,
-                    "declinedBy":   bags - bare_minimum,
-                })
+                                  {**win, "excluded": queries.excluded_products()})
+                pos = int(round(float(df.iloc[0]["bags"]))) if df is not None and not df.empty else 0
+                # Corporate bags paid this week — the Sales card's corporate rule over the week's dates
+                cdf = db.run_query(queries.CORPORATE_BAGS, win)
+                corp = int(cdf.iloc[0]["bags"] or 0) if cdf is not None and not cdf.empty else 0
+                weeks.append([seg_start, "Wk " + str(idx), pos, corp])
         ws += timedelta(days=7)
+    # Part-paid invoices round down per window, so the weeks' corporate can fall a bag short of the month's;
+    # the remainder goes on the latest week so the rows add up to the Sales card.
+    if weeks and corporate_bags:
+        weeks[-1][3] += corporate_bags - sum(w[3] for w in weeks)
+
+    entries, cum = [], 0
+    for seg_start, label, pos, corp in weeks:
+        bags = pos + corp
+        prev_cum = cum
+        cum += bags
+        entries.append({
+            "weekStart":    seg_start.isoformat(),
+            "label":        label,
+            "month":        today.strftime("%b"),
+            "salesPct":     round((cum / total_target * 100) if total_target else 0, 2),
+            "salesBags":    cum,
+            "prevSalesPct": round((prev_cum / total_target * 100) if total_target else 0, 2),
+            "prevSalesBags": prev_cum,
+            "weeklySales":  bags,
+            "posBags":      pos,
+            "corporateBags": corp,
+            "declinedBy":   bags - bare_minimum,
+        })
     return entries or None
 
 

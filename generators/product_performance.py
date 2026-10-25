@@ -629,14 +629,39 @@ def shop_name(till):
     return SHOP_NAMES.get(t) or (t.title() if t else "Unknown till")
 
 
-def shop_breakdown(lines, P):
+def corporate_period(s, e):
+    """[(product, bags, kes)] — Corporate app bags paid in [s, e] (sql/corporate_bag_lines.sql, the Sales card's
+    rule: money received on the payment date); fee lines (0 bags) keep their KES. [] if Odoo is unreachable."""
+    df = db.run_query(queries.CORPORATE_BAG_LINES, {"start_date": s.isoformat(), "end_date": e.isoformat()})
+    if df is None or df.empty:
+        return []
+    return [(str(r["product"]).title() if r["product"] != "Fees and other" else "Fees and other",
+             float(r["bags"] or 0), float(r["kes"] or 0)) for _, r in df.iterrows()]
+
+
+def shop_breakdown(lines, P, corp=None):
     """{period: {market: {total, rev, shops: [...]}}} — units / revenue per shop (till), the period before,
-    shares, the bulk-line units (POS lines of BULK_LINE_QTY+ units) and each shop's top 10 bags."""
+    shares, the bulk-line units (POS lines of BULK_LINE_QTY+ units) and each shop's top 10 bags. `corp(s, e)`
+    adds a Corporate row (Kenya; all of it counted as a bulk order) — docs/product-performance.md › 2b."""
     out = {}
     for per, (s1, e1, s0, e0, _lbl) in P.items():
         out[per] = {}
         for mkt in ("ALL",) + MARKETS:
             agg = {}
+            if corp is not None and mkt in ("ALL", "KE"):
+                a = agg.setdefault("Corporate", {"mkt": "KE", "u": [0.0, 0.0], "r": [0.0, 0.0], "bulk": [0.0, 0.0],
+                                                 "bulkR": [0.0, 0.0],
+                                                 "bags": collections.defaultdict(lambda: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0])})
+                for i, (s, e) in enumerate(((s1, e1), (s0, e0))):
+                    for prod, u, r in corp(s, e):
+                        a["u"][i] += u; a["r"][i] += r; a["bulk"][i] += u; a["bulkR"][i] += r
+                        bg = a["bags"][prod]
+                        if i == 0:
+                            bg[0] += u; bg[1] += r; bg[3] += u; bg[4] += r
+                        else:
+                            bg[2] += u; bg[5] += u
+                    # whole bags paid for, rounded down like the Sales card (part-paid invoices give fractions)
+                    a["u"][i] = a["bulk"][i] = math.floor(a["u"][i] + 1e-6)
             for x in lines:
                 if mkt != "ALL" and x["mkt"] != mkt:
                     continue
@@ -721,7 +746,13 @@ def build(today=None):
         out_periods[key] = {"label": label, "cur": [s1.isoformat(), e1.isoformat()], "prev": [s0.isoformat(), e0.isoformat()],
                             "curLabel": f"{_fmt_d(s1)} – {_fmt_d(e1)}", "prevLabel": f"{_fmt_d(s0)} – {_fmt_d(e0)}", "rows": rows}
 
-    shops_out = shop_breakdown(lines, P)
+    _corp_cache = {}
+
+    def corp(s, e):                                       # Corporate row of the shop breakdown, one pull per window
+        if (s, e) not in _corp_cache:
+            _corp_cache[(s, e)] = corporate_period(s, e)
+        return _corp_cache[(s, e)]
+    shops_out = shop_breakdown(lines, P, corp)
 
     s1, e1, s0, e0, _ = P["lastweek"]
     stock_now, levels, disp = stock_facts(typ, start, today)

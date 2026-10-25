@@ -1,6 +1,6 @@
 {
  "month": "October 2026",
- "generated": "25 Oct 2026 23:20",
+ "generated": "26 Oct 2026 00:45",
  "range": "01 Oct – 31 Oct 2026",
  "rows": [
   {
@@ -1342,10 +1342,18 @@
    "key": "CORP",
    "label": "Corporate",
    "on": false,
-   "where": null,
-   "units": 0,
-   "revenue": 0,
-   "bags": []
+   "where": "Kenya only",
+   "units": 864.0,
+   "revenue": 1761906,
+   "bags": [
+    {
+     "bag": "Unassigned",
+     "category": "UNASSIGNED",
+     "tier": "Unassigned",
+     "units": 864.0,
+     "revenue": 1761906
+    }
+   ]
   },
   {
    "key": "MID",

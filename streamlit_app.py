@@ -1095,10 +1095,14 @@ if os.path.exists(html_path):
         pass
     # Ads impact panel (ads_panel.js) on every page, with this page's section of data/ads_impact.json
     # (generators/ads_impact.py — spec docs/ads-impact.md). No file / no section → nothing shown.
+    # Hidden on every page since 26 Oct 2026 (user's call) — set SHOW_ADS_IMPACT = True to bring it back.
+    SHOW_ADS_IMPACT = False
     try:
-        with open(paths.data("ads_impact.json"), encoding="utf-8") as _fh:
-            _ads_all = _json.load(_fh).get("pages", {})
-        _ads_sec = _ads_all.get(os.path.basename(html_path)) or _ads_all.get("_default")
+        _ads_sec = None
+        if SHOW_ADS_IMPACT:
+            with open(paths.data("ads_impact.json"), encoding="utf-8") as _fh:
+                _ads_all = _json.load(_fh).get("pages", {})
+            _ads_sec = _ads_all.get(os.path.basename(html_path)) or _ads_all.get("_default")
         if _ads_sec:
             with open(paths.asset("ads_panel.js"), encoding="utf-8") as _fh:
                 _ads_js = _fh.read().replace("</script", "<\\/script")

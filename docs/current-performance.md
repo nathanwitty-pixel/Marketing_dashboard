@@ -18,6 +18,16 @@ week-over-week movement, and a **current-vs-previous-month weekly comparison cha
 month solid, previous month dashed — `cpPrevWeekly` from `monthly_report_history.json`; the
 month names are dynamic, from `PERF.cpCurLabel` / `PERF.cpPrevLabel`), plus forward projections.
 
+## Weekly Performance — corporate in each week (26 Oct 2026, user's call)
+
+Each Sun–Sat week's **Sales bags** = its till bags (`BAGS_SOLD_TOTAL`) **+ the corporate bags paid that week**
+(`CORPORATE_BAGS` over the week — the Corporate app, money received on the payment date, the Sales card's rule).
+Any rounding left between the weeks' corporate and the month's (part-paid invoices round down per window) goes on
+the latest week, so the rows **add up to the Sales card** (Oct 2026: 2,235 + 4,334 + 3,700 + 3,449 + 188 = 13,906).
+The cell names the corporate part ("3,449 bags, 537 corporate"); `weeklyHistory` rows carry `posBags` and
+`corporateBags`. Sales % achieved, Declined By and the chart follow the same totals. The dashed previous-month line
+is that month's saved month-end report (September 2026 had 63–77 corporate bags, so it is left as recorded).
+
 ## Weekly Performance chart — type filter
 
 The **Weekly Performance — Week 1 to Latest** card carries a segmented control (`#cp-wp-type`,
@@ -54,8 +64,8 @@ Rules the implementation must hold to:
 - Each month's week-on-week change shows as pills: October's above its points ("Oct ▲108%"), the
   previous month's under its own ("Sep ▲20%"). The pills come from the shared weekChange code
   ([chart-switcher](chart-switcher.md)).
-- **Short weeks are labelled** under the x axis with their day counts, e.g. "Oct 3d · Sep 5d" for Wk 1, and
-  "Oct 1d so far · Sep 7d" for the week still running. Weeks are Sun–Sat inside the month, so the first and last
+- **Short weeks are labelled** under the x axis with their day counts, e.g. "Oct 3 days, Sep 5 days" for Wk 1, and
+  "Oct 1 day so far, Sep 7 days" for the week still running (words, no dot separators, 26 Oct 2026). Weeks are Sun–Sat inside the month, so the first and last
   weeks are often short. Full 7-day weeks show no day line.
 - **The running week** (`partialWks`, from today's date) is passed as `weekChange.partial`. Its pills read grey
   "… so far", not a red crash.
@@ -208,7 +218,8 @@ and the bags % differ, so the reader can judge it:
   - **Corporate app** row: bags on Corporate app invoices (`sql/corporate_bag_lines.sql`, same paid-share rule
     as `corporate_bags.sql`; the received KES is shared across each invoice's lines by subtotal, so it adds
     up to the Forecasted card's corporate KES). Click for each bag and its client(s); fees are one row with 0
-    bags. Not POS, so All bags here is above the table above. **Corporate (Odoo invoices)** is a separate row (below).
+    bags. Not POS, so All bags here is above the table above. The offer page's own Corporate row is the same
+    Corporate app (26 Oct 2026), so it isn't shown here: corporate is counted once, in this row.
   - **KES 300 till discount** (was "Not yet sorted", 22 Oct 2026, user's call): only the till's KES 300 discount
     line. No bags, nothing expected, so its effect = the money off (same as Discounts in the table above).
     The few other unsorted lines (PPM, Passport Holder…: names with no bag type) are added to **Not on offer**

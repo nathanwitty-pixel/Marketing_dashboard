@@ -36,3 +36,6 @@ data/laya_cache.json
 
 # Excel lock files (open workbooks)
 ~$*
+
+# ── DuckDB till snapshot (lib/snapshot.py, regenerated at runtime) ──
+.snapshots/
