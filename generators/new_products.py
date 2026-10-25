@@ -269,7 +269,7 @@ def odoo_sales_window(start, end):
     SELECT UPPER(pt."name") AS pname,
            COALESCE(SUM(pl.qty) FILTER (WHERE lower(COALESCE(pc."name", '')) NOT IN ('sinza','dar-es-alam','uganda')), 0)::int AS kenya,
            COALESCE(SUM(pl.qty) FILTER (WHERE lower(COALESCE(pc."name", '')) IN ('sinza','dar-es-alam','uganda')), 0)::int AS outside
-    FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+    FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
     LEFT JOIN pos_session ps ON p.session_id = ps.id
     LEFT JOIN pos_config pc ON ps.config_id = pc.id
     LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -906,7 +906,7 @@ _TILL_CODE = {t: c for c, t in SHOP_CODES}
 _TILL_CODE.update({"dar-es-alam": "SNZ", "ktda": "KTD", "website": "WEB"})
 SHOP_SALES_SQL = """
 SELECT pt."name" AS product, lower(COALESCE(pc."name", '')) AS till, SUM(pl.qty) AS q
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id LEFT JOIN pos_config pc ON ps.config_id = pc.id
 JOIN product_product pp ON pp.id = pl.product_id JOIN product_template pt ON pt.id = pp.product_tmpl_id
 LEFT JOIN product_category pcat ON pcat.id = pt.categ_id

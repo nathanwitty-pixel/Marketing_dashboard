@@ -46,7 +46,7 @@ SELECT CASE WHEN lower(pc.name) IN ('sinza','dar-es-alam') THEN 'SINZA'
        ROUND(SUM(CASE WHEN lower(pc.name) IN ('sinza','dar-es-alam') THEN pl.price_subtotal_incl/25
                       WHEN lower(pc.name)='uganda' THEN pl.price_subtotal_incl/29 ELSE pl.price_subtotal_incl END)) AS kes,
        COUNT(DISTINCT p.id) AS orders
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
 LEFT JOIN product_category pcat ON pcat.id=pt.categ_id
@@ -59,7 +59,7 @@ GROUP BY 1
 
 BAG_SALES_SQL = """
 SELECT pt.name AS product, SUM(pl.qty) AS q
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id LEFT JOIN pos_config pc ON ps.config_id=pc.id
 JOIN product_product pp ON pl.product_id=pp.id JOIN product_template pt ON pp.product_tmpl_id=pt.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done','invoiced','paid') AND pl.qty<>0

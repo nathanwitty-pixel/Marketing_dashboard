@@ -28,7 +28,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import URL, Engine
 
-from lib import paths
+from lib import paths, pos_lines
 
 load_dotenv()
 
@@ -147,6 +147,7 @@ def run_query(sql: str, params: dict | None = None) -> pd.DataFrame | None:
     """
     if get_engine() is None:
         return None
+    sql = pos_lines.expand(sql)          # POS_LINES(p) → till lines with refunded combos fixed
     last_err = None
     for attempt in (1, 2):
         conn = _shared_conn()

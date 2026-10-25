@@ -36,6 +36,19 @@ WhatsApp chats, posts and ads on the Footfall and Marketing page — spec: [foot
 empty (no sheet fallback any more). **Local files** — `bom_costs.json` and `offers_prices.json` (Offer
 Picking costs / prices), `product_catalog.csv`, `bag_original_prices.json`, `bag_names.csv`.
 
+**Combo refunds — one rule on every menu (25 Oct 2026, user's call).** Every query that counts till bags reads
+the order's lines through `POS_LINES(p) pl` (expanded by `lib/pos_lines.py` inside `db.run_query`), not
+`pos_order_line` directly. That source fixes refunded combos, so each returned bag is taken off exactly once:
+- A refund that brought the combo's bags back on their own **KES 0 lines** (no parent link) → those lines are
+  marked as the combo's sub-lines. Sales-style counts still subtract them; single-bag counts (Bags on offer,
+  Combos, Push planner…) no longer take them off a second time as singles.
+- A refund that has **only the combo line** → the original sale's bags (via `refunded_orderline_id`, exact
+  colours) are added as KES 0 sub-lines with negative qty, so Sales-style counts take them off too.
+- Oct 2026: 14 combo refunds, 28 bags. Before: Sales missed 12 (6 combo-line-only refunds) and Bags on offer
+  took 16 off twice.
+- The offer page also counts customized bags (they are bags; only the "Customization" fee is not) and
+  Tanzania / Uganda **Mini Washbags and gift bags** like Kenya's, so its All bags = Sales + samples.
+
 ## Refresh performance
 
 Each `/api/refresh` (the "Refreshing data…" spinner) runs a generator as a fresh

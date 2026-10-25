@@ -111,7 +111,7 @@ def shop_sales_by_type(names, start, end, typ):
     out = {n: {"kes": 0, "shops": {}} for n in names}
     params = {"start_date": start.isoformat(), "end_date": end.isoformat()}
     base = ("SELECT upper(pc.\"name\") AS shop, l.full_product_name AS product, SUM(l.qty)::numeric AS bags, "
-            "SUM(l.price_subtotal_incl)::numeric AS value FROM pos_order_line l JOIN pos_order o ON o.id = l.order_id "
+            "SUM(l.price_subtotal_incl)::numeric AS value FROM pos_order o JOIN POS_LINES(o) l ON l.order_id = o.id "
             "JOIN pos_session ps ON ps.id = o.session_id JOIN pos_config pc ON pc.id = ps.config_id "
             "WHERE " + queries._BAGS_WHERE + " GROUP BY 1, 2")
     for sql in (base, base.replace("COALESCE(l.sub_product_line, false)   = false",

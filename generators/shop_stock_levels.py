@@ -43,7 +43,7 @@ _CODES = ", ".join("'%s'" % c for c in CODE_SHOP)
 SALES_SQL = """
 SELECT upper(COALESCE(pc."name", '')) AS till, pt."name" AS product, SUM(pl.qty) AS qty
 FROM pos_order o
-JOIN pos_order_line pl ON pl.order_id = o.id
+JOIN POS_LINES(o) pl ON pl.order_id = o.id
 LEFT JOIN pos_session ps ON ps.id = o.session_id
 LEFT JOIN pos_config pc ON pc.id = ps.config_id
 JOIN product_product pp ON pp.id = pl.product_id
@@ -53,7 +53,7 @@ WHERE (o.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETW
   AND o.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
   AND COALESCE(pl.is_program_reward, false) = false
   AND NOT (COALESCE(pl.is_combo_line, false) OR pt."name" LIKE '%+%')
-  AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%' AND pt."name" NOT ILIKE '%strap%'
+  AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customization%' AND pt."name" NOT ILIKE '%strap%'
   AND pt."name" NOT ILIKE '%KES discount%' AND pt."name" NOT ILIKE '%sample%' AND pt."name" NOT ILIKE 'gift bag%'
   AND COALESCE(pcat."name", '') NOT ILIKE '%Pos%'
   AND lower(pt."name") <> ALL(:excluded)

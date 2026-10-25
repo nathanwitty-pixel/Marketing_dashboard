@@ -40,7 +40,7 @@ SELECT pl.id, o.id AS receipt, o."name" AS ref,
        COALESCE(pl.sub_product_line, false) AS sub,
        COALESCE(pcat."name", '') AS categ
 FROM pos_order o
-JOIN pos_order_line pl ON pl.order_id = o.id
+JOIN POS_LINES(o) pl ON pl.order_id = o.id
 LEFT JOIN pos_session ps ON ps.id = o.session_id
 LEFT JOIN pos_config pc ON pc.id = ps.config_id
 JOIN product_product pp ON pp.id = pl.product_id
@@ -51,7 +51,7 @@ WHERE (o.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETW
   AND pl.qty <> 0
   AND COALESCE(pl.is_program_reward, false) = false
   AND pt."name" NOT ILIKE '%delivery%'
-  AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" NOT ILIKE '%customization%'
   AND pt."name" NOT ILIKE '%strap%'
   AND pt."name" NOT ILIKE '%discount%'      -- KES and % discount lines aren't bags
   AND pt."name" NOT ILIKE '%sample%'

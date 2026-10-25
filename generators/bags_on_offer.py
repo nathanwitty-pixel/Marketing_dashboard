@@ -46,14 +46,14 @@ _KENYA_TILLS = "AND lower(COALESCE(pc.\"name\",'')) NOT IN ('sinza','dar-es-alam
 LINES_SQL = f"""
 SELECT UPPER(COALESCE(pc."name",'?')) AS shop, UPPER(pt."name") AS name, p.date_order::date AS d,
        SUM(pl.qty)::int AS units, ROUND(SUM(pl.price_subtotal_incl))::int AS revenue
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0 AND NOT COALESCE(pl.sub_product_line, false)
   {_KENYA_TILLS}
-  AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customization%'
   AND pt."name" NOT ILIKE '%strap%'
 GROUP BY 1, 2, 3
 """
@@ -62,7 +62,7 @@ GROUP BY 1, 2, 3
 TILL_SQL = f"""
 SELECT UPPER(COALESCE(pc."name",'?')) AS shop, p.date_order::date AS d,
        ROUND(SUM(pl.price_subtotal_incl))::bigint AS revenue
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid')
@@ -76,7 +76,7 @@ GROUP BY 1, 2
 MARKET_TILL_SQL = """
 SELECT UPPER(COALESCE(pc."name",'?')) AS shop, p.date_order::date AS d,
        ROUND(SUM(pl.price_subtotal_incl))::bigint AS revenue
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid')
@@ -117,7 +117,7 @@ WHERE t.period IN ('month', 'week') AND t.target_scope IN ('pos', 'corporate')
 # combo, with the exact colour variant (Sep: 2,053 bags = every slot of all 946 combo orders).
 COMBO_SUBLINES_SQL = f"""
 SELECT p.date_order::date AS d, UPPER(pt."name") AS name, SUM(pl.qty)::int AS units
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
@@ -128,31 +128,32 @@ WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', '
 GROUP BY 1, 2
 """
 
-# Combo RETURNS carry no sub-lines, so their bags come from the combo line's
-# combo_product_attribute_values (the bag + colour chosen).
+# Combo RETURNS that POS_LINES can't give bags to (no KES 0 bag lines, no link to the sale) take their
+# bags from the combo line's combo_product_attribute_values (the bag + colour chosen).
 COMBO_PRINTS_SQL = f"""
 SELECT p.date_order::date AS d, UPPER(pt."name") AS name, SUM(pl.qty)::int AS units,
        COALESCE(pl.combo_product_attribute_values, '') AS attrs
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty < 0
   {_KENYA_TILLS}
-  AND pt."name" LIKE '%+%' AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
-  AND NOT EXISTS (SELECT 1 FROM pos_order_line sl WHERE sl.order_id = p.id AND COALESCE(sl.sub_product_line, false))
+  AND pt."name" LIKE '%+%' AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customization%'
+  AND NOT EXISTS (SELECT 1 FROM POS_LINES(p) sl WHERE COALESCE(sl.sub_product_line, false))
 GROUP BY 1, 2, 4
 """
 
 # Every Kenya combo line with the bags inside it (14 Oct 2026, docs/bags-on-offer.md › Combos = running-combo
 # bags only). A combo's sub-lines sit on the same order with parent_id = the combo line's product. Same filters
-# as LINES_SQL's "+" lines, so these rows replace them one for one. Returned combos have no sub-lines (bags = []).
+# as LINES_SQL's "+" lines, so these rows replace them one for one. Returned combos get their bags from POS_LINES
+# (lib/pos_lines.py); one it can't resolve has bags = [] and falls back to the name's slots.
 COMBO_LINES_SQL = f"""
 WITH c AS (
     SELECT pl.order_id, pl.product_id, UPPER(COALESCE(pc."name",'?')) AS shop, UPPER(pt."name") AS name,
            p.date_order::date AS d, SUM(pl.qty)::int AS units, ROUND(SUM(pl.price_subtotal_incl))::int AS revenue
-    FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+    FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
     LEFT JOIN pos_session ps ON p.session_id=ps.id
     LEFT JOIN pos_config pc ON ps.config_id=pc.id
     LEFT JOIN product_product pp ON pl.product_id=pp.id
@@ -160,12 +161,14 @@ WITH c AS (
     WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
       AND NOT COALESCE(pl.sub_product_line, false)
       {_KENYA_TILLS}
-      AND pt."name" LIKE '%+%' AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
+      AND pt."name" LIKE '%+%' AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customization%'
       AND pt."name" NOT ILIKE '%strap%'
     GROUP BY 1, 2, 3, 4, 5
 ), s AS (
     SELECT sl.order_id, sl.parent_id, UPPER(spt."name") AS bag, SUM(sl.qty)::int AS n
-    FROM pos_order_line sl JOIN c ON c.order_id = sl.order_id AND c.product_id = sl.parent_id
+    FROM (SELECT DISTINCT order_id FROM c) co JOIN pos_order po ON po.id = co.order_id
+    JOIN POS_LINES(po) sl ON sl.order_id = po.id
+    JOIN c ON c.order_id = sl.order_id AND c.product_id = sl.parent_id
     LEFT JOIN product_product spp ON sl.product_id=spp.id
     LEFT JOIN product_template spt ON spp.product_tmpl_id=spt.id
     WHERE COALESCE(sl.sub_product_line, false)
@@ -183,7 +186,7 @@ GROUP BY c.order_id, c.product_id, c.shop, c.name, c.d, c.units, c.revenue
 TIMED_SQL = f"""
 SELECT pl.id AS line_id, UPPER(COALESCE(pc."name",'?')) AS shop, UPPER(pt."name") AS name,
        p.date_order::date AS d, pl.qty::int AS units, ROUND(pl.price_subtotal_incl)::int AS revenue
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
@@ -394,10 +397,14 @@ def _market_records(lo, hi, infer, new_of, new_names):
     """Tanzania (Sinza) & Uganda till receipts → sales in KES for the all-country rows (docs/bags-on-offer.md ›
     Three countries, one page): a running combo → COMBOS (one unit per bag), a self-made combo's bags → judged
     like singles; a single on the month's singles list (offers_monthly.csv)
-    or a new product → MID; any other single, and every bag on a bulk (5+ bag) receipt → OFF.
+    or a new product → MID; any other single, and every bag on a bulk (5+ bag) receipt → OFF. A bag the lists
+    don't know (Mini Washbag…) still counts, under its own name, like Kenya's; gift bags → GIFT, refunds netted.
     Returns [{d, mkt, row, side, units, revenue, bags, parts: ((bag, weight), …)}], grouped by day."""
-    from lib import receipt_combos as rc
-    key_of = lambda n: infer(n) or new_of(str(n).strip().upper())
+    from lib import receipt_combos as rc, queries
+    excluded = set(queries.excluded_products())
+    key_of = lambda n: (infer(n) or new_of(str(n).strip().upper())
+                        or (None if "SAMPLE" in str(n).upper() or str(n).strip().lower() in excluded
+                            else str(n).strip().upper()))
     new_set = set(new_names)
     bag = lambda b: "LAPTOP SLEEVE" if b == "*SLEEVE" else b
     agg = {}
@@ -436,8 +443,13 @@ def _market_records(lo, hi, infer, new_of, new_names):
                 row = "MID" if b in listed[mn] or b in new_set else "OFF"
                 add(d, label, row, 1, unit / fx, 1, ((bag(b), 1.0),),
                     ("New products" if b in new_set else "Listed singles") if row == "MID" else None)
+        for ln in lines:                                     # gift bags (bag_key skips them), refunds netted
+            g = str(ln["product"]).strip().upper()
+            q = int(round(float(ln["qty"] or 0)))
+            if g.startswith("GIFT BAG") and q:
+                add(_as_date(ln["d"]), label, "GIFT", q, float(ln["amount"] or 0) / fx, q, ((g, 1.0),))
         print(f"  {label:9}        : {len(recs)} receipts (KES at {fx} {cur} = 1)")
-    side = {"OFF": "off", "COMBOS": "on", "MID": "on"}
+    side = {"OFF": "off", "COMBOS": "on", "MID": "on", "GIFT": "oth"}
     return [{"d": d, "mkt": mkt, "row": row, "side": side[row], "units": a[0], "revenue": round(a[1]),
              "bags": a[2], "parts": parts, "part": part} for (d, mkt, row, parts, part), a in agg.items()]
 
@@ -580,7 +592,10 @@ def _build_period(w, lines, till, corp, target_rows, classify, extra_off, month_
             src = by_source.setdefault("Combo sale" if row == "COMBOS" else "Mid-month offer", blank())
             src["units"] += u
             src["revenue"] += rev
-        msh = shops.setdefault(_MARKET_SHOP[r["mkt"]], {k: blank() for k in ("on", "off", "oth", "unc")})
+        elif row == "GIFT":
+            others["Gift bags"]["units"] += u
+            others["Gift bags"]["revenue"] += rev
+        msh =shops.setdefault(_MARKET_SHOP[r["mkt"]], {k: blank() for k in ("on", "off", "oth", "unc")})
         msh[side]["units"] += u
         msh[side]["revenue"] += rev
         if row == "COMBOS":

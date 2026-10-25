@@ -63,7 +63,7 @@ SELECT pt."name" AS product,
           JOIN product_combo_product_product_rel r ON r.product_combo_id = pcx.id
         WHERE pcx.product_template_id = pt.id) AS colour_options
 FROM pos_order p
-JOIN pos_order_line pl ON pl.order_id = p.id
+JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -78,7 +78,7 @@ WHERE p.date_order::date BETWEEN :start_date AND :end_date
   -- (e.g. "Big Man Bag Grey", a KES 1,810 single bag), which must not be counted.
   AND pt."name" LIKE '%+%'
   AND pt."name" NOT ILIKE '%delivery%'
-  AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" NOT ILIKE '%customization%'
 GROUP BY pt."name", pt.id
 ORDER BY qty DESC, value DESC
 """
@@ -90,7 +90,7 @@ SELECT pt."name" AS product, COALESCE(pc."name", '(no till)') AS till, __WK__ AS
        SUM(pl.qty)::int AS qty, ROUND(SUM(pl.price_subtotal_incl))::numeric AS value,
        (pt.id IN (SELECT DISTINCT combo_product_id FROM pos_combo_request WHERE combo_product_id IS NOT NULL)) AS is_cbr
 FROM pos_order p
-JOIN pos_order_line pl ON pl.order_id = p.id
+JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -101,7 +101,7 @@ WHERE p.date_order::date BETWEEN :start_date AND :end_date
   AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
   AND pt."name" LIKE '%+%'
   AND pt."name" NOT ILIKE '%delivery%'
-  AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" NOT ILIKE '%customization%'
 GROUP BY pt."name", COALESCE(pc."name", '(no till)'), pt.id, wk
 """   # __WK__ is swapped for _WK_EXPR (defined further down) when the query runs
 # Combo requests (CBR) raised per till in the month — "did this shop ask for any self-made combos?".
@@ -120,7 +120,7 @@ _TILL_LABEL = {"ktda shop": "KTDA", "ktda": "KTDA", "website sales": "Website", 
 COMBO_DATES_SQL = """
 SELECT pt."name" AS product, p.date_order::date AS d, SUM(pl.qty)::int AS qty
 FROM pos_order p
-JOIN pos_order_line pl ON pl.order_id = p.id
+JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -131,7 +131,7 @@ WHERE p.date_order::date BETWEEN :start_date AND :end_date
   AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
   AND pt."name" LIKE '%+%'
   AND pt."name" NOT ILIKE '%delivery%'
-  AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" NOT ILIKE '%customization%'
 GROUP BY pt."name", p.date_order::date
 HAVING SUM(pl.qty) <> 0
 """
@@ -144,7 +144,7 @@ COMBO_COMPONENTS_SQL = """
 SELECT pt.id AS tmpl_id, pl.qty::int AS qty,
        COALESCE(pl.combo_product_attribute_values, '') AS attrs
 FROM pos_order p
-JOIN pos_order_line pl ON pl.order_id = p.id
+JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -302,11 +302,11 @@ _COMBO_WHERE = """
   AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
   AND pt."name" LIKE '%+%'
   AND pt."name" NOT ILIKE '%delivery%'
-  AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" NOT ILIKE '%customization%'
 """
 COMBO_WEEKLY_SQL = f"""
 SELECT pt.id AS tmpl_id, pt."name" AS product, {_WK_EXPR} AS wk, SUM(pl.qty)::int AS units
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -319,7 +319,7 @@ GROUP BY pt.id, pt."name", wk
 # baseline and the September-so-far tally.
 MONTH_WEEKLY_SQL = f"""
 SELECT {_WK_EXPR} AS wk, SUM(pl.qty)::int AS units
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -412,7 +412,7 @@ MANUAL_POWER_DEALS = {
 DEAL_SALES_SQL = """
 SELECT UPPER(pt."name") AS name, SUM(pl.qty)::int AS units,
        ROUND(SUM(pl.price_subtotal_incl))::int AS val
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -427,7 +427,7 @@ GROUP BY UPPER(pt."name")
 # Same, split by Sun-Sat week — for the per-deal weekly line (like the combo cards).
 DEAL_WEEKLY_SQL = f"""
 SELECT UPPER(pt."name") AS name, {_WK_EXPR} AS wk, SUM(pl.qty)::int AS units
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -443,7 +443,7 @@ GROUP BY UPPER(pt."name"), wk
 # can carry its per-shop sold figure, not just the Kenya-wide total.
 DEAL_SALES_BY_SHOP_SQL = """
 SELECT UPPER(pc."name") AS shop, UPPER(pt."name") AS name, SUM(pl.qty)::int AS units
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -461,7 +461,7 @@ GROUP BY UPPER(pc."name"), UPPER(pt."name")
 DEAL_SALES_SHOP_WEEK_SQL = f"""
 SELECT UPPER(pc."name") AS shop, UPPER(pt."name") AS name, {_WK_EXPR} AS wk,
        SUM(pl.qty)::int AS units, ROUND(SUM(pl.price_subtotal_incl))::int AS val
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -1024,7 +1024,7 @@ def _bag_sales_sql(market_sql):
     return f"""
 SELECT UPPER(pt."name") AS name, SUM(pl.qty)::int AS units,
        ROUND(SUM(pl.price_subtotal_incl))::int AS revenue
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
@@ -1032,7 +1032,7 @@ LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0 AND NOT COALESCE(pl.sub_product_line, false)
   {market_sql}
   AND pt."name" NOT LIKE '%+%'
-  AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customization%'
   AND pt."name" NOT ILIKE '%strap%' AND pt."name" NOT ILIKE 'gift bag%'
 GROUP BY UPPER(pt."name")
 """
@@ -1050,7 +1050,7 @@ def _bag_sales_daily_sql(market_sql):
     bag ACTUALLY sold instead of calendar days elapsed."""
     return f"""
 SELECT p.date_order::date AS d, UPPER(pt."name") AS name, SUM(pl.qty)::int AS units
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
@@ -1058,7 +1058,7 @@ LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0 AND NOT COALESCE(pl.sub_product_line, false)
   {market_sql}
   AND pt."name" NOT LIKE '%+%'
-  AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customization%'
   AND pt."name" NOT ILIKE '%strap%' AND pt."name" NOT ILIKE 'gift bag%'
 GROUP BY 1, 2
 """
@@ -1192,19 +1192,19 @@ def _region_on_offer_bags(payload, region_key):
 # Jumbo+Jumbo problem) instead of using the combo button.
 COMBO_BY_SHOP_SQL = f"""
 SELECT UPPER(COALESCE(pc."name",'?')) AS shop, pt."name" AS combo, {_WK_EXPR} AS wk, SUM(pl.qty)::int AS qty
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
   AND lower(COALESCE(pc."name",'')) NOT IN ('sinza','dar-es-alam','uganda')
-  AND pt."name" LIKE '%+%' AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" LIKE '%+%' AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customization%'
 GROUP BY shop, pt."name", wk
 """
 SINGLES_BY_SHOP_SQL = """
 SELECT UPPER(COALESCE(pc."name",'?')) AS shop, UPPER(pt."name") AS name, SUM(pl.qty)::int AS qty
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
@@ -1222,7 +1222,7 @@ GROUP BY shop, UPPER(pt."name")
 JJ_WK1_PAIRS_SQL = f"""
 WITH jj AS (
   SELECT p.id AS oid, SUM(pl.qty)::int AS jumbos
-  FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+  FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
   LEFT JOIN pos_session ps ON p.session_id = ps.id
   LEFT JOIN pos_config pc ON ps.config_id = pc.id
   LEFT JOIN product_product pp ON pl.product_id = pp.id

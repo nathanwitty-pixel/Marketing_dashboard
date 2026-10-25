@@ -25,7 +25,7 @@ money comes from*, Offer type summary) covers all three countries, Tanzania and 
 | **Corporate** | ✓ (invoices) | — | — | others |
 | **Mid-month offers** | new products + timed offers + runway bags | listed singles + new products | listed singles + new products | on offer |
 | **Samples** | ✓ | — | — | others |
-| **Gift bags** | ✓ | — | — | others |
+| **Gift bags** | ✓ | ✓ (receipts, refunds netted) | ✓ (receipts, refunds netted) | others |
 
 - **On offer = Power deals + Combos + Deal of wk + Mid-month offers.** Others = Corporate + Samples + Gift bags.
 - **Deal of the Week from 25 Oct 2026** = the regional lists (docs/self-made-combos.md › Regional Deals of the Week).
@@ -48,9 +48,14 @@ money comes from*, Offer type summary) covers all three countries, Tanzania and 
   (*Jumbo + Jumbo* = 2). A **self-made** combo is not on offer as a combo: each of its bags is counted **on its
   own**, exactly like a single sale (Kenya: Power Deal → Deal of wk → Mid-month → Not on offer; Tanzania / Uganda:
   listed single / new product → Mid-month, else Not on offer), with the combo's money split evenly over its bags.
-  Kenya's bags come from the combo's **sub-lines** (`parent_id` = the combo line's product, same order); a
-  returned combo (no sub-lines) falls back to its name's slots. Checked 14 Oct 2026 against the marketing sheet:
+  Kenya's bags come from the combo's **sub-lines** (`parent_id` = the combo line's product, same order). A
+  returned combo's bags come from `POS_LINES` (docs/README.md › Combo refunds): its KES 0 return lines, else the
+  original sale's sub-lines; only a refund with neither falls back to its name's slots. *Fixed 25 Oct 2026:* the
+  KES 0 return lines were also taken off as single bags, so 16 Oct bags came off twice. Checked 14 Oct 2026 against the marketing sheet:
   Oct Wk 1 running-combo bags 234 vs sheet 232, Wk 2 452 vs 451.
+- **Tanzania / Uganda count every bag Sales counts (25 Oct 2026, user's call):** a bag the offer lists don't know
+  (Mini Washbag…) is still counted, under its own name (Not on offer / self-made like any single), and gift bags
+  go to **Gift bags**. Before, 7 Dar-es-Salaam Mini Washbags and 3 Gift Bag A3 were skipped (Oct 2026).
 - Tanzania / Uganda receipts (`lib/receipt_combos`): a running combo → **Combos** (one unit per bag, money split
   evenly over its bags for category / tier); a self-made combo's bags → counted as singles; a single on the market's singles list in
   `offers_monthly.csv`, or a new product → **Mid-month offers**; every other single → **Not on offer**;
@@ -97,8 +102,8 @@ not-on-offer table are point-in-time (today's stock, this month's selling pace) 
 
 ## Buckets
 
-Every Kenya POS line in the window (returns netted, `qty <> 0`; delivery, customisation and
-straps excluded) and every qualifying corporate invoice line falls into exactly one bucket:
+Every Kenya POS line in the window (returns netted, `qty <> 0`; delivery, customisation fees ("Customization …")
+and straps excluded; customized bags count like any bag, as on Sales) and every qualifying corporate invoice line falls into exactly one bucket:
 
 | Bucket | Rule | Tag |
 |---|---|---|
@@ -182,8 +187,8 @@ Every sale is counted **once**, in the channel it actually went through (agreed 
 **Bags printed inside combos** come from Odoo's combo **sub-lines** (`sub_product_line = true`):
 one line per bag inside every combo, with the exact colour variant and a KES 0 price — they cover
 every combo exactly (Sep: 2,053 bags across 946 combo orders). Sub-lines are therefore **excluded
-from single sales** (else each combo bag counted twice). Combo **returns** have no sub-lines, so for a
-returned combo the bags come from `combo_product_attribute_values` (padded to the combo's bag count,
+from single sales** (else each combo bag counted twice). Combo **returns** get their sub-lines from
+`POS_LINES` (docs/README.md › Combo refunds); one that still has none takes its bags from `combo_product_attribute_values` (padded to the combo's bag count,
 name split on `+` if empty). Units only — combo **money** stays on the combo line in Combo sales.
 
 **Colour coverage (audited 25 Sep 2026):** every product variant resolves to its bag — colours,

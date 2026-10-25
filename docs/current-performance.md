@@ -226,6 +226,9 @@ and the bags % differ, so the reader can judge it:
 - **The page's Refresh also rebuilds the offer split** (`self_made_combos.py` → `bags_on_offer.py`, before
   `forward_projections.py`), so the On offer table's All bags matches the Sales card. *Fixed 25 Oct 2026:* the
   refresh skipped it, so the table read a 22 Oct `offer_mix.json` (All bags 12,492 vs Sales 13,918).
+- **Sales counts each refunded combo's bags once** (docs/README.md › Combo refunds, 25 Oct 2026): 6 Oct combos
+  refunded without their bag lines had never been taken off, so POS Sales read 13,053 instead of 13,041. With that
+  and the offer page's fixes, the On offer table's All bags = Sales + the 3 samples it lists.
 - **Last week's bags** (`PERF.previousSalesBags`, the week-over-week base) are read straight from Postgres for
   the previous complete **Sun–Sat** week (`BAGS_SOLD_TOTAL`, the same definition as this week's figure).
   `previous_snapshot.json` is only the fallback when the DB is down. *Fixed 14 Oct 2026:* the snapshot rolled

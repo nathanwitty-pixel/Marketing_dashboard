@@ -243,7 +243,7 @@ def odoo_window_sales(bags, start, end, market):
     q = f"""
     SELECT pt."name" AS product, SUM(pl.qty)::int AS bags
     FROM pos_order p
-    JOIN pos_order_line pl ON pl.order_id = p.id
+    JOIN POS_LINES(p) pl ON pl.order_id = p.id
     LEFT JOIN pos_session ps ON p.session_id = ps.id
     LEFT JOIN pos_config pc ON ps.config_id = pc.id
     LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -297,7 +297,7 @@ def odoo_daily_kenya(bags, start, end, name_sql=None):
     q = f"""
     SELECT p.date_order::date AS d, SUM(pl.qty)::int AS bags
     FROM pos_order p
-    JOIN pos_order_line pl ON pl.order_id = p.id
+    JOIN POS_LINES(p) pl ON pl.order_id = p.id
     LEFT JOIN pos_session ps ON p.session_id = ps.id
     LEFT JOIN pos_config pc ON ps.config_id = pc.id
     LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -337,7 +337,7 @@ def odoo_bag_prices(bags, start, end):
     params = {"s": start, "e": end}
     base = """
     FROM pos_order p
-    JOIN pos_order_line pl ON pl.order_id = p.id
+    JOIN POS_LINES(p) pl ON pl.order_id = p.id
     LEFT JOIN pos_session ps ON p.session_id = ps.id
     LEFT JOIN pos_config pc ON ps.config_id = pc.id
     LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -388,7 +388,7 @@ def odoo_bulk_lines(start, end):
     SELECT p.date_order::date AS d, p."name" AS ord, COALESCE(pc."name",'') AS till,
            pt."name" AS product, SUM(pl.qty)::int AS qty, SUM(pl.price_subtotal_incl)::numeric AS val
     FROM pos_order p
-    JOIN pos_order_line pl ON pl.order_id = p.id
+    JOIN POS_LINES(p) pl ON pl.order_id = p.id
     LEFT JOIN pos_session ps ON p.session_id = ps.id
     LEFT JOIN pos_config pc ON ps.config_id = pc.id
     LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -526,7 +526,7 @@ def reject_variants(start, end):
     SELECT pt."name" AS product, SUM(pl.qty)::int AS qty,
            SUM(pl.price_subtotal_incl)::numeric AS val, MAX(pt.list_price)::numeric AS lp
     FROM pos_order p
-    JOIN pos_order_line pl ON pl.order_id = p.id
+    JOIN POS_LINES(p) pl ON pl.order_id = p.id
     LEFT JOIN pos_session ps ON p.session_id = ps.id
     LEFT JOIN pos_config pc ON ps.config_id = pc.id
     LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -714,7 +714,7 @@ def odoo_bag_daily_value(bags, start, end):
         params[f"bag{i}"] = b + "%"
     q = ('SELECT p.date_order::date AS d, pt."name" AS product, '
          'SUM(pl.qty)::int AS qty, SUM(pl.price_subtotal_incl)::numeric AS val '
-         'FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id '
+         'FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id '
          'LEFT JOIN pos_session ps ON p.session_id = ps.id '
          'LEFT JOIN pos_config pc ON ps.config_id = pc.id '
          'LEFT JOIN product_product pp ON pl.product_id = pp.id '

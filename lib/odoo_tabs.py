@@ -75,7 +75,7 @@ SELECT UPPER(pt."name") AS product,
        END AS shop,
        SUM(pl.qty)::numeric AS bags
 FROM pos_order p
-JOIN pos_order_line pl ON pl.order_id = p.id
+JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id

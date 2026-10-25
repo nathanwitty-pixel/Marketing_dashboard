@@ -19,7 +19,7 @@ from lib import paths
 OFFERS_CSV = paths.data("offers_monthly.csv")
 BULK_MIN = 5
 TILLS = {"sinza": ("sinza", "dar-es-alam"), "uganda": ("uganda",)}
-_SKIP = ("DELIVERY", "GIFT BAG", "DISCOUNT", "CUSTOMI", "STRAP")
+_SKIP = ("DELIVERY", "GIFT BAG", "DISCOUNT", "CUSTOMIZATION", "STRAP")
 
 RECEIPT_LINES_SQL = """
 SELECT o.id AS receipt, o."name" AS ref, o.date_order::date AS d, pt."name" AS product, pl.qty AS qty,
@@ -81,8 +81,10 @@ def _fits(bags, slots):
 
 
 def _receipts(lines, infer):
-    """Receipt lines → {receipt: {d, bags: [(bag, unit)], ref}} with refunded receipts dropped; also the refund count."""
-    by_r, refunded = {}, set()
+    """Receipt lines → {receipt: {d, bags: [(bag, unit)], ref}} with refunded receipts dropped; also the refund count.
+    A combo product line ('A + B') isn't a bag: its bags are its KES 0 sub-lines on the same receipt, which share
+    its price evenly (25 Oct 2026 — it was counted as one extra bag). With no KES 0 bags it counts as before."""
+    by_r, refunded, wraps = {}, set(), {}
     for ln in lines:
         k = bag_key(ln["product"], infer)
         ref = str(ln.get("ref") or "")
@@ -92,10 +94,23 @@ def _receipts(lines, infer):
         q = int(round(float(ln["qty"] or 0)))
         if not k or q <= 0:
             continue
-        unit = int(round(float(ln["amount"] or 0) / q, -1))     # to the nearest 10: 40,000 = 40,001
         rec = by_r.setdefault(ln["receipt"], {"d": ln["d"], "bags": [], "ref": ref})
+        if "+" in str(ln["product"]):
+            wraps.setdefault(ln["receipt"], []).append((k, q, float(ln["amount"] or 0)))
+            continue
+        unit = int(round(float(ln["amount"] or 0) / q, -1))     # to the nearest 10: 40,000 = 40,001
         rec["bags"] += [(k, unit)] * q
-    return {k: v for k, v in by_r.items() if not v["ref"] or v["ref"] not in refunded}, refunded
+    for r, ws in wraps.items():
+        bags = by_r[r]["bags"]
+        zeros = [i for i, (_k, u) in enumerate(bags) if u == 0]
+        if zeros:
+            unit = int(round(sum(a for _k, _q, a in ws) / len(zeros), -1))
+            for i in zeros:
+                bags[i] = (bags[i][0], unit)
+        else:
+            for k, q, a in ws:
+                bags += [(k, int(round(a / q, -1)))] * q
+    return {k: v for k, v in by_r.items() if (v["bags"]) and (not v["ref"] or v["ref"] not in refunded)}, refunded
 
 
 def _groups(bags):

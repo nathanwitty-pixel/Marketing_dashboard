@@ -87,7 +87,7 @@ WHERE pt."name" NOT LIKE '%+%'
 SALES_SQL = """
 SELECT ps.config_id AS cfg, pl.product_id, (o.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date AS d,
        SUM(pl.qty) AS qty
-FROM pos_order o JOIN pos_order_line pl ON pl.order_id = o.id
+FROM pos_order o JOIN POS_LINES(o) pl ON pl.order_id = o.id
 JOIN pos_session ps ON ps.id = o.session_id
 WHERE (o.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETWEEN :s AND :e
   AND o.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0

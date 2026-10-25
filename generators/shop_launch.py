@@ -28,7 +28,7 @@ SALES_SQL = """
 SELECT p.date_order::date AS d, UPPER(pt."name") AS name,
        SUM(pl.qty)::numeric AS bags, ROUND(SUM(pl.price_subtotal_incl))::numeric AS kes
 FROM pos_order p
-JOIN pos_order_line pl ON pl.order_id = p.id
+JOIN POS_LINES(p) pl ON pl.order_id = p.id
 JOIN pos_session ps ON p.session_id = ps.id
 JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id

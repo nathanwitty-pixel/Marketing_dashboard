@@ -473,7 +473,8 @@ if bag_rev and bag_rev["bags"] and revenue_target and total_target:
             "range":     _om["range"],
             "on":        on_total,
             "rows":      groups,
-            "total":     {"label": "All bags", "bags": round(_all),
+            # corporate counted as the Sales card counts it (whole bags), so the two totals agree
+            "total":     {"label": "All bags", "bags": round(_all - _capp_bags) + corporate_bags,
                           "kes": sum(g["kes"] for g in groups),
                           "projBags": sum(g["projBags"] for g in groups),
                           "projKes": sum(g["projKes"] for g in groups),

@@ -36,7 +36,7 @@ receipts AS (
   FROM pos_order p
   JOIN pos_session ps ON ps.id = p.session_id
   JOIN shop_of s ON s.config_id = ps.config_id
-  JOIN pos_order_line pl ON pl.order_id = p.id
+  JOIN POS_LINES(p) pl ON pl.order_id = p.id
   LEFT JOIN product_product pp ON pp.id = pl.product_id
   LEFT JOIN product_template pt ON pt.id = pp.product_tmpl_id
   CROSS JOIN params dr

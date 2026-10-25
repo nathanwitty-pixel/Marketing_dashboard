@@ -1,6 +1,6 @@
 {
  "month": "October 2026",
- "generated": "25 Oct 2026 21:08",
+ "generated": "25 Oct 2026 22:14",
  "range": "01 Oct – 31 Oct 2026",
  "rows": [
   {
@@ -8,8 +8,8 @@
    "label": "Not on offer",
    "on": false,
    "where": "Kenya, Tanzania, Uganda",
-   "units": 5293.0,
-   "revenue": 12149933,
+   "units": 5307.0,
+   "revenue": 12171036,
    "bags": [
     {
      "bag": "FEROZ",
@@ -36,14 +36,14 @@
      "bag": "MAN BAG",
      "category": "MAN BAG",
      "tier": "Entry",
-     "units": 342.0,
+     "units": 343.0,
      "revenue": 536026
     },
     {
      "bag": "MEGA",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 152.0,
+     "units": 153.0,
      "revenue": 439818
     },
     {
@@ -64,8 +64,8 @@
      "bag": "SARAI",
      "category": "TRAVEL",
      "tier": "Premium",
-     "units": 100.0,
-     "revenue": 380551
+     "units": 101.0,
+     "revenue": 380552
     },
     {
      "bag": "LOLA",
@@ -86,7 +86,7 @@
      "category": "BABY BAG",
      "tier": "Premium",
      "units": 50.0,
-     "revenue": 216974
+     "revenue": 216975
     },
     {
      "bag": "REMI",
@@ -134,7 +134,7 @@
      "bag": "AMAYA",
      "category": "HANDBAG",
      "tier": "Premium",
-     "units": 50.0,
+     "units": 52.0,
      "revenue": 151953
     },
     {
@@ -247,7 +247,7 @@
      "category": "SCHOOL BAG",
      "tier": "Entry",
      "units": 50.0,
-     "revenue": 94533
+     "revenue": 94534
     },
     {
      "bag": "MONAH BP",
@@ -257,18 +257,18 @@
      "revenue": 91825
     },
     {
+     "bag": "LIAM",
+     "category": "TRAVEL",
+     "tier": "Core",
+     "units": 46.0,
+     "revenue": 91500
+    },
+    {
      "bag": "JADE",
      "category": "BRIEFCASE",
      "tier": "Premium",
      "units": 30.0,
      "revenue": 89085
-    },
-    {
-     "bag": "LIAM",
-     "category": "TRAVEL",
-     "tier": "Core",
-     "units": 45.0,
-     "revenue": 88701
     },
     {
      "bag": "LUNA",
@@ -537,13 +537,6 @@
      "revenue": 19835
     },
     {
-     "bag": "JAYDEN MAN",
-     "category": "MAN BAG",
-     "tier": "Entry",
-     "units": 12.0,
-     "revenue": 19600
-    },
-    {
      "bag": "ZELUS",
      "category": "BACKPACK",
      "tier": "Core",
@@ -556,6 +549,13 @@
      "tier": "Entry",
      "units": 12.0,
      "revenue": 19200
+    },
+    {
+     "bag": "JAYDEN MAN",
+     "category": "MAN BAG",
+     "tier": "Entry",
+     "units": 11.0,
+     "revenue": 17600
     },
     {
      "bag": "KAYLA",
@@ -612,6 +612,13 @@
      "tier": "Core",
      "units": 4.0,
      "revenue": 12000
+    },
+    {
+     "bag": "EMBROIDARY",
+     "category": "UNASSIGNED",
+     "tier": "Unassigned",
+     "units": 2.0,
+     "revenue": 10001
     },
     {
      "bag": "LUCA",
@@ -684,6 +691,13 @@
      "revenue": 5000
     },
     {
+     "bag": "MINI WASHBAG BLACK",
+     "category": "WASHBAG",
+     "tier": "Unassigned",
+     "units": 3.0,
+     "revenue": 4600
+    },
+    {
      "bag": "MONTANA",
      "category": "SLING",
      "tier": "Entry",
@@ -717,6 +731,13 @@
      "tier": "Premium",
      "units": 1.0,
      "revenue": 3100
+    },
+    {
+     "bag": "MINI WASHBAG CHOCO",
+     "category": "WASHBAG",
+     "tier": "Unassigned",
+     "units": 2.0,
+     "revenue": 3000
     },
     {
      "bag": "CODE 4 ANKARA",
@@ -780,6 +801,20 @@
      "tier": "Entry",
      "units": 1.0,
      "revenue": 1600
+    },
+    {
+     "bag": "MINI WASHBAG GREY",
+     "category": "WASHBAG",
+     "tier": "Unassigned",
+     "units": 1.0,
+     "revenue": 1400
+    },
+    {
+     "bag": "MINI WASHBAG GREEN",
+     "category": "WASHBAG",
+     "tier": "Unassigned",
+     "units": 1.0,
+     "revenue": 1300
     }
    ]
   },
@@ -788,8 +823,8 @@
    "label": "Power deals",
    "on": true,
    "where": "Kenya only",
-   "units": 3518.0,
-   "revenue": 7138112,
+   "units": 3527.0,
+   "revenue": 7135311,
    "bags": [
     {
      "bag": "ANTITHEFT",
@@ -802,14 +837,14 @@
      "bag": "JUMBO",
      "category": "TRAVEL",
      "tier": "Premium",
-     "units": 469.0,
+     "units": 473.0,
      "revenue": 1320303
     },
     {
      "bag": "CODE 3",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 725.0,
+     "units": 726.0,
      "revenue": 1312470
     },
     {
@@ -823,8 +858,8 @@
      "bag": "TRAVEL",
      "category": "TRAVEL",
      "tier": "Core",
-     "units": 324.0,
-     "revenue": 724087
+     "units": 326.0,
+     "revenue": 721286
     },
     {
      "bag": "AURORA",
@@ -851,14 +886,14 @@
      "bag": "MOON BAG",
      "category": "SLING",
      "tier": "Entry",
-     "units": 208.0,
+     "units": 209.0,
      "revenue": 250767
     },
     {
      "bag": "NIZANA",
      "category": "SLING",
      "tier": "Entry",
-     "units": 179.0,
+     "units": 180.0,
      "revenue": 217067
     }
    ]
@@ -1067,8 +1102,8 @@
    "label": "Deal of wk",
    "on": true,
    "where": "Kenya only",
-   "units": 1510.0,
-   "revenue": 2804483,
+   "units": 1511.0,
+   "revenue": 2804482,
    "bags": [
     {
      "bag": "FABELA",
@@ -1095,7 +1130,7 @@
      "bag": "KAI",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 97.0,
+     "units": 98.0,
      "revenue": 233850
     },
     {
@@ -1173,7 +1208,7 @@
      "category": "SLING",
      "tier": "Entry",
      "units": 48.0,
-     "revenue": 58884
+     "revenue": 58883
     },
     {
      "bag": "LIAM",
@@ -1651,9 +1686,9 @@
    "key": "GIFT",
    "label": "Gift bags",
    "on": false,
-   "where": "Kenya only",
-   "units": 222.0,
-   "revenue": 42000,
+   "where": "Kenya, Tanzania, Uganda",
+   "units": 226.0,
+   "revenue": 42714,
    "bags": [
     {
      "bag": "GIFT BAG",
@@ -1661,13 +1696,27 @@
      "tier": "Entry",
      "units": 222.0,
      "revenue": 42000
+    },
+    {
+     "bag": "GIFT BAG A3",
+     "category": "GIFT BAG",
+     "tier": "Unassigned",
+     "units": 3.0,
+     "revenue": 600
+    },
+    {
+     "bag": "GIFT BAG A4 RED",
+     "category": "GIFT BAG",
+     "tier": "Unassigned",
+     "units": 1.0,
+     "revenue": 114
     }
    ]
   }
  ],
  "unclassified": {
-  "units": 148,
-  "revenue": -29028
+  "units": 151,
+  "revenue": -19228
  },
  "unclassifiedBags": [
   {
@@ -1681,6 +1730,11 @@
    "revenue": 6844
   },
   {
+   "name": "CUSTOMIZED JADE",
+   "units": 1,
+   "revenue": 4300
+  },
+  {
    "name": "PPM(SMALL)",
    "units": 1,
    "revenue": 3828
@@ -1691,14 +1745,14 @@
    "revenue": 3700
   },
   {
+   "name": "CUSTOMIZED LEGACY",
+   "units": 1,
+   "revenue": 3500
+  },
+  {
    "name": "ENZO GREEN/RED",
    "units": 1,
    "revenue": 2100
-  },
-  {
-   "name": "JAYDEN",
-   "units": -1,
-   "revenue": -2000
   }
  ],
  "midParts": [

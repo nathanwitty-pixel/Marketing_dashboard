@@ -37,7 +37,7 @@ SHOP_DAYS = 14          # Kenya per-shop sales window
 # Kenya per-shop sales: the same product filters as the per-day bag query, by till.
 SHOP_SALES_SQL = """
 SELECT UPPER(COALESCE(pc."name", 'WEBSITE')) AS till, UPPER(pt."name") AS name, SUM(pl.qty)::int AS units
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
@@ -46,7 +46,7 @@ WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', '
   AND NOT COALESCE(pl.sub_product_line, false)
   AND lower(COALESCE(pc."name",'')) NOT IN ('sinza','dar-es-alam','uganda')
   AND pt."name" NOT LIKE '%+%'
-  AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customization%'
   AND pt."name" NOT ILIKE '%strap%' AND pt."name" NOT ILIKE 'gift bag%'
 GROUP BY 1, 2
 """

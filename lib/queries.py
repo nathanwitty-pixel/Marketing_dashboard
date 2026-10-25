@@ -132,7 +132,7 @@ _BAGS_WHERE = """
   AND l.full_product_name NOT ILIKE '%+%'
   AND l.full_product_name NOT ILIKE 'gift bag%'
   AND l.full_product_name NOT ILIKE '%delivery%'
-  AND l.full_product_name NOT ILIKE '%customi%'
+  AND l.full_product_name NOT ILIKE '%customization%'
   AND l.full_product_name NOT ILIKE '%strap%'
 """
 
@@ -141,8 +141,8 @@ WEEKLY_BAGS_TOTAL = f"""
 SELECT COALESCE(SUM(l.qty), 0)::numeric              AS bags,
        COALESCE(SUM(l.price_subtotal_incl), 0)::numeric AS value,
        COUNT(*)                                       AS lines
-FROM pos_order_line l
-JOIN pos_order o ON o.id = l.order_id
+FROM pos_order o
+JOIN POS_LINES(o) l ON l.order_id = o.id
 WHERE {_BAGS_WHERE}
 """
 
@@ -157,8 +157,8 @@ WEEKLY_BAGS_SOLD = f"""
 SELECT l.full_product_name                            AS product,
        SUM(l.qty)::numeric                            AS bags,
        SUM(l.price_subtotal_incl)::numeric            AS value
-FROM pos_order_line l
-JOIN pos_order o ON o.id = l.order_id
+FROM pos_order o
+JOIN POS_LINES(o) l ON l.order_id = o.id
 WHERE {_BAGS_WHERE}
 GROUP BY l.full_product_name
 ORDER BY bags DESC
