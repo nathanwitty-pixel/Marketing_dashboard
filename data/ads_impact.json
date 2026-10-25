@@ -16,6 +16,18 @@
      "v": "3,153",
      "n": "+7% week on week, KES 65 each",
      "tone": "up"
+    },
+    {
+     "k": "Ads as % of revenue",
+     "v": "2.9%",
+     "n": "was 3.0% the week before, KES 8,424,669 revenue",
+     "tone": ""
+    },
+    {
+     "k": "Ad cost per bag sold",
+     "v": "KES 67",
+     "n": "was KES 61, 3,703 bags sold",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -40,44 +52,85 @@
        "≈KES 213,664",
        "2,653",
        "KES 68",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "3,561",
+       "2,422",
+       "KES 8,117,463",
+       {
+        "t": "2.6%",
+        "c": ""
+       },
+       {
+        "t": "KES 60",
+        "c": ""
+       },
+       {
+        "t": "+7%",
+        "c": "up"
+       },
+       {
+        "t": "-13%",
+        "c": "down"
+       }
       ],
       [
        "Tanzania",
        "≈KES 14,969",
        "441",
        "KES 34",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "105",
+       "56",
+       "KES 204,240",
+       {
+        "t": "7.3%",
+        "c": "down"
+       },
+       {
+        "t": "KES 143",
+        "c": ""
+       },
+       {
+        "t": "+9%",
+        "c": "up"
+       },
+       {
+        "t": "+19%",
+        "c": "up"
+       }
       ],
       [
        "Uganda",
        "≈KES 18,496",
        "59",
        "KES 160",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "37",
+       "25",
+       "KES 102,966",
+       {
+        "t": "18.0%",
+        "c": "down"
+       },
+       {
+        "t": "KES 500",
+        "c": "down"
+       },
+       {
+        "t": "-11%",
+        "c": "down"
+       },
+       {
+        "t": "-4%",
+        "c": "down"
+       }
       ]
      ]
     }
    ],
    "actions": [
+    {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 36 bags and 26 orders in the first 7 days, against 37 bags and 25 orders on the same days a week earlier (-3%). No drop so far, so those ads weren't driving till sales."
+    },
     {
      "kind": "event",
      "market": "Kenya",
@@ -90,8 +143,33 @@
     },
     {
      "kind": "watch",
+     "market": "Kenya",
+     "text": "Kenya: messages +7% but orders -13% week on week. The extra chats aren't buying: check which campaign's messages turn into sales before adding budget."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Kenya",
+     "text": "Corporate offers campaign: KES 5,607 spent and 99 messages (11 Oct to 17 Oct); corporate clients paid KES 13,920 for 3 bags in that time, 2 times the spend. Not all of it came from the ads: tag each corporate chat with its source to see the real share."
+    },
+    {
+     "kind": "watch",
      "market": "Tanzania",
      "text": "Tanzania: WhatsApp Status is 74% of spend at KES 30 a message, but frequency doubled to 2.7. A new vertical Status creative is needed, and Oct Offers 2 is due a refresh around 20 Oct."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "win",
@@ -177,6 +255,66 @@
        30.0,
        66.0,
        59.0
+      ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
       ]
      }
     },
@@ -320,6 +458,18 @@
      "v": "3,153",
      "n": "+7% week on week, KES 65 each",
      "tone": "up"
+    },
+    {
+     "k": "Ads as % of revenue",
+     "v": "2.9%",
+     "n": "was 3.0% the week before, KES 8,424,669 revenue",
+     "tone": ""
+    },
+    {
+     "k": "Ad cost per bag sold",
+     "v": "KES 67",
+     "n": "was KES 61, 3,703 bags sold",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -344,44 +494,85 @@
        "≈KES 213,664",
        "2,653",
        "KES 68",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "3,561",
+       "2,422",
+       "KES 8,117,463",
+       {
+        "t": "2.6%",
+        "c": ""
+       },
+       {
+        "t": "KES 60",
+        "c": ""
+       },
+       {
+        "t": "+7%",
+        "c": "up"
+       },
+       {
+        "t": "-13%",
+        "c": "down"
+       }
       ],
       [
        "Tanzania",
        "≈KES 14,969",
        "441",
        "KES 34",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "105",
+       "56",
+       "KES 204,240",
+       {
+        "t": "7.3%",
+        "c": "down"
+       },
+       {
+        "t": "KES 143",
+        "c": ""
+       },
+       {
+        "t": "+9%",
+        "c": "up"
+       },
+       {
+        "t": "+19%",
+        "c": "up"
+       }
       ],
       [
        "Uganda",
        "≈KES 18,496",
        "59",
        "KES 160",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "37",
+       "25",
+       "KES 102,966",
+       {
+        "t": "18.0%",
+        "c": "down"
+       },
+       {
+        "t": "KES 500",
+        "c": "down"
+       },
+       {
+        "t": "-11%",
+        "c": "down"
+       },
+       {
+        "t": "-4%",
+        "c": "down"
+       }
       ]
      ]
     }
    ],
    "actions": [
+    {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 36 bags and 26 orders in the first 7 days, against 37 bags and 25 orders on the same days a week earlier (-3%). No drop so far, so those ads weren't driving till sales."
+    },
     {
      "kind": "event",
      "market": "Kenya",
@@ -394,8 +585,33 @@
     },
     {
      "kind": "watch",
+     "market": "Kenya",
+     "text": "Kenya: messages +7% but orders -13% week on week. The extra chats aren't buying: check which campaign's messages turn into sales before adding budget."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Kenya",
+     "text": "Corporate offers campaign: KES 5,607 spent and 99 messages (11 Oct to 17 Oct); corporate clients paid KES 13,920 for 3 bags in that time, 2 times the spend. Not all of it came from the ads: tag each corporate chat with its source to see the real share."
+    },
+    {
+     "kind": "watch",
      "market": "Tanzania",
      "text": "Tanzania: WhatsApp Status is 74% of spend at KES 30 a message, but frequency doubled to 2.7. A new vertical Status creative is needed, and Oct Offers 2 is due a refresh around 20 Oct."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "win",
@@ -481,6 +697,66 @@
        30.0,
        66.0,
        59.0
+      ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
       ]
      }
     },
@@ -624,6 +900,18 @@
      "v": "3,153",
      "n": "+7% week on week, KES 65 each",
      "tone": "up"
+    },
+    {
+     "k": "Ads as % of revenue",
+     "v": "2.9%",
+     "n": "was 3.0% the week before, KES 8,424,669 revenue",
+     "tone": ""
+    },
+    {
+     "k": "Ad cost per bag sold",
+     "v": "KES 67",
+     "n": "was KES 61, 3,703 bags sold",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -648,44 +936,85 @@
        "≈KES 213,664",
        "2,653",
        "KES 68",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "3,561",
+       "2,422",
+       "KES 8,117,463",
+       {
+        "t": "2.6%",
+        "c": ""
+       },
+       {
+        "t": "KES 60",
+        "c": ""
+       },
+       {
+        "t": "+7%",
+        "c": "up"
+       },
+       {
+        "t": "-13%",
+        "c": "down"
+       }
       ],
       [
        "Tanzania",
        "≈KES 14,969",
        "441",
        "KES 34",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "105",
+       "56",
+       "KES 204,240",
+       {
+        "t": "7.3%",
+        "c": "down"
+       },
+       {
+        "t": "KES 143",
+        "c": ""
+       },
+       {
+        "t": "+9%",
+        "c": "up"
+       },
+       {
+        "t": "+19%",
+        "c": "up"
+       }
       ],
       [
        "Uganda",
        "≈KES 18,496",
        "59",
        "KES 160",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "37",
+       "25",
+       "KES 102,966",
+       {
+        "t": "18.0%",
+        "c": "down"
+       },
+       {
+        "t": "KES 500",
+        "c": "down"
+       },
+       {
+        "t": "-11%",
+        "c": "down"
+       },
+       {
+        "t": "-4%",
+        "c": "down"
+       }
       ]
      ]
     }
    ],
    "actions": [
+    {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 36 bags and 26 orders in the first 7 days, against 37 bags and 25 orders on the same days a week earlier (-3%). No drop so far, so those ads weren't driving till sales."
+    },
     {
      "kind": "event",
      "market": "Kenya",
@@ -698,8 +1027,33 @@
     },
     {
      "kind": "watch",
+     "market": "Kenya",
+     "text": "Kenya: messages +7% but orders -13% week on week. The extra chats aren't buying: check which campaign's messages turn into sales before adding budget."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Kenya",
+     "text": "Corporate offers campaign: KES 5,607 spent and 99 messages (11 Oct to 17 Oct); corporate clients paid KES 13,920 for 3 bags in that time, 2 times the spend. Not all of it came from the ads: tag each corporate chat with its source to see the real share."
+    },
+    {
+     "kind": "watch",
      "market": "Tanzania",
      "text": "Tanzania: WhatsApp Status is 74% of spend at KES 30 a message, but frequency doubled to 2.7. A new vertical Status creative is needed, and Oct Offers 2 is due a refresh around 20 Oct."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "win",
@@ -780,6 +1134,66 @@
        30.0,
        66.0,
        59.0
+      ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
       ]
      }
     },
@@ -923,6 +1337,18 @@
      "v": "3,153",
      "n": "+7% week on week, KES 65 each",
      "tone": "up"
+    },
+    {
+     "k": "Ads as % of revenue",
+     "v": "2.9%",
+     "n": "was 3.0% the week before, KES 8,424,669 revenue",
+     "tone": ""
+    },
+    {
+     "k": "Ad cost per bag sold",
+     "v": "KES 67",
+     "n": "was KES 61, 3,703 bags sold",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -947,44 +1373,85 @@
        "≈KES 213,664",
        "2,653",
        "KES 68",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "3,561",
+       "2,422",
+       "KES 8,117,463",
+       {
+        "t": "2.6%",
+        "c": ""
+       },
+       {
+        "t": "KES 60",
+        "c": ""
+       },
+       {
+        "t": "+7%",
+        "c": "up"
+       },
+       {
+        "t": "-13%",
+        "c": "down"
+       }
       ],
       [
        "Tanzania",
        "≈KES 14,969",
        "441",
        "KES 34",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "105",
+       "56",
+       "KES 204,240",
+       {
+        "t": "7.3%",
+        "c": "down"
+       },
+       {
+        "t": "KES 143",
+        "c": ""
+       },
+       {
+        "t": "+9%",
+        "c": "up"
+       },
+       {
+        "t": "+19%",
+        "c": "up"
+       }
       ],
       [
        "Uganda",
        "≈KES 18,496",
        "59",
        "KES 160",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "37",
+       "25",
+       "KES 102,966",
+       {
+        "t": "18.0%",
+        "c": "down"
+       },
+       {
+        "t": "KES 500",
+        "c": "down"
+       },
+       {
+        "t": "-11%",
+        "c": "down"
+       },
+       {
+        "t": "-4%",
+        "c": "down"
+       }
       ]
      ]
     }
    ],
    "actions": [
+    {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 36 bags and 26 orders in the first 7 days, against 37 bags and 25 orders on the same days a week earlier (-3%). No drop so far, so those ads weren't driving till sales."
+    },
     {
      "kind": "event",
      "market": "Kenya",
@@ -997,8 +1464,33 @@
     },
     {
      "kind": "watch",
+     "market": "Kenya",
+     "text": "Kenya: messages +7% but orders -13% week on week. The extra chats aren't buying: check which campaign's messages turn into sales before adding budget."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Kenya",
+     "text": "Corporate offers campaign: KES 5,607 spent and 99 messages (11 Oct to 17 Oct); corporate clients paid KES 13,920 for 3 bags in that time, 2 times the spend. Not all of it came from the ads: tag each corporate chat with its source to see the real share."
+    },
+    {
+     "kind": "watch",
      "market": "Tanzania",
      "text": "Tanzania: WhatsApp Status is 74% of spend at KES 30 a message, but frequency doubled to 2.7. A new vertical Status creative is needed, and Oct Offers 2 is due a refresh around 20 Oct."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "win",
@@ -1079,6 +1571,66 @@
        30.0,
        66.0,
        59.0
+      ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
       ]
      }
     },
@@ -1222,6 +1774,18 @@
      "v": "3,153",
      "n": "+7% week on week, KES 65 each",
      "tone": "up"
+    },
+    {
+     "k": "Posted more, next week",
+     "v": "+13.0%",
+     "n": "sales change for 58 bag-weeks posted more",
+     "tone": "up"
+    },
+    {
+     "k": "Posted less, next week",
+     "v": "-8.5%",
+     "n": "sales change for 57 bag-weeks posted less",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -1242,139 +1806,144 @@
       [
        "Kenya",
        "20–26 Sep",
-       "",
+       "974",
        "≈KES 206,553",
        "3,178",
-       "",
-       "",
-       "",
-       ""
+       "3,548",
+       "2,832",
+       "KES 7,202,900",
+       "2.9%"
       ],
       [
        "",
        "27 Sep–3 Oct",
-       "",
+       "591",
        "≈KES 215,211",
        "2,817",
-       "",
-       "",
-       "",
-       ""
+       "3,742",
+       "3,013",
+       "KES 7,790,203",
+       "2.8%"
       ],
       [
        "",
        "4–10 Oct",
-       "",
+       "448",
        "≈KES 222,881",
        "2,471",
-       "",
-       "",
-       "",
-       ""
+       "4,077",
+       "2,777",
+       "KES 8,405,291",
+       "2.7%"
       ],
       [
        "",
        "11–17 Oct",
-       "",
+       "883",
        "≈KES 213,664",
        "2,653",
-       "",
-       "",
-       "",
-       ""
+       "3,561",
+       "2,422",
+       "KES 8,117,463",
+       "2.6%"
       ],
       [
        "Tanzania",
        "20–26 Sep",
-       "",
+       "98",
        "≈KES 16,672",
        "423",
-       "",
-       "",
-       "",
-       ""
+       "164",
+       "74",
+       "KES 298,640",
+       "5.6%"
       ],
       [
        "",
        "27 Sep–3 Oct",
-       "",
+       "99",
        "≈KES 12,878",
        "452",
-       "",
-       "",
-       "",
-       ""
+       "104",
+       "44",
+       "KES 194,520",
+       "6.6%"
       ],
       [
        "",
        "4–10 Oct",
-       "",
+       "132",
        "≈KES 16,035",
        "405",
-       "",
-       "",
-       "",
-       ""
+       "98",
+       "47",
+       "KES 184,100",
+       "8.7%"
       ],
       [
        "",
        "11–17 Oct",
-       "",
+       "134",
        "≈KES 14,969",
        "441",
-       "",
-       "",
-       "",
-       ""
+       "105",
+       "56",
+       "KES 204,240",
+       "7.3%"
       ],
       [
        "Uganda",
        "20–26 Sep",
-       "",
+       "228",
        "≈KES 15,326",
        "73",
-       "",
-       "",
-       "",
-       ""
+       "64",
+       "33",
+       "KES 170,465",
+       "9.0%"
       ],
       [
        "",
        "27 Sep–3 Oct",
-       "",
+       "203",
        "≈KES 12,063",
        "30",
-       "",
-       "",
-       "",
-       ""
+       "126",
+       "36",
+       "KES 308,856",
+       "3.9%"
       ],
       [
        "",
        "4–10 Oct",
-       "",
+       "159",
        "≈KES 19,505",
        "66",
-       "",
-       "",
-       "",
-       ""
+       "46",
+       "26",
+       "KES 120,000",
+       "16.3%"
       ],
       [
        "",
        "11–17 Oct",
-       "",
+       "185",
        "≈KES 18,496",
        "59",
-       "",
-       "",
-       "",
-       ""
+       "37",
+       "25",
+       "KES 102,966",
+       "18.0%"
       ]
      ]
     }
    ],
    "actions": [
+    {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 36 bags and 26 orders in the first 7 days, against 37 bags and 25 orders on the same days a week earlier (-3%). No drop so far, so those ads weren't driving till sales."
+    },
     {
      "kind": "event",
      "market": "Kenya",
@@ -1387,8 +1956,33 @@
     },
     {
      "kind": "watch",
+     "market": "Kenya",
+     "text": "Kenya: messages +7% but orders -13% week on week. The extra chats aren't buying: check which campaign's messages turn into sales before adding budget."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Kenya",
+     "text": "Corporate offers campaign: KES 5,607 spent and 99 messages (11 Oct to 17 Oct); corporate clients paid KES 13,920 for 3 bags in that time, 2 times the spend. Not all of it came from the ads: tag each corporate chat with its source to see the real share."
+    },
+    {
+     "kind": "watch",
      "market": "Tanzania",
      "text": "Tanzania: WhatsApp Status is 74% of spend at KES 30 a message, but frequency doubled to 2.7. A new vertical Status creative is needed, and Oct Offers 2 is due a refresh around 20 Oct."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "win",
@@ -1479,6 +2073,66 @@
        30.0,
        66.0,
        59.0
+      ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
       ]
      }
     },
@@ -1622,6 +2276,18 @@
      "v": "3,153",
      "n": "+7% week on week, KES 65 each",
      "tone": "up"
+    },
+    {
+     "k": "Posted more, next week",
+     "v": "+13.0%",
+     "n": "sales change for 58 bag-weeks posted more",
+     "tone": "up"
+    },
+    {
+     "k": "Posted less, next week",
+     "v": "-8.5%",
+     "n": "sales change for 57 bag-weeks posted less",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -1642,139 +2308,144 @@
       [
        "Kenya",
        "20–26 Sep",
-       "",
+       "974",
        "≈KES 206,553",
        "3,178",
-       "",
-       "",
-       "",
-       ""
+       "3,548",
+       "2,832",
+       "KES 7,202,900",
+       "2.9%"
       ],
       [
        "",
        "27 Sep–3 Oct",
-       "",
+       "591",
        "≈KES 215,211",
        "2,817",
-       "",
-       "",
-       "",
-       ""
+       "3,742",
+       "3,013",
+       "KES 7,790,203",
+       "2.8%"
       ],
       [
        "",
        "4–10 Oct",
-       "",
+       "448",
        "≈KES 222,881",
        "2,471",
-       "",
-       "",
-       "",
-       ""
+       "4,077",
+       "2,777",
+       "KES 8,405,291",
+       "2.7%"
       ],
       [
        "",
        "11–17 Oct",
-       "",
+       "883",
        "≈KES 213,664",
        "2,653",
-       "",
-       "",
-       "",
-       ""
+       "3,561",
+       "2,422",
+       "KES 8,117,463",
+       "2.6%"
       ],
       [
        "Tanzania",
        "20–26 Sep",
-       "",
+       "98",
        "≈KES 16,672",
        "423",
-       "",
-       "",
-       "",
-       ""
+       "164",
+       "74",
+       "KES 298,640",
+       "5.6%"
       ],
       [
        "",
        "27 Sep–3 Oct",
-       "",
+       "99",
        "≈KES 12,878",
        "452",
-       "",
-       "",
-       "",
-       ""
+       "104",
+       "44",
+       "KES 194,520",
+       "6.6%"
       ],
       [
        "",
        "4–10 Oct",
-       "",
+       "132",
        "≈KES 16,035",
        "405",
-       "",
-       "",
-       "",
-       ""
+       "98",
+       "47",
+       "KES 184,100",
+       "8.7%"
       ],
       [
        "",
        "11–17 Oct",
-       "",
+       "134",
        "≈KES 14,969",
        "441",
-       "",
-       "",
-       "",
-       ""
+       "105",
+       "56",
+       "KES 204,240",
+       "7.3%"
       ],
       [
        "Uganda",
        "20–26 Sep",
-       "",
+       "228",
        "≈KES 15,326",
        "73",
-       "",
-       "",
-       "",
-       ""
+       "64",
+       "33",
+       "KES 170,465",
+       "9.0%"
       ],
       [
        "",
        "27 Sep–3 Oct",
-       "",
+       "203",
        "≈KES 12,063",
        "30",
-       "",
-       "",
-       "",
-       ""
+       "126",
+       "36",
+       "KES 308,856",
+       "3.9%"
       ],
       [
        "",
        "4–10 Oct",
-       "",
+       "159",
        "≈KES 19,505",
        "66",
-       "",
-       "",
-       "",
-       ""
+       "46",
+       "26",
+       "KES 120,000",
+       "16.3%"
       ],
       [
        "",
        "11–17 Oct",
-       "",
+       "185",
        "≈KES 18,496",
        "59",
-       "",
-       "",
-       "",
-       ""
+       "37",
+       "25",
+       "KES 102,966",
+       "18.0%"
       ]
      ]
     }
    ],
    "actions": [
+    {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 36 bags and 26 orders in the first 7 days, against 37 bags and 25 orders on the same days a week earlier (-3%). No drop so far, so those ads weren't driving till sales."
+    },
     {
      "kind": "event",
      "market": "Kenya",
@@ -1787,8 +2458,33 @@
     },
     {
      "kind": "watch",
+     "market": "Kenya",
+     "text": "Kenya: messages +7% but orders -13% week on week. The extra chats aren't buying: check which campaign's messages turn into sales before adding budget."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Kenya",
+     "text": "Corporate offers campaign: KES 5,607 spent and 99 messages (11 Oct to 17 Oct); corporate clients paid KES 13,920 for 3 bags in that time, 2 times the spend. Not all of it came from the ads: tag each corporate chat with its source to see the real share."
+    },
+    {
+     "kind": "watch",
      "market": "Tanzania",
      "text": "Tanzania: WhatsApp Status is 74% of spend at KES 30 a message, but frequency doubled to 2.7. A new vertical Status creative is needed, and Oct Offers 2 is due a refresh around 20 Oct."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "win",
@@ -1869,6 +2565,66 @@
        30.0,
        66.0,
        59.0
+      ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
       ]
      }
     },
@@ -2018,6 +2774,12 @@
      "v": "KES 105",
      "n": "was KES 156 the week before",
      "tone": "up"
+    },
+    {
+     "k": "Ad cost per bag sold",
+     "v": "KES 67",
+     "n": "was KES 61, 3,703 bags sold",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -2075,44 +2837,85 @@
        "≈KES 213,664",
        "2,653",
        "KES 68",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "3,561",
+       "2,422",
+       "KES 8,117,463",
+       {
+        "t": "2.6%",
+        "c": ""
+       },
+       {
+        "t": "KES 60",
+        "c": ""
+       },
+       {
+        "t": "+7%",
+        "c": "up"
+       },
+       {
+        "t": "-13%",
+        "c": "down"
+       }
       ],
       [
        "Tanzania",
        "≈KES 14,969",
        "441",
        "KES 34",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "105",
+       "56",
+       "KES 204,240",
+       {
+        "t": "7.3%",
+        "c": "down"
+       },
+       {
+        "t": "KES 143",
+        "c": ""
+       },
+       {
+        "t": "+9%",
+        "c": "up"
+       },
+       {
+        "t": "+19%",
+        "c": "up"
+       }
       ],
       [
        "Uganda",
        "≈KES 18,496",
        "59",
        "KES 160",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "37",
+       "25",
+       "KES 102,966",
+       {
+        "t": "18.0%",
+        "c": "down"
+       },
+       {
+        "t": "KES 500",
+        "c": "down"
+       },
+       {
+        "t": "-11%",
+        "c": "down"
+       },
+       {
+        "t": "-4%",
+        "c": "down"
+       }
       ]
      ]
     }
    ],
    "actions": [
+    {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 36 bags and 26 orders in the first 7 days, against 37 bags and 25 orders on the same days a week earlier (-3%). No drop so far, so those ads weren't driving till sales."
+    },
     {
      "kind": "event",
      "market": "Kenya",
@@ -2125,8 +2928,33 @@
     },
     {
      "kind": "watch",
+     "market": "Kenya",
+     "text": "Kenya: messages +7% but orders -13% week on week. The extra chats aren't buying: check which campaign's messages turn into sales before adding budget."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Kenya",
+     "text": "Corporate offers campaign: KES 5,607 spent and 99 messages (11 Oct to 17 Oct); corporate clients paid KES 13,920 for 3 bags in that time, 2 times the spend. Not all of it came from the ads: tag each corporate chat with its source to see the real share."
+    },
+    {
+     "kind": "watch",
      "market": "Tanzania",
      "text": "Tanzania: WhatsApp Status is 74% of spend at KES 30 a message, but frequency doubled to 2.7. A new vertical Status creative is needed, and Oct Offers 2 is due a refresh around 20 Oct."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "win",
@@ -2218,6 +3046,66 @@
        0,
        0
       ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
+      ]
      }
     },
     "campaigns": [
@@ -2256,6 +3144,12 @@
      "v": "KES 105",
      "n": "was KES 156 the week before",
      "tone": "up"
+    },
+    {
+     "k": "Ad cost per bag sold",
+     "v": "KES 67",
+     "n": "was KES 61, 3,703 bags sold",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -2313,39 +3207,75 @@
        "≈KES 213,664",
        "2,653",
        "KES 68",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "3,561",
+       "2,422",
+       "KES 8,117,463",
+       {
+        "t": "2.6%",
+        "c": ""
+       },
+       {
+        "t": "KES 60",
+        "c": ""
+       },
+       {
+        "t": "+7%",
+        "c": "up"
+       },
+       {
+        "t": "-13%",
+        "c": "down"
+       }
       ],
       [
        "Tanzania",
        "≈KES 14,969",
        "441",
        "KES 34",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "105",
+       "56",
+       "KES 204,240",
+       {
+        "t": "7.3%",
+        "c": "down"
+       },
+       {
+        "t": "KES 143",
+        "c": ""
+       },
+       {
+        "t": "+9%",
+        "c": "up"
+       },
+       {
+        "t": "+19%",
+        "c": "up"
+       }
       ],
       [
        "Uganda",
        "≈KES 18,496",
        "59",
        "KES 160",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "37",
+       "25",
+       "KES 102,966",
+       {
+        "t": "18.0%",
+        "c": "down"
+       },
+       {
+        "t": "KES 500",
+        "c": "down"
+       },
+       {
+        "t": "-11%",
+        "c": "down"
+       },
+       {
+        "t": "-4%",
+        "c": "down"
+       }
       ]
      ]
     }
@@ -2355,6 +3285,11 @@
      "kind": "watch",
      "market": "Kenya",
      "text": "New Bags: \"Bag of the month – Mini Maya\" takes most of the budget at KES 121 a message. No delivery on Sundays, so check the schedule."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "win",
@@ -2436,6 +3371,66 @@
        0,
        0
       ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
+      ]
      }
     },
     "campaigns": [
@@ -2474,6 +3469,12 @@
      "v": "KES 64",
      "n": "was KES 72 the week before",
      "tone": "up"
+    },
+    {
+     "k": "Ad cost per bag sold",
+     "v": "KES 67",
+     "n": "was KES 61, 3,703 bags sold",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -2588,6 +3589,26 @@
    ],
    "actions": [
     {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 36 bags and 26 orders in the first 7 days, against 37 bags and 25 orders on the same days a week earlier (-3%). No drop so far, so those ads weren't driving till sales."
+    },
+    {
+     "kind": "watch",
+     "market": "Kenya",
+     "text": "Kenya: messages +7% but orders -13% week on week. The extra chats aren't buying: check which campaign's messages turn into sales before adding budget."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
      "kind": "watch",
      "market": "Kenya",
      "text": "Meta Weekly Offers spent only about 78% of the branch budgets. New bi-weekly creatives (11 Oct) cut cost per message from KES 95 to 89."
@@ -2601,6 +3622,11 @@
      "kind": "do",
      "market": "Uganda",
      "text": "Meta Uganda Monthly Offers (Uganda): KES 160 per message, +16% on its 3-week average. Refresh the creative or move budget."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "do",
@@ -2691,6 +3717,66 @@
        30.0,
        66.0,
        59.0
+      ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
       ]
      }
     },
@@ -2785,6 +3871,12 @@
      "v": "KES 64",
      "n": "was KES 72 the week before",
      "tone": "up"
+    },
+    {
+     "k": "Ad cost per bag sold",
+     "v": "KES 67",
+     "n": "was KES 61, 3,703 bags sold",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -2899,6 +3991,26 @@
    ],
    "actions": [
     {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 36 bags and 26 orders in the first 7 days, against 37 bags and 25 orders on the same days a week earlier (-3%). No drop so far, so those ads weren't driving till sales."
+    },
+    {
+     "kind": "watch",
+     "market": "Kenya",
+     "text": "Kenya: messages +7% but orders -13% week on week. The extra chats aren't buying: check which campaign's messages turn into sales before adding budget."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
      "kind": "watch",
      "market": "Kenya",
      "text": "Meta Weekly Offers spent only about 78% of the branch budgets. New bi-weekly creatives (11 Oct) cut cost per message from KES 95 to 89."
@@ -2912,6 +4024,11 @@
      "kind": "do",
      "market": "Uganda",
      "text": "Meta Uganda Monthly Offers (Uganda): KES 160 per message, +16% on its 3-week average. Refresh the creative or move budget."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "do",
@@ -3002,6 +4119,66 @@
        30.0,
        66.0,
        59.0
+      ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
       ]
      }
     },
@@ -3096,6 +4273,12 @@
      "v": "KES 64",
      "n": "was KES 72 the week before",
      "tone": "up"
+    },
+    {
+     "k": "Ad cost per bag sold",
+     "v": "KES 67",
+     "n": "was KES 61, 3,703 bags sold",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -3210,6 +4393,26 @@
    ],
    "actions": [
     {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 36 bags and 26 orders in the first 7 days, against 37 bags and 25 orders on the same days a week earlier (-3%). No drop so far, so those ads weren't driving till sales."
+    },
+    {
+     "kind": "watch",
+     "market": "Kenya",
+     "text": "Kenya: messages +7% but orders -13% week on week. The extra chats aren't buying: check which campaign's messages turn into sales before adding budget."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
      "kind": "watch",
      "market": "Kenya",
      "text": "Meta Weekly Offers spent only about 78% of the branch budgets. New bi-weekly creatives (11 Oct) cut cost per message from KES 95 to 89."
@@ -3223,6 +4426,11 @@
      "kind": "do",
      "market": "Uganda",
      "text": "Meta Uganda Monthly Offers (Uganda): KES 160 per message, +16% on its 3-week average. Refresh the creative or move budget."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "do",
@@ -3313,6 +4521,66 @@
        30.0,
        66.0,
        59.0
+      ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
       ]
      }
     },
@@ -3407,6 +4675,12 @@
      "v": "KES 64",
      "n": "was KES 72 the week before",
      "tone": "up"
+    },
+    {
+     "k": "Ad cost per bag sold",
+     "v": "KES 67",
+     "n": "was KES 61, 3,703 bags sold",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -3521,6 +4795,26 @@
    ],
    "actions": [
     {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 36 bags and 26 orders in the first 7 days, against 37 bags and 25 orders on the same days a week earlier (-3%). No drop so far, so those ads weren't driving till sales."
+    },
+    {
+     "kind": "watch",
+     "market": "Kenya",
+     "text": "Kenya: messages +7% but orders -13% week on week. The extra chats aren't buying: check which campaign's messages turn into sales before adding budget."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
      "kind": "watch",
      "market": "Kenya",
      "text": "Meta Weekly Offers spent only about 78% of the branch budgets. New bi-weekly creatives (11 Oct) cut cost per message from KES 95 to 89."
@@ -3534,6 +4828,11 @@
      "kind": "do",
      "market": "Uganda",
      "text": "Meta Uganda Monthly Offers (Uganda): KES 160 per message, +16% on its 3-week average. Refresh the creative or move budget."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "do",
@@ -3625,6 +4924,66 @@
        66.0,
        59.0
       ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
+      ]
      }
     },
     "campaigns": [
@@ -3712,6 +5071,18 @@
      "v": "3,153",
      "n": "+7% week on week, KES 65 each",
      "tone": "up"
+    },
+    {
+     "k": "Ads as % of revenue",
+     "v": "2.9%",
+     "n": "was 3.0% the week before, KES 8,424,669 revenue",
+     "tone": ""
+    },
+    {
+     "k": "Ad cost per bag sold",
+     "v": "KES 67",
+     "n": "was KES 61, 3,703 bags sold",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -3736,48 +5107,104 @@
        "≈KES 213,664",
        "2,653",
        "KES 68",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "3,561",
+       "2,422",
+       "KES 8,117,463",
+       {
+        "t": "2.6%",
+        "c": ""
+       },
+       {
+        "t": "KES 60",
+        "c": ""
+       },
+       {
+        "t": "+7%",
+        "c": "up"
+       },
+       {
+        "t": "-13%",
+        "c": "down"
+       }
       ],
       [
        "Tanzania",
        "≈KES 14,969",
        "441",
        "KES 34",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "105",
+       "56",
+       "KES 204,240",
+       {
+        "t": "7.3%",
+        "c": "down"
+       },
+       {
+        "t": "KES 143",
+        "c": ""
+       },
+       {
+        "t": "+9%",
+        "c": "up"
+       },
+       {
+        "t": "+19%",
+        "c": "up"
+       }
       ],
       [
        "Uganda",
        "≈KES 18,496",
        "59",
        "KES 160",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "37",
+       "25",
+       "KES 102,966",
+       {
+        "t": "18.0%",
+        "c": "down"
+       },
+       {
+        "t": "KES 500",
+        "c": "down"
+       },
+       {
+        "t": "-11%",
+        "c": "down"
+       },
+       {
+        "t": "-4%",
+        "c": "down"
+       }
       ]
      ]
     }
    ],
    "actions": [
     {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 36 bags and 26 orders in the first 7 days, against 37 bags and 25 orders on the same days a week earlier (-3%). No drop so far, so those ads weren't driving till sales."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
      "kind": "watch",
      "market": "Kenya",
      "text": "Meta Weekly Offers spent only about 78% of the branch budgets. New bi-weekly creatives (11 Oct) cut cost per message from KES 95 to 89."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "do",
@@ -3863,6 +5290,66 @@
        30.0,
        66.0,
        59.0
+      ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
       ]
      }
     },
@@ -4006,6 +5493,18 @@
      "v": "3,153",
      "n": "+7% week on week, KES 65 each",
      "tone": "up"
+    },
+    {
+     "k": "Ads as % of revenue",
+     "v": "2.9%",
+     "n": "was 3.0% the week before, KES 8,424,669 revenue",
+     "tone": ""
+    },
+    {
+     "k": "Ad cost per bag sold",
+     "v": "KES 67",
+     "n": "was KES 61, 3,703 bags sold",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -4030,48 +5529,104 @@
        "≈KES 213,664",
        "2,653",
        "KES 68",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "3,561",
+       "2,422",
+       "KES 8,117,463",
+       {
+        "t": "2.6%",
+        "c": ""
+       },
+       {
+        "t": "KES 60",
+        "c": ""
+       },
+       {
+        "t": "+7%",
+        "c": "up"
+       },
+       {
+        "t": "-13%",
+        "c": "down"
+       }
       ],
       [
        "Tanzania",
        "≈KES 14,969",
        "441",
        "KES 34",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "105",
+       "56",
+       "KES 204,240",
+       {
+        "t": "7.3%",
+        "c": "down"
+       },
+       {
+        "t": "KES 143",
+        "c": ""
+       },
+       {
+        "t": "+9%",
+        "c": "up"
+       },
+       {
+        "t": "+19%",
+        "c": "up"
+       }
       ],
       [
        "Uganda",
        "≈KES 18,496",
        "59",
        "KES 160",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "37",
+       "25",
+       "KES 102,966",
+       {
+        "t": "18.0%",
+        "c": "down"
+       },
+       {
+        "t": "KES 500",
+        "c": "down"
+       },
+       {
+        "t": "-11%",
+        "c": "down"
+       },
+       {
+        "t": "-4%",
+        "c": "down"
+       }
       ]
      ]
     }
    ],
    "actions": [
     {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 36 bags and 26 orders in the first 7 days, against 37 bags and 25 orders on the same days a week earlier (-3%). No drop so far, so those ads weren't driving till sales."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
      "kind": "watch",
      "market": "Kenya",
      "text": "Meta Weekly Offers spent only about 78% of the branch budgets. New bi-weekly creatives (11 Oct) cut cost per message from KES 95 to 89."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "do",
@@ -4157,6 +5712,66 @@
        30.0,
        66.0,
        59.0
+      ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
       ]
      }
     },
@@ -4300,6 +5915,18 @@
      "v": "3,153",
      "n": "+7% week on week, KES 65 each",
      "tone": "up"
+    },
+    {
+     "k": "Ads as % of revenue",
+     "v": "2.9%",
+     "n": "was 3.0% the week before, KES 8,424,669 revenue",
+     "tone": ""
+    },
+    {
+     "k": "Ad cost per bag sold",
+     "v": "KES 67",
+     "n": "was KES 61, 3,703 bags sold",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -4324,48 +5951,104 @@
        "≈KES 213,664",
        "2,653",
        "KES 68",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "3,561",
+       "2,422",
+       "KES 8,117,463",
+       {
+        "t": "2.6%",
+        "c": ""
+       },
+       {
+        "t": "KES 60",
+        "c": ""
+       },
+       {
+        "t": "+7%",
+        "c": "up"
+       },
+       {
+        "t": "-13%",
+        "c": "down"
+       }
       ],
       [
        "Tanzania",
        "≈KES 14,969",
        "441",
        "KES 34",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "105",
+       "56",
+       "KES 204,240",
+       {
+        "t": "7.3%",
+        "c": "down"
+       },
+       {
+        "t": "KES 143",
+        "c": ""
+       },
+       {
+        "t": "+9%",
+        "c": "up"
+       },
+       {
+        "t": "+19%",
+        "c": "up"
+       }
       ],
       [
        "Uganda",
        "≈KES 18,496",
        "59",
        "KES 160",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "37",
+       "25",
+       "KES 102,966",
+       {
+        "t": "18.0%",
+        "c": "down"
+       },
+       {
+        "t": "KES 500",
+        "c": "down"
+       },
+       {
+        "t": "-11%",
+        "c": "down"
+       },
+       {
+        "t": "-4%",
+        "c": "down"
+       }
       ]
      ]
     }
    ],
    "actions": [
     {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 36 bags and 26 orders in the first 7 days, against 37 bags and 25 orders on the same days a week earlier (-3%). No drop so far, so those ads weren't driving till sales."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
      "kind": "watch",
      "market": "Kenya",
      "text": "Meta Weekly Offers spent only about 78% of the branch budgets. New bi-weekly creatives (11 Oct) cut cost per message from KES 95 to 89."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "do",
@@ -4451,6 +6134,66 @@
        30.0,
        66.0,
        59.0
+      ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
       ]
      }
     },
@@ -4594,6 +6337,18 @@
      "v": "3,153",
      "n": "+7% week on week, KES 65 each",
      "tone": "up"
+    },
+    {
+     "k": "Ads as % of revenue",
+     "v": "2.9%",
+     "n": "was 3.0% the week before, KES 8,424,669 revenue",
+     "tone": ""
+    },
+    {
+     "k": "Ad cost per bag sold",
+     "v": "KES 67",
+     "n": "was KES 61, 3,703 bags sold",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -4618,48 +6373,104 @@
        "≈KES 213,664",
        "2,653",
        "KES 68",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "3,561",
+       "2,422",
+       "KES 8,117,463",
+       {
+        "t": "2.6%",
+        "c": ""
+       },
+       {
+        "t": "KES 60",
+        "c": ""
+       },
+       {
+        "t": "+7%",
+        "c": "up"
+       },
+       {
+        "t": "-13%",
+        "c": "down"
+       }
       ],
       [
        "Tanzania",
        "≈KES 14,969",
        "441",
        "KES 34",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "105",
+       "56",
+       "KES 204,240",
+       {
+        "t": "7.3%",
+        "c": "down"
+       },
+       {
+        "t": "KES 143",
+        "c": ""
+       },
+       {
+        "t": "+9%",
+        "c": "up"
+       },
+       {
+        "t": "+19%",
+        "c": "up"
+       }
       ],
       [
        "Uganda",
        "≈KES 18,496",
        "59",
        "KES 160",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "37",
+       "25",
+       "KES 102,966",
+       {
+        "t": "18.0%",
+        "c": "down"
+       },
+       {
+        "t": "KES 500",
+        "c": "down"
+       },
+       {
+        "t": "-11%",
+        "c": "down"
+       },
+       {
+        "t": "-4%",
+        "c": "down"
+       }
       ]
      ]
     }
    ],
    "actions": [
     {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 36 bags and 26 orders in the first 7 days, against 37 bags and 25 orders on the same days a week earlier (-3%). No drop so far, so those ads weren't driving till sales."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
      "kind": "watch",
      "market": "Kenya",
      "text": "Meta Weekly Offers spent only about 78% of the branch budgets. New bi-weekly creatives (11 Oct) cut cost per message from KES 95 to 89."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "do",
@@ -4745,6 +6556,66 @@
        30.0,
        66.0,
        59.0
+      ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
       ]
      }
     },
@@ -4888,6 +6759,18 @@
      "v": "3,153",
      "n": "+7% week on week, KES 65 each",
      "tone": "up"
+    },
+    {
+     "k": "Ads as % of revenue",
+     "v": "2.9%",
+     "n": "was 3.0% the week before, KES 8,424,669 revenue",
+     "tone": ""
+    },
+    {
+     "k": "Ad cost per bag sold",
+     "v": "KES 67",
+     "n": "was KES 61, 3,703 bags sold",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -4912,48 +6795,104 @@
        "≈KES 213,664",
        "2,653",
        "KES 68",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "3,561",
+       "2,422",
+       "KES 8,117,463",
+       {
+        "t": "2.6%",
+        "c": ""
+       },
+       {
+        "t": "KES 60",
+        "c": ""
+       },
+       {
+        "t": "+7%",
+        "c": "up"
+       },
+       {
+        "t": "-13%",
+        "c": "down"
+       }
       ],
       [
        "Tanzania",
        "≈KES 14,969",
        "441",
        "KES 34",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "105",
+       "56",
+       "KES 204,240",
+       {
+        "t": "7.3%",
+        "c": "down"
+       },
+       {
+        "t": "KES 143",
+        "c": ""
+       },
+       {
+        "t": "+9%",
+        "c": "up"
+       },
+       {
+        "t": "+19%",
+        "c": "up"
+       }
       ],
       [
        "Uganda",
        "≈KES 18,496",
        "59",
        "KES 160",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "37",
+       "25",
+       "KES 102,966",
+       {
+        "t": "18.0%",
+        "c": "down"
+       },
+       {
+        "t": "KES 500",
+        "c": "down"
+       },
+       {
+        "t": "-11%",
+        "c": "down"
+       },
+       {
+        "t": "-4%",
+        "c": "down"
+       }
       ]
      ]
     }
    ],
    "actions": [
     {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 36 bags and 26 orders in the first 7 days, against 37 bags and 25 orders on the same days a week earlier (-3%). No drop so far, so those ads weren't driving till sales."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
      "kind": "watch",
      "market": "Kenya",
      "text": "Meta Weekly Offers spent only about 78% of the branch budgets. New bi-weekly creatives (11 Oct) cut cost per message from KES 95 to 89."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "do",
@@ -5039,6 +6978,66 @@
        30.0,
        66.0,
        59.0
+      ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
       ]
      }
     },
@@ -5182,6 +7181,18 @@
      "v": "3,153",
      "n": "+7% week on week, KES 65 each",
      "tone": "up"
+    },
+    {
+     "k": "Ads as % of revenue",
+     "v": "2.9%",
+     "n": "was 3.0% the week before, KES 8,424,669 revenue",
+     "tone": ""
+    },
+    {
+     "k": "Ad cost per bag sold",
+     "v": "KES 67",
+     "n": "was KES 61, 3,703 bags sold",
+     "tone": "down"
     }
    ],
    "tables": [
@@ -5206,44 +7217,85 @@
        "≈KES 213,664",
        "2,653",
        "KES 68",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "3,561",
+       "2,422",
+       "KES 8,117,463",
+       {
+        "t": "2.6%",
+        "c": ""
+       },
+       {
+        "t": "KES 60",
+        "c": ""
+       },
+       {
+        "t": "+7%",
+        "c": "up"
+       },
+       {
+        "t": "-13%",
+        "c": "down"
+       }
       ],
       [
        "Tanzania",
        "≈KES 14,969",
        "441",
        "KES 34",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "105",
+       "56",
+       "KES 204,240",
+       {
+        "t": "7.3%",
+        "c": "down"
+       },
+       {
+        "t": "KES 143",
+        "c": ""
+       },
+       {
+        "t": "+9%",
+        "c": "up"
+       },
+       {
+        "t": "+19%",
+        "c": "up"
+       }
       ],
       [
        "Uganda",
        "≈KES 18,496",
        "59",
        "KES 160",
-       "",
-       "",
-       "",
-       "",
-       "",
-       "",
-       ""
+       "37",
+       "25",
+       "KES 102,966",
+       {
+        "t": "18.0%",
+        "c": "down"
+       },
+       {
+        "t": "KES 500",
+        "c": "down"
+       },
+       {
+        "t": "-11%",
+        "c": "down"
+       },
+       {
+        "t": "-4%",
+        "c": "down"
+       }
       ]
      ]
     }
    ],
    "actions": [
+    {
+     "kind": "event",
+     "market": "Uganda",
+     "text": "Uganda since the pause: 36 bags and 26 orders in the first 7 days, against 37 bags and 25 orders on the same days a week earlier (-3%). No drop so far, so those ads weren't driving till sales."
+    },
     {
      "kind": "event",
      "market": "Kenya",
@@ -5256,8 +7308,33 @@
     },
     {
      "kind": "watch",
+     "market": "Kenya",
+     "text": "Kenya: messages +7% but orders -13% week on week. The extra chats aren't buying: check which campaign's messages turn into sales before adding budget."
+    },
+    {
+     "kind": "watch",
+     "market": "Tanzania",
+     "text": "Tanzania: ads cost KES 143 per bag sold, 7.3% of revenue, in the week of 11–17 Oct (KES 14,969 for 105 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Uganda",
+     "text": "Uganda: ads cost KES 500 per bag sold, 18.0% of revenue, in the week of 11–17 Oct (KES 18,496 for 37 bags). Ads aren't paying back at the till here: test a lower budget or move it to the cheapest campaign."
+    },
+    {
+     "kind": "watch",
+     "market": "Kenya",
+     "text": "Corporate offers campaign: KES 5,607 spent and 99 messages (11 Oct to 17 Oct); corporate clients paid KES 13,920 for 3 bags in that time, 2 times the spend. Not all of it came from the ads: tag each corporate chat with its source to see the real share."
+    },
+    {
+     "kind": "watch",
      "market": "Tanzania",
      "text": "Tanzania: WhatsApp Status is 74% of spend at KES 30 a message, but frequency doubled to 2.7. A new vertical Status creative is needed, and Oct Offers 2 is due a refresh around 20 Oct."
+    },
+    {
+     "kind": "do",
+     "market": "Kenya",
+     "text": "Posts pay off a week later: Kenya bags posted more sold +13.0% the following week, bags posted less -8.5% (115 bag-week comparisons). Plan posts a week before the sales are wanted, and judge a post by next week's sales."
     },
     {
      "kind": "win",
@@ -5338,6 +7415,66 @@
        30.0,
        66.0,
        59.0
+      ]
+     },
+     "bags": {
+      "Kenya": [
+       3548,
+       3742,
+       4077,
+       3561
+      ],
+      "Tanzania": [
+       164,
+       104,
+       98,
+       105
+      ],
+      "Uganda": [
+       64,
+       126,
+       46,
+       37
+      ]
+     },
+     "revenue": {
+      "Kenya": [
+       7202900,
+       7790203,
+       8405291,
+       8117463
+      ],
+      "Tanzania": [
+       298640,
+       194520,
+       184100,
+       204240
+      ],
+      "Uganda": [
+       170465,
+       308856,
+       120000,
+       102966
+      ]
+     },
+     "posts": {
+      "Kenya": [
+       974.0,
+       591.0,
+       448.0,
+       883.0
+      ],
+      "Tanzania": [
+       98.0,
+       99.0,
+       132.0,
+       134.0
+      ],
+      "Uganda": [
+       228.0,
+       203.0,
+       159.0,
+       185.0
       ]
      }
     },

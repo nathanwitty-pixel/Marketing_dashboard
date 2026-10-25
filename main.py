@@ -193,11 +193,14 @@ def start_daily_snapshot():
 # Scripts to run when the Refresh button is used on each page.
 # current_performance.html holds BOTH the PERF and PROJ data blocks, so its
 # refresh also re-runs forward_projections.py — this picks up manual edits
-# to corporate_bags / bare_minimum at the top of that script.
+# to corporate_bags / bare_minimum at the top of that script. bags_on_offer.py
+# runs before it so the On offer table's offer_mix.json is as fresh as Sales.
 SCRIPT_MAP = {
     "current_performance.html":                             ["weekly_sales.py",
                                                              "monthly_sales.py",
                                                              "current_performance.py",
+                                                             "self_made_combos.py",
+                                                             "bags_on_offer.py",
                                                              "forward_projections.py"],
     "forward_projections.html":                             ["forward_projections.py"],
     "product_performance.html":                             ["product_performance.py"],

@@ -26,21 +26,21 @@
       "weekStart": "2026-10-11",
       "label": "Wk 3",
       "month": "Oct",
-      "salesPct": 35.49,
-      "salesBags": 9943,
+      "salesPct": 35.52,
+      "salesBags": 9951,
       "prevSalesPct": 22.3,
       "prevSalesBags": 6248,
-      "weeklySales": 3695,
-      "declinedBy": -3308
+      "weeklySales": 3703,
+      "declinedBy": -3300
     },
     {
       "weekStart": "2026-10-18",
       "label": "Wk 4",
       "month": "Oct",
-      "salesPct": 45.9,
-      "salesBags": 12859,
-      "prevSalesPct": 35.49,
-      "prevSalesBags": 9943,
+      "salesPct": 45.93,
+      "salesBags": 12867,
+      "prevSalesPct": 35.52,
+      "prevSalesBags": 9951,
       "weeklySales": 2916,
       "declinedBy": -4087
     },
@@ -48,12 +48,12 @@
       "weekStart": "2026-10-25",
       "label": "Wk 5",
       "month": "Oct",
-      "salesPct": 46.04,
-      "salesBags": 12897,
-      "prevSalesPct": 45.9,
-      "prevSalesBags": 12859,
-      "weeklySales": 38,
-      "declinedBy": -6965
+      "salesPct": 46.6,
+      "salesBags": 13053,
+      "prevSalesPct": 45.93,
+      "prevSalesBags": 12867,
+      "weeklySales": 186,
+      "declinedBy": -6817
     }
   ]
 }

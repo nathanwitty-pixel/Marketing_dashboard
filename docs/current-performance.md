@@ -223,6 +223,9 @@ and the bags % differ, so the reader can judge it:
 - **MONTHLY_TARGET** sheet: col C target, D sales, E deficit (summed).
 - Real weekly/monthly **bags** are refreshed from Postgres first (`weekly_sales.py`,
   `monthly_sales.py`) so the sales figures are live, not stale sheet values.
+- **The page's Refresh also rebuilds the offer split** (`self_made_combos.py` → `bags_on_offer.py`, before
+  `forward_projections.py`), so the On offer table's All bags matches the Sales card. *Fixed 25 Oct 2026:* the
+  refresh skipped it, so the table read a 22 Oct `offer_mix.json` (All bags 12,492 vs Sales 13,918).
 - **Last week's bags** (`PERF.previousSalesBags`, the week-over-week base) are read straight from Postgres for
   the previous complete **Sun–Sat** week (`BAGS_SOLD_TOTAL`, the same definition as this week's figure).
   `previous_snapshot.json` is only the fallback when the DB is down. *Fixed 14 Oct 2026:* the snapshot rolled

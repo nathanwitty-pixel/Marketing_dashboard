@@ -18,6 +18,8 @@
         "weekly_sales.py",
         "monthly_sales.py",
         "current_performance.py",
+        "self_made_combos.py",
+        "bags_on_offer.py",
         "forward_projections.py",
         "ads_impact.py"
       ],
