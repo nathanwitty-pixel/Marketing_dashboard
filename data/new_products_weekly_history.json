@@ -1,15 +1,6 @@
 {
   "weeks": [
     {
-      "weekStart": "2026-07-05",
-      "label": "Wk 1",
-      "month": "Jul",
-      "weeklyTotal": 59,
-      "kenyaPosts": 78,
-      "outsidePosts": 2,
-      "pct": 33.15
-    },
-    {
       "weekStart": "2026-07-12",
       "label": "Wk 2",
       "month": "Jul",
@@ -143,6 +134,15 @@
       "outsidePosts": 1,
       "label": "Wk 3",
       "pct": 29.25
+    },
+    {
+      "weekStart": "2026-10-25",
+      "month": "Oct",
+      "weeklyTotal": 4,
+      "kenyaPosts": 0,
+      "outsidePosts": 0,
+      "label": "Wk 4",
+      "pct": 1.89
     }
   ]
 }

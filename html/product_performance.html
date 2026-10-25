@@ -58,6 +58,12 @@
     .sb-t td { text-align: right; padding: 0.45rem 0.5rem; border-top: 1px solid #262a3d; color: #cbd5e1; font-variant-numeric: tabular-nums; }
     .sb-t th:nth-child(-n+2), .sb-t td:nth-child(-n+2) { text-align: left; }
     .sb-t td:last-child, .sb-t th:last-child { text-align: left; }
+    .sb-row.sb-total { cursor: default; border-top: 1px solid #2d3148; border-radius: 0; margin-top: 0.2rem; padding-top: 0.45rem; }
+    .sb-row.sb-total:hover { background: none; }
+    .sb-total .sb-name, .sb-total .sb-tot { color: #f8fafc; font-weight: 800; }
+    .sb-tot { font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+    .sb-tot span { color: #94a3b8; font-weight: 500; }
+    .sb-t tfoot td { border-top: 2px solid #2d3148; color: #f8fafc; font-weight: 800; }
     .sb-t tbody tr { cursor: pointer; }
     .sb-t tbody tr:hover, .sb-t tbody tr.open { background: #252840; }
     .sb-t td.nm { color: #f1f5f9; font-weight: 600; }
@@ -231,7 +237,7 @@ const PP = {"generated":"25 Oct 2026 22:17","topN":15,"bulkQty":10,"moverMin":10
       <summary><span class="sb-more-open">Show</span><span class="sb-more-close">Hide</span> the shop table <span id="pp-shops-more-n"></span></summary>
       <div class="sb-tw"><table class="sb-t"><thead><tr>
         <th>Shop</th><th>Market</th><th>Units</th><th>Share</th><th id="pp-shops-chg-h">Change</th><th>Revenue</th><th>Bulk orders</th>
-      </tr></thead><tbody id="pp-shops-body"></tbody></table></div>
+      </tr></thead><tbody id="pp-shops-body"></tbody><tfoot id="pp-shops-foot"></tfoot></table></div>
     </details>
     <div id="pp-shop-bags"></div>
   </div>
@@ -581,6 +587,7 @@ const PP = {"generated":"25 Oct 2026 22:17","topN":15,"bulkQty":10,"moverMin":10
     var chart = document.getElementById('pp-shops-chart'), body = document.getElementById('pp-shops-body');
     if (!blk || !blk.shops.length) {
       chart.innerHTML = '<div class="sb-val">No shop sales in this period.</div>'; body.innerHTML = ''; document.getElementById('pp-shop-bags').innerHTML = '';
+      document.getElementById('pp-shops-foot').innerHTML = '';
       return;
     }
     // With / without bulk orders: without takes every 10+ unit POS line out of both periods, then shares are
@@ -606,6 +613,15 @@ const PP = {"generated":"25 Oct 2026 22:17","topN":15,"bulkQty":10,"moverMin":10
       ? (leftU ? '⚠ ' + n(leftU) + ' units on bulk lines left out of this period' : 'No bulk orders in this period')
       : (leftU ? '⚠ includes ' + n(leftU) + ' units on bulk lines' : '');
     var val = function (x) { return byRev ? x.rev : x.units; }, pval = function (x) { return byRev ? x.pRev : x.pUnits; };
+    // % change badge against the period before, on the chosen basis (units or revenue)
+    var pillOf = function (v, pv) {
+      var cp = pv ? (v / pv - 1) * 100 : null;
+      return cp == null ? (v ? '<span class="sb-pill new" title="Nothing sold in the period before">new</span>' : '<span class="sb-pill flat">none</span>')
+        : '<span class="sb-pill ' + (Math.abs(cp) < 0.5 ? 'flat' : cp > 0 ? 'up' : 'down') + '" title="' + esc((byRev ? kes(pv) : n(pv) + ' bags') + ' before, ' + (byRev ? kes(v) : n(v) + ' bags') + ' now') + '">' +
+          (Math.abs(cp) < 0.5 ? '0.0%' : (cp > 0 ? '▲ +' : '▼ ') + cp.toFixed(1) + '%') + '</span>';
+    };
+    var tot = { units: totU, rev: totR,
+                pUnits: list.reduce(function (a, y) { return a + y.pUnits; }, 0), pRev: list.reduce(function (a, y) { return a + y.pRev; }, 0) };
     var max = Math.max.apply(null, list.map(function (x) { return Math.max(val(x), pval(x)); }).concat([1]));
     document.getElementById('pp-shops-hint').innerHTML = esc(p.label || '') + ' (' + esc(p.curLabel || '') + '): <b>' + n(totU) + '</b> bags and <b>' + kes(totR) + '</b>' + (noBulk ? ' without bulk orders' : '') + '<b>' +
       '</b> across ' + list.length + ' shops, ranked by ' + word + '. The thin tick on each bar is the same shop in ' + esc(p.prevLabel || 'the period before') +
@@ -613,19 +629,18 @@ const PP = {"generated":"25 Oct 2026 22:17","topN":15,"bulkQty":10,"moverMin":10
       (noBulk ? 'left out of both periods here, so every number and change is without them.' : 'it stays in the totals and the table also gives the change without it.');
     chart.innerHTML = list.map(function (x) {
       var v = val(x), pv = pval(x), w = v / max * 100, pw = pv / max * 100, sh = byRev ? x.revShare : x.share;
-      var label = byRev ? kes(v) : n(v), inside = w >= 14;
-      // % change against the period before, on the chosen basis (units or revenue)
-      var cp = pv ? (v / pv - 1) * 100 : null;
-      var pill = cp == null ? (v ? '<span class="sb-pill new" title="Nothing sold in the period before">new</span>' : '<span class="sb-pill flat">none</span>')
-        : '<span class="sb-pill ' + (Math.abs(cp) < 0.5 ? 'flat' : cp > 0 ? 'up' : 'down') + '" title="' + esc((byRev ? kes(pv) : n(pv) + ' bags') + ' before, ' + (byRev ? kes(v) : n(v) + ' bags') + ' now') + '">' +
-          (Math.abs(cp) < 0.5 ? '0.0%' : (cp > 0 ? '▲ +' : '▼ ') + cp.toFixed(1) + '%') + '</span>';
+      var label = byRev ? kes(v) : n(v), inside = w >= 14, pill = pillOf(v, pv);
       return '<div class="sb-row' + (openShop === x.shop ? ' open' : '') + '" data-shop="' + esc(x.shop) + '" title="' + esc(x.shop + ': ' + (byRev ? kes(v) : n(v) + ' bags') + ', ' + (byRev ? kes(pv) : n(pv) + ' bags') + ' in the period before') + '">' +
         '<span class="sb-name">' + esc(x.shop) + '</span>' +
         '<span class="sb-track"><span class="sb-fill" style="width:' + w.toFixed(2) + '%;background:' + (SHOP_C[x.mkt] || '#64748b') + '"></span>' +
         (pv ? '<span class="sb-prev" style="left:calc(' + pw.toFixed(2) + '% - 1px)"></span>' : '') +
         '<span class="sb-in ' + (inside ? 'inside' : 'outside') + '" style="' + (inside ? 'left:8px' : 'left:calc(' + Math.max(w, pv ? pw : 0).toFixed(2) + '% + 8px)') + '">' + label + '</span></span>' +
         '<span class="sb-val">' + sh.toFixed(1) + '% share' + (x.bulkUnits && !noBulk ? ' <span class="sb-bulk" title="Includes a bulk order: see the table">&nbsp;⚠</span>' : '') + pill + '</span></div>';
-    }).join('');
+    }).join('') +
+      // Total of every shop listed (docs/product-performance.md › 2b › Total row)
+      '<div class="sb-row sb-total"><span class="sb-name">Total</span>' +
+      '<span class="sb-tot">' + (byRev ? kes(val(tot)) : n(val(tot)) + ' bags') + ' <span>(' + (byRev ? kes(pval(tot)) : n(pval(tot)) + ' bags') + ' in ' + esc(p.prevLabel || 'the period before') + ')</span></span>' +
+      '<span class="sb-val">100% share' + pillOf(val(tot), pval(tot)) + '</span></div>';
     body.innerHTML = list.map(function (x) {
       var bulk = '';
       if (noBulk && (x.bulkUnits || x.pBulkUnits)) {
@@ -640,6 +655,10 @@ const PP = {"generated":"25 Oct 2026 22:17","topN":15,"bulkQty":10,"moverMin":10
         '</td><td>' + n(x.units) + '</td><td>' + (byRev ? x.revShare : x.share).toFixed(1) + '%</td><td>' + chgCell(x.chg, x.chgPct) +
         '</td><td>' + kes(x.rev) + '</td><td>' + bulk + '</td></tr>';
     }).join('');
+    var tChg = tot.units - tot.pUnits;
+    document.getElementById('pp-shops-foot').innerHTML = '<tr><td class="nm">Total</td><td>' + list.length + ' shops</td><td>' + n(tot.units) +
+      '</td><td>100.0%</td><td>' + chgCell(tChg, tot.pUnits ? Math.round((tot.units / tot.pUnits - 1) * 1000) / 10 : null) +
+      '</td><td>' + kes(tot.rev) + '</td><td>' + (leftU ? '<span class="sb-bulk">⚠ ' + n(leftU) + ' units on bulk lines' + (noBulk ? ' left out' : '') + '</span>' : '') + '</td></tr>';
     document.getElementById('pp-shops-more-n').textContent = '(' + list.length + ' shops, with change and bulk orders)';
     drawShopBags(list);
   }

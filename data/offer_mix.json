@@ -1,6 +1,6 @@
 {
  "month": "October 2026",
- "generated": "25 Oct 2026 22:14",
+ "generated": "25 Oct 2026 23:20",
  "range": "01 Oct – 31 Oct 2026",
  "rows": [
   {
@@ -8,8 +8,8 @@
    "label": "Not on offer",
    "on": false,
    "where": "Kenya, Tanzania, Uganda",
-   "units": 5307.0,
-   "revenue": 12171036,
+   "units": 5304.0,
+   "revenue": 12162980,
    "bags": [
     {
      "bag": "FEROZ",
@@ -64,8 +64,8 @@
      "bag": "SARAI",
      "category": "TRAVEL",
      "tier": "Premium",
-     "units": 101.0,
-     "revenue": 380552
+     "units": 100.0,
+     "revenue": 375638
     },
     {
      "bag": "LOLA",
@@ -176,8 +176,8 @@
      "bag": "DOUBLE PRESS",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 53.0,
-     "revenue": 121855
+     "units": 52.0,
+     "revenue": 118712
     },
     {
      "bag": "ZANE MAN",
@@ -439,6 +439,13 @@
      "revenue": 36086
     },
     {
+     "bag": "ANTITHEFT",
+     "category": "BACKPACK",
+     "tier": "Core",
+     "units": 16.0,
+     "revenue": 31815
+    },
+    {
      "bag": "SAFIRI BP",
      "category": "BACKPACK",
      "tier": "Core",
@@ -458,13 +465,6 @@
      "tier": "Core",
      "units": 15.0,
      "revenue": 29678
-    },
-    {
-     "bag": "ANTITHEFT",
-     "category": "BACKPACK",
-     "tier": "Core",
-     "units": 16.0,
-     "revenue": 29386
     },
     {
      "bag": "KAZ",
@@ -663,13 +663,6 @@
      "revenue": 7773
     },
     {
-     "bag": "LAPTOP SLEEVE",
-     "category": "BRIEFCASE",
-     "tier": "Entry",
-     "units": 3.0,
-     "revenue": 6714
-    },
-    {
      "bag": "SKYE HB",
      "category": "HANDBAG",
      "tier": "Entry",
@@ -703,6 +696,13 @@
      "tier": "Entry",
      "units": 4.0,
      "revenue": 4500
+    },
+    {
+     "bag": "LAPTOP SLEEVE",
+     "category": "BRIEFCASE",
+     "tier": "Entry",
+     "units": 2.0,
+     "revenue": 4286
     },
     {
      "bag": "BONITA",
@@ -904,7 +904,7 @@
    "on": true,
    "where": "Kenya, Tanzania, Uganda",
    "units": 1440.0,
-   "revenue": 3070217,
+   "revenue": 3078273,
    "bags": [
     {
      "bag": "JUMBO",
@@ -946,7 +946,7 @@
      "category": "BACKPACK",
      "tier": "Core",
      "units": 88.0,
-     "revenue": 170018
+     "revenue": 172475
     },
     {
      "bag": "SAFIRI TRAVEL",
@@ -967,7 +967,7 @@
      "category": "TRAVEL",
      "tier": "Premium",
      "units": 48.0,
-     "revenue": 130279
+     "revenue": 132736
     },
     {
      "bag": "ANTITHEFT",
@@ -1009,14 +1009,14 @@
      "category": "BACKPACK",
      "tier": "Core",
      "units": 6.0,
-     "revenue": 7858
+     "revenue": 9429
     },
     {
      "bag": "ZENO",
      "category": "TRAVEL",
      "tier": "Entry",
      "units": 6.0,
-     "revenue": 7858
+     "revenue": 9429
     },
     {
      "bag": "NIZANA",

@@ -101,6 +101,10 @@ page (no extra Odoo query), so the shop units add up to the period's total in Ba
   the period before is a thin tick on the same scale (never a second axis). At the row end: the share, ⚠ when a
   bulk order is in it, and a **change badge** against the period before on the chosen basis — green ▲ +% up,
   red ▼ % down, grey 0.0% (under 0.5%), blue "new" when nothing sold before (22 Oct 2026, user's call).
+- **Total row (25 Oct 2026, user's call):** under the last bar, **Total**: all the shops' units (or revenue on
+  Revenue), the same figure for the period before, 100% share and the change badge, with no bar. The table
+  ends with the same **Total** row (units, 100%, change, revenue, and the bulk units in all shops). Follows
+  every filter, the bulk switch included.
 - **Table** (collapsed by default under "▸ Show the shop table (N shops, with change and bulk orders)"; open / closed is
   remembered per browser, 22 Oct 2026): Shop, Market, Units, Share, Change vs the period before (units and %, green up, red down),
   Revenue, and a ⚠ bulk flag: the shop's units on POS lines of **10+ units** in the period and its change
