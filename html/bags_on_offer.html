@@ -331,7 +331,13 @@
         <div class="chart-wrap" style="margin-bottom:0.8rem"><canvas id="boo-ot-week-chart" aria-label="Offer type per week of the month" role="img"></canvas></div>
         <div class="tbl-wrap" style="max-height:none;margin-bottom:1.3rem" id="boo-ot-weeks"></div>
 
-        <h3 class="ot-h" id="boo-ot-cmp-title">Week 1 &rarr; latest week</h3>
+        <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;margin-bottom:0.4rem">
+          <h3 class="ot-h" id="boo-ot-cmp-title" style="margin:0">Week 1 &rarr; latest week</h3>
+          <span class="ot-flbl">Compare</span>
+          <select id="boo-ot-cmp-a" aria-label="First week to compare"></select>
+          <span style="color:#64748b">&rarr;</span>
+          <select id="boo-ot-cmp-b" aria-label="Second week to compare"></select>
+        </div>
         <div class="chart-wrap" style="height:300px"><canvas id="boo-ot-cmp-chart" aria-label="First picked week beside the last picked week, per offer type" role="img"></canvas></div>
       </section>
 
@@ -658,6 +664,7 @@ document.addEventListener('DOMContentLoaded', function () {
   if (otTypes && otTypes.indexOf('COMBOS') >= 0 && otTypes.indexOf('SINGLE') < 0) otTypes.push('SINGLE');
   var otPeriods = readList('boo-ot-periods') || PERIOD_KEYS.map(function (p) { return p[0]; });
   var otWeeks = readList('boo-ot-weeks');          // null = all weeks
+  var otCmpA = store.get('boo-ot-cmp-a'), otCmpB = store.get('boo-ot-cmp-b');   // the comparison chart's two weeks
 
   var otv = function (c) { return c ? (otMode === 'units' ? c.units : c.revenue) : 0; };
   var otFmt = function (v) { return otMode === 'units' ? (Math.abs(v - Math.round(v)) > 0.05 ? v.toFixed(1) : fmt(v)) : short(v); };
@@ -823,11 +830,19 @@ document.addEventListener('DOMContentLoaded', function () {
     var wkTot = function (wk) { return rows.reduce(function (a, r) { return a + raw(wk, r.key); }, 0); };
     var cellV = function (wk, row) { var v = raw(wk, row); return otMode === 'mix' ? pctOf(v, wkTot(wk)) : based(wk, v); };
     var show = function (v) { return otMode === 'mix' ? (v ? v.toFixed(1) + '%' : '—') : (v ? otFmt(v) : '—'); };
-    stackedChart('boo-ot-week-chart', W.map(function (wk) { return [wk.label + (wk.current ? ' (now)' : ''), wk.sub + ' · ' + wk.days + ' day' + (wk.days === 1 ? '' : 's')]; }),
+    stackedChart('boo-ot-week-chart', W.map(function (wk) { return [wk.label + (wk.current ? ' (now)' : ''), wk.sub + ', ' + wk.days + ' day' + (wk.days === 1 ? '' : 's')]; }),
       function (i, row) { return based(W[i], raw(W[i], row)); }, false, ' of the week');
     var a = W[0], b = W[W.length - 1], same = a === b;
+    // Last complete week vs the week before (e.g. Wk 3 → Wk 4 while Wk 5 runs) — skipped when it repeats a → b.
+    var done = W.filter(function (wk) { return !wk.current; });
+    var c = done.length >= 2 ? done[done.length - 2] : null, e = c ? done[done.length - 1] : null;
+    if (c && c === a && e === b) c = e = null;
+    var lastHead = c ? esc(c.label) + ' &rarr; ' + esc(e.label) : '';
     var chg = function (x, y) {
       if (same) return '—';
+      return delta(x, y);
+    };
+    var delta = function (x, y) {
       var d = y - x, pc = x ? d / Math.abs(x) * 100 : null, cls = d > 0 ? 'up' : (d < 0 ? 'down' : '');
       if (otMode === 'mix') return (d > 0 ? '+' : '') + d.toFixed(1) + ' pts';
       return (d > 0 ? '+' : d < 0 ? '−' : '') + (d ? otFmt(Math.abs(d)) : '0')
@@ -836,19 +851,31 @@ document.addEventListener('DOMContentLoaded', function () {
     var chgHead = same ? 'Change' : esc(a.label) + ' &rarr; ' + esc(b.label);
     var totV = function (wk) { return otMode === 'mix' ? (wkTot(wk) ? 100 : 0) : based(wk, wkTot(wk)); };
     $('boo-ot-weeks').innerHTML = '<table class="rt ot"><thead><tr><th>Offer type' + (perDay ? ' (per day)' : '') + '</th>'
-      + W.map(function (wk) { return '<th class="r' + (wk.current ? ' cur' : '') + '" title="' + esc(wk.sub + ' · ' + wk.days + ' day(s) so far') + '">' + esc(wk.label) + (wk.current ? ' <span style="color:#64748b">(now)</span>' : '') + '</th>'; }).join('')
-      + '<th class="r gstart" title="' + (same ? 'Pick two or more weeks to compare' : 'Change from ' + esc(a.label) + ' to ' + esc(b.label)) + '">' + chgHead + '</th></tr></thead><tbody>'
+      + W.map(function (wk) { return '<th class="r' + (wk.current ? ' cur' : '') + '" title="' + esc(wk.sub + ', ' + wk.days + ' day(s) so far') + '">' + esc(wk.label) + (wk.current ? ' <span style="color:#64748b">(now)</span>' : '') + '</th>'; }).join('')
+      + (c ? '<th class="r gstart" title="Change from ' + esc(c.label) + ' to ' + esc(e.label) + ', the last complete week">' + lastHead + '</th>' : '')
+      + '<th class="r' + (c ? '' : ' gstart') + '" title="' + (same ? 'Pick two or more weeks to compare' : 'Change from ' + esc(a.label) + ' to ' + esc(b.label)) + '">' + chgHead + '</th></tr></thead><tbody>'
       + rows.map(function (r) {
           return '<tr><td class="name">' + dot(r.key) + esc(r.label) + '</td>'
             + W.map(function (wk) { var v = cellV(wk, r.key); return '<td class="r' + (v ? '' : ' dim') + (wk.current ? ' cur' : '') + '" data-label="' + esc(wk.label) + '" title="' + esc(r.label + ' · ' + wk.label + ': ' + otTip(raw(wk, r.key))) + '">' + show(v) + '</td>'; }).join('')
-            + '<td class="r gstart" data-label="' + chgHead.replace(/&rarr;/, '→') + '">' + chg(cellV(a, r.key), cellV(b, r.key)) + '</td></tr>';
+            + (c ? '<td class="r gstart" data-label="' + lastHead.replace(/&rarr;/, '→') + '">' + delta(cellV(c, r.key), cellV(e, r.key)) + '</td>' : '')
+            + '<td class="r' + (c ? '' : ' gstart') + '" data-label="' + chgHead.replace(/&rarr;/, '→') + '">' + chg(cellV(a, r.key), cellV(b, r.key)) + '</td></tr>';
         }).join('')
       + '<tr class="tot"><td class="name">Total' + (perDay ? ' per day' : '') + '</td>'
       + W.map(function (wk) { return '<td class="r' + (wk.current ? ' cur' : '') + '" data-label="' + esc(wk.label) + '">' + (otMode === 'mix' ? (wkTot(wk) ? '100%' : '—') : show(totV(wk))) + '</td>'; }).join('')
-      + '<td class="r gstart" data-label="Change">' + (otMode === 'mix' ? '' : chg(totV(a), totV(b))) + '</td></tr></tbody></table>'
+      + (c ? '<td class="r gstart" data-label="' + lastHead.replace(/&rarr;/, '→') + '">' + (otMode === 'mix' ? '' : delta(totV(c), totV(e))) + '</td>' : '')
+      + '<td class="r' + (c ? '' : ' gstart') + '" data-label="Change">' + (otMode === 'mix' ? '' : chg(totV(a), totV(b))) + '</td></tr></tbody></table>'
       + (!perDay && otMode !== 'mix' && !same && a.days !== b.days
-          ? '<div class="note" style="margin-top:0.45rem">' + esc(a.label) + ' has ' + a.days + ' day' + (a.days === 1 ? '' : 's') + ', ' + esc(b.label) + ' ' + b.days + ' &mdash; use <b>Per day</b> or <b>Mix %</b> for a like-for-like comparison.</div>' : '');
-    renderOtCompare(a, b, same, rows, cellV, totV);
+          ? '<div class="note" style="margin-top:0.45rem">' + esc(a.label) + ' has ' + a.days + ' day' + (a.days === 1 ? '' : 's') + ', ' + esc(b.label) + ' has ' + b.days + (b.current ? ' so far' : '') + ' &mdash; use <b>Per day</b> or <b>Mix %</b> for a like-for-like comparison.</div>' : '');
+    // The comparison chart's two weeks: the reader's pick, else the last complete week vs the week before.
+    var byLabel = function (l) { return W0.filter(function (wk) { return wk.label === l; })[0]; };
+    var fin = W0.filter(function (wk) { return !wk.current; });
+    var defA = fin.length >= 2 ? fin[fin.length - 2] : W0[0], defB = fin.length >= 2 ? fin[fin.length - 1] : W0[W0.length - 1];
+    var ca = byLabel(otCmpA) || defA, cb = byLabel(otCmpB) || defB;
+    var opts = function (sel) { return W0.map(function (wk) { return '<option value="' + esc(wk.label) + '"' + (wk === sel ? ' selected' : '') + '>'
+      + esc(wk.label) + (wk.current ? ' (now)' : '') + '</option>'; }).join(''); };
+    $('boo-ot-cmp-a').innerHTML = opts(ca);
+    $('boo-ot-cmp-b').innerHTML = opts(cb);
+    renderOtCompare(ca, cb, ca === cb, rows, cellV, totV);
   }
 
   // Week 1 → latest week (first vs last picked week), per offer type + Total, numbers on the bars.
@@ -856,9 +883,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var perDay = otWkBasis === 'day';
     var dayTxt = function (wk) { return wk.days + ' day' + (wk.days === 1 ? '' : 's'); };
     $('boo-ot-cmp-title').innerHTML = same
-      ? esc(a.label) + ' &middot; pick two or more weeks to compare'
+      ? esc(a.label) + ' on its own (pick two different weeks to compare)'
       : esc(a.label) + ' (' + dayTxt(a) + ') &rarr; ' + esc(b.label) + (b.current ? ', latest' : '') + ' (' + dayTxt(b) + (b.current ? ' so far' : '') + ')'
-        + (perDay ? ' &middot; per day' : '') + (otMode === 'mix' ? ' &middot; share of the week' : '');
+        + (perDay ? ', per day' : '') + (otMode === 'mix' ? ', share of the week' : '');
     var labels = rows.map(function (r) { return r.label; }), keys = rows.map(function (r) { return r.key; });
     var A = keys.map(function (k) { return cellV(a, k); }), Bv = keys.map(function (k) { return cellV(b, k); });
     if (otMode !== 'mix') { labels.push('Total'); A.push(totV(a)); Bv.push(totV(b)); keys.push('TOTAL'); }
@@ -890,7 +917,7 @@ document.addEventListener('DOMContentLoaded', function () {
         plugins: {
           legend: { labels: { color: '#94a3b8', boxWidth: 10, font: { size: 11 },
                               generateLabels: function (ch) { return ch.data.datasets.map(function (ds, i) {
-                                return { text: ds.label + (i === 1 ? ' — green up · red down' : ''), fillStyle: i === 0 && !same ? 'rgba(148,163,184,0.45)' : (i === 1 ? UP : '#94a3b8'), strokeStyle: '#94a3b8',
+                                return { text: ds.label + (i === 1 ? ': green up, red down' : ''), fillStyle: i === 0 && !same ? 'rgba(148,163,184,0.45)' : (i === 1 ? UP : '#94a3b8'), strokeStyle: '#94a3b8',
                                          lineWidth: 1, hidden: !ch.isDatasetVisible(i), datasetIndex: i, fontColor: '#94a3b8' }; }); } } },
           valueLabels: { on: true, outside: true, above: above },
           tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': ' + (otMode === 'mix' ? c.raw.toFixed(1) + '%' : otTip(c.raw)); } } }
@@ -1069,6 +1096,12 @@ document.addEventListener('DOMContentLoaded', function () {
     var keys = ((ALL.periods.monthly || {}).offerTypesByWeek || []).map(function (w) { return w.label; });
     otWeeks = b.getAttribute('data-all') ? null : toggleKey(otWeeks, b.getAttribute('data-k'), keys);
     saveList('boo-ot-weeks', otWeeks); renderOfferTypes();
+  });
+  ['a', 'b'].forEach(function (k) {
+    $('boo-ot-cmp-' + k).addEventListener('change', function (e) {
+      if (k === 'a') otCmpA = e.target.value; else otCmpB = e.target.value;
+      store.set('boo-ot-cmp-' + k, e.target.value); renderOfferTypes();
+    });
   });
   $('boo-ot-wk-basis').addEventListener('click', function (e) {
     var b = e.target.closest('.seg-btn'); if (!b) return;

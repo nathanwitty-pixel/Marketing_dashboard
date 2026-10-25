@@ -915,43 +915,35 @@ WHERE p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0 AND p.date_order::
   AND lower(COALESCE(pc."name", '')) <> 'staff pos'
 GROUP BY 1, 2
 """
-# Corporate sells by invoice, not on a till: posted customer invoices, paid (or ≤ 25 % unpaid) — the same
-# rule as the dashboard's corporate figures (bags_on_offer.CORPORATE_SQL), per product.
-CORPORATE_SALES_SQL = """
-WITH qinv AS (
-  SELECT am.id FROM account_move am
-  WHERE am.move_type = 'out_invoice' AND am.state = 'posted' AND am.invoice_date BETWEEN :s AND :e
-    AND (am.payment_state IN ('paid', 'in_payment') OR (am.amount_total > 0 AND am.amount_residual / am.amount_total <= 0.25)))
-SELECT pt."name" AS product, 'corporate' AS till, SUM(aml.quantity) AS q
-FROM account_move_line aml JOIN qinv ON qinv.id = aml.move_id
-JOIN product_product pp ON pp.id = aml.product_id JOIN product_template pt ON pt.id = pp.product_tmpl_id
-WHERE aml.display_type IS NULL AND aml.product_id IS NOT NULL
-GROUP BY 1
-"""
-
-
+# Corporate sells through the Corporate app, a channel like a till (not a bulk order): its bags paid in the period
+# by product (sql/corporate_bag_lines.sql — the Sales card's rule, money received on the payment date) are CORP.
 def shop_sales(names, start, end):
     """({PRODUCT: {SHOP CODE: units}}, {PRODUCT: {SHOP CODE: [[colour, units], …]}}) for the new
-    products over [start, end] — every till but Staff POS, plus Corporate invoices as CORP. The
+    products over [start, end] — every till but Staff POS, plus the Corporate app as CORP. The
     colour list (high → low, exact colour as named — no family fold) feeds the cell hover."""
-    from lib import db
+    from lib import db, queries
     order = sorted(names, key=len, reverse=True)
     out = {n: {} for n in names}
     cols = {n: {} for n in names}
     params = {"s": start.isoformat(), "e": end.isoformat()}
-    for sql in (SHOP_SALES_SQL, CORPORATE_SALES_SQL):
-        df = db.run_query(sql, params)
-        for r in (df.itertuples() if df is not None else []):
-            u = re.sub(r"^\[[^\]]*\]\s*", "", str(r.product).upper().strip())
-            n = next((x for x in order if u == x or u.startswith(x + " ") or u.startswith(x + "-")), None)
-            if not n:
-                continue
-            code = "CORP" if r.till == "corporate" else _TILL_CODE.get(str(r.till), "OTH")
-            q = int(round(float(r.q)))
-            out[n][code] = out[n].get(code, 0) + q
-            c = _odoo_colour(u, n, "No colour") or "No colour"
-            cc = cols[n].setdefault(code, {})
-            cc[c] = cc.get(c, 0) + q
+    rows = []                                             # (product, shop code, units)
+    df = db.run_query(SHOP_SALES_SQL, params)
+    for r in (df.itertuples() if df is not None else []):
+        rows.append((r.product, _TILL_CODE.get(str(r.till), "OTH"), float(r.q)))
+    df = db.run_query(queries.CORPORATE_BAG_LINES, {"start_date": params["s"], "end_date": params["e"]})
+    for r in (df.itertuples() if df is not None else []):
+        if float(r.bags or 0):
+            rows.append((r.product, "CORP", float(r.bags)))
+    for product, code, q in rows:
+        u = re.sub(r"^\[[^\]]*\]\s*", "", str(product).upper().strip())
+        n = next((x for x in order if u == x or u.startswith(x + " ") or u.startswith(x + "-")), None)
+        if not n:
+            continue
+        q = int(round(q))
+        out[n][code] = out[n].get(code, 0) + q
+        c = _odoo_colour(u, n, "No colour") or "No colour"
+        cc = cols[n].setdefault(code, {})
+        cc[c] = cc.get(c, 0) + q
     colours = {n: {code: sorted(([c, q] for c, q in cc.items() if q), key=lambda x: (-x[1], x[0]))
                    for code, cc in by.items()} for n, by in cols.items()}
     return out, colours

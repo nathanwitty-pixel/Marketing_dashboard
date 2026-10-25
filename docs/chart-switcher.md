@@ -70,7 +70,8 @@ sparklines), its data is x/y points (scatter/bubble), or it opts out with
 Every bar / line chart whose x labels are weeks (`Wk 1`, `Week 2`, `W3`, or `["Wk 4 (now)", "dates"]`) shows the
 change vs the week before above each week from the 2nd on: **▲ x% green** up, **▼ x% red** down, grey when flat,
 "new" when the week before was 0. Stacked bars (or a single series) show the change of the total; 2–3 side-by-side
-series show one label per series; 4+ series are left alone. Skipped for pie / waterfall-style switched types, for
+series show one label per series; **4+ side-by-side series show one label per week for their total** (26 Oct 2026,
+user's call: every weekly chart shows each week's gain on the week before, e.g. Wk 3 → Wk 4). Skipped for pie / waterfall-style switched types, for
 non-week labels, and for charts that set `options.plugins.weekChange = false` or draw their own change labels
 (`valueLabels.above`, e.g. Bags on offer's Week 1 → latest week, whose latest-week bar is itself green / red).
 Plugin `weekChange` in `chart_switcher.js`, so every page that loads the switcher gets it (Shop Launch doesn't — its
@@ -90,5 +91,7 @@ charts are by day).
 - **Unfinished weeks:** a page can pass `options.plugins.weekChange = { partial: [index, …] }` for weeks still
   running. Their pills (and the "vs …" pill) read grey **"… so far"** instead of a red/green move, since a
   1-day week vs a 7-day week isn't a real drop.
+  **Automatic too (26 Oct 2026):** a week whose label says **"now"** or **"so far"** (e.g. "Wk 5 (now)") is treated
+  as unfinished on every chart, so only finished weeks show a real gain or drop.
 - **Never hidden:** each pill tries 6 spots above its point, 4 below and 8 beside (both sides), then scans its column
   for any free gap, before it's allowed to sit over another label.

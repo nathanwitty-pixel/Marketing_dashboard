@@ -104,7 +104,9 @@ page (no extra Odoo query), so the shop units add up to the period's total in Ba
 - **Corporate row (26 Oct 2026, user's call):** the Corporate app's bags paid in the period sit as their own row,
   **Corporate** (Kenya, so on All and Kenya), with units, revenue (KES received), share of the total, the period
   before and its change — the Sales card's rule (`sql/corporate_bag_lines.sql`, money received on the payment date).
-  Click it for the bags on the invoices. It counts as a **bulk order** (⚠), so *Without bulk orders* leaves it out.
+  Click it for the bags on the invoices. **It is a sales channel like a till, not a bulk order** (user, 26 Oct
+  2026): no ⚠, and it stays in *Without bulk orders*. Bulk orders are only 10+ unit lines rung at a shop till —
+  including Corporate-team clients who pay at a shop (those stay the shop's sale, flagged ⚠).
 - **Total row (25 Oct 2026, user's call):** under the last bar, **Total**: all the shops' units (or revenue on
   Revenue), the same figure for the period before, 100% share and the change badge, with no bar. The table
   ends with the same **Total** row (units, 100%, change, revenue, and the bulk units in all shops). Follows

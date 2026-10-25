@@ -642,7 +642,8 @@ def corporate_period(s, e):
 def shop_breakdown(lines, P, corp=None):
     """{period: {market: {total, rev, shops: [...]}}} — units / revenue per shop (till), the period before,
     shares, the bulk-line units (POS lines of BULK_LINE_QTY+ units) and each shop's top 10 bags. `corp(s, e)`
-    adds a Corporate row (Kenya; all of it counted as a bulk order) — docs/product-performance.md › 2b."""
+    adds a Corporate row — the Corporate app, a sales channel like a till, never a bulk order (bulk orders are
+    10+ unit lines rung at a shop till) — docs/product-performance.md › 2b."""
     out = {}
     for per, (s1, e1, s0, e0, _lbl) in P.items():
         out[per] = {}
@@ -654,14 +655,14 @@ def shop_breakdown(lines, P, corp=None):
                                                  "bags": collections.defaultdict(lambda: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0])})
                 for i, (s, e) in enumerate(((s1, e1), (s0, e0))):
                     for prod, u, r in corp(s, e):
-                        a["u"][i] += u; a["r"][i] += r; a["bulk"][i] += u; a["bulkR"][i] += r
+                        a["u"][i] += u; a["r"][i] += r
                         bg = a["bags"][prod]
                         if i == 0:
-                            bg[0] += u; bg[1] += r; bg[3] += u; bg[4] += r
+                            bg[0] += u; bg[1] += r
                         else:
-                            bg[2] += u; bg[5] += u
+                            bg[2] += u
                     # whole bags paid for, rounded down like the Sales card (part-paid invoices give fractions)
-                    a["u"][i] = a["bulk"][i] = math.floor(a["u"][i] + 1e-6)
+                    a["u"][i] = math.floor(a["u"][i] + 1e-6)
             for x in lines:
                 if mkt != "ALL" and x["mkt"] != mkt:
                     continue

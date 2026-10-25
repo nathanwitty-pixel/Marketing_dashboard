@@ -303,14 +303,15 @@ MONTHLY_MARKETING_POST, Last week = WEEKLY_MARKETING_POST, Weekly = 0 — posts 
 - **Sales** = Odoo POS bags per till for the period, the dashboard's bag rules: combo contents counted per bag
   (the `+` wrapper isn't), refunds netted, POS-category lines out. **Staff POS is left out**; Sinza and
   Dar-es-Salaam = **SNZ**; Uganda = **UGD**; any other till goes to **OTH** (shown only when non-zero).
-  **CORP** = corporate invoices (posted, paid / in payment / ≤ 25 % unpaid — the dashboard's corporate rule),
-  after the shop columns.
+  **CORP** = the **Corporate app**, a sales channel like a till (not a bulk order): its bags paid in the period by
+  product (`sql/corporate_bag_lines.sql`, the Sales card's rule, money received on the payment date), after the shop
+  columns. *Fixed 26 Oct 2026:* it read Odoo Accounting invoices, which no longer hold corporate sales, so it was empty.
   Product names match by the page's prefix rule (`match_odoo_bags`), all colours together.
 - **Period** dropdown: Weekly (this Sun–Sat to date) · Last week (previous Sun–Sat) · Monthly (live month) ·
   **Lifetime** (all-time, `2000-01-01 … today`; Posts shows "—" — no single all-time post count).
 - Zero cells show "0" dimmed. **Top 6 shops per row are colour-ranked** (Oct 2026): 1st gold · 2nd silver · 3rd
   bronze · 4th green · 5th cyan · 6th violet (rank = 1 + shops that sold more, ties share a place); the **TOTAL** row
-  ranks the shops across all new bags. CORP and OTH are counted but never ranked (not shops). Each ranked cell's
+  ranks the shops across all new bags. **CORP is ranked like a shop** (26 Oct 2026, user's call); OTH is counted but never ranked. Each ranked cell's
   tooltip says `#n shop for <bag>`.
 - **"How to read this table"** guide under it (for presenting): the colour key, what rows / columns / CORP / OTH /
   SNZ / Posts mean, the hover tip, and live **highlights** for the period — new bags sold, top 3 shops, the best

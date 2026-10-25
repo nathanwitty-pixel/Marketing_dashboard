@@ -287,11 +287,17 @@ Columns (revenue / units / share toggle): **All**, **Top 5 categories**, **Other
     - *Weekly breakdown*: Wk 1 … the current week (Sun–Sat weeks, clipped to the month, same as
       the trend chart), from `periods.monthly.offerTypesByWeek`: stacked chart + table with a
       **Weeks** filter; the change column compares the **first and last week picked** (absolute
-      and %). **Totals / Per day** divides each week by its days so far, so a part-week compares
+      and %). **Last complete week vs the week before (26 Oct 2026, user's call):** a second change column before
+      it, e.g. **Wk 3 → Wk 4** while Wk 5 is running — the last two finished weeks picked (the running week is never
+      used), same basis (Totals / Per day / Mix %). Left out when it would repeat the first → last column. **Totals / Per day** divides each week by its days so far, so a part-week compares
       fairly.
     - *Week 1 → latest week*: grouped bars per offer type — the first picked week beside the last
       (default Wk 1 vs the current week), each bar labelled with its number and the change
       (▲ / ▼ %) above the pair; a Total pair on the right. Same filters and switches as above.
+      **Pick the two weeks (26 Oct 2026, user's call):** two dropdowns in its heading, *Compare [week] → [week]*,
+      list every week of the month (the Weeks chips don't limit them). Default = the last complete week vs the week
+      before (e.g. Wk 3 → Wk 4); the choice is remembered per browser and falls back to the default when a new month
+      doesn't have those weeks. Same week twice shows that week alone.
   - **Numbers on the bars:** the Offer type tab's charts print each segment's value inside it
     (when the segment is big enough to hold it) and each stacked bar's total above it.
   - **Category** — for the page's selected period: the 18 categories ranked by revenue (Top 5
