@@ -5,7 +5,7 @@
 --                                        '+' wrapper line, which bags_sold_total drops. Added here
 --                                        so combo bags don't count as bags that brought in nothing.
 --   * 'KES discount' lines             → negative price adjustments against bags, so they're subtracted.
--- Delivery, customisation, straps and samples stay out (not bag sales).
+-- Delivery, customisation and straps stay out (not bag sales); samples are in, like Sales (26 Oct 2026).
 -- Value is KES-normalised (Sinza/Dar ÷25, Uganda ÷29), VAT-inclusive, like the Sales card.
 -- Params :start_date / :end_date / :excluded (sales_exclusions.txt).
 WITH params AS (
@@ -48,7 +48,6 @@ bag AS (   -- exactly the bags_sold_total.sql bag lines
     AND COALESCE(product, '') NOT ILIKE '%customization%'
     AND COALESCE(product, '') NOT ILIKE '%strap%'
     AND COALESCE(product, '') NOT ILIKE '%KES discount%'
-    AND COALESCE(product, '') NOT ILIKE '%sample%'
     AND categ NOT ILIKE '%Pos%'
     AND lower(COALESCE(product, '')) <> ALL(:excluded)
 )

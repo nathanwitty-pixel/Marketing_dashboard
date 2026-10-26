@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-25",
+ "generated": "2026-10-26",
  "weeks": [
   {
    "start": "2026-07-05",
@@ -111,7 +111,7 @@
    "v": "6.2%",
    "pts": -2.7,
    "good": "up",
-   "n": "1,579 paid-ad chats (was 8.9%)"
+   "n": "1,580 paid-ad chats (was 8.9%)"
   }
  ],
  "shops": [
@@ -5390,9 +5390,9 @@
      "notCountedOrders": 0,
      "lowCount": false,
      "partial": false,
-     "waChats": 79,
+     "waChats": 80,
      "waBought": 9,
-     "waConv": 11.4,
+     "waConv": 11.2,
      "waReply": 0.0,
      "postsLast": 883.0,
      "posts": 20.0,
@@ -7624,8 +7624,8 @@
    "orders": 351,
    "conversion": 82.2,
    "rpv": 2072,
-   "waChats": 283,
-   "waConv": 16.3,
+   "waChats": 284,
+   "waConv": 16.2,
    "waReply": 1.0,
    "lowWeeks": 3,
    "bulkOrders": 0,

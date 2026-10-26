@@ -1578,76 +1578,52 @@
       "source_location": "L82"
     },
     {
-      "id": "scripts_publish_changed_files",
-      "label": "changed_files()",
+      "id": "lib_paths_generator",
+      "label": "generator()",
       "_callable": true,
       "_origin": "ast",
       "community": 114,
-      "community_name": "publish.py",
+      "community_name": "generator",
       "file_type": "code",
-      "norm_label": "changed_files()",
-      "source_file": "scripts/publish.py",
-      "source_location": "L37"
+      "norm_label": "generator()",
+      "source_file": "lib/paths.py",
+      "source_location": "L31"
     },
     {
-      "id": "scripts_publish_git",
-      "label": "git()",
+      "id": "main_offer_active_today",
+      "label": "_offer_active_today()",
       "_callable": true,
       "_origin": "ast",
       "community": 114,
-      "community_name": "publish.py",
+      "community_name": "generator",
       "file_type": "code",
-      "norm_label": "git()",
-      "source_file": "scripts/publish.py",
-      "source_location": "L30"
+      "norm_label": "_offer_active_today()",
+      "source_file": "main.py",
+      "source_location": "L149"
     },
     {
-      "id": "scripts_publish_group",
-      "label": "group()",
+      "id": "main_start_daily_snapshot",
+      "label": "start_daily_snapshot()",
       "_callable": true,
       "_origin": "ast",
       "community": 114,
-      "community_name": "publish.py",
+      "community_name": "generator",
       "file_type": "code",
-      "norm_label": "group()",
-      "source_file": "scripts/publish.py",
-      "source_location": "L57"
+      "norm_label": "start_daily_snapshot()",
+      "source_file": "main.py",
+      "source_location": "L170"
     },
     {
-      "id": "scripts_publish_is_secret",
-      "label": "is_secret()",
+      "id": "streamlit_app_run_scripts",
+      "label": "run_scripts()",
       "_callable": true,
       "_origin": "ast",
       "community": 114,
-      "community_name": "publish.py",
+      "community_name": "generator",
       "file_type": "code",
-      "norm_label": "is_secret()",
-      "source_file": "scripts/publish.py",
-      "source_location": "L51"
-    },
-    {
-      "id": "scripts_publish_main",
-      "label": "main()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 114,
-      "community_name": "publish.py",
-      "file_type": "code",
-      "norm_label": "main()",
-      "source_file": "scripts/publish.py",
-      "source_location": "L127"
-    },
-    {
-      "id": "scripts_publish_run_checks",
-      "label": "run_checks()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 114,
-      "community_name": "publish.py",
-      "file_type": "code",
-      "norm_label": "run_checks()",
-      "source_file": "scripts/publish.py",
-      "source_location": "L72"
+      "norm_label": "run_scripts()",
+      "source_file": "streamlit_app.py",
+      "source_location": "L613"
     },
     {
       "id": "generators_current_performance_corporate_from_db",
@@ -3714,136 +3690,112 @@
       "source_location": "L42"
     },
     {
-      "id": "lib_offer_data_build",
+      "id": "lib_product_targets_available_days",
+      "label": "available_days()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "product_targets.py",
+      "file_type": "code",
+      "norm_label": "available_days()",
+      "source_file": "lib/product_targets.py",
+      "source_location": "L155"
+    },
+    {
+      "id": "lib_product_targets_base_period",
+      "label": "base_period()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "product_targets.py",
+      "file_type": "code",
+      "norm_label": "base_period()",
+      "source_file": "lib/product_targets.py",
+      "source_location": "L146"
+    },
+    {
+      "id": "lib_product_targets_build",
       "label": "build()",
       "_callable": true,
       "_origin": "ast",
       "community": 16,
-      "community_name": "lib/offer_data.py",
+      "community_name": "product_targets.py",
       "file_type": "code",
       "norm_label": "build()",
-      "source_file": "lib/offer_data.py",
-      "source_location": "L310"
+      "source_file": "lib/product_targets.py",
+      "source_location": "L206"
     },
     {
-      "id": "lib_offer_data_complete_weeks_remaining",
-      "label": "complete_weeks_remaining()",
+      "id": "lib_product_targets_load_targets",
+      "label": "load_targets()",
       "_callable": true,
       "_origin": "ast",
       "community": 16,
-      "community_name": "lib/offer_data.py",
+      "community_name": "product_targets.py",
       "file_type": "code",
-      "norm_label": "complete_weeks_remaining()",
-      "source_file": "lib/offer_data.py",
-      "source_location": "L284"
+      "norm_label": "load_targets()",
+      "source_file": "lib/product_targets.py",
+      "source_location": "L270"
     },
     {
-      "id": "lib_offer_data_data_rows_count",
-      "label": "data_rows_count()",
+      "id": "lib_product_targets_sheet_targets",
+      "label": "_sheet_targets()",
       "_callable": true,
       "_origin": "ast",
       "community": 16,
-      "community_name": "lib/offer_data.py",
+      "community_name": "product_targets.py",
       "file_type": "code",
-      "norm_label": "data_rows_count()",
-      "source_file": "lib/offer_data.py",
-      "source_location": "L301"
+      "norm_label": "_sheet_targets()",
+      "source_file": "lib/product_targets.py",
+      "source_location": "L326"
     },
     {
-      "id": "lib_offer_data_fetch_offer_data",
-      "label": "fetch_offer_data()",
+      "id": "lib_product_targets_total_for",
+      "label": "total_for()",
       "_callable": true,
       "_origin": "ast",
       "community": 16,
-      "community_name": "lib/offer_data.py",
+      "community_name": "product_targets.py",
       "file_type": "code",
-      "norm_label": "fetch_offer_data()",
-      "source_file": "lib/offer_data.py",
-      "source_location": "L102"
+      "norm_label": "total_for()",
+      "source_file": "lib/product_targets.py",
+      "source_location": "L101"
     },
     {
-      "id": "lib_offer_data_fmt_int",
-      "label": "fmt_int()",
+      "id": "lib_product_targets_write_csv",
+      "label": "write_csv()",
       "_callable": true,
       "_origin": "ast",
       "community": 16,
-      "community_name": "lib/offer_data.py",
+      "community_name": "product_targets.py",
       "file_type": "code",
-      "norm_label": "fmt_int()",
-      "source_file": "lib/offer_data.py",
-      "source_location": "L59"
+      "norm_label": "write_csv()",
+      "source_file": "lib/product_targets.py",
+      "source_location": "L254"
     },
     {
-      "id": "lib_offer_data_fmt_price",
-      "label": "fmt_price()",
+      "id": "lib_report_month_live_month_window",
+      "label": "live_month_window()",
       "_callable": true,
       "_origin": "ast",
       "community": 16,
-      "community_name": "lib/offer_data.py",
+      "community_name": "product_targets.py",
       "file_type": "code",
-      "norm_label": "fmt_price()",
-      "source_file": "lib/offer_data.py",
-      "source_location": "L62"
+      "norm_label": "live_month_window()",
+      "source_file": "lib/report_month.py",
+      "source_location": "L90"
     },
     {
-      "id": "lib_offer_data_is_checked",
-      "label": "is_checked()",
+      "id": "tests_test_product_targets_test_available_days_rebuilt_backwards_from_today",
+      "label": "test_available_days_rebuilt_backwards_from_today()",
       "_callable": true,
       "_origin": "ast",
       "community": 16,
-      "community_name": "lib/offer_data.py",
+      "community_name": "product_targets.py",
       "file_type": "code",
-      "norm_label": "is_checked()",
-      "source_file": "lib/offer_data.py",
-      "source_location": "L50"
-    },
-    {
-      "id": "lib_offer_data_offer_tables",
-      "label": "_offer_tables()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "lib/offer_data.py",
-      "file_type": "code",
-      "norm_label": "_offer_tables()",
-      "source_file": "lib/offer_data.py",
-      "source_location": "L71"
-    },
-    {
-      "id": "lib_offer_data_offer_tables_rows_of",
-      "label": "rows_of()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "lib/offer_data.py",
-      "file_type": "code",
-      "norm_label": "rows_of()",
-      "source_file": "lib/offer_data.py",
-      "source_location": "L77"
-    },
-    {
-      "id": "lib_offer_data_offer_tables_table",
-      "label": "table()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "lib/offer_data.py",
-      "file_type": "code",
-      "norm_label": "table()",
-      "source_file": "lib/offer_data.py",
-      "source_location": "L85"
-    },
-    {
-      "id": "lib_offer_data_safe_int",
-      "label": "safe_int()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "lib/offer_data.py",
-      "file_type": "code",
-      "norm_label": "safe_int()",
-      "source_file": "lib/offer_data.py",
-      "source_location": "L44"
+      "norm_label": "test_available_days_rebuilt_backwards_from_today()",
+      "source_file": "tests/test_product_targets.py",
+      "source_location": "L47"
     },
     {
       "id": "generators_self_made_combos_combo_button_usage",
@@ -4818,52 +4770,40 @@
       "source_location": "L82"
     },
     {
-      "id": "lib_paths_generator",
-      "label": "generator()",
+      "id": "tests_test_snapshot_live_up",
+      "label": "_live_up()",
       "_callable": true,
       "_origin": "ast",
       "community": 172,
-      "community_name": "generator",
+      "community_name": "test_snapshot.py",
       "file_type": "code",
-      "norm_label": "generator()",
-      "source_file": "lib/paths.py",
-      "source_location": "L31"
+      "norm_label": "_live_up()",
+      "source_file": "tests/test_snapshot.py",
+      "source_location": "L63"
     },
     {
-      "id": "main_offer_active_today",
-      "label": "_offer_active_today()",
+      "id": "tests_test_snapshot_norm",
+      "label": "_norm()",
       "_callable": true,
       "_origin": "ast",
       "community": 172,
-      "community_name": "generator",
+      "community_name": "test_snapshot.py",
       "file_type": "code",
-      "norm_label": "_offer_active_today()",
-      "source_file": "main.py",
-      "source_location": "L149"
+      "norm_label": "_norm()",
+      "source_file": "tests/test_snapshot.py",
+      "source_location": "L51"
     },
     {
-      "id": "main_start_daily_snapshot",
-      "label": "start_daily_snapshot()",
+      "id": "tests_test_snapshot_test_snapshot_matches_live",
+      "label": "test_snapshot_matches_live()",
       "_callable": true,
       "_origin": "ast",
       "community": 172,
-      "community_name": "generator",
+      "community_name": "test_snapshot.py",
       "file_type": "code",
-      "norm_label": "start_daily_snapshot()",
-      "source_file": "main.py",
-      "source_location": "L170"
-    },
-    {
-      "id": "streamlit_app_run_scripts",
-      "label": "run_scripts()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 172,
-      "community_name": "generator",
-      "file_type": "code",
-      "norm_label": "run_scripts()",
-      "source_file": "streamlit_app.py",
-      "source_location": "L613"
+      "norm_label": "test_snapshot_matches_live()",
+      "source_file": "tests/test_snapshot.py",
+      "source_location": "L68"
     },
     {
       "id": "generators_monthly_report_bag_stock",
@@ -4974,40 +4914,28 @@
       "source_location": "L2221"
     },
     {
-      "id": "tests_test_snapshot_live_up",
-      "label": "_live_up()",
+      "id": "generators_bags_on_offer_new_products",
+      "label": "_new_products()",
       "_callable": true,
       "_origin": "ast",
       "community": 177,
-      "community_name": "test_snapshot.py",
+      "community_name": "names",
       "file_type": "code",
-      "norm_label": "_live_up()",
-      "source_file": "tests/test_snapshot.py",
-      "source_location": "L63"
+      "norm_label": "_new_products()",
+      "source_file": "generators/bags_on_offer.py",
+      "source_location": "L325"
     },
     {
-      "id": "tests_test_snapshot_norm",
-      "label": "_norm()",
+      "id": "lib_new_products_list_names",
+      "label": "names()",
       "_callable": true,
       "_origin": "ast",
       "community": 177,
-      "community_name": "test_snapshot.py",
+      "community_name": "names",
       "file_type": "code",
-      "norm_label": "_norm()",
-      "source_file": "tests/test_snapshot.py",
-      "source_location": "L51"
-    },
-    {
-      "id": "tests_test_snapshot_test_snapshot_matches_live",
-      "label": "test_snapshot_matches_live()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 177,
-      "community_name": "test_snapshot.py",
-      "file_type": "code",
-      "norm_label": "test_snapshot_matches_live()",
-      "source_file": "tests/test_snapshot.py",
-      "source_location": "L68"
+      "norm_label": "names()",
+      "source_file": "lib/new_products_list.py",
+      "source_location": "L13"
     },
     {
       "id": "generators_self_made_combos_apply_receipt_offers",
@@ -5274,28 +5202,28 @@
       "source_location": "L179"
     },
     {
-      "id": "generators_bags_on_offer_new_products",
-      "label": "_new_products()",
+      "id": "generators_push_planner_load_data",
+      "label": "load_data()",
       "_callable": true,
       "_origin": "ast",
       "community": 180,
-      "community_name": "names",
+      "community_name": "load_data",
       "file_type": "code",
-      "norm_label": "_new_products()",
-      "source_file": "generators/bags_on_offer.py",
-      "source_location": "L325"
+      "norm_label": "load_data()",
+      "source_file": "generators/push_planner.py",
+      "source_location": "L71"
     },
     {
-      "id": "lib_new_products_list_names",
-      "label": "names()",
+      "id": "generators_push_planner_till_to_shop",
+      "label": "_till_to_shop()",
       "_callable": true,
       "_origin": "ast",
       "community": 180,
-      "community_name": "names",
+      "community_name": "load_data",
       "file_type": "code",
-      "norm_label": "names()",
-      "source_file": "lib/new_products_list.py",
-      "source_location": "L13"
+      "norm_label": "_till_to_shop()",
+      "source_file": "generators/push_planner.py",
+      "source_location": "L55"
     },
     {
       "id": "generators_product_performance_load_posts",
@@ -5334,11 +5262,23 @@
       "source_location": "L416"
     },
     {
+      "id": "lib_pos_lines_expand",
+      "label": "expand()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 182,
+      "community_name": "pos_lines.py",
+      "file_type": "code",
+      "norm_label": "expand()",
+      "source_file": "lib/pos_lines.py",
+      "source_location": "L58"
+    },
+    {
       "id": "streamlit_app_reveal_page",
       "label": "_reveal_page()",
       "_callable": true,
       "_origin": "ast",
-      "community": 182,
+      "community": 183,
       "community_name": "_reveal_page",
       "file_type": "code",
       "norm_label": "_reveal_page()",
@@ -5350,24 +5290,12 @@
       "label": "_run_js()",
       "_callable": true,
       "_origin": "ast",
-      "community": 182,
+      "community": 183,
       "community_name": "_reveal_page",
       "file_type": "code",
       "norm_label": "_run_js()",
       "source_file": "streamlit_app.py",
       "source_location": "L422"
-    },
-    {
-      "id": "lib_pos_lines_expand",
-      "label": "expand()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 183,
-      "community_name": "pos_lines.py",
-      "file_type": "code",
-      "norm_label": "expand()",
-      "source_file": "lib/pos_lines.py",
-      "source_location": "L58"
     },
     {
       "id": "generators_ads_impact_build",
@@ -5910,6 +5838,18 @@
       "source_location": "L736"
     },
     {
+      "id": "streamlit_app_month_archived",
+      "label": "_month_archived()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 188,
+      "community_name": "_month_archived",
+      "file_type": "code",
+      "norm_label": "_month_archived()",
+      "source_file": "streamlit_app.py",
+      "source_location": "L745"
+    },
+    {
       "id": "export_self_made_combos_bundle_lib_db_env",
       "label": "_env()",
       "_callable": true,
@@ -6172,18 +6112,6 @@
       "norm_label": "_norm()",
       "source_file": "lib/colours.py",
       "source_location": "L27"
-    },
-    {
-      "id": "streamlit_app_month_archived",
-      "label": "_month_archived()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 198,
-      "community_name": "_month_archived",
-      "file_type": "code",
-      "norm_label": "_month_archived()",
-      "source_file": "streamlit_app.py",
-      "source_location": "L745"
     },
     {
       "id": "generators_bags_on_offer_market_records",
@@ -11694,112 +11622,136 @@
       "source_location": "L325"
     },
     {
-      "id": "lib_product_targets_available_days",
-      "label": "available_days()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 62,
-      "community_name": "product_targets.py",
-      "file_type": "code",
-      "norm_label": "available_days()",
-      "source_file": "lib/product_targets.py",
-      "source_location": "L155"
-    },
-    {
-      "id": "lib_product_targets_base_period",
-      "label": "base_period()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 62,
-      "community_name": "product_targets.py",
-      "file_type": "code",
-      "norm_label": "base_period()",
-      "source_file": "lib/product_targets.py",
-      "source_location": "L146"
-    },
-    {
-      "id": "lib_product_targets_build",
+      "id": "lib_offer_data_build",
       "label": "build()",
       "_callable": true,
       "_origin": "ast",
       "community": 62,
-      "community_name": "product_targets.py",
+      "community_name": "lib/offer_data.py",
       "file_type": "code",
       "norm_label": "build()",
-      "source_file": "lib/product_targets.py",
-      "source_location": "L206"
+      "source_file": "lib/offer_data.py",
+      "source_location": "L310"
     },
     {
-      "id": "lib_product_targets_load_targets",
-      "label": "load_targets()",
+      "id": "lib_offer_data_complete_weeks_remaining",
+      "label": "complete_weeks_remaining()",
       "_callable": true,
       "_origin": "ast",
       "community": 62,
-      "community_name": "product_targets.py",
+      "community_name": "lib/offer_data.py",
       "file_type": "code",
-      "norm_label": "load_targets()",
-      "source_file": "lib/product_targets.py",
-      "source_location": "L270"
+      "norm_label": "complete_weeks_remaining()",
+      "source_file": "lib/offer_data.py",
+      "source_location": "L284"
     },
     {
-      "id": "lib_product_targets_sheet_targets",
-      "label": "_sheet_targets()",
+      "id": "lib_offer_data_data_rows_count",
+      "label": "data_rows_count()",
       "_callable": true,
       "_origin": "ast",
       "community": 62,
-      "community_name": "product_targets.py",
+      "community_name": "lib/offer_data.py",
       "file_type": "code",
-      "norm_label": "_sheet_targets()",
-      "source_file": "lib/product_targets.py",
-      "source_location": "L326"
+      "norm_label": "data_rows_count()",
+      "source_file": "lib/offer_data.py",
+      "source_location": "L301"
     },
     {
-      "id": "lib_product_targets_total_for",
-      "label": "total_for()",
+      "id": "lib_offer_data_fetch_offer_data",
+      "label": "fetch_offer_data()",
       "_callable": true,
       "_origin": "ast",
       "community": 62,
-      "community_name": "product_targets.py",
+      "community_name": "lib/offer_data.py",
       "file_type": "code",
-      "norm_label": "total_for()",
-      "source_file": "lib/product_targets.py",
-      "source_location": "L101"
+      "norm_label": "fetch_offer_data()",
+      "source_file": "lib/offer_data.py",
+      "source_location": "L102"
     },
     {
-      "id": "lib_product_targets_write_csv",
-      "label": "write_csv()",
+      "id": "lib_offer_data_fmt_int",
+      "label": "fmt_int()",
       "_callable": true,
       "_origin": "ast",
       "community": 62,
-      "community_name": "product_targets.py",
+      "community_name": "lib/offer_data.py",
       "file_type": "code",
-      "norm_label": "write_csv()",
-      "source_file": "lib/product_targets.py",
-      "source_location": "L254"
+      "norm_label": "fmt_int()",
+      "source_file": "lib/offer_data.py",
+      "source_location": "L59"
     },
     {
-      "id": "lib_report_month_live_month_window",
-      "label": "live_month_window()",
+      "id": "lib_offer_data_fmt_price",
+      "label": "fmt_price()",
       "_callable": true,
       "_origin": "ast",
       "community": 62,
-      "community_name": "product_targets.py",
+      "community_name": "lib/offer_data.py",
       "file_type": "code",
-      "norm_label": "live_month_window()",
-      "source_file": "lib/report_month.py",
-      "source_location": "L90"
+      "norm_label": "fmt_price()",
+      "source_file": "lib/offer_data.py",
+      "source_location": "L62"
     },
     {
-      "id": "tests_test_product_targets_test_available_days_rebuilt_backwards_from_today",
-      "label": "test_available_days_rebuilt_backwards_from_today()",
+      "id": "lib_offer_data_is_checked",
+      "label": "is_checked()",
       "_callable": true,
       "_origin": "ast",
       "community": 62,
-      "community_name": "product_targets.py",
+      "community_name": "lib/offer_data.py",
       "file_type": "code",
-      "norm_label": "test_available_days_rebuilt_backwards_from_today()",
-      "source_file": "tests/test_product_targets.py",
-      "source_location": "L47"
+      "norm_label": "is_checked()",
+      "source_file": "lib/offer_data.py",
+      "source_location": "L50"
+    },
+    {
+      "id": "lib_offer_data_offer_tables",
+      "label": "_offer_tables()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 62,
+      "community_name": "lib/offer_data.py",
+      "file_type": "code",
+      "norm_label": "_offer_tables()",
+      "source_file": "lib/offer_data.py",
+      "source_location": "L71"
+    },
+    {
+      "id": "lib_offer_data_offer_tables_rows_of",
+      "label": "rows_of()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 62,
+      "community_name": "lib/offer_data.py",
+      "file_type": "code",
+      "norm_label": "rows_of()",
+      "source_file": "lib/offer_data.py",
+      "source_location": "L77"
+    },
+    {
+      "id": "lib_offer_data_offer_tables_table",
+      "label": "table()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 62,
+      "community_name": "lib/offer_data.py",
+      "file_type": "code",
+      "norm_label": "table()",
+      "source_file": "lib/offer_data.py",
+      "source_location": "L85"
+    },
+    {
+      "id": "lib_offer_data_safe_int",
+      "label": "safe_int()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 62,
+      "community_name": "lib/offer_data.py",
+      "file_type": "code",
+      "norm_label": "safe_int()",
+      "source_file": "lib/offer_data.py",
+      "source_location": "L44"
     },
     {
       "id": "lib_snapshot_age_min",
@@ -14046,16 +13998,76 @@
       "source_location": "L257"
     },
     {
-      "id": "generators_new_products_match_odoo_bags",
-      "label": "match_odoo_bags()",
+      "id": "scripts_publish_changed_files",
+      "label": "changed_files()",
       "_callable": true,
       "_origin": "ast",
       "community": 82,
-      "community_name": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
+      "community_name": "publish.py",
       "file_type": "code",
-      "norm_label": "match_odoo_bags()",
-      "source_file": "generators/new_products.py",
-      "source_location": "L237"
+      "norm_label": "changed_files()",
+      "source_file": "scripts/publish.py",
+      "source_location": "L37"
+    },
+    {
+      "id": "scripts_publish_git",
+      "label": "git()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 82,
+      "community_name": "publish.py",
+      "file_type": "code",
+      "norm_label": "git()",
+      "source_file": "scripts/publish.py",
+      "source_location": "L30"
+    },
+    {
+      "id": "scripts_publish_group",
+      "label": "group()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 82,
+      "community_name": "publish.py",
+      "file_type": "code",
+      "norm_label": "group()",
+      "source_file": "scripts/publish.py",
+      "source_location": "L57"
+    },
+    {
+      "id": "scripts_publish_is_secret",
+      "label": "is_secret()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 82,
+      "community_name": "publish.py",
+      "file_type": "code",
+      "norm_label": "is_secret()",
+      "source_file": "scripts/publish.py",
+      "source_location": "L51"
+    },
+    {
+      "id": "scripts_publish_main",
+      "label": "main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 82,
+      "community_name": "publish.py",
+      "file_type": "code",
+      "norm_label": "main()",
+      "source_file": "scripts/publish.py",
+      "source_location": "L127"
+    },
+    {
+      "id": "scripts_publish_run_checks",
+      "label": "run_checks()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 82,
+      "community_name": "publish.py",
+      "file_type": "code",
+      "norm_label": "run_checks()",
+      "source_file": "scripts/publish.py",
+      "source_location": "L72"
     },
     {
       "id": "lib_push_rules_add_peers",
@@ -14358,28 +14370,16 @@
       "source_location": "L147"
     },
     {
-      "id": "generators_push_planner_load_data",
-      "label": "load_data()",
+      "id": "generators_new_products_match_odoo_bags",
+      "label": "match_odoo_bags()",
       "_callable": true,
       "_origin": "ast",
       "community": 86,
-      "community_name": "load_data",
+      "community_name": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
       "file_type": "code",
-      "norm_label": "load_data()",
-      "source_file": "generators/push_planner.py",
-      "source_location": "L71"
-    },
-    {
-      "id": "generators_push_planner_till_to_shop",
-      "label": "_till_to_shop()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 86,
-      "community_name": "load_data",
-      "file_type": "code",
-      "norm_label": "_till_to_shop()",
-      "source_file": "generators/push_planner.py",
-      "source_location": "L55"
+      "norm_label": "match_odoo_bags()",
+      "source_file": "generators/new_products.py",
+      "source_location": "L237"
     },
     {
       "id": "lib_push_rules_context",
@@ -16929,37 +16929,26 @@
       "source_location": "L2"
     },
     {
-      "id": "scripts_publish",
-      "label": "publish.py",
+      "id": "main_rationale_150",
+      "label": "True if ANY timed-offer window is set and today falls inside it. Handles the\u2026",
       "_origin": "ast",
       "community": 114,
-      "community_name": "publish.py",
-      "file_type": "code",
-      "norm_label": "publish.py",
-      "source_file": "scripts/publish.py",
-      "source_location": "L1"
+      "community_name": "generator",
+      "file_type": "rationale",
+      "norm_label": "true if any timed-offer window is set and today falls inside it. handles the...",
+      "source_file": "main.py",
+      "source_location": "L150"
     },
     {
-      "id": "scripts_publish_rationale_2",
-      "label": "publish.py \u2014 one-click, VERIFIED publish of the dashboard to GitHub (Streamlit\u2026",
+      "id": "main_rationale_171",
+      "label": "Once per calendar day, while an offer window is active, re-run timed_offers.py\u2026",
       "_origin": "ast",
       "community": 114,
-      "community_name": "publish.py",
+      "community_name": "generator",
       "file_type": "rationale",
-      "norm_label": "publish.py \u2014 one-click, verified publish of the dashboard to github (streamlit...",
-      "source_file": "scripts/publish.py",
-      "source_location": "L2"
-    },
-    {
-      "id": "scripts_publish_rationale_38",
-      "label": "(status, path) for every change that `git add -A` would stage (untracked\u2026",
-      "_origin": "ast",
-      "community": 114,
-      "community_name": "publish.py",
-      "file_type": "rationale",
-      "norm_label": "(status, path) for every change that `git add -a` would stage (untracked...",
-      "source_file": "scripts/publish.py",
-      "source_location": "L38"
+      "norm_label": "once per calendar day, while an offer window is active, re-run timed_offers.py...",
+      "source_file": "main.py",
+      "source_location": "L171"
     },
     {
       "id": "graphify_out_converted_reject_sales_export_302c9b30",
@@ -18898,59 +18887,103 @@
       "source_location": "L30"
     },
     {
-      "id": "lib_offer_data",
-      "label": "lib/offer_data.py",
+      "id": "lib_product_targets",
+      "label": "product_targets.py",
       "_origin": "ast",
       "community": 16,
-      "community_name": "lib/offer_data.py",
+      "community_name": "product_targets.py",
       "file_type": "code",
-      "norm_label": "lib/offer_data.py",
-      "source_file": "lib/offer_data.py",
+      "norm_label": "product_targets.py",
+      "source_file": "lib/product_targets.py",
       "source_location": "L1"
     },
     {
-      "id": "lib_offer_data_rationale_1",
-      "label": "offer_data.py \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2026",
+      "id": "lib_product_targets_rationale_1",
+      "label": "lib/product_targets.py \u2014 each month's units-to-sell target per bag, from Odoo\u2026",
       "_origin": "ast",
       "community": 16,
-      "community_name": "lib/offer_data.py",
+      "community_name": "product_targets.py",
       "file_type": "rationale",
-      "norm_label": "offer_data.py \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500...",
-      "source_file": "lib/offer_data.py",
+      "norm_label": "lib/product_targets.py \u2014 each month's units-to-sell target per bag, from odoo...",
+      "source_file": "lib/product_targets.py",
       "source_location": "L1"
     },
     {
-      "id": "lib_offer_data_rationale_302",
-      "label": "Count product rows, excluding the appended TOTAL row.",
+      "id": "lib_product_targets_rationale_102",
+      "label": "(total units, info) \u2014 the month's Odoo target units, or (no Odoo targets yet)\u2026",
       "_origin": "ast",
       "community": 16,
-      "community_name": "lib/offer_data.py",
+      "community_name": "product_targets.py",
       "file_type": "rationale",
-      "norm_label": "count product rows, excluding the appended total row.",
-      "source_file": "lib/offer_data.py",
-      "source_location": "L302"
+      "norm_label": "(total units, info) \u2014 the month's odoo target units, or (no odoo targets yet)...",
+      "source_file": "lib/product_targets.py",
+      "source_location": "L102"
     },
     {
-      "id": "lib_offer_data_rationale_311",
-      "label": "Fetch + shape the COMBOS-sheet dataset once (cached per process). Returns\u2026",
+      "id": "lib_product_targets_rationale_147",
+      "label": "The three complete months before month_start \u2192 (start, end).",
       "_origin": "ast",
       "community": 16,
-      "community_name": "lib/offer_data.py",
+      "community_name": "product_targets.py",
       "file_type": "rationale",
-      "norm_label": "fetch + shape the combos-sheet dataset once (cached per process). returns...",
-      "source_file": "lib/offer_data.py",
-      "source_location": "L311"
+      "norm_label": "the three complete months before month_start \u2192 (start, end).",
+      "source_file": "lib/product_targets.py",
+      "source_location": "L147"
     },
     {
-      "id": "lib_offer_data_rationale_72",
-      "label": "The month's offer tables in the old COMBOS-sheet shape ([headers], [rows\u2026,\u2026",
+      "id": "lib_product_targets_rationale_156",
+      "label": "Pure. {bag: set(dates in [start, end] the bag had stock in a shop or sold)}.\u2026",
       "_origin": "ast",
       "community": 16,
-      "community_name": "lib/offer_data.py",
+      "community_name": "product_targets.py",
       "file_type": "rationale",
-      "norm_label": "the month's offer tables in the old combos-sheet shape ([headers], [rows...,...",
-      "source_file": "lib/offer_data.py",
-      "source_location": "L72"
+      "norm_label": "pure. {bag: set(dates in [start, end] the bag had stock in a shop or sold)}....",
+      "source_file": "lib/product_targets.py",
+      "source_location": "L156"
+    },
+    {
+      "id": "lib_product_targets_rationale_207",
+      "label": "(rows, total, base start, base end) for the month, from Odoo.",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "product_targets.py",
+      "file_type": "rationale",
+      "norm_label": "(rows, total, base start, base end) for the month, from odoo.",
+      "source_file": "lib/product_targets.py",
+      "source_location": "L207"
+    },
+    {
+      "id": "lib_product_targets_rationale_271",
+      "label": "{BAG: target units} for the month from product_targets_<YYYY-MM>.csv (built\u2026",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "product_targets.py",
+      "file_type": "rationale",
+      "norm_label": "{bag: target units} for the month from product_targets_<yyyy-mm>.csv (built...",
+      "source_file": "lib/product_targets.py",
+      "source_location": "L271"
+    },
+    {
+      "id": "lib_product_targets_rationale_327",
+      "label": "{BAG: col C} from MONTHLY_TARGET \u2014 for the comparison column only.",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "product_targets.py",
+      "file_type": "rationale",
+      "norm_label": "{bag: col c} from monthly_target \u2014 for the comparison column only.",
+      "source_file": "lib/product_targets.py",
+      "source_location": "L327"
+    },
+    {
+      "id": "lib_report_month_rationale_91",
+      "label": "(first day, last day) of the LIVE month (today's month, unless pinned).",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "product_targets.py",
+      "file_type": "rationale",
+      "norm_label": "(first day, last day) of the live month (today's month, unless pinned).",
+      "source_file": "lib/report_month.py",
+      "source_location": "L91"
     },
     {
       "id": "generators_self_made_combos_rationale_1245",
@@ -19360,7 +19393,7 @@
       "node_kind": "heading",
       "norm_label": "out of stock \u2014 call back",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L337"
+      "source_location": "L341"
     },
     {
       "id": "notes_ralph_task_sub_goals_in_order",
@@ -19565,26 +19598,26 @@
       "source_location": "L1"
     },
     {
-      "id": "main_rationale_150",
-      "label": "True if ANY timed-offer window is set and today falls inside it. Handles the\u2026",
+      "id": "tests_test_snapshot",
+      "label": "test_snapshot.py",
       "_origin": "ast",
       "community": 172,
-      "community_name": "generator",
-      "file_type": "rationale",
-      "norm_label": "true if any timed-offer window is set and today falls inside it. handles the...",
-      "source_file": "main.py",
-      "source_location": "L150"
+      "community_name": "test_snapshot.py",
+      "file_type": "code",
+      "norm_label": "test_snapshot.py",
+      "source_file": "tests/test_snapshot.py",
+      "source_location": "L1"
     },
     {
-      "id": "main_rationale_171",
-      "label": "Once per calendar day, while an offer window is active, re-run timed_offers.py\u2026",
+      "id": "tests_test_snapshot_rationale_1",
+      "label": "lib/snapshot.py must give the same answers as live Postgres (docs/README.md \u203a\u2026",
       "_origin": "ast",
       "community": 172,
-      "community_name": "generator",
+      "community_name": "test_snapshot.py",
       "file_type": "rationale",
-      "norm_label": "once per calendar day, while an offer window is active, re-run timed_offers.py...",
-      "source_file": "main.py",
-      "source_location": "L171"
+      "norm_label": "lib/snapshot.py must give the same answers as live postgres (docs/readme.md \u203a...",
+      "source_file": "tests/test_snapshot.py",
+      "source_location": "L1"
     },
     {
       "id": "generators_monthly_report_rationale_1221",
@@ -19739,26 +19772,26 @@
       "source_location": null
     },
     {
-      "id": "tests_test_snapshot",
-      "label": "test_snapshot.py",
+      "id": "generators_bags_on_offer_rationale_326",
+      "label": "This month's new products: data/new_products.txt (lib/new_products_list) \u2014 the\u2026",
       "_origin": "ast",
       "community": 177,
-      "community_name": "test_snapshot.py",
-      "file_type": "code",
-      "norm_label": "test_snapshot.py",
-      "source_file": "tests/test_snapshot.py",
-      "source_location": "L1"
+      "community_name": "names",
+      "file_type": "rationale",
+      "norm_label": "this month's new products: data/new_products.txt (lib/new_products_list) \u2014 the...",
+      "source_file": "generators/bags_on_offer.py",
+      "source_location": "L326"
     },
     {
-      "id": "tests_test_snapshot_rationale_1",
-      "label": "lib/snapshot.py must give the same answers as live Postgres (docs/README.md \u203a\u2026",
+      "id": "lib_new_products_list_rationale_14",
+      "label": "Upper-cased bag types from new_products.txt in file order ([] = no new\u2026",
       "_origin": "ast",
       "community": 177,
-      "community_name": "test_snapshot.py",
+      "community_name": "names",
       "file_type": "rationale",
-      "norm_label": "lib/snapshot.py must give the same answers as live postgres (docs/readme.md \u203a...",
-      "source_file": "tests/test_snapshot.py",
-      "source_location": "L1"
+      "norm_label": "upper-cased bag types from new_products.txt in file order ([] = no new...",
+      "source_file": "lib/new_products_list.py",
+      "source_location": "L14"
     },
     {
       "id": "generators_self_made_combos_rationale_1429",
@@ -19936,26 +19969,26 @@
       "source_location": "L944"
     },
     {
-      "id": "generators_bags_on_offer_rationale_326",
-      "label": "This month's new products: data/new_products.txt (lib/new_products_list) \u2014 the\u2026",
+      "id": "generators_push_planner_rationale_56",
+      "label": "POS till name \u2192 the shop name used by STOCK_CODE_TO_SHOP ('KTDA SHOP' \u2192 'KTDA').",
       "_origin": "ast",
       "community": 180,
-      "community_name": "names",
+      "community_name": "load_data",
       "file_type": "rationale",
-      "norm_label": "this month's new products: data/new_products.txt (lib/new_products_list) \u2014 the...",
-      "source_file": "generators/bags_on_offer.py",
-      "source_location": "L326"
+      "norm_label": "pos till name \u2192 the shop name used by stock_code_to_shop ('ktda shop' \u2192 'ktda').",
+      "source_file": "generators/push_planner.py",
+      "source_location": "L56"
     },
     {
-      "id": "lib_new_products_list_rationale_14",
-      "label": "Upper-cased bag types from new_products.txt in file order ([] = no new\u2026",
+      "id": "generators_push_planner_rationale_72",
+      "label": "Raw inputs rolled up to bag type. Returns a dict (see keys below) or None if\u2026",
       "_origin": "ast",
       "community": 180,
-      "community_name": "names",
+      "community_name": "load_data",
       "file_type": "rationale",
-      "norm_label": "upper-cased bag types from new_products.txt in file order ([] = no new...",
-      "source_file": "lib/new_products_list.py",
-      "source_location": "L14"
+      "norm_label": "raw inputs rolled up to bag type. returns a dict (see keys below) or none if...",
+      "source_file": "generators/push_planner.py",
+      "source_location": "L72"
     },
     {
       "id": "generators_product_performance_rationale_400",
@@ -19969,32 +20002,10 @@
       "source_location": "L400"
     },
     {
-      "id": "streamlit_app_rationale_423",
-      "label": "Run script-only HTML in an invisible frame (same origin, so it can reach\u2026",
-      "_origin": "ast",
-      "community": 182,
-      "community_name": "_reveal_page",
-      "file_type": "rationale",
-      "norm_label": "run script-only html in an invisible frame (same origin, so it can reach...",
-      "source_file": "streamlit_app.py",
-      "source_location": "L423"
-    },
-    {
-      "id": "streamlit_app_rationale_544",
-      "label": "Fade the page area back in on a page that has no dashboard frame (password\u2026",
-      "_origin": "ast",
-      "community": 182,
-      "community_name": "_reveal_page",
-      "file_type": "rationale",
-      "norm_label": "fade the page area back in on a page that has no dashboard frame (password...",
-      "source_file": "streamlit_app.py",
-      "source_location": "L544"
-    },
-    {
       "id": "lib_pos_lines",
       "label": "pos_lines.py",
       "_origin": "ast",
-      "community": 183,
+      "community": 182,
       "community_name": "pos_lines.py",
       "file_type": "code",
       "norm_label": "pos_lines.py",
@@ -20005,7 +20016,7 @@
       "id": "lib_pos_lines_rationale_1",
       "label": "lib/pos_lines.py \u2014 till lines with refunded combos fixed (docs/README.md \u203a\u2026",
       "_origin": "ast",
-      "community": 183,
+      "community": 182,
       "community_name": "pos_lines.py",
       "file_type": "rationale",
       "norm_label": "lib/pos_lines.py \u2014 till lines with refunded combos fixed (docs/readme.md \u203a...",
@@ -20016,12 +20027,34 @@
       "id": "lib_pos_lines_rationale_59",
       "label": "Replace each POS_LINES(alias) with the fixed-lines subquery for that pos_order\u2026",
       "_origin": "ast",
-      "community": 183,
+      "community": 182,
       "community_name": "pos_lines.py",
       "file_type": "rationale",
       "norm_label": "replace each pos_lines(alias) with the fixed-lines subquery for that pos_order...",
       "source_file": "lib/pos_lines.py",
       "source_location": "L59"
+    },
+    {
+      "id": "streamlit_app_rationale_423",
+      "label": "Run script-only HTML in an invisible frame (same origin, so it can reach\u2026",
+      "_origin": "ast",
+      "community": 183,
+      "community_name": "_reveal_page",
+      "file_type": "rationale",
+      "norm_label": "run script-only html in an invisible frame (same origin, so it can reach...",
+      "source_file": "streamlit_app.py",
+      "source_location": "L423"
+    },
+    {
+      "id": "streamlit_app_rationale_544",
+      "label": "Fade the page area back in on a page that has no dashboard frame (password\u2026",
+      "_origin": "ast",
+      "community": 183,
+      "community_name": "_reveal_page",
+      "file_type": "rationale",
+      "norm_label": "fade the page area back in on a page that has no dashboard frame (password...",
+      "source_file": "streamlit_app.py",
+      "source_location": "L544"
     },
     {
       "id": "generators_ads_impact",
@@ -20417,6 +20450,28 @@
       "source_location": "L18"
     },
     {
+      "id": "cache_data",
+      "label": "cache_data",
+      "_origin": "ast",
+      "community": 188,
+      "community_name": "_month_archived",
+      "file_type": "code",
+      "norm_label": "cache_data",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "streamlit_app_rationale_746",
+      "label": "True when `key` is in Supabase (falls back to monthly_report_history.json). If\u2026",
+      "_origin": "ast",
+      "community": 188,
+      "community_name": "_month_archived",
+      "file_type": "rationale",
+      "norm_label": "true when `key` is in supabase (falls back to monthly_report_history.json). if...",
+      "source_file": "streamlit_app.py",
+      "source_location": "L746"
+    },
+    {
       "id": "export_self_made_combos_bundle_lib_db",
       "label": "self_made_combos_bundle/lib/db.py",
       "_origin": "ast",
@@ -20591,28 +20646,6 @@
       "norm_label": "corporate_bag_lines.sql",
       "source_file": "sql/corporate_bag_lines.sql",
       "source_location": null
-    },
-    {
-      "id": "cache_data",
-      "label": "cache_data",
-      "_origin": "ast",
-      "community": 198,
-      "community_name": "_month_archived",
-      "file_type": "code",
-      "norm_label": "cache_data",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "streamlit_app_rationale_746",
-      "label": "True when `key` is in Supabase (falls back to monthly_report_history.json). If\u2026",
-      "_origin": "ast",
-      "community": 198,
-      "community_name": "_month_archived",
-      "file_type": "rationale",
-      "norm_label": "true when `key` is in supabase (falls back to monthly_report_history.json). if...",
-      "source_file": "streamlit_app.py",
-      "source_location": "L746"
     },
     {
       "id": "lib_receipt_combos",
@@ -22676,7 +22709,7 @@
       "node_kind": "heading",
       "norm_label": "corporate-lead till orders",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L479"
+      "source_location": "L483"
     },
     {
       "id": "docs_bags_on_offer_laptop_sleeves_are_bags_27_sep_2026",
@@ -22700,7 +22733,7 @@
       "node_kind": "heading",
       "norm_label": "layout (laptop / tablet / phone)",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L464"
+      "source_location": "L468"
     },
     {
       "id": "docs_bags_on_offer_period_selector_monthly_weekly_last_week_custom",
@@ -22724,7 +22757,7 @@
       "node_kind": "heading",
       "norm_label": "regenerate",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L455"
+      "source_location": "L459"
     },
     {
       "id": "docs_bags_on_offer_shop_birthdays",
@@ -22736,7 +22769,7 @@
       "node_kind": "heading",
       "norm_label": "shop birthdays",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L416"
+      "source_location": "L420"
     },
     {
       "id": "docs_bags_on_offer_shop_metrics_vs_the_odoo_revenue_target",
@@ -22748,7 +22781,7 @@
       "node_kind": "heading",
       "norm_label": "shop metrics (vs the odoo revenue target)",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L319"
+      "source_location": "L323"
     },
     {
       "id": "docs_bags_on_offer_sinza_uganda_oct_2026_replaced_9_oct_2026",
@@ -22760,7 +22793,7 @@
       "node_kind": "heading",
       "norm_label": "sinza & uganda (oct 2026) \u2014 replaced 9 oct 2026",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L420"
+      "source_location": "L424"
     },
     {
       "id": "docs_bags_on_offer_three_countries_one_page_9_oct_2026",
@@ -23237,103 +23270,59 @@
       "source_location": "L576"
     },
     {
-      "id": "lib_product_targets",
-      "label": "product_targets.py",
+      "id": "lib_offer_data",
+      "label": "lib/offer_data.py",
       "_origin": "ast",
       "community": 62,
-      "community_name": "product_targets.py",
+      "community_name": "lib/offer_data.py",
       "file_type": "code",
-      "norm_label": "product_targets.py",
-      "source_file": "lib/product_targets.py",
+      "norm_label": "lib/offer_data.py",
+      "source_file": "lib/offer_data.py",
       "source_location": "L1"
     },
     {
-      "id": "lib_product_targets_rationale_1",
-      "label": "lib/product_targets.py \u2014 each month's units-to-sell target per bag, from Odoo\u2026",
+      "id": "lib_offer_data_rationale_1",
+      "label": "offer_data.py \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2026",
       "_origin": "ast",
       "community": 62,
-      "community_name": "product_targets.py",
+      "community_name": "lib/offer_data.py",
       "file_type": "rationale",
-      "norm_label": "lib/product_targets.py \u2014 each month's units-to-sell target per bag, from odoo...",
-      "source_file": "lib/product_targets.py",
+      "norm_label": "offer_data.py \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500...",
+      "source_file": "lib/offer_data.py",
       "source_location": "L1"
     },
     {
-      "id": "lib_product_targets_rationale_102",
-      "label": "(total units, info) \u2014 the month's Odoo target units, or (no Odoo targets yet)\u2026",
+      "id": "lib_offer_data_rationale_302",
+      "label": "Count product rows, excluding the appended TOTAL row.",
       "_origin": "ast",
       "community": 62,
-      "community_name": "product_targets.py",
+      "community_name": "lib/offer_data.py",
       "file_type": "rationale",
-      "norm_label": "(total units, info) \u2014 the month's odoo target units, or (no odoo targets yet)...",
-      "source_file": "lib/product_targets.py",
-      "source_location": "L102"
+      "norm_label": "count product rows, excluding the appended total row.",
+      "source_file": "lib/offer_data.py",
+      "source_location": "L302"
     },
     {
-      "id": "lib_product_targets_rationale_147",
-      "label": "The three complete months before month_start \u2192 (start, end).",
+      "id": "lib_offer_data_rationale_311",
+      "label": "Fetch + shape the COMBOS-sheet dataset once (cached per process). Returns\u2026",
       "_origin": "ast",
       "community": 62,
-      "community_name": "product_targets.py",
+      "community_name": "lib/offer_data.py",
       "file_type": "rationale",
-      "norm_label": "the three complete months before month_start \u2192 (start, end).",
-      "source_file": "lib/product_targets.py",
-      "source_location": "L147"
+      "norm_label": "fetch + shape the combos-sheet dataset once (cached per process). returns...",
+      "source_file": "lib/offer_data.py",
+      "source_location": "L311"
     },
     {
-      "id": "lib_product_targets_rationale_156",
-      "label": "Pure. {bag: set(dates in [start, end] the bag had stock in a shop or sold)}.\u2026",
+      "id": "lib_offer_data_rationale_72",
+      "label": "The month's offer tables in the old COMBOS-sheet shape ([headers], [rows\u2026,\u2026",
       "_origin": "ast",
       "community": 62,
-      "community_name": "product_targets.py",
+      "community_name": "lib/offer_data.py",
       "file_type": "rationale",
-      "norm_label": "pure. {bag: set(dates in [start, end] the bag had stock in a shop or sold)}....",
-      "source_file": "lib/product_targets.py",
-      "source_location": "L156"
-    },
-    {
-      "id": "lib_product_targets_rationale_207",
-      "label": "(rows, total, base start, base end) for the month, from Odoo.",
-      "_origin": "ast",
-      "community": 62,
-      "community_name": "product_targets.py",
-      "file_type": "rationale",
-      "norm_label": "(rows, total, base start, base end) for the month, from odoo.",
-      "source_file": "lib/product_targets.py",
-      "source_location": "L207"
-    },
-    {
-      "id": "lib_product_targets_rationale_271",
-      "label": "{BAG: target units} for the month from product_targets_<YYYY-MM>.csv (built\u2026",
-      "_origin": "ast",
-      "community": 62,
-      "community_name": "product_targets.py",
-      "file_type": "rationale",
-      "norm_label": "{bag: target units} for the month from product_targets_<yyyy-mm>.csv (built...",
-      "source_file": "lib/product_targets.py",
-      "source_location": "L271"
-    },
-    {
-      "id": "lib_product_targets_rationale_327",
-      "label": "{BAG: col C} from MONTHLY_TARGET \u2014 for the comparison column only.",
-      "_origin": "ast",
-      "community": 62,
-      "community_name": "product_targets.py",
-      "file_type": "rationale",
-      "norm_label": "{bag: col c} from monthly_target \u2014 for the comparison column only.",
-      "source_file": "lib/product_targets.py",
-      "source_location": "L327"
-    },
-    {
-      "id": "lib_report_month_rationale_91",
-      "label": "(first day, last day) of the LIVE month (today's month, unless pinned).",
-      "_origin": "ast",
-      "community": 62,
-      "community_name": "product_targets.py",
-      "file_type": "rationale",
-      "norm_label": "(first day, last day) of the live month (today's month, unless pinned).",
-      "source_file": "lib/report_month.py",
-      "source_location": "L91"
+      "norm_label": "the month's offer tables in the old combos-sheet shape ([headers], [rows...,...",
+      "source_file": "lib/offer_data.py",
+      "source_location": "L72"
     },
     {
       "id": "lib_snapshot",
@@ -25155,87 +25144,37 @@
       "source_location": "L91"
     },
     {
-      "id": "notes_ralph_task",
-      "label": "RALPH_TASK.md",
+      "id": "scripts_publish",
+      "label": "publish.py",
       "_origin": "ast",
       "community": 82,
-      "community_name": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
-      "file_type": "document",
-      "node_kind": "page",
-      "norm_label": "ralph_task.md",
-      "source_file": "notes/RALPH_TASK.md",
+      "community_name": "publish.py",
+      "file_type": "code",
+      "norm_label": "publish.py",
+      "source_file": "scripts/publish.py",
       "source_location": "L1"
     },
     {
-      "id": "notes_ralph_task_established_facts_do_not_re_investigate",
-      "label": "Established facts (do not re-investigate)",
+      "id": "scripts_publish_rationale_2",
+      "label": "publish.py \u2014 one-click, VERIFIED publish of the dashboard to GitHub (Streamlit\u2026",
       "_origin": "ast",
       "community": 82,
-      "community_name": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "established facts (do not re-investigate)",
-      "source_file": "notes/RALPH_TASK.md",
-      "source_location": "L21"
-    },
-    {
-      "id": "notes_ralph_task_every_iteration",
-      "label": "Every iteration",
-      "_origin": "ast",
-      "community": 82,
-      "community_name": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "every iteration",
-      "source_file": "notes/RALPH_TASK.md",
-      "source_location": "L13"
-    },
-    {
-      "id": "notes_ralph_task_periods_dates_in_africa_nairobi",
-      "label": "Periods (dates in Africa/Nairobi)",
-      "_origin": "ast",
-      "community": 82,
-      "community_name": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "periods (dates in africa/nairobi)",
-      "source_file": "notes/RALPH_TASK.md",
-      "source_location": "L44"
-    },
-    {
-      "id": "notes_ralph_task_ralph_task_out_of_stock_call_back_demand_per_shop",
-      "label": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
-      "_origin": "ast",
-      "community": 82,
-      "community_name": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "ralph task \u2014 \"out of stock \u2014 call back\" demand per shop",
-      "source_file": "notes/RALPH_TASK.md",
-      "source_location": "L1"
-    },
-    {
-      "id": "notes_ralph_task_stopping",
-      "label": "Stopping",
-      "_origin": "ast",
-      "community": 82,
-      "community_name": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "stopping",
-      "source_file": "notes/RALPH_TASK.md",
-      "source_location": "L106"
-    },
-    {
-      "id": "generators_new_products_rationale_238",
-      "label": "Sum Odoo bags whose product name is the new product's \u2014 matched by name prefix\u2026",
-      "_origin": "ast",
-      "community": 82,
-      "community_name": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
+      "community_name": "publish.py",
       "file_type": "rationale",
-      "norm_label": "sum odoo bags whose product name is the new product's \u2014 matched by name prefix...",
-      "source_file": "generators/new_products.py",
-      "source_location": "L238"
+      "norm_label": "publish.py \u2014 one-click, verified publish of the dashboard to github (streamlit...",
+      "source_file": "scripts/publish.py",
+      "source_location": "L2"
+    },
+    {
+      "id": "scripts_publish_rationale_38",
+      "label": "(status, path) for every change that `git add -A` would stage (untracked\u2026",
+      "_origin": "ast",
+      "community": 82,
+      "community_name": "publish.py",
+      "file_type": "rationale",
+      "norm_label": "(status, path) for every change that `git add -a` would stage (untracked...",
+      "source_file": "scripts/publish.py",
+      "source_location": "L38"
     },
     {
       "id": "docs_push_planner_per_bag_market_the_facts_push_rules_facts_add_peers",
@@ -25383,26 +25322,87 @@
       "source_location": "L185"
     },
     {
-      "id": "generators_push_planner_rationale_56",
-      "label": "POS till name \u2192 the shop name used by STOCK_CODE_TO_SHOP ('KTDA SHOP' \u2192 'KTDA').",
+      "id": "notes_ralph_task",
+      "label": "RALPH_TASK.md",
       "_origin": "ast",
       "community": 86,
-      "community_name": "load_data",
-      "file_type": "rationale",
-      "norm_label": "pos till name \u2192 the shop name used by stock_code_to_shop ('ktda shop' \u2192 'ktda').",
-      "source_file": "generators/push_planner.py",
-      "source_location": "L56"
+      "community_name": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
+      "file_type": "document",
+      "node_kind": "page",
+      "norm_label": "ralph_task.md",
+      "source_file": "notes/RALPH_TASK.md",
+      "source_location": "L1"
     },
     {
-      "id": "generators_push_planner_rationale_72",
-      "label": "Raw inputs rolled up to bag type. Returns a dict (see keys below) or None if\u2026",
+      "id": "notes_ralph_task_established_facts_do_not_re_investigate",
+      "label": "Established facts (do not re-investigate)",
       "_origin": "ast",
       "community": 86,
-      "community_name": "load_data",
+      "community_name": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "established facts (do not re-investigate)",
+      "source_file": "notes/RALPH_TASK.md",
+      "source_location": "L21"
+    },
+    {
+      "id": "notes_ralph_task_every_iteration",
+      "label": "Every iteration",
+      "_origin": "ast",
+      "community": 86,
+      "community_name": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "every iteration",
+      "source_file": "notes/RALPH_TASK.md",
+      "source_location": "L13"
+    },
+    {
+      "id": "notes_ralph_task_periods_dates_in_africa_nairobi",
+      "label": "Periods (dates in Africa/Nairobi)",
+      "_origin": "ast",
+      "community": 86,
+      "community_name": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "periods (dates in africa/nairobi)",
+      "source_file": "notes/RALPH_TASK.md",
+      "source_location": "L44"
+    },
+    {
+      "id": "notes_ralph_task_ralph_task_out_of_stock_call_back_demand_per_shop",
+      "label": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
+      "_origin": "ast",
+      "community": 86,
+      "community_name": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "ralph task \u2014 \"out of stock \u2014 call back\" demand per shop",
+      "source_file": "notes/RALPH_TASK.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "notes_ralph_task_stopping",
+      "label": "Stopping",
+      "_origin": "ast",
+      "community": 86,
+      "community_name": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "stopping",
+      "source_file": "notes/RALPH_TASK.md",
+      "source_location": "L106"
+    },
+    {
+      "id": "generators_new_products_rationale_238",
+      "label": "Sum Odoo bags whose product name is the new product's \u2014 matched by name prefix\u2026",
+      "_origin": "ast",
+      "community": 86,
+      "community_name": "Ralph task \u2014 \"Out of stock \u2014 call back\" demand per shop",
       "file_type": "rationale",
-      "norm_label": "raw inputs rolled up to bag type. returns a dict (see keys below) or none if...",
-      "source_file": "generators/push_planner.py",
-      "source_location": "L72"
+      "norm_label": "sum odoo bags whose product name is the new product's \u2014 matched by name prefix...",
+      "source_file": "generators/new_products.py",
+      "source_location": "L238"
     },
     {
       "id": "tests_test_push_planner",
@@ -30574,30 +30574,6 @@
       "type": "external"
     },
     {
-      "id": "fnmatch",
-      "label": "fnmatch",
-      "_origin": "semantic",
-      "community": 114,
-      "community_name": "publish.py",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "fnmatch",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "py_compile",
-      "label": "py_compile",
-      "_origin": "semantic",
-      "community": 114,
-      "community_name": "publish.py",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "py_compile",
-      "source_file": "",
-      "type": "external"
-    },
-    {
       "id": "math",
       "label": "math",
       "_origin": "semantic",
@@ -30829,7 +30805,7 @@
       "id": "lib",
       "label": "lib",
       "_origin": "semantic",
-      "community": 188,
+      "community": 189,
       "community_name": "lib",
       "external": true,
       "file_type": "concept",
@@ -31050,6 +31026,30 @@
       "external": true,
       "file_type": "concept",
       "norm_label": "json",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "fnmatch",
+      "label": "fnmatch",
+      "_origin": "semantic",
+      "community": 82,
+      "community_name": "publish.py",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "fnmatch",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "py_compile",
+      "label": "py_compile",
+      "_origin": "semantic",
+      "community": 82,
+      "community_name": "publish.py",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "py_compile",
       "source_file": "",
       "type": "external"
     }
@@ -65672,7 +65672,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L319",
+      "source_location": "L323",
       "weight": 1.0
     },
     {
@@ -65683,7 +65683,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L337",
+      "source_location": "L341",
       "weight": 1.0
     },
     {
@@ -65694,7 +65694,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L416",
+      "source_location": "L420",
       "weight": 1.0
     },
     {
@@ -65705,7 +65705,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L420",
+      "source_location": "L424",
       "weight": 1.0
     },
     {
@@ -65716,7 +65716,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L455",
+      "source_location": "L459",
       "weight": 1.0
     },
     {
@@ -65727,7 +65727,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L464",
+      "source_location": "L468",
       "weight": 1.0
     },
     {
@@ -65738,7 +65738,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L479",
+      "source_location": "L483",
       "weight": 1.0
     },
     {
@@ -83723,7 +83723,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L329",
+      "source_location": "L333",
       "weight": 1.0
     },
     {
@@ -83734,7 +83734,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L418",
+      "source_location": "L422",
       "weight": 1.0
     },
     {
@@ -85470,7 +85470,7 @@
       "confidence_score": 0.95,
       "context": "bag_classifier",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L407",
+      "source_location": "L411",
       "weight": 1.0
     },
     {
@@ -85506,7 +85506,7 @@
       "confidence_score": 0.95,
       "context": "base()",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L407",
+      "source_location": "L411",
       "weight": 1.0
     },
     {
@@ -85626,7 +85626,7 @@
       "confidence_score": 0.95,
       "context": "online",
       "source_file": "docs/bags-on-offer.md",
-      "source_location": "L349",
+      "source_location": "L353",
       "weight": 1.0
     },
     {
@@ -88812,5 +88812,5 @@
       "source_file": "docs/product-matching.md"
     }
   ],
-  "built_at_commit": "9a8f6bc4909059ca6839f9ecd201c8437fd4880a"
+  "built_at_commit": "a623cf5066b12f1c7e716568647778198131e848"
 }

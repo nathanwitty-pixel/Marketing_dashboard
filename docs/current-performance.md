@@ -81,8 +81,9 @@ so `current_performance.py`'s regex rewrite never touches them.
 **Sales is the only bags-sold KPI** (27 Sep 2026: the separate *Net Bags Sold · Catalogue* card —
 master-list products only, ~313 bags lower in Sep — was merged away, and the *Weekly vs Last
 Month* pace card was removed). Sales = `sql/bags_sold_total.sql` (every bag the tills sold incl.
-bags inside combos, gift bags and rejects; refunds netted; **straps**, delivery, customisation,
-the combo wrapper, the KES discount line, samples and POS-category lines are **not** counted)
+bags inside combos, gift bags, rejects and **samples** (sold display units, counted since 26 Oct 2026, user's
+call); refunds netted; **straps**, delivery, customisation, the combo wrapper, the KES discount line and
+POS-category lines are **not** counted)
 **plus** corporate invoice bags.
 
 The Sales-card breakdown line shows the POS/corporate split **and two subsets of the POS total**:
@@ -96,7 +97,8 @@ are computed by `monthly_sales.py` into `monthly_sales_db.json`, and surfaced by
 
 The same line also shows **samples** and **customisation** (`sql/sales_extras.sql`, all tills,
 refunds netted, → `PERF.samples` / `customBags` / `customFees`):
-- **Samples** (`name ILIKE '%sample%'`) — sold but **not** in Sales (display units).
+- **Samples** (`name ILIKE '%sample%'`) — sold display units, **in Sales** since 26 Oct 2026 (user's call); shown here
+  so you can see how many of the bags were samples.
 - **Customisation** = customised bags (`'%customi%'` but not `'%customization%'`, e.g. *KCB
   Briefcase Customised Brown* — a bag, **in** Sales) **+** customisation charges
   (`'%customization%'` — a service line, **not** in Sales). The tooltip gives the split.
@@ -154,8 +156,8 @@ the money read together:
 - **Standard** → POS **bag revenue** month-to-date (`sql/bag_revenue.sql`) × velocity factor. Same
   pace and month as the bags %. Bag revenue = the same bag lines as the Sales card, **plus the
   combo '+' wrapper lines** (a combo's price sits on the wrapper; the bags inside are KES 0
-  sub-lines, `parent_id`), minus 'KES discount' lines. Delivery / customisation / straps / samples
-  stay out. **Not** `monthlyValue`: that drops the wrapper, so combo bags counted as KES 0 and
+  sub-lines, `parent_id`), minus 'KES discount' lines. Delivery / customisation / straps stay out; samples are in,
+  like Sales (26 Oct 2026). **Not** `monthlyValue`: that drops the wrapper, so combo bags counted as KES 0 and
   revenue read ~6% low (fixed 21 Oct 2026).
 - **Forecasted** → (POS revenue + corporate KES received) × velocity factor. Corporate KES =
   `kes` in `sql/corporate_bags.sql`: money paid on Corporate-app invoices in the month, capped at
@@ -239,7 +241,8 @@ and the bags % differ, so the reader can judge it:
   refresh skipped it, so the table read a 22 Oct `offer_mix.json` (All bags 12,492 vs Sales 13,918).
 - **Sales counts each refunded combo's bags once** (docs/README.md › Combo refunds, 25 Oct 2026): 6 Oct combos
   refunded without their bag lines had never been taken off, so POS Sales read 13,053 instead of 13,041. With that
-  and the offer page's fixes, the On offer table's All bags = Sales + the 3 samples it lists.
+  and the offer page's fixes, the On offer table's All bags = Sales + the 3 samples it lists. With samples in Sales
+  (26 Oct 2026) the two are equal.
 - **Last week's bags** (`PERF.previousSalesBags`, the week-over-week base) are read straight from Postgres for
   the previous complete **Sun–Sat** week (`BAGS_SOLD_TOTAL`, the same definition as this week's figure).
   `previous_snapshot.json` is only the fallback when the DB is down. *Fixed 14 Oct 2026:* the snapshot rolled

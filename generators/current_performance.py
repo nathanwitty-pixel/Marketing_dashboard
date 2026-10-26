@@ -381,7 +381,7 @@ reject_bags = _db_count("rejectBags")
 reject_pct  = (reject_bags / sales_pos * 100) if sales_pos else 0
 gift_bags   = _db_count("giftBags")
 gift_pct    = (gift_bags / sales_pos * 100) if sales_pos else 0
-# Samples and customisation sold, shown alongside (samples + customisation charges aren't in Sales).
+# Samples and customisation sold, shown alongside (samples are in Sales since 26 Oct 2026; customisation charges aren't).
 samples     = _db_count("samples")
 custom_bags = _db_count("customBags")
 custom_fees = _db_count("customFees")

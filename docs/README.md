@@ -47,7 +47,7 @@ the order's lines through `POS_LINES(p) pl` (expanded by `lib/pos_lines.py` insi
 - Oct 2026: 14 combo refunds, 28 bags. Before: Sales missed 12 (6 combo-line-only refunds) and Bags on offer
   took 16 off twice.
 - The offer page also counts customized bags (they are bags; only the "Customization" fee is not) and
-  Tanzania / Uganda **Mini Washbags and gift bags** like Kenya's, so its All bags = Sales + samples.
+  Tanzania / Uganda **Mini Washbags and gift bags** like Kenya's, so its All bags = Sales (samples are in Sales since 26 Oct 2026).
 
 ## Refresh performance
 
