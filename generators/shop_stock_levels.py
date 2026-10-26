@@ -542,13 +542,21 @@ def build(today=None):
                 status = "over"
             else:
                 status = "ok"
-            send = max(mx - free, 0) if status in ("oos", "low") else 0
+            # Ready for next month: free stock on the last day at the weekly rate; at or under Min then → send enough to
+            # open next month at Max (docs › Send now — ready for next month).
+            end_free = free - wr / 7 * days_left
+            # this month: what the shop runs short of before month end; next month: the top-up to open it at Max
+            send = math.ceil(-end_free - 1e-9) if end_free < 0 else 0
+            open_free = max(end_free, 0)
+            send_nm = math.ceil(mx - open_free) if wr > 0 and open_free <= mn and mx - open_free > 0 else 0
+            cover = round(free / (wr / 7), 1) if wr > 0 and free > 0 else (0 if wr > 0 else None)
             bal = have - daily * days_left
             runs_out = (today + datetime.timedelta(days=int(have / daily))).isoformat() if daily > 0 and bal < 0 else None
             nmd = nm_need.get(s, {}).get(b, 0.0) * (nm_days / days_in if nm_estimated else 1)
             rows.append({"shop": s, "bag": b, "need": round(nd, 1), "daily": round(daily, 2), "have": int(have),
                          "sold": int(sold), "min": mn, "max": mx, "status": status, "send": int(send),
-                         "wr": round(wr, 1), "prepaid": int(pp),
+                         "wr": round(wr, 1), "prepaid": int(pp), "endFree": round(end_free, 1), "cover": cover,
+                         "sendNm": int(send_nm), "nmSells": round(wr / 7 * nm_days),
                          "bal": round(bal), "runsOut": runs_out, "nm": round(nmd),
                          "nmShort": round(max(nmd - max(bal, 0), 0)),
                          "colours": {c: int(q) for c, q in stock_cols.get(s, {}).get(b, {}).items() if q}})
@@ -595,55 +603,73 @@ def _realistic_target(rate, days, now):
             "now": now, "minDays": 7 * MIN_WEEKS, "maxDays": 7 * MAX_WEEKS}
 
 
+def _share_out(gaps, left):
+    """{shop: units} — `left` units shared over {shop: gap} in proportion, leftovers to the biggest gaps first."""
+    need = sum(gaps.values())
+    if not need or left <= 0:
+        return {sh: 0 for sh in gaps}
+    share = min(1.0, left / need)
+    give = {sh: int(g * share) for sh, g in gaps.items()}
+    rest = min(left, need) - sum(give.values())
+    for sh in sorted(gaps, key=lambda k: -(gaps[k] * share - give[k])):
+        if rest <= 0:
+            break
+        if give[sh] < gaps[sh]:
+            give[sh] += 1
+            rest -= 1
+    return give
+
+
 def sendable_by_month_end(rate, prepaid, stock, buf, days_left):
-    """What can still be sent by month end (docs › Shop requests — realistic performance): per shop × bag, gap = the
-    weekly rate × days left ÷ 7 + open prepayments − the shelf; Kenya gaps capped by CBD + VLD now, shared by gap."""
+    """What can still be sent (docs › Shop requests — realistic performance): per shop × bag, this month's send now (the
+    sales to month end + prepaid − the shelf) and next month's top-up to Max — the stock monitor's two sends. Kenya
+    gaps are capped by CBD + VLD now, this month's sends served first, then next month's."""
     avail = collections.Counter()
     for bs in buf.values():
         for b, q in bs.items():
             avail[b] += max(q, 0)
-    gaps = collections.defaultdict(dict)                       # bag → {shop: (gap, prepaid, have, rate)}
+    gaps = collections.defaultdict(dict)                       # bag → {shop: (this month, next month, prepaid, have, rate)}
     for sh in set(rate) | set(prepaid):
         if sh in ONLINE:
             continue
         for b in set(rate.get(sh, {})) | set(prepaid.get(sh, {})):
             wr, pp, have = rate.get(sh, {}).get(b, 0.0), prepaid.get(sh, {}).get(b, 0), max(stock.get(sh, {}).get(b, 0), 0)
-            g = math.ceil(max(wr / 7 * days_left + pp - have, 0))
-            if g > 0:
-                gaps[b][sh] = (g, int(pp), int(have), round(wr, 1))
-    shops = collections.defaultdict(lambda: {"gap": 0, "send": 0, "wait": 0, "prepaid": 0, "bags": []})
+            mn, mx = (math.ceil(wr * MIN_WEEKS), math.ceil(wr * MAX_WEEKS)) if wr > 0 else (0, 0)
+            end_free = have - pp - wr / 7 * days_left
+            g1 = math.ceil(-end_free - 1e-9) if end_free < 0 else 0
+            g2 = math.ceil(mx - max(end_free, 0)) if wr > 0 and max(end_free, 0) <= mn and mx - max(end_free, 0) > 0 else 0
+            if g1 or g2:
+                gaps[b][sh] = (g1, g2, int(pp), int(have), round(wr, 1))
+    shops = collections.defaultdict(lambda: {"gap": 0, "send": 0, "wait": 0, "prepaid": 0,
+                                             "gapNm": 0, "sendNm": 0, "waitNm": 0, "bags": []})
     bag_tot = {}
     for b, by in gaps.items():
         kenya = {sh: v for sh, v in by.items() if sh not in OUTSIDE}
-        need_k = sum(v[0] for v in kenya.values())
         left = int(avail.get(b, 0))
-        give = {}
-        if need_k:
-            share = min(1.0, left / need_k)
-            for sh, v in kenya.items():
-                give[sh] = int(v[0] * share)
-            rest = min(left, need_k) - sum(give.values())             # leftover units to the biggest gaps first
-            for sh in sorted(kenya, key=lambda k: -(kenya[k][0] * share - give[k])):
-                if rest <= 0:
-                    break
-                if give[sh] < kenya[sh][0]:
-                    give[sh] += 1
-                    rest -= 1
-        bag_tot[b] = {"gap": sum(v[0] for v in by.values()), "kenyaGap": need_k, "avail": int(avail.get(b, 0)),
-                      "send": sum(give.values())}
-        for sh, (g, pp, have, wr) in by.items():
-            sendable = give.get(sh) if sh not in OUTSIDE else None
+        give1 = _share_out({sh: v[0] for sh, v in kenya.items() if v[0]}, left)          # this month first
+        left -= sum(give1.values())
+        give2 = _share_out({sh: v[1] for sh, v in kenya.items() if v[1]}, left)          # then next month's top-up
+        bag_tot[b] = {"gap": sum(v[0] for v in by.values()), "gapNm": sum(v[1] for v in by.values()),
+                      "avail": int(avail.get(b, 0)), "send": sum(give1.values()), "sendNm": sum(give2.values())}
+        for sh, (g1, g2, pp, have, wr) in by.items():
+            own = sh in OUTSIDE
+            s1 = None if own else give1.get(sh, 0)
+            s2 = None if own else give2.get(sh, 0)
             x = shops[sh]
-            x["gap"] += g
+            x["gap"] += g1
+            x["gapNm"] += g2
             x["prepaid"] += pp
-            x["send"] += sendable or 0
-            x["wait"] += g - sendable if sendable is not None else 0
-            x["bags"].append({"bag": b, "gap": g, "send": sendable, "wait": g - sendable if sendable is not None else None,
+            x["send"] += s1 or 0
+            x["sendNm"] += s2 or 0
+            x["wait"] += g1 - s1 if s1 is not None else 0
+            x["waitNm"] += g2 - s2 if s2 is not None else 0
+            x["bags"].append({"bag": b, "gap": g1, "send": s1, "wait": g1 - s1 if s1 is not None else None,
+                              "gapNm": g2, "sendNm": s2, "waitNm": g2 - s2 if s2 is not None else None,
                               "prepaid": pp, "have": have, "wr": wr})
     for x in shops.values():
-        x["bags"].sort(key=lambda r: (-r["gap"], r["bag"]))
+        x["bags"].sort(key=lambda r: (-r["gap"], -r["gapNm"], r["bag"]))
     return {"daysLeft": days_left, "from": list(BUFFER_LOCATIONS), "outside": sorted(OUTSIDE),
-            "shops": dict(sorted(shops.items(), key=lambda kv: -kv[1]["gap"])), "bags": bag_tot}
+            "shops": dict(sorted(shops.items(), key=lambda kv: -(kv[1]["gap"] + kv[1]["gapNm"]))), "bags": bag_tot}
 
 
 def inject(payload):

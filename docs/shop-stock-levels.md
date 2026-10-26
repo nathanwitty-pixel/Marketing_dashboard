@@ -50,7 +50,21 @@ month will be short of.
   counts more than a slow one. Shown on each shop block (with its over-max count) and as the first KPI.
 - **Status:** Out of stock (have − prepaid ≤ 0, selling or prepaid), Below min (at or below Min and below Max), OK,
   Over max, Not moving (on the shelf, no sale in 13 weeks), Not stocked (hidden).
-- **Send now** = Max + prepaid − stock, for a shop at or below Min (or with prepaid customers it can't serve). **Warehouse** (CBD/Stock — the store that restocks
+- **This month and next month, apart (26 Oct 2026, user's call):** with a week or so to go, the send is split so the
+  shop only gets now what this month still needs, and sees what next month will need:
+  - **Free on the last day** = stock − prepaid − the weekly rate ÷ 7 × days left (today included).
+  - **Send now (this month)** = what the shop runs short of before month end: max(− free on the last day, 0), rounded up
+    — the sales still to come plus the prepaid customers, less what is free on the shelf.
+  - **For next month** (send by the 1st) = what brings the shop to **Max** to open next month: Max − max(free on the last
+    day, 0), when that is at or under **Min**; else 0.
+  - **Next month sells** = the weekly rate ÷ 7 × days in next month (the rate already carries the season ahead).
+  - E.g. Lola at KTDA on 26 Oct: 1 on the shelf, 1 prepaid, 7.3 a week, 6 days left → free on 31 Oct = −6.3 →
+    **send now 7**, **for November 19** (Max 2.5 weeks), November sells about 31.
+- **Month-end on the tiles** = that free-on-the-last-day figure (the shop's real weekly rate), *Short by* / *Left on*.
+  The stocks report, request list and next-month preparedness keep the target-need pace switch.
+- **Guiding the shops (26 Oct 2026):** each tile shows **Lasts** (days the free stock covers at the weekly rate) and
+  **Share** (the shop's part of that bag's weekly sales across all shops — where the bag sells). Each shop block
+  names **Put emphasis on**: its five fastest-selling bags (weekly rate) that will be at or under Min by month end. **Warehouse** (CBD/Stock — the store that restocks
   the Kenya shops) is shown only here, as what can cover the send-now today. Sinza and Uganda are restocked
   from their own stores — send-now shows the units, no warehouse figure.
 
@@ -282,9 +296,10 @@ not Odoo's dispatch Min / Max or the target need:
   **2.5 weeks of sales**.
 - **Asked vs need** (was "asked vs target") — refill = 2.5 weeks of sales − stock − incoming at the bag's first
   request + the daily rate × days to the period end. Last month is judged on the rate as of its 1st.
-- **What can still be sent by month end** (projection) — per Kenya shop × bag: **gap** = the rate × days left to
-  month end + open prepayments − the shelf, when positive. Each bag's gaps are capped by what **CBD/Stock + VLD/Stock**
-  hold now, shared across the shops by gap (the rest **waits for production**). Sinza and Uganda show their gap only
+- **What can still be sent by month end** (projection) — per Kenya shop × bag: **gap** = the stock monitor's send now
+  (this month's send now, then next month's top-up to Max). CBD + VLD stock goes to this month's sends first, then to
+  next month's; both shown apart. Each bag's gaps are capped by what **CBD/Stock + VLD/Stock**
+  hold now, shared across the shops by gap (the rest **waits for production**). Gap = this month's send now plus next month's top-up, this month served first. Sinza and Uganda show their gap only
   (their own stores restock them). Per shop: units to send, of which prepaid, and what waits; per bag on hover.
 
 ## Shop vs shop and regions — request checks compared (18 Oct 2026)

@@ -1,6 +1,6 @@
 {
  "month": "October 2026",
- "generated": "26 Oct 2026 09:52",
+ "generated": "26 Oct 2026 11:12",
  "range": "01 Oct – 31 Oct 2026",
  "rows": [
   {
@@ -8,8 +8,8 @@
    "label": "Not on offer",
    "on": false,
    "where": "Kenya, Tanzania, Uganda",
-   "units": 5306.0,
-   "revenue": 12165880,
+   "units": 5308.0,
+   "revenue": 12170880,
    "bags": [
     {
      "bag": "FEROZ",
@@ -236,18 +236,18 @@
      "revenue": 97029
     },
     {
+     "bag": "COSMO",
+     "category": "SCHOOL BAG",
+     "tier": "Entry",
+     "units": 51.0,
+     "revenue": 96434
+    },
+    {
      "bag": "FAYOLA",
      "category": "MESSENGER",
      "tier": "Core",
      "units": 47.0,
      "revenue": 95231
-    },
-    {
-     "bag": "COSMO",
-     "category": "SCHOOL BAG",
-     "tier": "Entry",
-     "units": 50.0,
-     "revenue": 94534
     },
     {
      "bag": "LIAM",
@@ -257,18 +257,18 @@
      "revenue": 93200
     },
     {
+     "bag": "JADE",
+     "category": "BRIEFCASE",
+     "tier": "Premium",
+     "units": 31.0,
+     "revenue": 92185
+    },
+    {
      "bag": "MONAH BP",
      "category": "BACKPACK",
      "tier": "Entry",
      "units": 46.0,
      "revenue": 91825
-    },
-    {
-     "bag": "JADE",
-     "category": "BRIEFCASE",
-     "tier": "Premium",
-     "units": 30.0,
-     "revenue": 89085
     },
     {
      "bag": "LUNA",
@@ -823,36 +823,36 @@
    "label": "Power deals",
    "on": true,
    "where": "Kenya only",
-   "units": 3530.0,
-   "revenue": 7141111,
+   "units": 3535.0,
+   "revenue": 7152111,
    "bags": [
     {
      "bag": "ANTITHEFT",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 649.0,
-     "revenue": 1427683
+     "units": 650.0,
+     "revenue": 1429883
     },
     {
      "bag": "JUMBO",
      "category": "TRAVEL",
      "tier": "Premium",
-     "units": 473.0,
-     "revenue": 1320303
+     "units": 474.0,
+     "revenue": 1323103
     },
     {
      "bag": "CODE 3",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 726.0,
-     "revenue": 1312470
+     "units": 728.0,
+     "revenue": 1316070
     },
     {
      "bag": "PRIME",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 310.0,
-     "revenue": 749325
+     "units": 311.0,
+     "revenue": 751725
     },
     {
      "bag": "TRAVEL",
@@ -1102,8 +1102,8 @@
    "label": "Deal of wk",
    "on": true,
    "where": "Kenya only",
-   "units": 1511.0,
-   "revenue": 2804482,
+   "units": 1513.0,
+   "revenue": 2806882,
    "bags": [
     {
      "bag": "FABELA",
@@ -1190,18 +1190,18 @@
      "revenue": 63000
     },
     {
+     "bag": "OVAL HANDBAG",
+     "category": "HANDBAG",
+     "tier": "Entry",
+     "units": 50.0,
+     "revenue": 60300
+    },
+    {
      "bag": "FAYOLA",
      "category": "MESSENGER",
      "tier": "Core",
      "units": 36.0,
      "revenue": 60100
-    },
-    {
-     "bag": "OVAL HANDBAG",
-     "category": "HANDBAG",
-     "tier": "Entry",
-     "units": 49.0,
-     "revenue": 59100
     },
     {
      "bag": "KATE",
@@ -1246,18 +1246,18 @@
      "revenue": 28000
     },
     {
+     "bag": "ZANE MAN",
+     "category": "MAN BAG",
+     "tier": "Entry",
+     "units": 17.0,
+     "revenue": 20800
+    },
+    {
      "bag": "MEGA",
      "category": "BACKPACK",
      "tier": "Core",
      "units": 8.0,
      "revenue": 20800
-    },
-    {
-     "bag": "ZANE MAN",
-     "category": "MAN BAG",
-     "tier": "Entry",
-     "units": 16.0,
-     "revenue": 19600
     },
     {
      "bag": "SCHOOL BAG",

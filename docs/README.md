@@ -76,6 +76,14 @@ it doesn't hold. A failed refresh keeps the old snapshot; the last 3 are kept. P
 runs live vs snapshot for a fixed past window and compares. Used by: Timed offers (its sales / daily / price /
 bulk queries).
 
+## Title row clock (every page)
+
+The pill at the top right of every page (`CLOCK_HTML` in `streamlit_app.py`) reads e.g. **Mon 26 Oct, Week 44 of 52,
+10:59:48** then **Updated 2 min ago, auto 60 min**. **Week n of N (26 Oct 2026, user's call)** uses the dashboard's
+Sunday to Saturday weeks: week 1 is the Sun–Sat week holding 1 January; the last days of December that share a week with
+the next 1 January count as that year's week 1; N = the year's weeks (52, or 53 in some years). It ticks live, so it turns
+over on Sunday. No dot separators.
+
 ## How the dashboard is built
 
 Each menu is a **static HTML page** with a hand-written render layer (JS + CSS). A

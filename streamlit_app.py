@@ -797,7 +797,7 @@ if not NO_AUTOREFRESH:
 # The clock is a tiny component (it needs JS to tick); it also reloads an idle tab every
 # AUTO_REFRESH_MIN minutes so the auto-refresh check keeps firing with no clicks.
 CLOCK_HTML = """
-<div class="pill" title="Live clock · when this page's data was last rebuilt from Odoo"><span class="dot"></span><span id="clk"></span><span class="sep"></span><span class="upd">__AGO__</span></div>
+<div class="pill" title="Live clock with the week of the year (Sunday to Saturday weeks), and when this page's data was last rebuilt from Odoo"><span class="dot"></span><span id="clk"></span><span class="sep"></span><span class="upd">__AGO__</span></div>
 <style>
   body{margin:0;background:transparent;font-family:'Inter','Segoe UI',system-ui,sans-serif;
        display:flex;justify-content:flex-end;align-items:center;height:100vh}
@@ -824,9 +824,18 @@ CLOCK_HTML = """
     var d=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     var m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     var p=function(x){return String(x).padStart(2,'0')};
+    var w=weekOf(n);
     document.getElementById('clk').textContent =
-      d[n.getDay()]+' '+n.getDate()+' '+m[n.getMonth()]+
-      ' \u00b7 '+p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());
+      d[n.getDay()]+' '+n.getDate()+' '+m[n.getMonth()]+', Week '+w[0]+' of '+w[1]+', '+
+      p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());
+  }
+  // Sunday to Saturday weeks (the dashboard's weeks): week 1 holds 1 January (docs/README.md \u203a Title row clock).
+  function week1(y){ var j=new Date(y,0,1); return new Date(y,0,1-j.getDay()); }
+  function weekOf(n){
+    var t=new Date(n.getFullYear(),n.getMonth(),n.getDate()), y=t.getFullYear();
+    if (t>=week1(y+1)) y++;                       // late-December days in next year's week 1
+    var day=864e5, s=week1(y), e=week1(y+1);
+    return [Math.floor(Math.round((t-s)/day)/7)+1, Math.round((e-s)/day/7)];
   }
   tick(); setInterval(tick,1000);
   setTimeout(function(){ try{ (window.top||window.parent||window).location.reload(); }catch(e){ location.reload(); } }, __RELOAD_MS__);
@@ -847,7 +856,7 @@ if os.path.exists(html_path):
     _age_min = int(_page_age_secs(html_path) // 60)
     _ago = "just now" if _age_min < 1 else (f"{_age_min} min ago" if _age_min < 60
             else f"{_age_min // 60}h {_age_min % 60}m ago")
-    _fresh = f"Updated {_ago} · auto {AUTO_REFRESH_MIN} min"
+    _fresh = f"Updated {_ago}, auto {AUTO_REFRESH_MIN} min"
 else:
     _fresh = "Not built yet"
 CLOCK_HTML = CLOCK_HTML.replace("__AGO__", _fresh)
