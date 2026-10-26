@@ -1,6 +1,6 @@
 {
  "month": "October 2026",
- "generated": "26 Oct 2026 09:21",
+ "generated": "26 Oct 2026 09:52",
  "range": "01 Oct – 31 Oct 2026",
  "rows": [
   {
@@ -8,8 +8,8 @@
    "label": "Not on offer",
    "on": false,
    "where": "Kenya, Tanzania, Uganda",
-   "units": 5305.0,
-   "revenue": 12164680,
+   "units": 5306.0,
+   "revenue": 12165880,
    "bags": [
     {
      "bag": "FEROZ",
@@ -57,8 +57,8 @@
      "bag": "MINI MAYA",
      "category": "HANDBAG",
      "tier": "Entry",
-     "units": 311.0,
-     "revenue": 397700
+     "units": 312.0,
+     "revenue": 398900
     },
     {
      "bag": "SARAI",
@@ -823,15 +823,15 @@
    "label": "Power deals",
    "on": true,
    "where": "Kenya only",
-   "units": 3528.0,
-   "revenue": 7137711,
+   "units": 3530.0,
+   "revenue": 7141111,
    "bags": [
     {
      "bag": "ANTITHEFT",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 648.0,
-     "revenue": 1425483
+     "units": 649.0,
+     "revenue": 1427683
     },
     {
      "bag": "JUMBO",
@@ -893,8 +893,8 @@
      "bag": "NIZANA",
      "category": "SLING",
      "tier": "Entry",
-     "units": 180.0,
-     "revenue": 217067
+     "units": 181.0,
+     "revenue": 218267
     }
    ]
   },

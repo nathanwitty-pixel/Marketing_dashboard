@@ -173,7 +173,14 @@ Every sale is counted **once**, in the channel it actually went through (agreed 
   self-made combos, net of refunds) next to **units sold on its own** (every single sale: Power Deal, Deal of the
   Week or not on offer), the share inside combos, and which wins. Combo list: `combos` in
   `bags_offer_source.json` (`self_made_combos.write_bags_offer_source`, one `{label, bags}` per running card).
-  Data: `periods[*].comboVsAlone = [{combo, bags: [{bag, inCombos, alone, aloneKes}]}]`.
+  Data: `periods[*].comboVsAlone = [{combo, bags: [{bag, inThis, inCombos, alone, aloneKes}]}]`.
+  **Per combo, and which combo did better (26 Oct 2026, user's call):** a bag is counted **inside that combo only**
+  (`inThis`: Kenya running-combo sales matched to that combo's label), so Jumbo in Jumbo+Jumbo, Jumbo+Mega and
+  Jumbo+Standard shows each combo's own units (before, every combo showed Jumbo's total across all combos).
+  Each row reads **% in combo** = in this combo ÷ (in this combo + alone), the units, and **combo wins / alone wins /
+  even**. ★ = the bag the combo pulls hardest (highest % in combo, 10+ sales). A summary on top counts how many bags
+  sold more inside their combo than alone and lists the five highest shares. Hover a row for the sum and the bag's
+  total inside all combos (running and self-made).
 - **Row layout (Oct 2026):** each row shows its money (**KES 1.38M**) in the row's bar colour, its share of
   on-offer money, and its units spelled out. Combo sales read "**312 combos · 647 bags**": combos rung, plus the
   bags inside them (`comboPrints`, net of refunded combos; a 3-bag combo holds 3). The other rows read "**N bags**".

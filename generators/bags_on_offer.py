@@ -23,7 +23,7 @@ BOO_DATA markers.
 ─────────────────────────────────────────────────────────────────
 """
 
-import os, re, sys, json, time, datetime, webbrowser, pathlib
+import os, re, sys, json, time, datetime, webbrowser, pathlib, collections
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # project root → lib/
 from lib import paths
@@ -1042,6 +1042,7 @@ def fetch():
             slots_by_month[ms] = (combo_slots(_archived_source(ms)) if ms < m_start else None) or sheet_slots
         return slots_by_month[ms]
     cdf = db.run_query(COMBO_LINES_SQL, params) if sheet_slots else None
+    run_by = []                       # running-combo sales with their bags: {d, combo label, bags} (per-combo split)
     if cdf is None:
         print("  Combos           : offer sheet or combo lines unavailable — every combo left as 1 unit in Combos")
     else:
@@ -1055,7 +1056,9 @@ def fetch():
             if not bags:                                     # returned combo: no sub-lines → the name's slots
                 bags = [(re.sub(r"\s+COMBO$", "", re.split(r"\s+OR\s+", x.strip())[0]).strip(), u)
                         for x in name.split("+") if x.strip()]
-            if smc._matches_sheet(name, slots_for(d)) is not None:
+            lbl = smc._matches_sheet(name, slots_for(d))
+            if lbl is not None:
+                run_by.append({"d": d, "combo": lbl, "bags": bags})
                 lines.append({"shop": shop, "name": name, "d": d, "units": sum(n for _, n in bags), "revenue": rev})
                 n_run += sum(n for _, n in bags)
                 continue
@@ -1185,6 +1188,16 @@ def fetch():
                 u, k = singles.get(b["bag"], (0, 0))
                 singles[b["bag"]] = (u + (b.get("units") or 0), k + (b.get("revenue") or 0))
         prints = P.pop("inCombosByBag", {}) or {}
+        # Units of each bag inside EACH running combo (Kenya), in this period — so a bag in several combos is
+        # credited to each one separately, not with its total across all combos.
+        p0, p1 = datetime.date.fromisoformat(P["from"]), datetime.date.fromisoformat(P["to"])
+        in_this = collections.defaultdict(collections.Counter)
+        for x in run_by:
+            if p0 <= x["d"] <= p1:
+                for bg, n in x["bags"]:
+                    bt = resolve(bg)
+                    if bt:
+                        in_this[x["combo"]][bt] += n
         out = []
         for c in combo_list:
             keys = []
@@ -1192,8 +1205,8 @@ def fetch():
                 bt = infer(n) if n else None
                 if bt and bt not in keys:
                     keys.append(bt)
-            rows = [{"bag": bt, "inCombos": prints.get(bt, 0), "alone": singles.get(bt, (0, 0))[0],
-                     "aloneKes": singles.get(bt, (0, 0))[1]} for bt in keys]
+            rows = [{"bag": bt, "inThis": in_this[c.get("label", "")].get(bt, 0), "inCombos": prints.get(bt, 0),
+                     "alone": singles.get(bt, (0, 0))[0], "aloneKes": singles.get(bt, (0, 0))[1]} for bt in keys]
             if any(r["inCombos"] or r["alone"] for r in rows):
                 out.append({"combo": c.get("label", ""), "bags": rows})
         P["comboVsAlone"] = out
