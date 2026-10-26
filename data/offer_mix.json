@@ -1,6 +1,6 @@
 {
  "month": "October 2026",
- "generated": "26 Oct 2026 07:53",
+ "generated": "26 Oct 2026 09:21",
  "range": "01 Oct – 31 Oct 2026",
  "rows": [
   {
@@ -8,8 +8,8 @@
    "label": "Not on offer",
    "on": false,
    "where": "Kenya, Tanzania, Uganda",
-   "units": 5304.0,
-   "revenue": 12162980,
+   "units": 5305.0,
+   "revenue": 12164680,
    "bags": [
     {
      "bag": "FEROZ",
@@ -250,18 +250,18 @@
      "revenue": 94534
     },
     {
+     "bag": "LIAM",
+     "category": "TRAVEL",
+     "tier": "Core",
+     "units": 47.0,
+     "revenue": 93200
+    },
+    {
      "bag": "MONAH BP",
      "category": "BACKPACK",
      "tier": "Entry",
      "units": 46.0,
      "revenue": 91825
-    },
-    {
-     "bag": "LIAM",
-     "category": "TRAVEL",
-     "tier": "Core",
-     "units": 46.0,
-     "revenue": 91500
     },
     {
      "bag": "JADE",
@@ -823,8 +823,8 @@
    "label": "Power deals",
    "on": true,
    "where": "Kenya only",
-   "units": 3527.0,
-   "revenue": 7135311,
+   "units": 3528.0,
+   "revenue": 7137711,
    "bags": [
     {
      "bag": "ANTITHEFT",
@@ -851,8 +851,8 @@
      "bag": "PRIME",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 309.0,
-     "revenue": 746925
+     "units": 310.0,
+     "revenue": 749325
     },
     {
      "bag": "TRAVEL",
@@ -1360,8 +1360,8 @@
    "label": "Mid-month offers",
    "on": true,
    "where": "Kenya, Tanzania, Uganda",
-   "units": 1027.0,
-   "revenue": 2329286,
+   "units": 1028.0,
+   "revenue": 2331486,
    "bags": [
     {
      "bag": "NALA",
@@ -1402,8 +1402,8 @@
      "bag": "ZULA",
      "category": "MAN BAG",
      "tier": "Core",
-     "units": 75.0,
-     "revenue": 165100
+     "units": 76.0,
+     "revenue": 167300
     },
     {
      "bag": "BIG MAN BAG",
@@ -1841,8 +1841,8 @@
   },
   {
    "part": "New products",
-   "units": 283,
-   "revenue": 968843,
+   "units": 284,
+   "revenue": 971043,
    "countries": [
     "Kenya",
     "Tanzania",
@@ -1866,8 +1866,8 @@
     },
     {
      "bag": "ZULA",
-     "units": 75,
-     "revenue": 165100
+     "units": 76,
+     "revenue": 167300
     },
     {
      "bag": "LOOP BP",

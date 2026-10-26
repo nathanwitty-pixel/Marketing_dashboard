@@ -130,19 +130,19 @@
       "weekStart": "2026-10-18",
       "month": "Oct",
       "weeklyTotal": 62,
-      "kenyaPosts": 0,
-      "outsidePosts": 1,
+      "kenyaPosts": 263,
+      "outsidePosts": 9,
       "label": "Wk 3",
       "pct": 29.25
     },
     {
       "weekStart": "2026-10-25",
       "month": "Oct",
-      "weeklyTotal": 4,
+      "weeklyTotal": 5,
       "kenyaPosts": 0,
       "outsidePosts": 0,
       "label": "Wk 4",
-      "pct": 1.89
+      "pct": 2.36
     }
   ]
 }

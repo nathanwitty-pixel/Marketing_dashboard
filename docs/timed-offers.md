@@ -177,6 +177,50 @@ otherwise `market · shops` (e.g. `Kenya · KITENGELA`) or just the market.
 - **Bags Sold revenue hover**: the Bags-Sold KPI shows a hover with the actual realised revenue
   (`sum(variant.rev)`, incl-tax) — e.g. Kitengela 166 sold → KES 231,500.
 
+## Offers compared (26 Oct 2026, user's call)
+
+At the **top of the page**, before the stacked offers: how the month's offers did against each other, which bags
+respond best, and a check for the next offer. Built by `generators/timed_offers.py` (`TO_DATA.compare`); clearance
+trackers (`nameLike` / `clearanceStart`, e.g. Kitengela rejects) are left out — they are not a timed price offer.
+
+**One clean baseline per offer.** The per-offer panels below compare against the 1st of the month → the day before
+the offer, which for a later offer includes the earlier offers' days. Here each offer's baseline is **the same bags,
+same tills and hours, over the 28 days before it, leaving out the days of any other offer**, and every figure is
+**walk-in** (POS lines of 10+ units — bulk / corporate — taken out of both windows; the units with them are shown
+too). Till lines through `POS_LINES` (combo refunds fixed), via the DuckDB snapshot (`db.run_query_snap`).
+
+**Offers compared** — one column per offer, the best per row marked:
+
+| Row | Rule |
+|---|---|
+| Days run | offer days elapsed (today included) |
+| Bags on offer | bag types in the offer |
+| Units sold | all units of the offer bags in the window (bulk included), and walk-in units |
+| Units a day vs before | walk-in units a day in the offer ÷ the clean baseline a day → **lift %** |
+| Revenue, revenue a day | KES of the offer bags' own sale lines (combo contents carry KES 0 on their line and are left out of money) |
+| Avg selling price vs normal | revenue ÷ units on priced lines, against the list price ("was", config / Odoo) → **real discount %** = 1 − revenue ÷ (was × units) |
+| Discount given away | Σ (was × units − revenue) on the offer bags |
+| Extra units, extra revenue | walk-in units (revenue) in the offer − the baseline a day × offer days |
+| Sell-through | units sold in the offer ÷ the offer bags' Kenya shop stock at the offer start. Stock at start = shop stock now − net units moved into the Kenya shops since the start (Odoo stock moves: deliveries in, sales and transfers out) |
+| After the offer | walk-in units a day in the up to 7 days after the offer (full days only, other offers' days left out) vs the baseline — a dip means the offer pulled sales forward; shown with the days counted, "—" until a day has passed |
+| Share of Kenya bag sales | the offer bags' units ÷ all Kenya bag units in the offer days, beside the same share in the baseline |
+
+**Best bags** — every bag that was on at least one offer: offers it was in, units, walk-in lift (average over its
+offers), average selling price vs normal, sell-through. Top 5 and bottom 5 by lift (a bag selling under 0.5 a day
+before has no lift — "too little before" — and is ranked by units instead).
+
+**Next offer check** — pick bags, a discount % and the number of days. Per bag:
+- base a day = its walk-in rate over the last 28 days (offer days left out);
+- lift = its own average lift over the offers it was in, moved to the chosen discount with the **lift per discount
+  point** fitted across the month's offers (least squares, never below 0); with no offer history, its category's
+  average, else all offers' average. Each bag's lift is kept between −80 % and +300 % (tiny baselines give wild
+  percentages). The basis (own n offers / category / all offers) is shown per bag;
+- predicted units a day = base × (1 + lift); revenue = units × normal price × (1 − discount); discount given away =
+  units × normal price × discount; extra revenue = predicted revenue − base units × normal price.
+- **Verdict:** *likely okay* (lift ≥ 20 % and extra revenue > 0) · *marginal* (lift above 0 but extra revenue ≤ 0, or
+  lift under 20 %) · *weak* (lift ≤ 0). With only the month's few offers behind it, the fit is **indicative** — the
+  page says how many offers back each estimate.
+
 ## Editing a campaign
 
 Edit `timed_offers_config.json` — add/adjust items in `offers[]` (dates + shops + bag list +

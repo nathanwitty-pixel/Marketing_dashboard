@@ -25,22 +25,40 @@ month will be short of.
 
 ## Min / Max (per shop, per bag — colours folded; colours on hover)
 
-- **Min** = 7 days of need (round up) — at or below it, **refill**.
-- **Max** = 21 days of need (round up) — refill **up to** it; above it is **overstocked**.
-- **Status:** Out of stock (0 on hand, has a need) · Below min (at or below Min and below Max) · OK · Over max ·
-  Stock, no need (on the shelf but no need this month) · Not stocked (no need, no stock — hidden).
+**From what is moving (26 Oct 2026, user's call)** — Min / Max follow each shop's real sales, not the targets:
+
+- **Weekly sales rate** (shop × bag) = **recent × season × growth**:
+  - **Recent** = units the shop sold of the bag in the **last 13 weeks** (91 days to yesterday) ÷ 13 — or ÷ the
+    weeks since the bag first sold anywhere, for a bag launched inside those 13 weeks (at least 1 week).
+  - **Season** (per shop, from the last 3 years) = for each earlier year with the data (2024, 2025): units a week in
+    the **4 weeks from the same date** ÷ units a week in the **13 weeks before it**, averaged; kept between 0.7× and
+    1.6×. A shop without that history uses all the shops together. (So November / December peaks lift the rate.)
+  - **Growth** (per shop) = units in the last 365 days ÷ the 365 days before (sell throughput year on year), kept
+    between 0.8× and 1.5×; 1.0 for a shop without two full years.
+- **Min** = **1 week** of sales (round up) — at or below it, **refill**. **Max** = **2.5 weeks** of sales (round up) —
+  refill **up to** it; above it is **overstocked**. (Was 7 / 21 days of the target need until 26 Oct 2026.)
+- **Not moving** = no sale at the shop in the 13 weeks: no Min / Max; stock on the shelf shows as *Not moving*.
+- **Prepayments** (`denri_dispatch_prepayment`, open = confirmed / ready for shop, not cancelled) are customers who
+  paid for a bag the shop doesn't have: those units are **already sold**, so the shelf counts as **have − prepaid**
+  for the status and the send-now. A bag with more prepaid than on the shelf is **Out of stock**.
+- Hover a tile: the weekly rate and its three factors, the prepaid customers.
+- The target **need** (below) still drives the month figures — sold / need, still to sell, month-end balance, the
+  request list and next month.
+
 - **Stock health %** (18 Oct 2026, per shop and all shops) = the target need of the bags sitting **within Min–Max**
   (status OK) ÷ the shop's total target need — bags weighted by their monthly need, so a fast bag out of stock
   counts more than a slow one. Shown on each shop block (with its over-max count) and as the first KPI.
-- **Send now** = Max − stock, for a shop at or below Min. **Warehouse** (CBD/Stock — the store that restocks
+- **Status:** Out of stock (have − prepaid ≤ 0, selling or prepaid), Below min (at or below Min and below Max), OK,
+  Over max, Not moving (on the shelf, no sale in 13 weeks), Not stocked (hidden).
+- **Send now** = Max + prepaid − stock, for a shop at or below Min (or with prepaid customers it can't serve). **Warehouse** (CBD/Stock — the store that restocks
   the Kenya shops) is shown only here, as what can cover the send-now today. Sinza and Uganda are restocked
   from their own stores — send-now shows the units, no warehouse figure.
 
 ## Stock monitor — grouped, and what each shop should request (19 Oct 2026)
 
 **Header-line legend (19 Oct 2026):** the section intro explains each item of a shop's header line — Stock health %
-(target need within Min–Max, need-weighted), out (needed, 0 on the shelf), below min (at or under 7 days: refill),
-over max (more than 21 days: move / push, don't send), send now (units to bring out / below-min bags up to Max) and
+(target need within Min–Max, need-weighted), out (needed, 0 on the shelf), below min (at or under 1 week of sales: refill),
+over max (more than 2.5 weeks of sales: move / push, don't send), send now (units to bring out / below-min bags up to Max) and
 waiting (customers still waiting for a bag the shop didn't have, for the chosen Leads period) (chip styles shown, no fixed numbers).
 
 Every shop block (e.g. KTDA) lists its bags **grouped by status** — Out of stock → Below min → Over max → OK → Stock,
@@ -93,8 +111,8 @@ Each bag, folded across the shops (have, need, sold and each shop's Min / Max su
 | Category | Rule (in this order) |
 |---|---|
 | **Out of stock** | need > 0 and 0 on the shelves |
-| **Low cover** | need > 0 and have ≤ the summed Min (7 days of need) |
-| **Overstocked** | need > 0 and have > the summed Max (21 days) — or no need this month but stock that is selling |
+| **Low cover** | need > 0 and have ≤ the summed Min (1 week of sales) |
+| **Overstocked** | need > 0 and have > the summed Max (2.5 weeks of sales) — or no need this month but stock that is selling |
 | **Healthy** | need > 0, within Min–Max |
 | **Dead stock** | stock on the shelves, no need this month and nothing sold this month |
 | *No stock, no need* | hidden |
@@ -252,6 +270,22 @@ Source: the Odoo **dispatch module** (`denri_dispatch_*`), which every shop orde
   received · pending), opening to the three checks and a bag table (asked · suggested · sent · received ·
   pending · stock when asked / Max · out / below min · sold in 14 days · offer), then the **Asked, not got**,
   **Sent without a request** and **Requested but not converting** tables. Hover a bag for each request.
+
+## Shop requests — realistic performance (26 Oct 2026, user's call)
+
+The request checks use the same **weekly sales rate** as the stock monitor (recent 13 weeks × season × growth),
+not Odoo's dispatch Min / Max or the target need:
+
+- **Right bag** — the shop was out of the colour it asked for, **or** the bag's stock (the requested colours, on hand +
+  incoming) was at or below **1 week of sales**, **or** a customer had **prepaid** for that bag at that shop and was
+  still waiting on the request date (prepayments = out of stock), **or** it was on an offer while under half of
+  **2.5 weeks of sales**.
+- **Asked vs need** (was "asked vs target") — refill = 2.5 weeks of sales − stock − incoming at the bag's first
+  request + the daily rate × days to the period end. Last month is judged on the rate as of its 1st.
+- **What can still be sent by month end** (projection) — per Kenya shop × bag: **gap** = the rate × days left to
+  month end + open prepayments − the shelf, when positive. Each bag's gaps are capped by what **CBD/Stock + VLD/Stock**
+  hold now, shared across the shops by gap (the rest **waits for production**). Sinza and Uganda show their gap only
+  (their own stores restock them). Per shop: units to send, of which prepaid, and what waits; per bag on hover.
 
 ## Shop vs shop and regions — request checks compared (18 Oct 2026)
 
