@@ -21,7 +21,7 @@ MIN_DAYS = 14
 
 POS_SALES_SQL = """
 SELECT pt."name" AS product, date_trunc('month', p.date_order)::date AS m, SUM(pl.qty) AS bags
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
@@ -48,7 +48,7 @@ GROUP BY 1, 2
 
 FIRST_SALE_SQL = """
 SELECT pt."name" AS product, MIN(p.date_order::date) AS first_sale
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 JOIN product_product pp ON pp.id = pl.product_id JOIN product_template pt ON pt.id = pp.product_tmpl_id
 WHERE p.state IN ('done', 'invoiced', 'paid') AND pl.qty > 0
 GROUP BY 1
@@ -81,7 +81,7 @@ GROUP BY 1, 2
 
 DAILY_SOLD_SQL = """
 SELECT pt."name" AS product, p.date_order::date AS d, SUM(pl.qty) AS q
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 JOIN product_product pp ON pp.id = pl.product_id JOIN product_template pt ON pt.id = pp.product_tmpl_id
 WHERE p.state IN ('done', 'invoiced', 'paid') AND pl.qty > 0 AND p.date_order::date BETWEEN :s AND :e
 GROUP BY 1, 2

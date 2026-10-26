@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Marketing Dashboard Menu Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  /* Layout: a reading column with a section index on the left at desktop width; one column on phones. */
+  :root {
+    --bg: #f3f5f8; --surface: #ffffff; --ink: #18202c; --muted: #5a6577; --line: #dde2ea;
+    --accent: #0e7490; --accent-soft: #e0f2f6; --chip: #eef1f5;
+    --perf: #b45309; --prod: #0e7490; --mkt: #7c3aed; --intel: #475569;
+    --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+    --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f141c; --surface: #161d28; --ink: #e6ebf2; --muted: #9aa6b8; --line: #263142;
+      --accent: #5ec8de; --accent-soft: #15303a; --chip: #1d2634;
+      --perf: #f2a65a; --prod: #5ec8de; --mkt: #b79cf5; --intel: #a3b1c6; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f141c; --surface: #161d28; --ink: #e6ebf2; --muted: #9aa6b8; --line: #263142;
+    --accent: #5ec8de; --accent-soft: #15303a; --chip: #1d2634;
+    --perf: #f2a65a; --prod: #5ec8de; --mkt: #b79cf5; --intel: #a3b1c6; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--body); }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 64px;
+          padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+          display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 40px; }
+  @media (max-width: 860px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 20px; } nav.index { position: static !important; } }
+  header.top { grid-column: 1 / -1; display: grid; gap: 10px; }
+  .eyebrow { font: 500 12px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+  h1 { font: 800 clamp(30px, 4.4vw, 46px)/1.08 var(--display); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+  .lede { color: var(--muted); max-width: 68ch; margin: 0; }
+  .search { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
+  .search input { flex: 1 1 260px; max-width: 420px; font: inherit; padding: 9px 12px; border-radius: 8px;
+                  border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+  .search input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .search .count { font: 500 12px var(--mono); color: var(--muted); }
+  nav.index { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); align-self: start; display: grid; gap: 16px; }
+  nav.index h2 { font: 500 11px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+  nav.index ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  nav.index a { display: flex; gap: 8px; align-items: baseline; padding: 3px 6px; border-radius: 6px; color: var(--ink); text-decoration: none; font-size: 14px; }
+  nav.index a:hover, nav.index a:focus-visible { background: var(--chip); outline: none; }
+  nav.index a .n { font: 500 11px var(--mono); color: var(--muted); min-width: 18px; }
+  main { display: grid; gap: 34px; min-width: 0; }
+  .group > h2 { font: 700 13px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 14px;
+                display: flex; align-items: center; gap: 10px; }
+  .group > h2::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: var(--c); }
+  .group { display: grid; gap: 14px; }
+  .group[data-g="perf"] { --c: var(--perf); } .group[data-g="prod"] { --c: var(--prod); }
+  .group[data-g="mkt"] { --c: var(--mkt); } .group[data-g="intel"] { --c: var(--intel); }
+  article.menu { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; display: grid; gap: 12px; min-width: 0; }
+  article.menu header { display: grid; gap: 4px; }
+  .menu .num { font: 500 12px var(--mono); color: var(--c); }
+  .menu h3 { font: 700 22px/1.2 var(--display); margin: 0; text-wrap: balance; }
+  .menu .q { font-style: italic; color: var(--muted); margin: 0; }
+  .menu .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px 28px; }
+  .menu h4 { font: 600 12px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+  .menu ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+  .menu p { margin: 0; max-width: 72ch; }
+  .tip { background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; font-size: 14px; }
+  .tip b { color: var(--ink); }
+  .badge { display: inline-block; font: 500 11px var(--mono); padding: 1px 6px; border-radius: 4px; background: var(--chip); color: var(--muted); vertical-align: 2px; }
+  #glossary dl { display: grid; grid-template-columns: minmax(150px, 220px) minmax(0, 1fr); gap: 10px 22px; margin: 0;
+                 background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 22px; }
+  @media (max-width: 560px) { #glossary dl { grid-template-columns: minmax(0, 1fr); gap: 2px 0; } #glossary dd { margin-bottom: 10px; } }
+  #glossary dt { font-weight: 600; } #glossary dd { margin: 0; color: var(--ink); }
+  .empty { color: var(--muted); font-style: italic; }
+  footer { grid-column: 1 / -1; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 14px; }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Denri Africa Marketing Dashboard</span>
+    <h1>What every menu means</h1>
+    <p class="lede">One section per menu, in the order they appear in the dashboard: the question each one answers, what you will see on it and how to read the numbers. The words the dashboard uses are explained at the end.</p>
+    <div class="search">
+      <input id="q" type="search" placeholder="Search menus and words, e.g. prepaid, lift, corporate" aria-label="Search the guide">
+      <span class="count" id="count"></span>
+    </div>
+  </header>
+
+  <nav class="index" aria-label="Menus">
+    <div><h2>Performance</h2><ol><li><a href="#current-performance"><span class="n">1</span>Current Performance</a></li></ol></div>
+    <div><h2>Products</h2><ol>
+      <li><a href="#product-performance"><span class="n">2</span>Product Performance</a></li>
+      <li><a href="#new-products"><span class="n">3</span>New Products</a></li>
+      <li><a href="#timed-offers"><span class="n">4</span>Timed Offers</a></li>
+      <li><a href="#combos"><span class="n">5</span>Self-made vs Running Combos</a></li>
+      <li><a href="#bags-on-offer"><span class="n">6</span>Bags On vs Off Offer</a></li>
+      <li><a href="#shop-stock-levels"><span class="n">7</span>Shop Stock Levels</a></li>
+      <li><a href="#offer-picking"><span class="n">8</span>Offer Picking</a></li>
+      <li><a href="#reject-sale"><span class="n">9</span>Reject Sale</a></li></ol></div>
+    <div><h2>Marketing</h2><ol>
+      <li><a href="#posting-yields"><span class="n">10</span>Posting Yields</a></li>
+      <li><a href="#shops-efficiency"><span class="n">11</span>Shops Efficiency</a></li>
+      <li><a href="#footfall"><span class="n">12</span>Footfall and Marketing</a></li>
+      <li><a href="#shop-launch"><span class="n">13</span>Shop Launch</a></li>
+      <li><a href="#push-planner"><span class="n">14</span>Push Planner</a></li>
+      <li><a href="#bag-signals"><span class="n">15</span>Bag Signals</a></li></ol></div>
+    <div><h2>Intelligence</h2><ol>
+      <li><a href="#monthly-report"><span class="n">16</span>Monthly Report</a></li>
+      <li><a href="#history"><span class="n">17</span>History</a></li></ol></div>
+    <div><h2>Reference</h2><ol><li><a href="#glossary"><span class="n">A</span>Words you will see</a></li></ol></div>
+  </nav>
+
+  <main>
+    <section class="group" data-g="perf">
+      <h2>Performance</h2>
+
+      <article class="menu" id="current-performance">
+        <header><span class="num">Menu 1</span><h3>Current Performance</h3><p class="q">Are we on course for this month's bag target?</p></header>
+        <div class="cols">
+          <div><h4>What you will see</h4><ul>
+            <li><b>Sales</b>: bags sold this month. Shop tills (POS) plus corporate bags paid for this month, plus samples. Gift bags and rejects count; refunds are taken off.</li>
+            <li><b>Weekly sales</b> and <b>Remaining target</b> (bags still needed).</li>
+            <li><b>Weekly performance</b>: each Sunday to Saturday week's bags, including corporate bags paid that week, as a share of the target.</li>
+            <li><b>Forward projections</b>: where the month ends at the current pace, without and with corporate bags, for bags and revenue.</li>
+            <li><b>Price per bag</b> and <b>On offer vs not on offer</b>: why the revenue % and the bags % differ.</li>
+            <li><b>Corporate by client</b>: what each corporate client agreed, paid and received.</li></ul></div>
+          <div><h4>How to read it</h4><ul>
+            <li><b>Target to beat</b> = the month's target divided by its full weeks. Green means the week cleared it.</li>
+            <li>The badge on each week is its change on the week before. A grey <b>"so far"</b> badge means the week is still running, so it is not a real drop yet.</li>
+            <li>The dashed line is last month, week by week.</li></ul></div>
+        </div>
+        <p class="tip">The weekly rows add up exactly to the Sales card.</p>
+      </article>
+    </section>
+
+    <section class="group" data-g="prod">
+      <h2>Products</h2>
+
+      <article class="menu" id="product-performance">
+        <header><span class="num">Menu 2</span><h3>Product Performance</h3><p class="q">Which bags, categories and colours carry the sales, and why did they move?</p></header>
+        <div class="cols">
+          <div><h4>What you will see</h4><ul>
+            <li><b>Bag of the week</b>, the biggest mover, and <b>why it moved</b>: stock, offers, posting and bulk orders.</li>
+            <li><b>Top-selling bags</b> by share of units or revenue, with the change in share.</li>
+            <li><b>Shop breakdown</b>: units per shop, including a <b>Corporate</b> row for the Corporate app, with a Total row. Switch bulk orders on or off.</li>
+            <li><b>Categories</b>, the <b>top 5 categories</b> with their best and weakest bags, and <b>colours</b>.</li></ul></div>
+          <div><h4>How to read it</h4><ul>
+            <li>The filters at the top (market, period, units or revenue) drive the whole page.</li>
+            <li>Every period is compared with the period before it, of the same length.</li>
+            <li><b>pp</b> = percentage points: 10.0% to 10.1% of sales is +0.1 pp.</li>
+            <li>This page leaves out gift bags and samples, so its totals sit a little under Current Performance.</li></ul></div>
+        </div>
+      </article>
+
+      <article class="menu" id="new-products">
+        <header><span class="num">Menu 3</span><h3>New Products</h3><p class="q">How are this month's new bags selling against their targets?</p></header>
+        <div class="cols">
+          <div><h4>What you will see</h4><ul>
+            <li>Each new bag's <b>target, sold and deficit</b>, for Kenya and outside Kenya.</li>
+            <li><b>Weekly sales vs marketing posts</b>, and <b>Sales by shop</b>: CORP is the Corporate app, ranked like a shop.</li>
+            <li><b>Runway bags</b>: styles first created in Odoo in the last 30 days.</li>
+            <li><b>Top 10</b>, <b>colour movement</b> with stock guidance, and customers waiting for a new bag that was out of stock.</li></ul></div>
+          <div><h4>How to read it</h4><ul>
+            <li>The list of new bags comes from the new-products file; the targets come from Odoo.</li>
+            <li>Marketing logs posts a week late, so <b>This week</b> shows 0 posts and <b>Last week</b> shows the real posting.</li>
+            <li>In Sales by shop, the colours rank the shops inside each row: gold is where that bag sells best.</li></ul></div>
+        </div>
+      </article>
+
+      <article class="menu" id="timed-offers">
+        <header><span class="num">Menu 4</span><h3>Timed Offers</h3><p class="q">Did each short offer pay off, and would the next one?</p></header>
+        <div class="cols">
+          <div><h4>What you will see</h4><ul>
+            <li><b>Offers compared</b>: each offer's lift, revenue, real discount, discount given away, extra revenue per KES 1 of discount, sell-through and the dip after it.</li>
+            <li><b>Best bags across the offers</b>: the bags that responded most and least.</li>
+            <li><b>Next offer check</b>: pick bags, a discount and the days, and it predicts units a day and revenue, with a verdict.</li>
+            <li>Then each offer: per-bag sales in its window, prices, bulk orders and the posting that ran with it.</li></ul></div>
+          <div><h4>How to read it</h4><ul>
+            <li><b>Lift</b> = units a day during the offer against the same bags in the 28 days before, walk-in only (orders of 10 or more taken out).</li>
+            <li>Above KES 1 of extra revenue per KES 1 of discount, the offer paid for itself.</li>
+            <li>The prediction is learned from only a few offers, so treat it as a guide.</li></ul></div>
+        </div>
+      </article>
+
+      <article class="menu" id="combos">
+        <header><span class="num">Menu 5</span><h3>Self-made vs Running Combos</h3><p class="q">Do customers buy the combos we run, or build their own?</p></header>
+        <div class="cols">
+          <div><h4>What you will see</h4><ul>
+            <li><b>Running combos</b>: combos on this month's combo list.</li>
+            <li><b>Self-made combos</b>: bags a customer bought together that are not on the list.</li>
+            <li>For Kenya, Sinza and Uganda, plus the <b>Power deals</b> view and combo requests.</li></ul></div>
+          <div><h4>How to read it</h4><ul>
+            <li>A self-made pair that keeps selling is a candidate for next month's running combos (see Offer Picking).</li>
+            <li>Sinza and Uganda combos are worked out from their till receipts.</li></ul></div>
+        </div>
+      </article>
+
+      <article class="menu" id="bags-on-offer">
+        <header><span class="num">Menu 6</span><h3>Bags On vs Off Offer</h3><p class="q">How much of the money comes from offers, and are the shops hitting their targets?</p></header>
+        <div class="cols">
+          <div><h4>What you will see</h4><ul>
+            <li>Every sale sorted into one <b>offer type</b>: Not on offer, Power deals, Combos, Deal of the week, Corporate, Mid-month offers, Samples and Gift bags.</li>
+            <li><b>Offer mix by period</b> and a <b>weekly breakdown</b>, with a <b>last complete week vs the week before</b> column. You can compare any two weeks.</li>
+            <li><b>Shops vs their Odoo targets</b>, and the bags on and off offer.</li></ul></div>
+          <div><h4>How to read it</h4><ul>
+            <li>Switch between Revenue, Units and Mix % (share of the week).</li>
+            <li>Use <b>Per day</b> when a week is short. Week 1 had only 3 days in October.</li>
+            <li>Its All bags total matches the Sales card.</li></ul></div>
+        </div>
+      </article>
+
+      <article class="menu" id="shop-stock-levels">
+        <header><span class="num">Menu 7</span><h3>Shop Stock Levels</h3><p class="q">Does each shop hold the right stock, and what should go to it now?</p></header>
+        <div class="cols">
+          <div><h4>What you will see</h4><ul>
+            <li><b>Stock monitor</b>: each shop's bags as tiles, showing have, Min, Max, sells a week, send now, waiting and prepaid.</li>
+            <li><b>Stocks report</b> by bag, and <b>next month</b> preparedness from the 15th.</li>
+            <li><b>Shop requests</b>: what shops asked for against what they got, how good the asks were, and <b>what can still be sent by month end</b>.</li>
+            <li><b>Production</b>: the approved production list against the shops' asks.</li></ul></div>
+          <div><h4>How to read it</h4><ul>
+            <li><b>Min</b> = 1 week of sales, <b>Max</b> = 2.5 weeks. Weekly sales = the last 13 weeks, adjusted for the season and the shop's growth.</li>
+            <li>At or below Min, refill up to Max. <b>Not moving</b> = no sale at that shop in 13 weeks.</li>
+            <li><b>Prepaid</b> bags are already sold, so they do not count as free on the shelf.</li>
+            <li>What can be sent is capped by what CBD and VLD hold now. The rest waits for production.</li></ul></div>
+        </div>
+      </article>
+
+      <article class="menu" id="offer-picking">
+        <header><span class="num">Menu 8</span><h3>Offer Picking</h3><p class="q">Which combos and Power deals should run next month?</p></header>
+        <div class="cols">
+          <div><h4>What you will see</h4><ul>
+            <li>A <b>forecast</b> of the picked combos, ranked for next month.</li>
+            <li>A <b>picker</b>: next month's combo grid, where each slot can be changed, with was and now price, cost, profit, and how many can be built from stock.</li>
+            <li>Power deals and seasonality.</li></ul></div>
+          <div><h4>How to read it</h4><p>Change a slot and the price, profit and buildable count update straight away. A combo that cannot be built from stock is not a real option.</p></div>
+        </div>
+      </article>
+
+      <article class="menu" id="reject-sale">
+        <header><span class="num">Menu 9</span><h3>Reject Sale</h3><p class="q">What price should each reject bag sell at?</p></header>
+        <div class="cols">
+          <div><h4>What you will see</h4><ul><li>The uploaded reject list (built for the Kitengela clearance), each bag put at <b>KES 1,000</b> or <b>KES 1,500</b>, grouped by category, on a pricing board.</li></ul></div>
+          <div><h4>How to read it</h4><p>A bag that costs KES 900 or less to make goes at KES 1,000; above that, KES 1,500. A bag that costs more than KES 1,500 to make is flagged below cost.</p></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="group" data-g="mkt">
+      <h2>Marketing</h2>
+
+      <article class="menu" id="posting-yields">
+        <header><span class="num">Menu 10</span><h3>Posting Yields</h3><p class="q">Is marketing posting the bags that sell?</p></header>
+        <div class="cols">
+          <div><h4>What you will see</h4><ul>
+            <li>Kenya, Sinza and Uganda, weekly or monthly: <b>posts against sales</b> per bag (the posting yield) and how accurate the posting was.</li>
+            <li><b>Dead stock</b>: bags in stock that were never posted.</li></ul></div>
+          <div><h4>How to read it</h4><p>Posts come from marketing's own daily posting sheets, logged about a week late, so the latest week can look empty until marketing fills it in.</p></div>
+        </div>
+      </article>
+
+      <article class="menu" id="shops-efficiency">
+        <header><span class="num">Menu 11</span><h3>Shops Efficiency</h3><p class="q">How well does each shop turn what it is sent into sales?</p></header>
+        <div class="cols">
+          <div><h4>What you will see</h4><ul>
+            <li>Per shop: bags dispatched, sold, in stock and <b>sell-through</b>, weekly or monthly.</li>
+            <li>Combos and Power deals by shop.</li>
+            <li><b>Stock record accuracy</b>: negative-stock fixes per 1,000 bags sold.</li></ul></div>
+          <div><h4>How to read it</h4><p>High dispatch with low sell-through means stock is piling up at that shop. A high fixes rate means its stock records are often wrong.</p></div>
+        </div>
+      </article>
+
+      <article class="menu" id="footfall">
+        <header><span class="num">Menu 12</span><h3>Footfall and Marketing</h3><p class="q">Do posts and ads bring people in, and do the shops turn them into buyers?</p></header>
+        <div class="cols">
+          <div><h4>What you will see</h4><p>Shop by shop and week by week: visitors counted at each shop at close of day, walk-in buyers, the share who bought, WhatsApp chats, posts and ad spend.</p></div>
+          <div><h4>How to read it</h4><p>More visitors with the same buyers means the shop is converting fewer of them. More posts or ads with no change in visitors means they are not bringing people in.</p></div>
+        </div>
+      </article>
+
+      <article class="menu" id="shop-launch">
+        <header><span class="num">Menu 13</span><h3>Shop Launch</h3><p class="q">How is the newest shop (Nyeri) doing since its first sale?</p></header>
+        <div class="cols">
+          <div><h4>What you will see</h4><p>Sales, sell-through of the opening stock, a day-by-day race against the last shop opened (Rongai), and whether marketing posted the bags it stocks.</p></div>
+          <div><h4>How to read it</h4><p>The race lines up day 1 of both shops, so you compare like with like.</p></div>
+        </div>
+      </article>
+
+      <article class="menu" id="push-planner">
+        <header><span class="num">Menu 14</span><h3>Push Planner <span class="badge">locked</span></h3><p class="q">What should we push this week, where, and why are some bags stuck?</p></header>
+        <div class="cols">
+          <div><h4>What you will see</h4><p>For Kenya, Sinza and Uganda: the bags to push this week and at which shops, the reason each bag is stuck, and whether last week's calls worked. Laya, the on-device decision model, gives a second opinion when this PC runs the page.</p></div>
+          <div><h4>How to read it</h4><p>Offer Picking plans next month. The Push Planner works inside the month, week by week. The decisions come from the dashboard's own numbers; Laya never overrides them.</p></div>
+        </div>
+      </article>
+
+      <article class="menu" id="bag-signals">
+        <header><span class="num">Menu 15</span><h3>Bag Signals <span class="badge">locked</span></h3><p class="q">Is a bag's trend real, and is it about to run out?</p></header>
+        <div class="cols">
+          <div><h4>What you will see</h4><p>Per bag, over the last 91 days in Kenya: average sales a day, how much a day's sales swing, how reliable the bag is, how it reacts on busy days and to posting, its run-out risk, and what to post or restock.</p></div>
+          <div><h4>How to read it</h4><p>A big swing means one good day proves little. Trust a bag's trend only when it is reliable.</p></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="group" data-g="intel">
+      <h2>Intelligence</h2>
+
+      <article class="menu" id="monthly-report">
+        <header><span class="num">Menu 16</span><h3>Monthly Report</h3><p class="q">The month in one report, with what to do next.</p></header>
+        <div class="cols">
+          <div><h4>What you will see</h4><p>A bottom line, then each area (current performance, new products, offer types, posting), each written in the same four steps: the conclusion first, the insight, a recommendation (stop, start or start testing) and the business impact in numbers.</p></div>
+          <div><h4>How to read it</h4><p>Read the bottom line and the recommendations first; the sections underneath back them up.</p></div>
+        </div>
+      </article>
+
+      <article class="menu" id="history">
+        <header><span class="num">Menu 17</span><h3>History</h3><p class="q">What did past months look like?</p></header>
+        <div class="cols">
+          <div><h4>What you will see</h4><p>The month-end snapshots, frozen when each month closes and kept in Supabase. Pick a month to see its report as it was.</p></div>
+          <div><h4>How to read it</h4><p>These numbers do not change after the month closes, so later fixes to the live pages do not rewrite them.</p></div>
+        </div>
+      </article>
+    </section>
+
+    <section id="glossary" class="group" data-g="intel">
+      <h2>Words you will see</h2>
+      <dl id="gl">
+        <dt>POS, tills</dt><dd>The shops' tills in Odoo. Every shop sale goes through one.</dd>
+        <dt>Corporate (Corporate app)</dt><dd>Sales through the Denri Corporate app. They count like a shop, by the money received in the period. Corporate clients who pay at a shop till count as that shop's sale.</dd>
+        <dt>Bulk order</dt><dd>One till line of 10 or more units. It is flagged ⚠ so one big order does not make a shop or bag look like it jumped.</dd>
+        <dt>Combo, running and self-made</dt><dd>Two or more bags sold together at one price. Running combos are on this month's combo list; self-made combos are pairs customers build themselves.</dd>
+        <dt>Power deal</dt><dd>A bag on offer for the whole month, in Kenya.</dd>
+        <dt>Deal of the week</dt><dd>A bag on offer for a week, at the shops running that deal.</dd>
+        <dt>Mid-month offers</dt><dd>New products, runway bags, timed offers, and the listed singles in Tanzania and Uganda.</dd>
+        <dt>Timed offer</dt><dd>A short campaign on chosen bags for set dates, such as Mashujaa Offers on 19 to 23 Oct.</dd>
+        <dt>Runway bags</dt><dd>Styles first created in Odoo in the last 30 days.</dd>
+        <dt>Gift bags, samples</dt><dd>Gift bags are the small gift bags (A3, A4 and colours) sold at the till. Samples are display units sold off. Both count in Sales.</dd>
+        <dt>Refunds, combo refunds</dt><dd>Refunds are taken off sales once. A refunded combo takes off each of its bags exactly once.</dd>
+        <dt>Prepaid</dt><dd>A customer paid for a bag the shop did not have and is waiting for it. Those bags are already sold.</dd>
+        <dt>Waiting</dt><dd>A customer asked for a bag that was out of stock (on WhatsApp or in the shop) and has not bought since.</dd>
+        <dt>Min, Max, send now</dt><dd>Min is 1 week of a shop's sales and Max is 2.5 weeks. At or below Min, send enough to reach Max.</dd>
+        <dt>Weekly sales rate</dt><dd>The last 13 weeks of sales, adjusted for the season (the same weeks in 2024 and 2025) and the shop's growth over the last year.</dd>
+        <dt>Target, need</dt><dd>The month's bag targets from Odoo, split per shop and per bag. Need is a shop's share of a bag's target.</dd>
+        <dt>Week, partial week</dt><dd>Weeks run Sunday to Saturday, cut at the month's edges. A week still running reads "so far" and is not a real drop.</dd>
+        <dt>Lift</dt><dd>How much faster a bag sold during an offer than before it.</dd>
+        <dt>Sell-through</dt><dd>The share of the stock a shop held that it sold.</dd>
+        <dt>Posting yield</dt><dd>How well posts line up with what sells. Posts are logged about a week late.</dd>
+        <dt>Kenya, Sinza, Uganda</dt><dd>The three markets. Sinza covers Tanzania's two tills (Sinza and Dar es Salaam). Their money is shown in KES at 25 TSh and 29 USh to the shilling.</dd>
+        <dt>CBD, VLD</dt><dd>The two stores that restock the Kenya shops. Sinza and Uganda have their own stores.</dd>
+        <dt>Ads impact</dt><dd>A panel built from marketing's weekly ads report. It is hidden on every page for now.</dd>
+      </dl>
+      <p class="empty" id="none" hidden>Nothing matches that search.</p>
+    </section>
+  </main>
+
+  <footer>Written 26 Oct 2026 from the dashboard's own menu specs (the docs folder in the project). Figures and rules change as the dashboard changes; the specs stay the source of truth.</footer>
+</div>
+
+<script>
+(function () {
+  var q = document.getElementById('q'), count = document.getElementById('count'), none = document.getElementById('none');
+  var menus = [].slice.call(document.querySelectorAll('article.menu'));
+  var terms = [].slice.call(document.querySelectorAll('#gl dt'));
+  function run() {
+    var s = q.value.trim().toLowerCase(), shown = 0, hits = 0;
+    menus.forEach(function (m) { var ok = !s || m.textContent.toLowerCase().indexOf(s) >= 0; m.hidden = !ok; if (ok) shown++; });
+    terms.forEach(function (dt) {
+      var dd = dt.nextElementSibling, ok = !s || (dt.textContent + ' ' + dd.textContent).toLowerCase().indexOf(s) >= 0;
+      dt.hidden = dd.hidden = !ok; if (ok) hits++;
+    });
+    document.querySelectorAll('section.group').forEach(function (g) {
+      if (g.id === 'glossary') return;
+      g.hidden = !g.querySelector('article.menu:not([hidden])');
+    });
+    none.hidden = hits > 0;
+    count.textContent = s ? shown + ' menu' + (shown === 1 ? '' : 's') + ' and ' + hits + ' word' + (hits === 1 ? '' : 's') + ' match' : '17 menus, ' + terms.length + ' words';
+  }
+  q.addEventListener('input', run);
+  run();
+})();
+</script>
+</body>
+</html>

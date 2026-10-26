@@ -874,6 +874,17 @@ def _load_combos_by_shop():
 
     return _from_file() or {"month": "", "byShop": {}}
 
+def _negfix():
+    """Stock record accuracy per shop for every period (docs/shops-efficiency.md › Stock record accuracy).
+    None when the NEGATIVE FIX LOG can't be read — the page then says so instead of breaking."""
+    try:
+        from lib import negative_fixes
+        return negative_fixes.block()
+    except Exception as e:                                # noqa: BLE001
+        print(f"  Stock record accuracy: NEGATIVE FIX LOG unavailable ({e})")
+        return None
+
+
 SE = {
     "generatedOn":  date.today().strftime("%d %b %Y"),
     "shops":        KENYA_SHOPS,
@@ -883,6 +894,7 @@ SE = {
     "dispatch":     dispatch,   # {computedOn, shops, weekly:{distributedIn,receiving}, monthly:{...}}
     "combos":       _load_combos_by_shop(),   # per-shop combos + power deals (from self_made_combos.py)
     "birthdays":    shop_birthdays.by_shop(),  # shops within 30 days of their birthday (🎂 badges)
+    "negfix":       _negfix(),                 # Stock record accuracy (NEGATIVE FIX LOG, lib/negative_fixes)
 }
 
 

@@ -22,10 +22,32 @@ marketing logs posts only on each bag's TOTAL row (no colour) → those come thr
 **Monthly uploads (the user sends them, Claude transcribes):**
 - `offers_monthly.csv` — Kenya / Sinza / Uganda combos and singles with prices (the old COMBOS tab).
 - `deals_kenya.csv` — Kenya Power Deals + Deals of the Week from the poster images (the old deals sheet).
+- **Weekly:** `ads_weekly.csv` + `ads_notes.csv` — marketing's Weekly Ads Performance Report (Drive .pptx).
+  Was the Ads impact panel on every page; **hidden on every page since 26 Oct 2026** — spec: [ads-impact.md](ads-impact.md).
+
+**Stock record accuracy (Oct 2026):** the **NEGATIVE FIX LOG** tab of *STOCKS LEVELS 2026* (`1xWmk1CJ…`, read only by
+`lib/negative_fixes.py`) ranks shops by negative-stock fixes per 1,000 bags sold on Shops Efficiency — spec:
+[shops-efficiency.md](shops-efficiency.md#stock-record-accuracy-22-oct-2026-users-call).
+
+**Footfall (Oct 2026):** `denri_footfall_count` (visitors per shop per day) joined to walk-in POS orders,
+WhatsApp chats, posts and ads on the Footfall and Marketing page — spec: [footfall-marketing.md](footfall-marketing.md).
 
 **Odoo** — sales, stock, dispatch, combos rung, WhatsApp call-backs. If Odoo is down, those figures are
 empty (no sheet fallback any more). **Local files** — `bom_costs.json` and `offers_prices.json` (Offer
 Picking costs / prices), `product_catalog.csv`, `bag_original_prices.json`, `bag_names.csv`.
+
+**Combo refunds — one rule on every menu (25 Oct 2026, user's call).** Every query that counts till bags reads
+the order's lines through `POS_LINES(p) pl` (expanded by `lib/pos_lines.py` inside `db.run_query`), not
+`pos_order_line` directly. That source fixes refunded combos, so each returned bag is taken off exactly once:
+- A refund that brought the combo's bags back on their own **KES 0 lines** (no parent link) → those lines are
+  marked as the combo's sub-lines. Sales-style counts still subtract them; single-bag counts (Bags on offer,
+  Combos, Push planner…) no longer take them off a second time as singles.
+- A refund that has **only the combo line** → the original sale's bags (via `refunded_orderline_id`, exact
+  colours) are added as KES 0 sub-lines with negative qty, so Sales-style counts take them off too.
+- Oct 2026: 14 combo refunds, 28 bags. Before: Sales missed 12 (6 combo-line-only refunds) and Bags on offer
+  took 16 off twice.
+- The offer page also counts customized bags (they are bags; only the "Customization" fee is not) and
+  Tanzania / Uganda **Mini Washbags and gift bags** like Kenya's, so its All bags = Sales (samples are in Sales since 26 Oct 2026).
 
 ## Refresh performance
 
@@ -41,6 +63,26 @@ Sheets reads are the other big cost: `offer_data.build` (cached per run) fetches
 ranges (COMBOS, MONTHLY_TARGET, STOCK_LEVELS) in **one `values_batch_get`** instead of a
 `worksheet()` lookup + read per sheet — ~5s → ~3s. Together these took a self_made_combos
 refresh from ~50s to ~32s.
+
+**DuckDB till snapshot (26 Oct 2026, user's call).** Heavy till-sales queries read a local snapshot instead of
+the replica. `lib/snapshot.py` pulls, in one go, the last **150 days** of `pos_order` and its lines (already
+through `POS_LINES`, so combo refunds are fixed) plus the small lookup tables (`pos_session`, `pos_config`,
+`product_product`, `product_template`, `product_category`) into versioned Parquet files under `.snapshots/`
+(gitignored), then swaps `.snapshots/current.json` to point at them. `db.run_query_snap(sql, params)` runs the
+page's **own SQL unchanged** in an in-memory DuckDB over those files (`POS_LINES(p) pl` → the snapshot's fixed
+lines; `:name` → `$name`). It falls back to live Postgres when the snapshot is missing, older than **30 min**
+(a manual Refresh renews it if older than **5 min**), doesn't cover the dates asked for, or the SQL needs a table
+it doesn't hold. A failed refresh keeps the old snapshot; the last 3 are kept. Proof: `tests/test_snapshot.py`
+runs live vs snapshot for a fixed past window and compares. Used by: Timed offers (its sales / daily / price /
+bulk queries).
+
+## Title row clock (every page)
+
+The pill at the top right of every page (`CLOCK_HTML` in `streamlit_app.py`) reads e.g. **Mon 26 Oct, Week 44 of 52,
+10:59:48** then **Updated 2 min ago, auto 60 min**. **Week n of N (26 Oct 2026, user's call)** uses the dashboard's
+Sunday to Saturday weeks: week 1 is the Sun–Sat week holding 1 January; the last days of December that share a week with
+the next 1 January count as that year's week 1; N = the year's weeks (52, or 53 in some years). It ticks live, so it turns
+over on Sunday. No dot separators.
 
 ## How the dashboard is built
 

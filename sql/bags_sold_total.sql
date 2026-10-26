@@ -20,7 +20,7 @@ SELECT
   ), 0)) AS value
 FROM pos_order p
 CROSS JOIN params dp
-JOIN pos_order_line pl ON pl.order_id = p.id
+JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -34,6 +34,6 @@ WHERE p.date_order::date BETWEEN dp.start_date AND dp.end_date
   AND COALESCE(pt."name", '') NOT ILIKE '%customization%'
   AND COALESCE(pt."name", '') NOT ILIKE '%strap%'
   AND COALESCE(pt."name", '') NOT ILIKE '%KES discount%'   -- price adjustment, not a bag
-  AND COALESCE(pt."name", '') NOT ILIKE '%sample%'         -- display / sample units, not a sale
+  -- samples (display units sold) ARE counted since 26 Oct 2026 (user's call)
   AND COALESCE(pcat."name", '') NOT ILIKE '%Pos%'          -- non-bag POS lines
   AND lower(COALESCE(pt."name", '')) <> ALL(:excluded)     -- editable not-a-sale list (sales_exclusions.txt)

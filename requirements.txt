@@ -8,3 +8,6 @@ SQLAlchemy>=2.0
 psycopg2-binary>=2.9
 pandas>=2.0
 python-dotenv>=1.0
+
+# Local till snapshot read with DuckDB (lib/snapshot.py)
+duckdb>=1.4

@@ -487,7 +487,7 @@ def _seasonality(cost, prices, catalog):
     sql = """
     SELECT pt."name" AS product, UPPER(COALESCE(pc."name",'?')) AS shop,
            EXTRACT(MONTH FROM p.date_order)::int AS mo, SUM(pl.qty)::int AS units
-    FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+    FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
     LEFT JOIN pos_session ps ON p.session_id=ps.id
     LEFT JOIN pos_config pc ON ps.config_id=pc.id
     LEFT JOIN product_product pp ON pl.product_id=pp.id

@@ -87,7 +87,7 @@ WHERE pt."name" NOT LIKE '%+%'
 SALES_SQL = """
 SELECT ps.config_id AS cfg, pl.product_id, (o.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date AS d,
        SUM(pl.qty) AS qty
-FROM pos_order o JOIN pos_order_line pl ON pl.order_id = o.id
+FROM pos_order o JOIN POS_LINES(o) pl ON pl.order_id = o.id
 JOIN pos_session ps ON ps.id = o.session_id
 WHERE (o.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETWEEN :s AND :e
   AND o.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
@@ -185,14 +185,18 @@ def _offer_label(o):
     return " · ".join(bits)
 
 
-def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, have=None, no_shelf=(), target=None):
+def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, have=None, no_shelf=(), target=None,
+             prepaid_at=None):
     """Per shop: requests in [start, end] — totals, the three checks, effectiveness %, dispatch fill and the bags;
     plus bags SENT WITHOUT A REQUEST (warehouse sends beyond what the shop asked for) and requested bags NOT
     CONVERTING (received, but under NOT_CONVERTING_PCT % sold within 14 days).
     shop_name(dispatch shop name) → the page's shop name; code_shop(stock location code) → the same names;
     have = {SHOP: {BAG: units on the shelf now}}; no_shelf = online shops (never in "sent without a request").
     target = {"need": {SHOP: {BAG: monthly need}}, "days": days in that month, "minDays", "maxDays",
-              "now": True when the period is this month (then "target needs it, not asked" uses the shelf now)}."""
+              "now": True when the period is this month (then "target needs it, not asked" uses the shelf now)}
+    — since 26 Oct 2026 the weekly sales rate as a month's need (Min 1 week, Max 2.5 weeks), so the right-bag
+    check and asked vs need are judged on what really sells (docs/shop-stock-levels.md › realistic performance).
+    prepaid_at(shop, bag, date) = units customers had prepaid and were still waiting for (they count as out of stock)."""
     tneed = (target or {}).get("need") or {}
     tdays = (target or {}).get("days") or 30
 
@@ -270,6 +274,9 @@ def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, hav
                                            "low": 0.0, "offer": 0.0, "cur": 0.0, "mx": 0.0, "short": 0.0,
                                            "t_ok": 0.0, "t_base": 0.0, "t_over": 0.0, "t_off": 0.0, "bags": {}})
     t_ask = collections.defaultdict(dict)                   # (shop, bag) → {request: {d, have (stock + incoming), req}}
+    bag_have = collections.Counter()                        # (request, bag) → stock + incoming of its requested colours
+    for x in lines:
+        bag_have[(x["root"], x["bag"])] += x["cur"] + x["inc"]
     q_ask = {}                                              # (shop, product id) → {bag, sug (largest), req (total)}
     for x in lines:
         a = acc[x["shop"]]
@@ -282,15 +289,25 @@ def requests(start, end, today, shop_name, typ, offers=None, code_shop=None, hav
         a["fill"] += sent
         short = max(req - x["sent"] - x["pend"], 0.0)                 # asked, closed without being sent
         a["short"] += short
-        low = x["cur"] <= 0 or x["alert"] in ("stockout", "below_min") or (x["mn"] > 0 and x["cur"] <= x["mn"])
         off = offer(x["bag"], x["d"])
+        if target:
+            # Realistic: the bag's stock when asked (requested colours, on hand + incoming) at or under 1 week of
+            # sales, the colour out, or a prepaid customer still waiting for the bag (out of stock).
+            bh = bag_have[(x["root"], x["bag"])]
+            low = (x["cur"] <= 0 or bh <= tmax(x["shop"], x["bag"], "minDays")
+                   or bool(prepaid_at and prepaid_at(x["shop"], x["bag"], x["d"]) > 0))
+            half_max = tmax(x["shop"], x["bag"]) / 2
+        else:
+            bh = x["cur"] + x["inc"]
+            low = x["cur"] <= 0 or x["alert"] in ("stockout", "below_min") or (x["mn"] > 0 and x["cur"] <= x["mn"])
+            half_max = x["mx"] / 2
         if low:
             a["low"] += req
         if off:
             a["offer"] += req
         # check 1 — right bag: low when asked, or on an offer while under half of Max (offers run all month on most
         # bags, so an offer alone doesn't make a full shelf need more)
-        right = low or (off and x["mx"] > 0 and x["cur"] + x["inc"] < x["mx"] / 2)
+        right = low or (off and half_max > 0 and bh < half_max)
         if right:
             a["need_ok"] += req
         if x["sug"] > 0:                                              # check 2 — right qty, judged per product below

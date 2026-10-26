@@ -63,7 +63,7 @@ SELECT pt."name" AS product,
           JOIN product_combo_product_product_rel r ON r.product_combo_id = pcx.id
         WHERE pcx.product_template_id = pt.id) AS colour_options
 FROM pos_order p
-JOIN pos_order_line pl ON pl.order_id = p.id
+JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -78,7 +78,7 @@ WHERE p.date_order::date BETWEEN :start_date AND :end_date
   -- (e.g. "Big Man Bag Grey", a KES 1,810 single bag), which must not be counted.
   AND pt."name" LIKE '%+%'
   AND pt."name" NOT ILIKE '%delivery%'
-  AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" NOT ILIKE '%customization%'
 GROUP BY pt."name", pt.id
 ORDER BY qty DESC, value DESC
 """
@@ -90,7 +90,7 @@ SELECT pt."name" AS product, COALESCE(pc."name", '(no till)') AS till, __WK__ AS
        SUM(pl.qty)::int AS qty, ROUND(SUM(pl.price_subtotal_incl))::numeric AS value,
        (pt.id IN (SELECT DISTINCT combo_product_id FROM pos_combo_request WHERE combo_product_id IS NOT NULL)) AS is_cbr
 FROM pos_order p
-JOIN pos_order_line pl ON pl.order_id = p.id
+JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -101,7 +101,7 @@ WHERE p.date_order::date BETWEEN :start_date AND :end_date
   AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
   AND pt."name" LIKE '%+%'
   AND pt."name" NOT ILIKE '%delivery%'
-  AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" NOT ILIKE '%customization%'
 GROUP BY pt."name", COALESCE(pc."name", '(no till)'), pt.id, wk
 """   # __WK__ is swapped for _WK_EXPR (defined further down) when the query runs
 # Combo requests (CBR) raised per till in the month — "did this shop ask for any self-made combos?".
@@ -120,7 +120,7 @@ _TILL_LABEL = {"ktda shop": "KTDA", "ktda": "KTDA", "website sales": "Website", 
 COMBO_DATES_SQL = """
 SELECT pt."name" AS product, p.date_order::date AS d, SUM(pl.qty)::int AS qty
 FROM pos_order p
-JOIN pos_order_line pl ON pl.order_id = p.id
+JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -131,7 +131,7 @@ WHERE p.date_order::date BETWEEN :start_date AND :end_date
   AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
   AND pt."name" LIKE '%+%'
   AND pt."name" NOT ILIKE '%delivery%'
-  AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" NOT ILIKE '%customization%'
 GROUP BY pt."name", p.date_order::date
 HAVING SUM(pl.qty) <> 0
 """
@@ -144,7 +144,7 @@ COMBO_COMPONENTS_SQL = """
 SELECT pt.id AS tmpl_id, pl.qty::int AS qty,
        COALESCE(pl.combo_product_attribute_values, '') AS attrs
 FROM pos_order p
-JOIN pos_order_line pl ON pl.order_id = p.id
+JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -302,11 +302,11 @@ _COMBO_WHERE = """
   AND lower(COALESCE(pc."name", '')) NOT IN ('sinza', 'dar-es-alam', 'uganda')
   AND pt."name" LIKE '%+%'
   AND pt."name" NOT ILIKE '%delivery%'
-  AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" NOT ILIKE '%customization%'
 """
 COMBO_WEEKLY_SQL = f"""
 SELECT pt.id AS tmpl_id, pt."name" AS product, {_WK_EXPR} AS wk, SUM(pl.qty)::int AS units
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -319,7 +319,7 @@ GROUP BY pt.id, pt."name", wk
 # baseline and the September-so-far tally.
 MONTH_WEEKLY_SQL = f"""
 SELECT {_WK_EXPR} AS wk, SUM(pl.qty)::int AS units
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -412,7 +412,7 @@ MANUAL_POWER_DEALS = {
 DEAL_SALES_SQL = """
 SELECT UPPER(pt."name") AS name, SUM(pl.qty)::int AS units,
        ROUND(SUM(pl.price_subtotal_incl))::int AS val
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -427,7 +427,7 @@ GROUP BY UPPER(pt."name")
 # Same, split by Sun-Sat week — for the per-deal weekly line (like the combo cards).
 DEAL_WEEKLY_SQL = f"""
 SELECT UPPER(pt."name") AS name, {_WK_EXPR} AS wk, SUM(pl.qty)::int AS units
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -443,7 +443,7 @@ GROUP BY UPPER(pt."name"), wk
 # can carry its per-shop sold figure, not just the Kenya-wide total.
 DEAL_SALES_BY_SHOP_SQL = """
 SELECT UPPER(pc."name") AS shop, UPPER(pt."name") AS name, SUM(pl.qty)::int AS units
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -461,7 +461,7 @@ GROUP BY UPPER(pc."name"), UPPER(pt."name")
 DEAL_SALES_SHOP_WEEK_SQL = f"""
 SELECT UPPER(pc."name") AS shop, UPPER(pt."name") AS name, {_WK_EXPR} AS wk,
        SUM(pl.qty)::int AS units, ROUND(SUM(pl.price_subtotal_incl))::int AS val
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id
 LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -474,12 +474,41 @@ GROUP BY 1, 2, 3
 """
 
 
-def dow_tier_weeks(tier, max_wk):
-    """Sun-Sat week numbers a Deal-of-the-Week tier runs in: Tier 1 = Wk 1–2, Tier 2 = Wk 3
-    onward (to the month's last week). Unknown tier → every week."""
+def _as_day(v):
+    """'2026-10-25' / date / None → date or None."""
+    if not v:
+        return None
+    if isinstance(v, datetime.date):
+        return v
+    try:
+        return datetime.date.fromisoformat(str(v).strip()[:10])
+    except ValueError:
+        return None
+
+
+def dow_tier_weeks(tier, max_wk, start=None, end=None, month_start=None):
+    """Sun-Sat week numbers a Deal-of-the-Week runs in. With a Start / End date (deals_kenya.csv
+    cols K / L, e.g. the regional deals from 25 Oct 2026) and the month's first day: every week
+    of the month that overlaps [Start, End] (no End = to the month end). Otherwise by tier:
+    Tier 1 = Wk 1–2, Tier 2 = Wk 3 onward (to the month's last week). Unknown tier → every week."""
     m = re.search(r"\d", str(tier or ""))
     t = m.group() if m else ""
     last = max(max_wk, 5)
+    start, end, ms = _as_day(start), _as_day(end), _as_day(month_start)
+    if ms and (start or end):
+        anchor = ms - datetime.timedelta(days=(ms.weekday() + 1) % 7)       # Sunday on/before the 1st
+        nxt = (ms.replace(day=28) + datetime.timedelta(days=4)).replace(day=1)
+        m_end = nxt - datetime.timedelta(days=1)
+        last = (m_end - anchor).days // 7 + 1
+        lo, hi = max(start or ms, ms), min(end or m_end, m_end)
+        hits = [k for k in range(1, last + 1)
+                if anchor + datetime.timedelta(days=7 * (k - 1)) <= hi
+                and anchor + datetime.timedelta(days=7 * (k - 1) + 6) >= lo]
+        if start:
+            return hits
+        # End only (e.g. Tier 2 stopped on 24 Oct): the tier's own weeks, cut at the End date
+        tier_wks = [1, 2] if t == "1" else list(range(3, last + 1)) if t == "2" else list(range(1, last + 1))
+        return [k for k in tier_wks if k in hits]
     if t == "1":
         return [1, 2]
     if t == "2":
@@ -507,6 +536,7 @@ def _enrich_deals(deals, m_start, m_end, stock_map, combo_bags=None):
             name_wk.setdefault(nm, {})[w] = u
             max_wk = max(max_wk, w)
     deals["curWeek"] = max_wk
+    deals["monthStart"] = m_start.isoformat()
     stock_items = list(stock_map.items())
 
     # Per-shop sold (this month) and per-shop live stock, so a Deal of the Week card
@@ -605,7 +635,7 @@ def _enrich_deals(deals, m_start, m_end, stock_map, combo_bags=None):
             # A Deal of the Week runs only at its locations, in its tier's weeks — count
             # exactly those sales (the Kenya-wide month is kept for reference).
             it["kenyaSold"], it["kenyaRevenue"] = it["sold"], it["revenue"]
-            win = set(dow_tier_weeks(it.get("tier"), max_wk))
+            win = set(dow_tier_weeks(it.get("tier"), max_wk, it.get("start"), it.get("end"), m_start))
             it["windowWeeks"] = sorted(w for w in win if w <= max(max_wk, 1))
             locs = it.get("locations") or []
             u = v = 0
@@ -697,11 +727,29 @@ def _enrich_deals(deals, m_start, m_end, stock_map, combo_bags=None):
                 "inProgress": _maxwk in weeks_in_window,   # window includes the live (partial) week
                 "runRate": round(units / elapsed, 1) if elapsed else 0.0}
 
-    _t1 = _tier_agg("1", [1, 2]); _t1["label"] = "Tier 1"; _t1["window"] = "Wk 1–2"
-    _t2weeks = list(range(3, max(_maxwk, 4) + 1))              # Wk 3 onward (the remaining weeks)
-    _t2 = _tier_agg("2", _t2weeks); _t2["label"] = "Tier 2"
-    _t2["window"] = "Wk 3–%d" % max(_maxwk, 4) if max(_maxwk, 4) > 3 else "Wk 3+"
-    deals["tierCompare"] = {"maxWk": _maxwk, "tiers": [_t1, _t2]}
+    def _tier_window(tier_key, default):
+        """A tier's weeks: from its deals' Start / End dates when they have them, else the default."""
+        it = next((d for d in deals.get("dealOfWeek", []) if _tdigit(d.get("tier")) == tier_key), None)
+        if it and (it.get("start") or it.get("end")):
+            return dow_tier_weeks(it.get("tier"), _maxwk, it.get("start"), it.get("end"), m_start)
+        return default
+
+    def _wlabel(ws):
+        return ("Wk %d" % ws[0]) if len(ws) == 1 else ("Wk %d–%d" % (ws[0], ws[-1])) if ws else "—"
+
+    _w1 = _tier_window("1", [1, 2])
+    _t1 = _tier_agg("1", _w1); _t1["label"] = "Tier 1"; _t1["window"] = _wlabel(_w1)
+    _w2 = _tier_window("2", list(range(3, max(_maxwk, 4) + 1)))   # Wk 3 onward, or to its End date
+    _t2 = _tier_agg("2", _w2); _t2["label"] = "Tier 2"; _t2["window"] = _wlabel(_w2)
+    _tiers = [_t1, _t2]
+    if any(_tdigit(d.get("tier")) == "3" for d in deals.get("dealOfWeek", [])):
+        # Tier 3 = the regional Deals of the Week (one list per region, from 25 Oct 2026)
+        _w3 = _tier_window("3", [])
+        _t3 = _tier_agg("3", _w3); _t3["label"] = "Regional"
+        _st = next((d.get("start") for d in deals["dealOfWeek"] if _tdigit(d.get("tier")) == "3"), None)
+        _t3["window"] = ("From " + _as_day(_st).strftime("%d %b").lstrip("0")) if _st else _wlabel(_w3)
+        _tiers.append(_t3)
+    deals["tierCompare"] = {"maxWk": _maxwk, "tiers": _tiers}
 
     # Cross-sell: which Power Deals are ALSO run as a Deal of the Week (same bag).
     # Matched by product name, so each card can show the same bag's rival pricing —
@@ -730,10 +778,23 @@ def _local_deal_rows(month_name):
     try:
         import csv
         with open(DEALS_CSV, encoding="utf-8", newline="") as f:
-            rows = [r[:8] for r in csv.reader(f)]
+            rows = [(r + [""] * 12)[:12] for r in csv.reader(f)]
     except OSError:
         return None
-    body = [r for r in rows[1:] if len(r) >= 8 and r[1].strip().lower() == month_name.lower()]
+    # A row with a Start date (col K) runs in every month its [Start, End] overlaps (no End = until
+    # replaced, e.g. the regional Deals of the Week from 25 Oct 2026), whatever its Month says.
+    import calendar as _cal
+    _mi = {n.lower(): i for i, n in enumerate(_cal.month_name) if n}.get(month_name.lower())
+
+    def _in_month(r):
+        st, en = _as_day(r[10]), _as_day(r[11])
+        if not st or not _mi:
+            return r[1].strip().lower() == month_name.lower()
+        y = st.year if _mi >= st.month else st.year + 1
+        ms = datetime.date(y, _mi, 1)
+        me = datetime.date(y, _mi, _cal.monthrange(y, _mi)[1])
+        return st <= me and (en is None or en >= ms)
+    body = [r for r in rows[1:] if r[2].strip() and _in_month(r)]
     if not body:
         return None
     print(f"  Deals for {month_name}: deals_kenya.csv (from the posters) — {len(body)} rows")
@@ -778,17 +839,21 @@ def _read_deals(month_name):
                                      str(r[3]).strip(), str(r[4]).strip())
         loc = LOC_ALIASES.get(loc.lower(), loc)
         prod = PRODUCT_RENAME.get(re.sub(r"\s+", " ", prod.lower()), prod)
-        if not prod or mon.lower() != month_name.lower():
+        if not prod:
             continue
         item = {"tier": tier, "product": prod, "location": loc,
                 "orig": _pn(r[5]), "now": _pn(r[6]), "disc": _pn(r[7])}
+        st, en = (_as_day(r[10]) if len(r) > 10 else None), (_as_day(r[11]) if len(r) > 11 else None)
         if typ.lower().startswith("power"):
             power.append(item)
         elif typ.lower().startswith("deal"):
             dow_rows += 1
             k = (prod.upper(), tier.upper())
             e = dow.setdefault(k, {"product": prod, "tier": tier, "orig": item["orig"],
-                                   "now": item["now"], "disc": item["disc"], "locations": []})
+                                   "now": item["now"], "disc": item["disc"], "locations": [],
+                                   "start": st.isoformat() if st else None,
+                                   "end": en.isoformat() if en else None,
+                                   "region": str(r[9]).strip() if st and len(r) > 9 else None})
             if loc and loc not in e["locations"]:
                 e["locations"].append(loc)
 
@@ -959,7 +1024,7 @@ def _bag_sales_sql(market_sql):
     return f"""
 SELECT UPPER(pt."name") AS name, SUM(pl.qty)::int AS units,
        ROUND(SUM(pl.price_subtotal_incl))::int AS revenue
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
@@ -967,7 +1032,7 @@ LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0 AND NOT COALESCE(pl.sub_product_line, false)
   {market_sql}
   AND pt."name" NOT LIKE '%+%'
-  AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customization%'
   AND pt."name" NOT ILIKE '%strap%' AND pt."name" NOT ILIKE 'gift bag%'
 GROUP BY UPPER(pt."name")
 """
@@ -985,7 +1050,7 @@ def _bag_sales_daily_sql(market_sql):
     bag ACTUALLY sold instead of calendar days elapsed."""
     return f"""
 SELECT p.date_order::date AS d, UPPER(pt."name") AS name, SUM(pl.qty)::int AS units
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
@@ -993,7 +1058,7 @@ LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0 AND NOT COALESCE(pl.sub_product_line, false)
   {market_sql}
   AND pt."name" NOT LIKE '%+%'
-  AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customization%'
   AND pt."name" NOT ILIKE '%strap%' AND pt."name" NOT ILIKE 'gift bag%'
 GROUP BY 1, 2
 """
@@ -1127,19 +1192,19 @@ def _region_on_offer_bags(payload, region_key):
 # Jumbo+Jumbo problem) instead of using the combo button.
 COMBO_BY_SHOP_SQL = f"""
 SELECT UPPER(COALESCE(pc."name",'?')) AS shop, pt."name" AS combo, {_WK_EXPR} AS wk, SUM(pl.qty)::int AS qty
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
 WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
   AND lower(COALESCE(pc."name",'')) NOT IN ('sinza','dar-es-alam','uganda')
-  AND pt."name" LIKE '%+%' AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" LIKE '%+%' AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customization%'
 GROUP BY shop, pt."name", wk
 """
 SINGLES_BY_SHOP_SQL = """
 SELECT UPPER(COALESCE(pc."name",'?')) AS shop, UPPER(pt."name") AS name, SUM(pl.qty)::int AS qty
-FROM pos_order p JOIN pos_order_line pl ON pl.order_id=p.id
+FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
@@ -1157,7 +1222,7 @@ GROUP BY shop, UPPER(pt."name")
 JJ_WK1_PAIRS_SQL = f"""
 WITH jj AS (
   SELECT p.id AS oid, SUM(pl.qty)::int AS jumbos
-  FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id
+  FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
   LEFT JOIN pos_session ps ON p.session_id = ps.id
   LEFT JOIN pos_config pc ON ps.config_id = pc.id
   LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -2432,7 +2497,8 @@ def write_bags_offer_source(payload):
                # Where / when each Deal of the Week runs — a single sale is a DoW sale
                # only at these shops in these Sun-Sat weeks.
                "dowRuns": [{"product": d.get("product", ""), "tier": d.get("tier"),
-                            "weeks": dow_tier_weeks(d.get("tier"), deals.get("curWeek", 1) or 1),
+                            "weeks": dow_tier_weeks(d.get("tier"), deals.get("curWeek", 1) or 1,
+                                                    d.get("start"), d.get("end"), deals.get("monthStart")),
                             "locations": d.get("locations") or []}
                            for d in deals.get("dealOfWeek", [])],
                "bagsNotOnOffer": payload.get("bagsNotOnOffer", {}),

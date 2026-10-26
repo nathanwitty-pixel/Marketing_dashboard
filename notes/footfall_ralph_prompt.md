@@ -1,0 +1,38 @@
+# Ralph loop brief — Footfall and Marketing page
+
+Build a Footfall and Marketing page in the Marketing dashboard at C:\Users\jonat\Desktop\Marketing_dashboard that shows, shop by shop and week by week, whether posting and ads bring people through the door and turn them into buyers. Work only from the files and Odoo; assume no memory of earlier iterations: first read docs/footfall-marketing.md and notes/footfall_progress.md (create both if missing) to see what is already done, then continue with the first unfinished sub-goal.
+
+## PROJECT RULES (must hold every iteration)
+
+streamlit_app.py is the real dashboard; pages are listed in dashboard_pages.json; docs/*.md is the spec, so write or correct the doc BEFORE the code. Never run git commit, git push or publish.bat. Never join values with ' · ' on a page (use table columns or words; say 'Week on week'). Any POS line of 10+ units must be flagged with a warning sign, a reason and a 'without bulk order' figure. Weeks are Sunday to Saturday. After any code change run: graphify update .
+
+## DATA FACTS (verified 21 Oct 2026)
+
+- Footfall: table denri_footfall_count (date, config_id = pos_config.id = the shop, manual_count = visitors counted at close of day, counted_by, note). Counted daily since Jan 2026, 16-18 shops, about 15,000 visitors a month. Today's count is entered at close of day, so leave today out.
+- Walk-in buyers: pos_order rows with customer_type = 'walkin' (other values: online, activation, employee), state in done/invoiced/paid, amount_total > 0, dated in Kenya time (date_order + interval '3 hours'), shop = pos_session.config_id. Money: Sinza and Dar-es-Alam pos_config divide by 25, Uganda divide by 29 (KES-normalised, same as sql/bag_revenue.sql). Conversion = walk-in orders / visitors, on counted days only.
+- WhatsApp: denri_monitor_interaction (date, shop_id -> denri_monitor_shop.name, response_time_first = minutes to first reply, recorded from Jul 2026, is_purchased, source_id -> denri_monitor_source.is_paid = paid ad lead). Compare shops on paid-ad leads only: walk-in and existing-customer chats convert far higher and distort shop rankings. Shop names differ from pos_config names (e.g. KTDA Shop vs Ktda, DAR-ES-ALAM vs Sinza): build one explicit mapping and test it.
+- Posts: lib/marketing_posts.posts(start, end) -> {(bag type, colour): {market: posts}}, markets KENYA, SINZA, UGANDA. Posts are per market, not per shop. Posts lead sales by about one week (Kenya bags posted more sold +13% the following week).
+- Ads: lib/ads.py over data/ads_weekly.csv (per campaign per week per market, KES with USD x USD_KES). Ads are per market, not per shop; branch-level ad costs exist only as text in data/ads_notes.csv.
+- Known traps the page MUST handle and say on screen: (a) walk-in conversion of 85-93% at Eldoret, Nakuru and Meru means visitors are under-counted, so flag any shop-week where conversion > 80% or orders > visitors as 'count looks low'; (b) Hilton counts about 17,000 visitors in 3.5 months, likely mall or event traffic, so flag it and show its conversion apart; (c) Kakamega, Uganda and Dar-es-Alam have bulk or large orders inflating revenue per visitor, so apply the 10+ units bulk flag; (d) days with walk-in orders but no count are listed as 'not counted', never treated as zero visitors.
+
+## SUB-GOALS (do in order; tick each in notes/footfall_progress.md with the command output that proved it)
+
+1. Spec: write docs/footfall-marketing.md (sources, definitions, traps, what each chart shows, the actions rules) and add a row for it in docs/README.md. VERIFY: the file exists and names every table and field listed above.
+2. SQL + library: sql/footfall_walkins.sql (per shop per day: visitors, walk-in orders, walk-in KES, bulk-order KES and units) and lib/footfall.py with daily(start, end) and weekly(start, end) returning per-shop rows, plus the shop-name mapping to WhatsApp shops and to markets. VERIFY: python -c that prints weekly() for Jul 1 - Oct 17 2026 runs without error, covers at least 16 shops, and Eldoret's Jul-Oct conversion prints between 85 and 95 percent.
+3. Generator: generators/footfall_marketing.py writes data/footfall_marketing.json AND injects a FOOT_DATA_START/FOOT_DATA_END block into html/footfall_marketing.html, with per shop per week: visitors, walk-in orders, conversion, revenue per visitor (KES, bulk excluded and shown separately), WhatsApp paid-ad chats, their conversion and median first-reply minutes, the shop's market posts last week and this week, the market's ad spend that week, and data-quality flags. It must also compute, per market, the correlation over shop-weeks between (a) last week's posts and this week's visitors and (b) ad spend and visitors, plus the same for walk-in orders. VERIFY: PYTHONIOENCODING=utf-8 python generators/footfall_marketing.py exits 0 against Odoo and the JSON has at least 16 shops and at least 10 weeks.
+4. Page: html/footfall_marketing.html in the style of the other pages (dark palette, page_sidebar.js, Chart.js 4.4.0, chart_switcher.js) with: KPI tiles (visitors, walk-in conversion, revenue per visitor, WhatsApp ad-lead conversion, each week on week); a week-on-week chart per shop (selector) of visitors and walk-in orders, with posts and ad spend for that shop's market shown as a separate chart, never a second y-axis; a shop ranking table; a 'Posts and ads vs visitors' section stating the correlations in plain words; a data-quality list (low counts, Hilton, not-counted days, bulk orders). Add the page to dashboard_pages.json with the generator in its scripts, and a section for it in PAGES in generators/ads_impact.py (kind 'shops'). VERIFY: node --check on every inline script passes (extract them with python), json.load of dashboard_pages.json passes, and the page HTML has exactly one FOOT_DATA_START and one FOOT_DATA_END.
+5. Actions: the generator writes 'What we can do' items by rule, e.g. shop with many visitors but low conversion -> staff or stock problem; shop with fast WhatsApp replies but low walk-ins -> online push not reaching the shop; market where more posts or ad spend did not lift visitors the next week -> rethink spend; shop with low counts -> fix counting before judging it. Each action names the shop, the numbers and the week. VERIFY: the JSON has at least 5 actions and each contains a shop or market name and a number.
+6. Visual check: inject the data and screenshot the page with: pixelshot <absolute path to html/footfall_marketing.html> --output <scratch dir> --viewport-width 1400, then read every tile. VERIFY: no clipped labels, no empty charts, no ' · ' on the page, tables fit without sideways scroll at 1400px, and the sidebar layout shows the content beside 'In this report'. Fix and re-screenshot until clean.
+7. Wrap-up: run graphify update . ; make sure python -m py_compile passes for every new or changed .py; update notes/footfall_progress.md with a final summary of findings (top 3 shops by conversion with honest counts, the posts and ads correlations, data-quality issues).
+
+## SELF-CORRECTION
+
+After each sub-goal run its VERIFY step. If it fails, debug and fix it in the same iteration; do not move to the next sub-goal until it passes. Record the passing output in notes/footfall_progress.md.
+
+## ESCAPE HATCH
+
+If the same error blocks progress for 3 consecutive iterations (e.g. Odoo unreachable, a table missing, a shop mapping that cannot be resolved), write the blocker in notes/footfall_progress.md and output <promise>STUCK ON [the problem]</promise>.
+
+## DONE
+
+Only when sub-goals 1-7 are all ticked in notes/footfall_progress.md with passing verification output, output <promise>FOOTFALL PAGE COMPLETE</promise>.

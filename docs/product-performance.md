@@ -10,7 +10,7 @@
 **The filter bar follows the reader** (Market, Period, Share by; 19 Oct 2026): it pins at the top while scrolling, so
 the period can be changed beside any chart (`assets/sticky_controls.js`, docs/sticky-controls.md).
 
-**Sidebar** ([page sidebar](README.md#page-sidebar)): Bag of the Week, Top-selling bags, Categories, Colours.
+**Sidebar** ([page sidebar](README.md#page-sidebar)): Bag of the Week, Top-selling bags, Shop breakdown, Categories, Colours.
 
 **Controls (top of the page, drive every section below):**
 
@@ -84,6 +84,48 @@ sell more and still go red if the rest grew faster. Every mark has a hover with 
 % marks (units / revenue) hover with before → after and the % change. The table hint carries the same legend.
 Hover / tap a bag: units, revenue, both shares, previous period, Kenya / Sinza / Uganda split, its top colours,
 its stock now, its offer tags and posts — and the same *Why it moved* lines (for the chosen period) as the Bag of the Week.
+
+### 2b. Shop breakdown (22 Oct 2026, user's call)
+
+Units (and revenue) sold **per shop**, after Top-selling bags. Built from the same sales lines as the rest of the
+page (no extra Odoo query), so the shop units add up to the period's total in Bag of the Week.
+
+- **Follows the filter bar:** **Market** (All shows every shop; Kenya / Sinza / Uganda only that market's tills),
+  **Period** (Last week, This week, This month, Last month, each against the period before it of the same
+  length) and **Share by** (Units ranks and sizes by units, Revenue by KES).
+- **Shop = the till** (`pos_config` name), shown tidy: `ktda shop` → Ktda, `dar-es-alam` → Sinza, `uganda` →
+  Uganda, `website` / `website sales` → Website, `staff pos` → Staff POS, the rest in title case. A shop's market is its till's market (Sinza = `sinza` +
+  `dar-es-alam`).
+- **Chart:** one horizontal bar per shop, ranked, coloured by market (Kenya blue, Sinza orange, Uganda aqua —
+  palette slots 1–3). The **number sits in the bar** (just past it, and past the tick, when the bar is short);
+  the period before is a thin tick on the same scale (never a second axis). At the row end: the share, ⚠ when a
+  bulk order is in it, and a **change badge** against the period before on the chosen basis — green ▲ +% up,
+  red ▼ % down, grey 0.0% (under 0.5%), blue "new" when nothing sold before (22 Oct 2026, user's call).
+- **Corporate row (26 Oct 2026, user's call):** the Corporate app's bags paid in the period sit as their own row,
+  **Corporate** (Kenya, so on All and Kenya), with units, revenue (KES received), share of the total, the period
+  before and its change — the Sales card's rule (`sql/corporate_bag_lines.sql`, money received on the payment date).
+  Click it for the bags on the invoices. **It is a sales channel like a till, not a bulk order** (user, 26 Oct
+  2026): no ⚠, and it stays in *Without bulk orders*. Bulk orders are only 10+ unit lines rung at a shop till —
+  including Corporate-team clients who pay at a shop (those stay the shop's sale, flagged ⚠).
+- **Total row (25 Oct 2026, user's call):** under the last bar, **Total**: all the shops' units (or revenue on
+  Revenue), the same figure for the period before, 100% share and the change badge, with no bar. The table
+  ends with the same **Total** row (units, 100%, change, revenue, and the bulk units in all shops). Follows
+  every filter, the bulk switch included.
+- **Table** (collapsed by default under "▸ Show the shop table (N shops, with change and bulk orders)"; open / closed is
+  remembered per browser, 22 Oct 2026): Shop, Market, Units, Share, Change vs the period before (units and %, green up, red down),
+  Revenue, and a ⚠ bulk flag: the shop's units on POS lines of **10+ units** in the period and its change
+  **without** them (the [bulk orders](#bulk-orders) rule; they stay in the totals).
+- **Bulk orders switch (22 Oct 2026, user's call):** *With bulk orders* (default) or *Without bulk orders*, in the
+  section's header, remembered with the other filters. *Without* takes every POS line of **10+ units** out of
+  both periods — units, revenue, shares (of the total without bulk), the bars, the change badges, the table and
+  the drill-down — so a corporate / bulk sale can't make a shop look like it jumped or collapsed. The table's
+  bulk column then says how many units were left out.
+- **Drill-down:** click a shop (bar or row) to open its **top 10 bags** in the period: units, revenue and
+  the change in units vs the period before. Click again (or another shop) to switch.
+- Data: `PP.shops[period][market]` = `{total, rev, shops: [{shop, mkt, units, rev, pUnits, pRev, chg, chgPct,
+  share, revShare, bulkUnits, pBulkUnits, bulkRev, pBulkRev, chgNoBulk, bags: [[bag, units, rev, pUnits, bulkUnits,
+  bulkRev, pBulkUnits]]}]}` (bags: top 15 by units), market keys
+  ALL / KE / TZ / UG.
 
 ### 3. Categories — % share
 

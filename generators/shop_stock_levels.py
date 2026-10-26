@@ -43,7 +43,7 @@ _CODES = ", ".join("'%s'" % c for c in CODE_SHOP)
 SALES_SQL = """
 SELECT upper(COALESCE(pc."name", '')) AS till, pt."name" AS product, SUM(pl.qty) AS qty
 FROM pos_order o
-JOIN pos_order_line pl ON pl.order_id = o.id
+JOIN POS_LINES(o) pl ON pl.order_id = o.id
 LEFT JOIN pos_session ps ON ps.id = o.session_id
 LEFT JOIN pos_config pc ON pc.id = ps.config_id
 JOIN product_product pp ON pp.id = pl.product_id
@@ -53,7 +53,7 @@ WHERE (o.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETW
   AND o.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
   AND COALESCE(pl.is_program_reward, false) = false
   AND NOT (COALESCE(pl.is_combo_line, false) OR pt."name" LIKE '%+%')
-  AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customi%' AND pt."name" NOT ILIKE '%strap%'
+  AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customization%' AND pt."name" NOT ILIKE '%strap%'
   AND pt."name" NOT ILIKE '%KES discount%' AND pt."name" NOT ILIKE '%sample%' AND pt."name" NOT ILIKE 'gift bag%'
   AND COALESCE(pcat."name", '') NOT ILIKE '%Pos%'
   AND lower(pt."name") <> ALL(:excluded)
@@ -80,6 +80,128 @@ TOTAL_SQL = """
 SELECT SUM(target_qty)::float AS qty FROM sales_pos_target
 WHERE period = 'month' AND start_date = :m AND target_scope IN ('pos', 'corporate')
 """
+
+
+# ── Min / Max from what is moving (docs/shop-stock-levels.md › Min / Max, 26 Oct 2026) ──
+MIN_WEEKS, MAX_WEEKS = 1.0, 2.5     # min = 1 week of sales, max = 2.5 weeks (user's call, 26 Oct 2026)
+RECENT_WEEKS = 13                   # the last 3 months — the recent rate
+SEASON_CLAMP, GROWTH_CLAMP = (0.7, 1.6), (0.8, 1.5)
+
+# Shop units a day, all bags, as far back as Odoo goes — the season and growth factors (raw lines are enough for
+# a shop total; read once a day).
+SHOP_DAY_SQL = """
+SELECT upper(COALESCE(pc."name", '')) AS till, (o.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date AS d,
+       SUM(pl.qty) AS qty
+FROM pos_order o JOIN pos_order_line pl ON pl.order_id = o.id
+LEFT JOIN pos_session ps ON ps.id = o.session_id LEFT JOIN pos_config pc ON pc.id = ps.config_id
+JOIN product_product pp ON pp.id = pl.product_id JOIN product_template pt ON pt.id = pp.product_tmpl_id
+WHERE o.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0 AND o.date_order < :e
+  AND pt."name" NOT LIKE '%+%' AND pt."name" NOT ILIKE '%delivery%' AND pt."name" NOT ILIKE '%customization%'
+  AND pt."name" NOT ILIKE '%strap%' AND pt."name" NOT ILIKE '%KES discount%' AND pt."name" NOT ILIKE 'gift bag%'
+GROUP BY 1, 2
+"""
+
+# Shop × product × day over the recent weeks (combo contents per bag, refunds fixed) — the recent rate.
+RECENT_SQL = SALES_SQL.replace('SELECT upper(COALESCE(pc."name", \'\')) AS till, pt."name" AS product, SUM(pl.qty) AS qty',
+                               'SELECT upper(COALESCE(pc."name", \'\')) AS till, pt."name" AS product, '
+                               '(o.date_order AT TIME ZONE \'UTC\' AT TIME ZONE \'Africa/Nairobi\')::date AS d, SUM(pl.qty) AS qty'
+                               ).replace("GROUP BY 1, 2", "GROUP BY 1, 2, 3")
+
+# Customer prepayments (docs/shop-stock-levels.md › Prepayments): paid for a bag the shop didn't have.
+PREPAID_SQL = """
+SELECT s."name" AS shop, pt."name" AS product, l.qty, p.payment_date AS paid, p.state,
+       COALESCE(p.received_by_shop_date, p.completed_date, p.collected_date) AS closed,
+       COALESCE(p.is_cancelled, false) AS cancelled
+FROM denri_dispatch_prepayment p
+JOIN denri_dispatch_prepayment_line l ON l.prepayment_id = p.id
+JOIN denri_dispatch_shop s ON s.id = COALESCE(l.shop_id, p.shop_id)
+JOIN product_product pp ON pp.id = l.product_id JOIN product_template pt ON pt.id = pp.product_tmpl_id
+WHERE pt."name" NOT ILIKE '%strap%'
+"""
+
+
+def _clamp(v, lo_hi):
+    return max(lo_hi[0], min(lo_hi[1], v))
+
+
+def realistic_rates(as_of, typ):
+    """({SHOP: {BAG: units a week}}, {SHOP: {"recent", "season", "growth"}}) — recent 13 weeks × season × growth as of
+    `as_of` (sales to the day before)."""
+    e = as_of - datetime.timedelta(days=1)
+    s = e - datetime.timedelta(days=RECENT_WEEKS * 7 - 1)
+    df = db.run_query_snap(RECENT_SQL, {"s": s.isoformat(), "e": e.isoformat(), "excluded": queries.excluded_products()})
+    units = collections.defaultdict(collections.Counter)
+    first = {}
+    for r in (df.itertuples() if df is not None else []):
+        sh, b = _shop(r.till), typ(r.product)
+        if not sh or not b:
+            continue
+        d = r.d if isinstance(r.d, datetime.date) else datetime.date.fromisoformat(str(r.d)[:10])
+        units[sh][b] += _num(r.qty)
+        first[b] = min(first.get(b, d), d)
+    # Shop units a day, all history → season and growth per shop (and all shops together as the fallback).
+    hd = db.run_query_cached(SHOP_DAY_SQL, {"e": as_of.isoformat()}, ttl_min=24 * 60)
+    day = collections.defaultdict(collections.Counter)
+    for r in (hd.itertuples() if hd is not None else []):
+        sh = _shop(r.till)
+        d = r.d if isinstance(r.d, datetime.date) else datetime.date.fromisoformat(str(r.d)[:10])
+        if sh:
+            day[sh][d] += _num(r.qty)
+            day["*"][d] += _num(r.qty)
+    start_of = {sh: min(ds) for sh, ds in day.items() if ds}
+
+    def tot(sh, a, b):
+        return sum(q for d, q in day[sh].items() if a <= d <= b)
+
+    def season(sh):
+        ratios = []
+        for y in (1, 2):
+            anchor = as_of - datetime.timedelta(days=364 * y)          # same weekday, y years back
+            before0 = anchor - datetime.timedelta(days=91)
+            if sh not in start_of or start_of[sh] > before0:
+                continue
+            prev = tot(sh, before0, anchor - datetime.timedelta(days=1)) / 13
+            nxt = tot(sh, anchor, anchor + datetime.timedelta(days=27)) / 4
+            if prev > 0 and nxt > 0:
+                ratios.append(nxt / prev)
+        return _clamp(sum(ratios) / len(ratios), SEASON_CLAMP) if ratios else None
+
+    def growth(sh):
+        if sh not in start_of or start_of[sh] > as_of - datetime.timedelta(days=730):
+            return 1.0
+        prev = tot(sh, as_of - datetime.timedelta(days=730), as_of - datetime.timedelta(days=366))
+        last = tot(sh, as_of - datetime.timedelta(days=365), e)
+        return _clamp(last / prev, GROWTH_CLAMP) if prev > 0 else 1.0
+
+    all_season = season("*") or 1.0
+    rates, factors = {}, {}
+    for sh, bags in units.items():
+        se, gr = season(sh) or all_season, growth(sh)
+        factors[sh] = {"season": round(se, 2), "growth": round(gr, 2)}
+        rates[sh] = {}
+        for b, q in bags.items():
+            if q <= 0:
+                continue
+            wks = max(1.0, min(RECENT_WEEKS, ((e - max(first.get(b, s), s)).days + 1) / 7))
+            rates[sh][b] = q / wks * se * gr
+    return rates, factors
+
+
+def prepayments(typ):
+    """[{shop, bag, qty, paid, closed (None = still open), open (now)}] — customer prepayments, cancelled left out."""
+    df = db.run_query(PREPAID_SQL, {})
+    out = []
+    for r in (df.itertuples() if df is not None else []):
+        if r.cancelled or r.state == "cancel":
+            continue
+        sh, b = dispatch_shop(r.shop), typ(str(r.product))
+        if not sh or not b:
+            continue
+        paid = r.paid if isinstance(r.paid, datetime.date) else (datetime.date.fromisoformat(str(r.paid)[:10]) if r.paid else None)
+        closed = None if r.closed is None or str(r.closed) in ("NaT", "None") else datetime.date.fromisoformat(str(r.closed)[:10])
+        out.append({"shop": sh, "bag": b, "qty": _num(r.qty), "paid": paid, "closed": closed,
+                    "open": r.state in ("confirmed", "ready_for_shop", "applied") and closed is None})
+    return out
 
 
 def _num(v):
@@ -272,7 +394,7 @@ def dispatch_shop(name):
     return _shop(name) or str(name or "").strip().title() or None
 
 
-def requests_block(today, typ, have=None, targets=None):
+def requests_block(today, typ, have=None, targets=None, pre=None):
     """Shop requests vs received (this month · last month) and the production approved lists — or {} on failure."""
     m1 = today.replace(day=1)
     lm1 = (m1 - datetime.timedelta(days=1)).replace(day=1)
@@ -280,13 +402,20 @@ def requests_block(today, typ, have=None, targets=None):
         offers = shop_requests._offers()
         per = {"monthly": (m1, today, m1.strftime("%B %Y")),
                "lastmonth": (lm1, m1 - datetime.timedelta(days=1), lm1.strftime("%B %Y"))}
+        spans = collections.defaultdict(list)                 # (shop, bag) → [(paid, closed, qty)]
+        for x in (pre or []):
+            spans[(x["shop"], x["bag"])].append((x["paid"], x["closed"], x["qty"]))
+
+        def prepaid_at(shop, bag, d):
+            """Units customers had prepaid for this bag at this shop and were still waiting for on day d."""
+            return sum(q for p0, p1, q in spans.get((shop, bag), ()) if p0 and p0 <= d and (p1 is None or p1 > d))
         out = {"sellDays": shop_requests.SELL_DAYS, "notConvertingPct": shop_requests.NOT_CONVERTING_PCT,
                "askLookback": shop_requests.ASK_LOOKBACK, "periods": {}}
         for k, (s, e, label) in per.items():
             out["periods"][k] = {"label": label, "from": s.isoformat(), "to": e.isoformat(),
                                  "shops": shop_requests.requests(s, e, today, dispatch_shop, typ, offers,
                                                                   code_shop=CODE_SHOP.get, have=have, no_shelf=ONLINE,
-                                                                  target=(targets or {}).get(k))}
+                                                                  target=(targets or {}).get(k), prepaid_at=prepaid_at)}
         try:
             out["production"] = shop_requests.production(dispatch_shop, typ, today, keep=PRODUCTION_LISTS)
         except Exception as e:                               # noqa: BLE001
@@ -331,22 +460,6 @@ def month_end_lift(today, typ):
     return round(min(max(med, PUSH_CLAMP[0]), PUSH_CLAMP[1]), 3), per
 
 
-def last_month_need(m1, typ):
-    """Last month's shop × bag target need (its own Odoo targets) for judging last month's requests — or None."""
-    lm1 = (m1 - datetime.timedelta(days=1)).replace(day=1)
-    try:
-        tg, st = product_targets.load_targets(lm1, build_if_missing=False), shop_targets(lm1)
-        if not tg or not st:
-            return None
-        b0, b1 = product_targets.base_period(lm1)
-        base, _ = sales(b0, b1, typ)
-        return {"need": needs(lm1, typ, base, tg, st), "days": calendar.monthrange(lm1.year, lm1.month)[1],
-                "now": False, "minDays": MIN_DAYS, "maxDays": MAX_DAYS}
-    except Exception as e:                                   # noqa: BLE001
-        print(f"  Shop requests: last month's targets unavailable ({e})")
-        return None
-
-
 def build(today=None):
     today = today or datetime.date.today()
     m1 = today.replace(day=1)
@@ -389,6 +502,13 @@ def build(today=None):
     stock, stock_cols = shop_stock(typ)
     wh, wh_cols = warehouse_stock(typ)
     buf = buffer_stock(typ)
+    # Min / Max from what is moving: weekly rate = recent 13 weeks × season × growth (docs › Min / Max).
+    rate, rate_f = realistic_rates(today, typ)
+    pre = prepayments(typ)
+    prepaid = collections.defaultdict(collections.Counter)
+    for x in pre:
+        if x["open"]:
+            prepaid[x["shop"]][x["bag"]] += x["qty"]
     waiting, lead_wins = leads(typ, today)
     # Only leads for real bags (the leads module takes free text — repairs, spare parts…).
     known = set(targets) | {b for sb in stock.values() for b in sb} | {b for sb in base.values() for b in sb}
@@ -401,41 +521,64 @@ def build(today=None):
         if s in ONLINE:                            # online shop: no shelf — only its waiting customers are shown
             continue
         bags = set(need.get(s, {})) | {b for b, q in stock.get(s, {}).items() if q > 0} \
-               | {b for per in waiting.values() for b in per.get(s, {})}
+               | {b for per in waiting.values() for b in per.get(s, {})} | set(rate.get(s, {})) | set(prepaid.get(s, {}))
         for b in sorted(bags):
             nd = need.get(s, {}).get(b, 0.0)
             daily = nd / days_in
             have = stock.get(s, {}).get(b, 0)
             sold = mtd.get(s, {}).get(b, 0)
-            mn = math.ceil(daily * MIN_DAYS) if nd > 0 else 0
-            mx = math.ceil(daily * MAX_DAYS) if nd > 0 else 0
-            if nd <= 0 and have <= 0:
-                status = "none"
-            elif nd <= 0:
-                status = "idle"                    # stock on the shelf, no need this month
-            elif have <= 0:
+            wr = rate.get(s, {}).get(b, 0.0)       # units a week (recent × season × growth)
+            pp = prepaid.get(s, {}).get(b, 0)      # customers who paid and are still waiting: already sold
+            free = have - pp
+            mn = math.ceil(wr * MIN_WEEKS) if wr > 0 else 0
+            mx = math.ceil(wr * MAX_WEEKS) if wr > 0 else 0
+            if wr <= 0 and pp <= 0:
+                status = "idle" if have > 0 else "none"   # not moving: no sale in the 13 weeks
+            elif free <= 0:
                 status = "oos"
-            elif have <= mn and have < mx:
+            elif free <= mn and free < mx:
                 status = "low"
-            elif have > mx:
+            elif free > mx:
                 status = "over"
             else:
                 status = "ok"
-            send = max(mx - have, 0) if status in ("oos", "low") else 0
+            # Ready for next month: free stock on the last day at the weekly rate; at or under Min then → send enough to
+            # open next month at Max (docs › Send now — ready for next month).
+            end_free = free - wr / 7 * days_left
+            # this month: what the shop runs short of before month end; next month: the top-up to open it at Max
+            send = math.ceil(-end_free - 1e-9) if end_free < 0 else 0
+            open_free = max(end_free, 0)
+            send_nm = math.ceil(mx - open_free) if wr > 0 and open_free <= mn and mx - open_free > 0 else 0
+            cover = round(free / (wr / 7), 1) if wr > 0 and free > 0 else (0 if wr > 0 else None)
             bal = have - daily * days_left
             runs_out = (today + datetime.timedelta(days=int(have / daily))).isoformat() if daily > 0 and bal < 0 else None
             nmd = nm_need.get(s, {}).get(b, 0.0) * (nm_days / days_in if nm_estimated else 1)
             rows.append({"shop": s, "bag": b, "need": round(nd, 1), "daily": round(daily, 2), "have": int(have),
                          "sold": int(sold), "min": mn, "max": mx, "status": status, "send": int(send),
+                         "wr": round(wr, 1), "prepaid": int(pp), "endFree": round(end_free, 1), "cover": cover,
+                         "sendNm": int(send_nm), "nmSells": round(wr / 7 * nm_days),
                          "bal": round(bal), "runsOut": runs_out, "nm": round(nmd),
                          "nmShort": round(max(nmd - max(bal, 0), 0)),
                          "colours": {c: int(q) for c, q in stock_cols.get(s, {}).get(b, {}).items() if q}})
+
+    send_plan = sendable_by_month_end(rate, prepaid, stock, buf, days_left)
+    lm1 = (m1 - datetime.timedelta(days=1)).replace(day=1)
+    lm_days = calendar.monthrange(lm1.year, lm1.month)[1]
+    try:
+        lm_rate, _ = realistic_rates(lm1, typ)                 # last month judged on the rate as of its 1st
+    except Exception as e:                                     # noqa: BLE001
+        print(f"  Last month's weekly rates unavailable ({e})")
+        lm_rate = None
+    realistic = {"monthly": _realistic_target(rate, days_in, True),
+                 "lastmonth": _realistic_target(lm_rate, lm_days, False) if lm_rate else None}
 
     return {"generated": datetime.datetime.now().strftime("%d %b %Y %H:%M"),
             "month": m1.strftime("%B %Y"), "today": today.isoformat(), "daysIn": days_in, "daysLeft": days_left,
             "daysGone": today.day,                 # days whose sales are in "sold" (today's so far included)
             "pace": {"lift": lift, "liftMonths": lift_per, "clamp": list(PUSH_CLAMP)},
             "minDays": MIN_DAYS, "maxDays": MAX_DAYS, "warehouse": WAREHOUSE,
+            "minWeeks": MIN_WEEKS, "maxWeeks": MAX_WEEKS, "recentWeeks": RECENT_WEEKS, "rateFactors": rate_f,
+            "sendPlan": send_plan,
             "base": f"{b0.strftime('%d %b')} – {b1.strftime('%d %b %Y')}",
             "nextMonth": {"label": nm1.strftime("%B %Y"), "open": nm_open, "opensOn": m1.replace(day=NEXT_MONTH_FROM_DAY).isoformat(),
                           "estimated": nm_estimated, "source": "estimate" if nm_estimated else nm_info.get("source"),
@@ -448,10 +591,85 @@ def build(today=None):
             "regions": shop_regions.load(),
             "buffer": {loc: {b: int(q) for b, q in bs.items() if q} for loc, bs in buf.items()},
             "whColours": {b: {c: int(q) for c, q in cs.items() if q} for b, cs in wh_cols.items()},
-            "leads": waiting, "leadWindows": lead_wins, "requests": requests_block(today, typ, {sh: dict(bs) for sh, bs in stock.items()},
-                                      {"monthly": {"need": need, "days": days_in, "now": True,
-                                                   "minDays": MIN_DAYS, "maxDays": MAX_DAYS},
-                                       "lastmonth": last_month_need(m1, typ)})}
+            "leads": waiting, "leadWindows": lead_wins,
+            "requests": requests_block(today, typ, {sh: dict(bs) for sh, bs in stock.items()}, realistic, pre)}
+
+
+def _realistic_target(rate, days, now):
+    """The weekly rate as a month's "need" for the request checks: Min = 1 week, Max = 2.5 weeks of sales."""
+    if rate is None:
+        return None
+    return {"need": {sh: {b: wr / 7 * days for b, wr in bs.items()} for sh, bs in rate.items()}, "days": days,
+            "now": now, "minDays": 7 * MIN_WEEKS, "maxDays": 7 * MAX_WEEKS}
+
+
+def _share_out(gaps, left):
+    """{shop: units} — `left` units shared over {shop: gap} in proportion, leftovers to the biggest gaps first."""
+    need = sum(gaps.values())
+    if not need or left <= 0:
+        return {sh: 0 for sh in gaps}
+    share = min(1.0, left / need)
+    give = {sh: int(g * share) for sh, g in gaps.items()}
+    rest = min(left, need) - sum(give.values())
+    for sh in sorted(gaps, key=lambda k: -(gaps[k] * share - give[k])):
+        if rest <= 0:
+            break
+        if give[sh] < gaps[sh]:
+            give[sh] += 1
+            rest -= 1
+    return give
+
+
+def sendable_by_month_end(rate, prepaid, stock, buf, days_left):
+    """What can still be sent (docs › Shop requests — realistic performance): per shop × bag, this month's send now (the
+    sales to month end + prepaid − the shelf) and next month's top-up to Max — the stock monitor's two sends. Kenya
+    gaps are capped by CBD + VLD now, this month's sends served first, then next month's."""
+    avail = collections.Counter()
+    for bs in buf.values():
+        for b, q in bs.items():
+            avail[b] += max(q, 0)
+    gaps = collections.defaultdict(dict)                       # bag → {shop: (this month, next month, prepaid, have, rate)}
+    for sh in set(rate) | set(prepaid):
+        if sh in ONLINE:
+            continue
+        for b in set(rate.get(sh, {})) | set(prepaid.get(sh, {})):
+            wr, pp, have = rate.get(sh, {}).get(b, 0.0), prepaid.get(sh, {}).get(b, 0), max(stock.get(sh, {}).get(b, 0), 0)
+            mn, mx = (math.ceil(wr * MIN_WEEKS), math.ceil(wr * MAX_WEEKS)) if wr > 0 else (0, 0)
+            end_free = have - pp - wr / 7 * days_left
+            g1 = math.ceil(-end_free - 1e-9) if end_free < 0 else 0
+            g2 = math.ceil(mx - max(end_free, 0)) if wr > 0 and max(end_free, 0) <= mn and mx - max(end_free, 0) > 0 else 0
+            if g1 or g2:
+                gaps[b][sh] = (g1, g2, int(pp), int(have), round(wr, 1))
+    shops = collections.defaultdict(lambda: {"gap": 0, "send": 0, "wait": 0, "prepaid": 0,
+                                             "gapNm": 0, "sendNm": 0, "waitNm": 0, "bags": []})
+    bag_tot = {}
+    for b, by in gaps.items():
+        kenya = {sh: v for sh, v in by.items() if sh not in OUTSIDE}
+        left = int(avail.get(b, 0))
+        give1 = _share_out({sh: v[0] for sh, v in kenya.items() if v[0]}, left)          # this month first
+        left -= sum(give1.values())
+        give2 = _share_out({sh: v[1] for sh, v in kenya.items() if v[1]}, left)          # then next month's top-up
+        bag_tot[b] = {"gap": sum(v[0] for v in by.values()), "gapNm": sum(v[1] for v in by.values()),
+                      "avail": int(avail.get(b, 0)), "send": sum(give1.values()), "sendNm": sum(give2.values())}
+        for sh, (g1, g2, pp, have, wr) in by.items():
+            own = sh in OUTSIDE
+            s1 = None if own else give1.get(sh, 0)
+            s2 = None if own else give2.get(sh, 0)
+            x = shops[sh]
+            x["gap"] += g1
+            x["gapNm"] += g2
+            x["prepaid"] += pp
+            x["send"] += s1 or 0
+            x["sendNm"] += s2 or 0
+            x["wait"] += g1 - s1 if s1 is not None else 0
+            x["waitNm"] += g2 - s2 if s2 is not None else 0
+            x["bags"].append({"bag": b, "gap": g1, "send": s1, "wait": g1 - s1 if s1 is not None else None,
+                              "gapNm": g2, "sendNm": s2, "waitNm": g2 - s2 if s2 is not None else None,
+                              "prepaid": pp, "have": have, "wr": wr})
+    for x in shops.values():
+        x["bags"].sort(key=lambda r: (-r["gap"], -r["gapNm"], r["bag"]))
+    return {"daysLeft": days_left, "from": list(BUFFER_LOCATIONS), "outside": sorted(OUTSIDE),
+            "shops": dict(sorted(shops.items(), key=lambda kv: -(kv[1]["gap"] + kv[1]["gapNm"]))), "bags": bag_tot}
 
 
 def inject(payload):

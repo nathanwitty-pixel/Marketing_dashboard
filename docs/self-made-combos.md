@@ -211,6 +211,32 @@ category word ("Jamela handbag", "Kai backpack"). Matching:
   (`powerSoldExCombo`, `dowSoldExCombo`). The **cards still render** every deal, and the
   Discount KPI still uses every deal.
 
+### Regional Deals of the Week (from Sun 25 Oct 2026, user's call)
+
+The Deal of the Week changed from per-shop lists in two phases (Tier 1 = Wk 1–2, Tier 2 = Wk 3 on) to **one list
+per region**, from **25 Oct 2026 until new posters replace it** (posters "Hot Deals Energy"):
+
+| Region | Shops |
+|---|---|
+| Nairobi Region | Starmall, Hilton, KTDA, Hazina |
+| Nairobi Metropolitan Region | Thika, Kitengela, Rongai |
+| Central Region | Meru, Nanyuki |
+| Rift Valley Region | Eldoret, Nakuru |
+| Western and Nyanza Region | Busia, Kakamega, Kisumu, Kisii |
+| Coastal Region | Mombasa |
+
+- `data/deals_kenya.csv` has two new columns, **Start** (K) and **End** (L). A row with dates runs in the Sun–Sat
+  weeks that overlap [Start, End]. A row with a Start runs in **every month** its dates overlap, whatever its Month
+  column says, so a list with no End carries on into November and beyond. No dates = the old tier weeks.
+- The regional rows are **Tier 3** (shown as **Regional**), Start `2026-10-25`, no End, with the region name in the
+  Poster column. All the October **Tier 2** rows have End `2026-10-24` (Tier 2 = Wk 3–4).
+- **Website runs no Deal of the Week from 25 Oct** (user's call). Its Tier 2 list ended on 24 Oct.
+- `dow_tier_weeks(tier, max_wk, start, end, month_start)` works out the weeks. With an End only, it keeps the tier's
+  own weeks up to the End date. Used for the deal sales, the phase panel and Bags on Offer's `dowRuns`.
+- The phase panel (`tierGauge`) shows every phase with deals that month (Tier 1, Tier 2, Regional), each on its own
+  weeks. The Deal of the Week table has a **Regional** button. It opens on the live phase, so Regional from 25 Oct.
+- New posters: add rows as Tier 3 with their Start, and give the old regional rows an End the day before.
+
 ### Deal of the Week sold = its shops × its tier's weeks (`DEAL_SALES_SHOP_WEEK_SQL`)
 
 A Deal of the Week runs **only at its locations** (sheet col D, plus `DOW_MIRROR` shops) and

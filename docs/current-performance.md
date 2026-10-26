@@ -18,6 +18,16 @@ week-over-week movement, and a **current-vs-previous-month weekly comparison cha
 month solid, previous month dashed — `cpPrevWeekly` from `monthly_report_history.json`; the
 month names are dynamic, from `PERF.cpCurLabel` / `PERF.cpPrevLabel`), plus forward projections.
 
+## Weekly Performance — corporate in each week (26 Oct 2026, user's call)
+
+Each Sun–Sat week's **Sales bags** = its till bags (`BAGS_SOLD_TOTAL`) **+ the corporate bags paid that week**
+(`CORPORATE_BAGS` over the week — the Corporate app, money received on the payment date, the Sales card's rule).
+Any rounding left between the weeks' corporate and the month's (part-paid invoices round down per window) goes on
+the latest week, so the rows **add up to the Sales card** (Oct 2026: 2,235 + 4,334 + 3,700 + 3,449 + 188 = 13,906).
+The cell names the corporate part ("3,449 bags, 537 corporate"); `weeklyHistory` rows carry `posBags` and
+`corporateBags`. Sales % achieved, Declined By and the chart follow the same totals. The dashed previous-month line
+is that month's saved month-end report (September 2026 had 63–77 corporate bags, so it is left as recorded).
+
 ## Weekly Performance chart — type filter
 
 The **Weekly Performance — Week 1 to Latest** card carries a segmented control (`#cp-wp-type`,
@@ -54,8 +64,8 @@ Rules the implementation must hold to:
 - Each month's week-on-week change shows as pills: October's above its points ("Oct ▲108%"), the
   previous month's under its own ("Sep ▲20%"). The pills come from the shared weekChange code
   ([chart-switcher](chart-switcher.md)).
-- **Short weeks are labelled** under the x axis with their day counts, e.g. "Oct 3d · Sep 5d" for Wk 1, and
-  "Oct 1d so far · Sep 7d" for the week still running. Weeks are Sun–Sat inside the month, so the first and last
+- **Short weeks are labelled** under the x axis with their day counts, e.g. "Oct 3 days, Sep 5 days" for Wk 1, and
+  "Oct 1 day so far, Sep 7 days" for the week still running (words, no dot separators, 26 Oct 2026). Weeks are Sun–Sat inside the month, so the first and last
   weeks are often short. Full 7-day weeks show no day line.
 - **The running week** (`partialWks`, from today's date) is passed as `weekChange.partial`. Its pills read grey
   "… so far", not a red crash.
@@ -71,8 +81,9 @@ so `current_performance.py`'s regex rewrite never touches them.
 **Sales is the only bags-sold KPI** (27 Sep 2026: the separate *Net Bags Sold · Catalogue* card —
 master-list products only, ~313 bags lower in Sep — was merged away, and the *Weekly vs Last
 Month* pace card was removed). Sales = `sql/bags_sold_total.sql` (every bag the tills sold incl.
-bags inside combos, gift bags and rejects; refunds netted; **straps**, delivery, customisation,
-the combo wrapper, the KES discount line, samples and POS-category lines are **not** counted)
+bags inside combos, gift bags, rejects and **samples** (sold display units, counted since 26 Oct 2026, user's
+call); refunds netted; **straps**, delivery, customisation, the combo wrapper, the KES discount line and
+POS-category lines are **not** counted)
 **plus** corporate invoice bags.
 
 The Sales-card breakdown line shows the POS/corporate split **and two subsets of the POS total**:
@@ -86,7 +97,8 @@ are computed by `monthly_sales.py` into `monthly_sales_db.json`, and surfaced by
 
 The same line also shows **samples** and **customisation** (`sql/sales_extras.sql`, all tills,
 refunds netted, → `PERF.samples` / `customBags` / `customFees`):
-- **Samples** (`name ILIKE '%sample%'`) — sold but **not** in Sales (display units).
+- **Samples** (`name ILIKE '%sample%'`) — sold display units, **in Sales** since 26 Oct 2026 (user's call); shown here
+  so you can see how many of the bags were samples.
 - **Customisation** = customised bags (`'%customi%'` but not `'%customization%'`, e.g. *KCB
   Briefcase Customised Brown* — a bag, **in** Sales) **+** customisation charges
   (`'%customization%'` — a service line, **not** in Sales). The tooltip gives the split.
@@ -136,11 +148,101 @@ total (312.5 → 312) while the table rounded each client (187.5 → 188, total 
 shows the **totals** beside each name: Quoted · Invoiced · Paid (all paid ÷ all agreed, after WHT) · Sold.
 They stay in view while you scroll.
 
+## Forward Projections — revenue (21 Oct 2026, user's call)
+
+Each projection card shows the **revenue** it lands on, under the % of target, so the bags % and
+the money read together:
+
+- **Standard** → POS **bag revenue** month-to-date (`sql/bag_revenue.sql`) × velocity factor. Same
+  pace and month as the bags %. Bag revenue = the same bag lines as the Sales card, **plus the
+  combo '+' wrapper lines** (a combo's price sits on the wrapper; the bags inside are KES 0
+  sub-lines, `parent_id`), minus 'KES discount' lines. Delivery / customisation / straps stay out; samples are in,
+  like Sales (26 Oct 2026). **Not** `monthlyValue`: that drops the wrapper, so combo bags counted as KES 0 and
+  revenue read ~6% low (fixed 21 Oct 2026).
+- **Forecasted** → (POS revenue + corporate KES received) × velocity factor. Corporate KES =
+  `kes` in `sql/corporate_bags.sql`: money paid on Corporate-app invoices in the month, capped at
+  each invoice's agreed amount (after WHT). That's the same payments that give the corporate bags.
+- **Revenue target** = the month's Odoo `sales_pos_target` amount (scope pos + corporate), or
+  `REVENUE_TARGETS` in `lib/product_targets.py` when Odoo has none. When there's a target, the
+  card also shows the projected revenue as a % of it. With no target, it shows only the KES.
+- Postgres down / no live month figure → the revenue line is left off (no stale number).
+
+PROJ fields: `standardRevenue`, `forecastedRevenue`, `revenueTarget`, `standardRevenuePct`,
+`forecastedRevenuePct`, `corporateKes`.
+
+**Price per bag card** (full width, under the two projection cards) explains why the revenue %
+and the bags % differ, so the reader can judge it:
+
+- **Target price per bag** = revenue target ÷ bag target (what the targets assume a bag brings in).
+- **Actual price per bag** = POS bag revenue ÷ bags sold, month to date.
+- **Gap** = actual ÷ target − 1. Above target → revenue % runs ahead of bags %; below → it trails.
+  revenue % ≈ bags % × (1 + gap).
+- **22 Oct 2026 (user's call):** the single bags / combos / gift bags / discounts table is **no longer shown**. The
+  On offer vs not on offer table carries the data. The verdict's Biggest lift / drag and the month-end
+  "Altogether" figure now come from that table (`priceMix.offerMix`). `priceMix.rows` is still computed
+  (the headline Actual price per bag uses it). Rows opened in the On offer table list their bags **grouped by
+  category** (subtotal row per category, biggest revenue first, then its bags). Corporate app and the till
+  discount stay flat lists.
+  - **Collapse / expand:** click a row to open its categories, click a category to open its bags.
+    **Expand all** / **Collapse all** buttons sit next to the table heading.
+  - **Hover** on Effect at month end: projected KES minus what the targets expect (projected bags x target price,
+    or gift bags' own target), worked out in words. Hover on Effect on revenue rate: that KES / revenue target x 100,
+    e.g. +4.11 = +KES 2,304,620 / KES 56,030,805 x 100. All the rows' points add up to the All bags total.
+- (Old, not shown) A table split the month by how bags were sold: **single bags, combos, gift bags, discounts**,
+  with bags, revenue, KES per bag and each row's gap to the target price. That shows what's
+  lifting or pulling down the average.
+- Bags and revenue show **so far → month end** (× velocity factor, same pace as the cards).
+- **Gift bags have their own target (21 Oct 2026, user's call).** The Odoo bag target has no gift
+  bags, so the KES ~2,000 price and the headline Actual price per bag cover **single bags + combos
+  (after discounts)** only. Gift bags are judged on their own target: the average month of the three
+  complete months before (`product_targets.base_period`, Oct 2026 → Jul–Sep: 251 a month) at their
+  own average price then (KES 194). The row shows "294 of 251 target" and "−2.2% vs KES 194".
+- **Effect at month end (KES)** = the row's projected revenue − what its target expects: projected
+  bags × KES ~2,000 for single bags / combos, gift target × gift price for gift bags, 0 for
+  discounts. **Effect on revenue rate (pts)** = that ÷ revenue target × 100. The total = how far
+  month-end revenue sits above / below what the targets expect for the bags on course to be sold.
+- **Bags still to sell for revenue target** = (revenue target − revenue so far) ÷ actual price per bag.
+- The card's top strip is **green** when bags sell at or above the target price, **red** below.
+- Rows are computed in `forward_projections.py` (`priceMix.rows`); the page only renders them.
+- Hidden when there's no revenue target or no live revenue. PROJ field: `priceMix`.
+- **On offer vs not on offer** (22 Oct 2026, under the table): the same month's bags sorted the way the
+  Bags On vs Off Offer page sorts them (`bags_on_offer.py` writes `data/offer_mix.json`, monthly period).
+  Rows: Not on offer, **On offer** (= Power deals + Combos + Deal of wk + Mid-month offers, each shown under
+  it), then Corporate, Samples, Gift bags, Not yet sorted. Same columns and prices as the table above:
+  KES ~2,000 a bag, gift bags on their own target, samples expect nothing, Not yet sorted (returns and
+  unmatched names) is not judged (effect 0). **Click a row to see the bags inside it**: each bag's bags,
+  share of the row, revenue, KES per bag and gap to the target price. A verdict line compares the offer
+  and full-price KES per bag. Totals can differ a little from the table above (different sorting, and the
+  offer page's build time is shown). `main.py` runs Forward Projections after Bags On vs Off Offer so the
+  split is fresh. PROJ field: `priceMix.offerMix`.
+  - **Mid-month offers** is split into its parts, each its own row with its own bags: **New products**,
+    **Runway bags**, **Timed offers** (Kenya), **Listed singles** (Tanzania / Uganda).
+  - **Corporate app** row: bags on Corporate app invoices (`sql/corporate_bag_lines.sql`, same paid-share rule
+    as `corporate_bags.sql`; the received KES is shared across each invoice's lines by subtotal, so it adds
+    up to the Forecasted card's corporate KES). Click for each bag and its client(s); fees are one row with 0
+    bags. Not POS, so All bags here is above the table above. The offer page's own Corporate row is the same
+    Corporate app (26 Oct 2026), so it isn't shown here: corporate is counted once, in this row.
+  - **KES 300 till discount** (was "Not yet sorted", 22 Oct 2026, user's call): only the till's KES 300 discount
+    line. No bags, nothing expected, so its effect = the money off (same as Discounts in the table above).
+    The few other unsorted lines (PPM, Passport Holder…: names with no bag type) are added to **Not on offer**
+    and listed there as "not in the bag list yet".
+  - Each row shows **where it sells** (Kenya only / Kenya, Tanzania, Uganda), from the offer page's country
+    split. Mid-month parts carry it in the label, e.g. "Timed offers (Kenya)", "Listed singles (Tanzania, Uganda)".
+  - **Corporate (Odoo invoices)** = the offer page's Corporate row: paid customer invoices in Odoo Accounting
+    (Sales orders, S-numbers), not the Corporate app. Hidden when 0.
+
 ## Data sources
 
 - **MONTHLY_TARGET** sheet: col C target, D sales, E deficit (summed).
 - Real weekly/monthly **bags** are refreshed from Postgres first (`weekly_sales.py`,
   `monthly_sales.py`) so the sales figures are live, not stale sheet values.
+- **The page's Refresh also rebuilds the offer split** (`self_made_combos.py` → `bags_on_offer.py`, before
+  `forward_projections.py`), so the On offer table's All bags matches the Sales card. *Fixed 25 Oct 2026:* the
+  refresh skipped it, so the table read a 22 Oct `offer_mix.json` (All bags 12,492 vs Sales 13,918).
+- **Sales counts each refunded combo's bags once** (docs/README.md › Combo refunds, 25 Oct 2026): 6 Oct combos
+  refunded without their bag lines had never been taken off, so POS Sales read 13,053 instead of 13,041. With that
+  and the offer page's fixes, the On offer table's All bags = Sales + the 3 samples it lists. With samples in Sales
+  (26 Oct 2026) the two are equal.
 - **Last week's bags** (`PERF.previousSalesBags`, the week-over-week base) are read straight from Postgres for
   the previous complete **Sun–Sat** week (`BAGS_SOLD_TOTAL`, the same definition as this week's figure).
   `previous_snapshot.json` is only the fallback when the DB is down. *Fixed 14 Oct 2026:* the snapshot rolled

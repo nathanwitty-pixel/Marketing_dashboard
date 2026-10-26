@@ -40,7 +40,7 @@ SELECT pl.id, o.id AS receipt, o."name" AS ref,
        COALESCE(pl.sub_product_line, false) AS sub,
        COALESCE(pcat."name", '') AS categ
 FROM pos_order o
-JOIN pos_order_line pl ON pl.order_id = o.id
+JOIN POS_LINES(o) pl ON pl.order_id = o.id
 LEFT JOIN pos_session ps ON ps.id = o.session_id
 LEFT JOIN pos_config pc ON pc.id = ps.config_id
 JOIN product_product pp ON pp.id = pl.product_id
@@ -51,7 +51,7 @@ WHERE (o.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETW
   AND pl.qty <> 0
   AND COALESCE(pl.is_program_reward, false) = false
   AND pt."name" NOT ILIKE '%delivery%'
-  AND pt."name" NOT ILIKE '%customi%'
+  AND pt."name" NOT ILIKE '%customization%'
   AND pt."name" NOT ILIKE '%strap%'
   AND pt."name" NOT ILIKE '%discount%'      -- KES and % discount lines aren't bags
   AND pt."name" NOT ILIKE '%sample%'
@@ -619,6 +619,102 @@ def explain(b, mkt, w, ctx):
 
 
 # ── build ─────────────────────────────────────────────────────
+# ── Shop breakdown (docs/product-performance.md › 2b) ──
+SHOP_NAMES = {"ktda shop": "Ktda", "dar-es-alam": "Sinza", "uganda": "Uganda", "website": "Website",
+              "website sales": "Website", "staff pos": "Staff POS"}
+
+
+def shop_name(till):
+    t = str(till or "").strip().lower()
+    return SHOP_NAMES.get(t) or (t.title() if t else "Unknown till")
+
+
+def corporate_period(s, e):
+    """[(product, bags, kes)] — Corporate app bags paid in [s, e] (sql/corporate_bag_lines.sql, the Sales card's
+    rule: money received on the payment date); fee lines (0 bags) keep their KES. [] if Odoo is unreachable."""
+    df = db.run_query(queries.CORPORATE_BAG_LINES, {"start_date": s.isoformat(), "end_date": e.isoformat()})
+    if df is None or df.empty:
+        return []
+    return [(str(r["product"]).title() if r["product"] != "Fees and other" else "Fees and other",
+             float(r["bags"] or 0), float(r["kes"] or 0)) for _, r in df.iterrows()]
+
+
+def shop_breakdown(lines, P, corp=None):
+    """{period: {market: {total, rev, shops: [...]}}} — units / revenue per shop (till), the period before,
+    shares, the bulk-line units (POS lines of BULK_LINE_QTY+ units) and each shop's top 10 bags. `corp(s, e)`
+    adds a Corporate row — the Corporate app, a sales channel like a till, never a bulk order (bulk orders are
+    10+ unit lines rung at a shop till) — docs/product-performance.md › 2b."""
+    out = {}
+    for per, (s1, e1, s0, e0, _lbl) in P.items():
+        out[per] = {}
+        for mkt in ("ALL",) + MARKETS:
+            agg = {}
+            if corp is not None and mkt in ("ALL", "KE"):
+                a = agg.setdefault("Corporate", {"mkt": "KE", "u": [0.0, 0.0], "r": [0.0, 0.0], "bulk": [0.0, 0.0],
+                                                 "bulkR": [0.0, 0.0],
+                                                 "bags": collections.defaultdict(lambda: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0])})
+                for i, (s, e) in enumerate(((s1, e1), (s0, e0))):
+                    for prod, u, r in corp(s, e):
+                        a["u"][i] += u; a["r"][i] += r
+                        bg = a["bags"][prod]
+                        if i == 0:
+                            bg[0] += u; bg[1] += r
+                        else:
+                            bg[2] += u
+                    # whole bags paid for, rounded down like the Sales card (part-paid invoices give fractions)
+                    a["u"][i] = math.floor(a["u"][i] + 1e-6)
+            for x in lines:
+                if mkt != "ALL" and x["mkt"] != mkt:
+                    continue
+                cur, prev = s1 <= x["d"] <= e1, s0 <= x["d"] <= e0
+                if not (cur or prev):
+                    continue
+                name = shop_name(x["till"])
+                a = agg.setdefault(name, {"mkt": x["mkt"], "u": [0.0, 0.0], "r": [0.0, 0.0], "bulk": [0.0, 0.0],
+                                          "bulkR": [0.0, 0.0],
+                                          # per bag: units, rev, prev units, bulk units, bulk rev, prev bulk units
+                                          "bags": collections.defaultdict(lambda: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0])})
+                i = 0 if cur else 1
+                a["u"][i] += x["units"]
+                a["r"][i] += x["rev"]
+                bulk = abs(x["units"]) >= BULK_LINE_QTY
+                if bulk:
+                    a["bulk"][i] += x["units"]
+                    a["bulkR"][i] += x["rev"]
+                bg = a["bags"][x["bag"]]
+                if cur:
+                    bg[0] += x["units"]; bg[1] += x["rev"]
+                    if bulk:
+                        bg[3] += x["units"]; bg[4] += x["rev"]
+                else:
+                    bg[2] += x["units"]
+                    if bulk:
+                        bg[5] += x["units"]
+            tot_u = sum(a["u"][0] for a in agg.values())
+            tot_r = sum(a["r"][0] for a in agg.values())
+            rows = []
+            for name, a in agg.items():
+                u, pu = round(a["u"][0]), round(a["u"][1])
+                if not u and not pu:
+                    continue
+                nb, pnb = a["u"][0] - a["bulk"][0], a["u"][1] - a["bulk"][1]
+                bags = sorted(([b, round(v[0]), round(v[1]), round(v[2]), round(v[3]), round(v[4]), round(v[5])]
+                               for b, v in a["bags"].items() if round(v[0])), key=lambda r: -r[1])[:15]
+                rows.append({"shop": name, "mkt": a["mkt"], "units": u, "rev": round(a["r"][0]),
+                             "pUnits": pu, "pRev": round(a["r"][1]), "chg": u - pu,
+                             "chgPct": round((u / pu - 1) * 100, 1) if pu else None,
+                             "share": round(a["u"][0] / tot_u * 100, 1) if tot_u else 0.0,
+                             "revShare": round(a["r"][0] / tot_r * 100, 1) if tot_r else 0.0,
+                             "bulkUnits": round(a["bulk"][0]), "pBulkUnits": round(a["bulk"][1]),
+                             "bulkRev": round(a["bulkR"][0]), "pBulkRev": round(a["bulkR"][1]),
+                             "chgNoBulk": round(nb - pnb), "chgPctNoBulk": round((nb / pnb - 1) * 100, 1) if pnb else None,
+                             "bags": bags})
+            rows.sort(key=lambda r: -r["units"])
+            if rows:
+                out[per][mkt] = {"total": round(tot_u), "rev": round(tot_r), "shops": rows}
+    return out
+
+
 def build(today=None):
     today = today or datetime.date.today()
     P = periods(today)
@@ -650,6 +746,14 @@ def build(today=None):
                 if any(round(z) for z in v)]
         out_periods[key] = {"label": label, "cur": [s1.isoformat(), e1.isoformat()], "prev": [s0.isoformat(), e0.isoformat()],
                             "curLabel": f"{_fmt_d(s1)} – {_fmt_d(e1)}", "prevLabel": f"{_fmt_d(s0)} – {_fmt_d(e0)}", "rows": rows}
+
+    _corp_cache = {}
+
+    def corp(s, e):                                       # Corporate row of the shop breakdown, one pull per window
+        if (s, e) not in _corp_cache:
+            _corp_cache[(s, e)] = corporate_period(s, e)
+        return _corp_cache[(s, e)]
+    shops_out = shop_breakdown(lines, P, corp)
 
     s1, e1, s0, e0, _ = P["lastweek"]
     stock_now, levels, disp = stock_facts(typ, start, today)
@@ -709,7 +813,7 @@ def build(today=None):
     return {"generated": datetime.datetime.now().strftime("%d %b %Y %H:%M"), "topN": TOP_N,
             "bulkQty": BULK_LINE_QTY, "moverMin": MOVER_MIN,
             "week": {"cur": f"{_fmt_d(s1)} – {_fmt_d(e1)}", "prev": f"{_fmt_d(s0)} – {_fmt_d(e0)}"},
-            "periods": out_periods, "botw": botw, "why": why, "info": info}
+            "periods": out_periods, "botw": botw, "why": why, "info": info, "shops": shops_out}
 
 
 def inject(payload):

@@ -28,7 +28,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import URL, Engine
 
-from lib import paths
+from lib import paths, pos_lines
 
 load_dotenv()
 
@@ -147,6 +147,7 @@ def run_query(sql: str, params: dict | None = None) -> pd.DataFrame | None:
     """
     if get_engine() is None:
         return None
+    sql = pos_lines.expand(sql)          # POS_LINES(p) → till lines with refunded combos fixed
     last_err = None
     for attempt in (1, 2):
         conn = _shared_conn()
@@ -173,6 +174,14 @@ _CACHE_DIR = paths.root(".odoo_cache")
 def _cache_path(sql: str, params: dict | None) -> str:
     raw = " ".join(sql.split()) + "\x00" + json.dumps(params or {}, sort_keys=True, default=str)
     return os.path.join(_CACHE_DIR, hashlib.sha1(raw.encode("utf-8")).hexdigest() + ".pkl")
+
+
+def run_query_snap(sql: str, params: dict | None = None, ttl_min: float = 30) -> pd.DataFrame | None:
+    """A till-sales query answered from the local DuckDB snapshot (lib/snapshot.py) when it can be,
+    else run_query_cached on Postgres. Same result either way (tests/test_snapshot.py)."""
+    from lib import snapshot
+    df = snapshot.query(sql, params)
+    return df if df is not None else run_query_cached(sql, params, ttl_min)
 
 
 def run_query_cached(sql: str, params: dict | None = None, ttl_min: float = 30) -> pd.DataFrame | None:

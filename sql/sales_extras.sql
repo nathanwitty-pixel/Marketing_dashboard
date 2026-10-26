@@ -1,6 +1,6 @@
 -- Samples and customisation sold — shown next to Sales on the Current Performance card.
 -- All tills, done/paid, refunds netted (qty <> 0), same window as bags_sold_total.sql.
---   samples      : "Sample …" products — NOT in Sales (display units, excluded there).
+--   samples      : "Sample …" products — display units sold; IN Sales since 26 Oct 2026, shown here as a part of it.
 --   custom_bags  : customised bags ("… Customised …") — a bag, so IN Sales.
 --   custom_fees  : customisation charges ("Customization …") — a service line, NOT in Sales.
 WITH params AS (
@@ -16,7 +16,7 @@ SELECT
   COALESCE(SUM(pl.qty) FILTER (WHERE pt."name" ILIKE '%customization%'), 0)::numeric AS custom_fees
 FROM pos_order p
 CROSS JOIN params dp
-JOIN pos_order_line pl ON pl.order_id = p.id
+JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 WHERE p.date_order::date BETWEEN dp.start_date AND dp.end_date

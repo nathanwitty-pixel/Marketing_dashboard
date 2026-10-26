@@ -243,7 +243,7 @@ def odoo_window_sales(bags, start, end, market):
     q = f"""
     SELECT pt."name" AS product, SUM(pl.qty)::int AS bags
     FROM pos_order p
-    JOIN pos_order_line pl ON pl.order_id = p.id
+    JOIN POS_LINES(p) pl ON pl.order_id = p.id
     LEFT JOIN pos_session ps ON p.session_id = ps.id
     LEFT JOIN pos_config pc ON ps.config_id = pc.id
     LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -261,7 +261,7 @@ def odoo_window_sales(bags, start, end, market):
       AND COALESCE(pcat."name",'') NOT ILIKE '%Pos%'
     GROUP BY pt."name"
     """
-    df = db.run_query_cached(q, params, ttl_min=ODOO_CACHE_MIN)
+    df = db.run_query_snap(q, params, ttl_min=ODOO_CACHE_MIN)
     if df is None or df.empty:
         return out, True
     for _, r in df.iterrows():
@@ -297,7 +297,7 @@ def odoo_daily_kenya(bags, start, end, name_sql=None):
     q = f"""
     SELECT p.date_order::date AS d, SUM(pl.qty)::int AS bags
     FROM pos_order p
-    JOIN pos_order_line pl ON pl.order_id = p.id
+    JOIN POS_LINES(p) pl ON pl.order_id = p.id
     LEFT JOIN pos_session ps ON p.session_id = ps.id
     LEFT JOIN pos_config pc ON ps.config_id = pc.id
     LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -316,7 +316,7 @@ def odoo_daily_kenya(bags, start, end, name_sql=None):
       AND ({like_clauses})
     GROUP BY 1 ORDER BY 1
     """
-    df = db.run_query_cached(q, params, ttl_min=ODOO_CACHE_MIN)
+    df = db.run_query_snap(q, params, ttl_min=ODOO_CACHE_MIN)
     if df is not None and not df.empty:
         for _, r in df.iterrows():
             out[str(r["d"])] = int(r["bags"] or 0)
@@ -337,7 +337,7 @@ def odoo_bag_prices(bags, start, end):
     params = {"s": start, "e": end}
     base = """
     FROM pos_order p
-    JOIN pos_order_line pl ON pl.order_id = p.id
+    JOIN POS_LINES(p) pl ON pl.order_id = p.id
     LEFT JOIN pos_session ps ON p.session_id = ps.id
     LEFT JOIN pos_config pc ON ps.config_id = pc.id
     LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -355,7 +355,7 @@ def odoo_bag_prices(bags, start, end):
       AND COALESCE(pcat."name",'') NOT ILIKE '%Pos%'
     """ + _QTY_SQL + _SHOP_SQL + _TIME_SQL + _PRICE_SQL + _NAME_SQL
     # per offer-bag — fetch all products, bucket in Python (only configured bags kept)
-    df = db.run_query_cached(f'SELECT pt."name" AS product, SUM(pl.qty)::int AS qty, '
+    df = db.run_query_snap(f'SELECT pt."name" AS product, SUM(pl.qty)::int AS qty, '
                              f'SUM(pl.price_subtotal_incl)::numeric AS val {base} '
                              f'GROUP BY pt."name"', params, ttl_min=ODOO_CACHE_MIN)
     if df is not None and not df.empty:
@@ -365,7 +365,7 @@ def odoo_bag_prices(bags, start, end):
                 prices[b]["qty"] += int(r["qty"] or 0)
                 prices[b]["val"] += float(r["val"] or 0)
     # catalogue-wide avg
-    dfc = db.run_query_cached(f'SELECT ROUND(SUM(pl.price_subtotal_incl)/NULLIF(SUM(pl.qty),0)) AS avg {base}',
+    dfc = db.run_query_snap(f'SELECT ROUND(SUM(pl.price_subtotal_incl)/NULLIF(SUM(pl.qty),0)) AS avg {base}',
                               {"s": start, "e": end}, ttl_min=ODOO_CACHE_MIN)
     if dfc is not None and not dfc.empty and dfc.iloc[0]["avg"] is not None:
         catalog = int(dfc.iloc[0]["avg"])
@@ -388,7 +388,7 @@ def odoo_bulk_lines(start, end):
     SELECT p.date_order::date AS d, p."name" AS ord, COALESCE(pc."name",'') AS till,
            pt."name" AS product, SUM(pl.qty)::int AS qty, SUM(pl.price_subtotal_incl)::numeric AS val
     FROM pos_order p
-    JOIN pos_order_line pl ON pl.order_id = p.id
+    JOIN POS_LINES(p) pl ON pl.order_id = p.id
     LEFT JOIN pos_session ps ON p.session_id = ps.id
     LEFT JOIN pos_config pc ON ps.config_id = pc.id
     LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -401,9 +401,9 @@ def odoo_bulk_lines(start, end):
     {_SHOP_SQL}{_TIME_SQL}{_PRICE_SQL}{_NAME_SQL}
       AND COALESCE(pt."name",'') NOT LIKE '%+%'
       AND COALESCE(pcat."name",'') NOT ILIKE '%Pos%'
-    GROUP BY 1, 2, 3, 4 ORDER BY 1
+    GROUP BY 1, 2, 3, 4 ORDER BY 1, 2, 4
     """
-    df = db.run_query_cached(q, {"s": start, "e": end, "bulk": BULK_LINE_QTY}, ttl_min=ODOO_CACHE_MIN)
+    df = db.run_query_snap(q, {"s": start, "e": end, "bulk": BULK_LINE_QTY}, ttl_min=ODOO_CACHE_MIN)
     if df is None or df.empty:
         return out
     for _, r in df.iterrows():
@@ -526,7 +526,7 @@ def reject_variants(start, end):
     SELECT pt."name" AS product, SUM(pl.qty)::int AS qty,
            SUM(pl.price_subtotal_incl)::numeric AS val, MAX(pt.list_price)::numeric AS lp
     FROM pos_order p
-    JOIN pos_order_line pl ON pl.order_id = p.id
+    JOIN POS_LINES(p) pl ON pl.order_id = p.id
     LEFT JOIN pos_session ps ON p.session_id = ps.id
     LEFT JOIN pos_config pc ON ps.config_id = pc.id
     LEFT JOIN product_product pp ON pl.product_id = pp.id
@@ -544,7 +544,7 @@ def reject_variants(start, end):
       AND COALESCE(pcat."name",'') NOT ILIKE '%Pos%'
     GROUP BY pt."name"
     """
-    df = db.run_query_cached(q, {"s": start, "e": end}, ttl_min=ODOO_CACHE_MIN)
+    df = db.run_query_snap(q, {"s": start, "e": end}, ttl_min=ODOO_CACHE_MIN)
     rows = []
     if df is not None and not df.empty:
         for _, r in df.iterrows():
@@ -714,7 +714,7 @@ def odoo_bag_daily_value(bags, start, end):
         params[f"bag{i}"] = b + "%"
     q = ('SELECT p.date_order::date AS d, pt."name" AS product, '
          'SUM(pl.qty)::int AS qty, SUM(pl.price_subtotal_incl)::numeric AS val '
-         'FROM pos_order p JOIN pos_order_line pl ON pl.order_id = p.id '
+         'FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id '
          'LEFT JOIN pos_session ps ON p.session_id = ps.id '
          'LEFT JOIN pos_config pc ON ps.config_id = pc.id '
          'LEFT JOIN product_product pp ON pl.product_id = pp.id '
@@ -729,7 +729,7 @@ def odoo_bag_daily_value(bags, start, end):
          '  AND COALESCE(pt."name",\'\') NOT ILIKE \'%sample%\' '
          '  AND COALESCE(pcat."name",\'\') NOT ILIKE \'%Pos%\' '
          f'  AND ({like}) GROUP BY 1, 2')
-    df = db.run_query_cached(q, params, ttl_min=ODOO_CACHE_MIN)
+    df = db.run_query_snap(q, params, ttl_min=ODOO_CACHE_MIN)
     if df is not None and not df.empty:
         for _, r in df.iterrows():
             b = _bucket(r["product"])
@@ -757,6 +757,279 @@ def weekly_kenya_posts(bags):
         if b:
             out[b] += safe_int(row[4])   # col E = KENYA posts
     return out
+
+
+# ── OFFERS COMPARED (docs/timed-offers.md › Offers compared) ──
+# Every offer judged against a clean baseline: the same bags over the CMP_BASE_DAYS before it, other offers'
+# days left out, walk-in only (POS lines of BULK_LINE_QTY+ units out of both windows).
+ALL_WINDOWS = []          # [(start, end)] of the config's timed price offers — baseline days skip these
+CMP_BASE_DAYS = 28
+CMP_POST_DAYS = 7
+CMP_MIN_BASE = 0.5        # a bag selling under this many a day before has no lift ("too little before")
+
+
+def _days(a, b):
+    out, d = [], a
+    while d <= b:
+        out.append(d.isoformat())
+        d += timedelta(days=1)
+    return out
+
+
+def _cmp_lines(start, end):
+    """[(iso day, product, in combo, bulk line, units, KES)] for every Kenya bag over [start, end], scoped to the
+    current offer's tills / hours. Gross (qty > 0), like the offer's own figures. None if Odoo is unreachable."""
+    from lib import db
+    sql = f"""
+    SELECT p.date_order::date AS d, pt."name" AS product,
+           COALESCE(pl.sub_product_line, false) AS sub, (pl.qty >= :bulk) AS bulk,
+           SUM(pl.qty)::float AS q, SUM(pl.price_subtotal_incl)::float AS v
+    FROM pos_order p
+    JOIN POS_LINES(p) pl ON pl.order_id = p.id
+    LEFT JOIN pos_session ps ON p.session_id = ps.id
+    LEFT JOIN pos_config pc ON ps.config_id = pc.id
+    LEFT JOIN product_product pp ON pl.product_id = pp.id
+    LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
+    LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
+    WHERE p.date_order::date BETWEEN CAST(:s AS date) AND CAST(:e AS date)
+      AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty > 0
+      AND lower(COALESCE(pc."name",'')) NOT IN ('sinza','dar-es-alam','uganda')
+    {_SHOP_SQL}{_TIME_SQL}
+      AND COALESCE(pt."name",'') NOT LIKE '%+%'
+      AND COALESCE(pt."name",'') NOT ILIKE '%delivery%'
+      AND COALESCE(pt."name",'') NOT ILIKE '%customization%'
+      AND COALESCE(pt."name",'') NOT ILIKE '%strap%'
+      AND COALESCE(pt."name",'') NOT ILIKE '%sample%'
+      AND COALESCE(pt."name",'') NOT ILIKE '%KES discount%'
+      AND COALESCE(pcat."name",'') NOT ILIKE '%Pos%'
+    GROUP BY 1, 2, 3, 4
+    """
+    df = db.run_query_snap(sql, {"s": start.isoformat(), "e": end.isoformat(), "bulk": BULK_LINE_QTY},
+                           ttl_min=ODOO_CACHE_MIN)
+    if df is None:
+        return None
+    return [(str(r["d"])[:10], str(r["product"] or ""), bool(r["sub"]), bool(r["bulk"]),
+             float(r["q"] or 0), float(r["v"] or 0)) for _, r in df.iterrows()]
+
+
+def _kenya_net_moves_since(since):
+    """{BAG_UPPER: net units moved INTO the Kenya shops on/after `since`} (done stock moves: deliveries in, sales
+    and transfers out; shop ↔ shop nets to 0), bucketed to the current offer's bags — rolls today's shop stock
+    back to the offer start. {} if Odoo is unreachable."""
+    from lib import db
+    from lib.stock import KENYA_SHOP_CODES
+    inl = ", ".join("'" + c + "'" for c in KENYA_SHOP_CODES)
+    sql = f"""
+    SELECT pt."name" AS name,
+           SUM(CASE WHEN ld.usage = 'internal' AND split_part(ld.complete_name, '/', 1) IN ({inl})
+                     AND NOT (ls.usage = 'internal' AND split_part(ls.complete_name, '/', 1) IN ({inl}))
+                    THEN m.product_qty
+                    WHEN ls.usage = 'internal' AND split_part(ls.complete_name, '/', 1) IN ({inl})
+                     AND NOT (ld.usage = 'internal' AND split_part(ld.complete_name, '/', 1) IN ({inl}))
+                    THEN -m.product_qty ELSE 0 END)::float AS net
+    FROM stock_move m
+    JOIN stock_location ls ON ls.id = m.location_id
+    JOIN stock_location ld ON ld.id = m.location_dest_id
+    JOIN product_product pp ON pp.id = m.product_id
+    JOIN product_template pt ON pt.id = pp.product_tmpl_id
+    WHERE m.state = 'done' AND pt."name" NOT LIKE '%+%'
+      AND (m.date AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date >= CAST(:since AS date)
+    GROUP BY pt."name"
+    """
+    df = db.run_query_cached(sql, {"since": since.isoformat()}, ttl_min=ODOO_CACHE_MIN)
+    out = {}
+    for _, r in (df.iterrows() if df is not None else []):
+        b = _bucket(r["name"])
+        if b:
+            out[b] = out.get(b, 0.0) + float(r["net"] or 0)
+    return out
+
+
+def _acc():
+    return {"q": 0.0, "qx": 0.0, "qp": 0.0, "v": 0.0, "qpx": 0.0, "vx": 0.0}
+
+
+def _offer_compare(why_bags):
+    """This offer's row of the Offers compared table and its per-bag figures (clean baseline, walk-in).
+    None for a clearance tracker or when Odoo is unreachable."""
+    if CFG.get("nameLike") or CFG.get("clearanceStart"):
+        return None
+    try:
+        os_, oe = date.fromisoformat(CFG["startDate"]), date.fromisoformat(CFG["endDate"])
+    except (ValueError, TypeError):
+        return None
+    today = date.today()
+    if os_ > today:
+        return None
+    oe_eff = min(oe, today)
+    bs = os_ - timedelta(days=CMP_BASE_DAYS)
+    post_end = min(oe + timedelta(days=CMP_POST_DAYS), today - timedelta(days=1))   # full days only
+    lines = _cmp_lines(bs, max(oe_eff, post_end))
+    if lines is None:
+        return None
+    others = [(s, e) for s, e in ALL_WINDOWS if not (s == os_ and e == oe)]
+    base = {d for d in _days(bs, os_ - timedelta(days=1))
+            if not any(s.isoformat() <= d <= e.isoformat() for s, e in others)}
+    off = set(_days(os_, oe_eff))
+    post = {d for d in (_days(oe + timedelta(days=1), post_end) if post_end > oe else [])     # other offers' days out
+            if not any(s.isoformat() <= d <= e.isoformat() for s, e in others)}
+    nb, no, np_ = len(base), len(off), len(post)
+    acc = {b: {"base": _acc(), "off": _acc(), "post": _acc()} for b in _BAGS_UP}
+    ken = {"base": 0.0, "off": 0.0, "post": 0.0}
+    for d, prod, sub, bulk, q, v in lines:
+        win = "off" if d in off else "base" if d in base else "post" if d in post else None
+        if not win:
+            continue
+        ken[win] += q
+        b = _bucket(prod)
+        if not b:
+            continue
+        a = acc[b][win]
+        a["q"] += q
+        if not bulk:
+            a["qx"] += q
+        if not sub:                                   # combo contents carry KES 0 — no price from them
+            a["qp"] += q
+            a["v"] += v
+            if not bulk:
+                a["qpx"] += q
+                a["vx"] += v
+    net = _kenya_net_moves_since(os_)
+    why = {w["name"].upper(): w for w in why_bags}
+
+    def pd(x, n):
+        return x / n if n else None
+
+    def lift(o, b):
+        return round((o / b - 1) * 100) if (o is not None and b is not None and b >= CMP_MIN_BASE) else None
+
+    bags, tot = [], {k: _acc() for k in ("base", "off", "post")}
+    priced_was = priced_v = disc_kes = 0.0
+    stock_start_tot = 0.0
+    for b in _BAGS_UP:
+        A = acc[b]
+        for k in tot:
+            for f in tot[k]:
+                tot[k][f] += A[k][f]
+        w = why.get(b, {})
+        was = w.get("priceWas")
+        stock_now = float(w.get("stock") or 0)
+        stock_start = max(stock_now - net.get(b, 0.0), 0.0)
+        stock_start_tot += stock_start
+        o_pd, b_pd = pd(A["off"]["qx"], no), pd(A["base"]["qx"], nb)
+        price = round(A["off"]["v"] / A["off"]["qp"]) if A["off"]["qp"] else None
+        if was and A["off"]["qp"]:
+            priced_was += was * A["off"]["qp"]
+            priced_v += A["off"]["v"]
+            disc_kes += was * A["off"]["qp"] - A["off"]["v"]
+        bags.append({
+            "name": w.get("name") or b.title(), "category": w.get("category") or "",
+            "units": round(A["off"]["q"]), "unitsWalkIn": round(A["off"]["qx"]),
+            "perDay": round(o_pd, 1) if o_pd is not None else None,
+            "basePerDay": round(b_pd, 1) if b_pd is not None else None,
+            "lift": lift(o_pd, b_pd),
+            "price": price, "was": was,
+            "discPct": round((1 - price / was) * 100) if (price and was) else None,
+            "basePrice": round(A["base"]["vx"] / A["base"]["qpx"]) if A["base"]["qpx"] else None,
+            "stockStart": round(stock_start), "stockNow": round(stock_now),
+            "sellThrough": round(A["off"]["q"] / stock_start * 100, 1) if stock_start else None,
+        })
+    o_pd, b_pd = pd(tot["off"]["qx"], no), pd(tot["base"]["qx"], nb)
+    p_pd = pd(tot["post"]["qx"], np_)
+    rev_pd_base = pd(tot["base"]["vx"], nb)
+    bags.sort(key=lambda r: -r["units"])
+    return {
+        "days": no, "baseDays": nb, "postDays": np_, "bags": len(_BAGS_UP),
+        "baseFrom": bs.isoformat(), "baseTo": (os_ - timedelta(days=1)).isoformat(),
+        "units": round(tot["off"]["q"]), "unitsWalkIn": round(tot["off"]["qx"]),
+        "perDay": round(o_pd, 1) if o_pd is not None else None,
+        "basePerDay": round(b_pd, 1) if b_pd is not None else None,
+        "lift": lift(o_pd, b_pd),
+        "revenue": round(tot["off"]["v"]), "revenuePerDay": round(tot["off"]["v"] / no) if no else None,
+        "avgPrice": round(tot["off"]["v"] / tot["off"]["qp"]) if tot["off"]["qp"] else None,
+        "avgWas": round(priced_was / sum(acc[b]["off"]["qp"] for b in _BAGS_UP if why.get(b, {}).get("priceWas")))
+                  if priced_was else None,
+        "realDiscPct": round((1 - priced_v / priced_was) * 100, 1) if priced_was else None,
+        "discountKes": round(disc_kes),
+        "extraUnits": round(tot["off"]["qx"] - b_pd * no) if b_pd is not None else None,
+        "extraRevenue": round(tot["off"]["vx"] - rev_pd_base * no) if rev_pd_base is not None else None,
+        "stockStart": round(stock_start_tot),
+        "sellThrough": round(tot["off"]["q"] / stock_start_tot * 100, 1) if stock_start_tot else None,
+        "postPerDay": round(p_pd, 1) if p_pd is not None else None,
+        "postVsBase": lift(p_pd, b_pd) if np_ else None,
+        "share": round(tot["off"]["q"] / ken["off"] * 100, 1) if ken["off"] else None,
+        "baseShare": round(tot["base"]["q"] / ken["base"] * 100, 1) if ken["base"] else None,
+        "bagRows": bags,
+    }
+
+
+def build_compare(to_list):
+    """TO_DATA.compare: the offers side by side, every offer bag across them, the lift-per-discount fit and each
+    bag's current walk-in rate for the Next offer check (docs/timed-offers.md › Offers compared)."""
+    global _BAGS_UP, _SHOP_SQL, _TIME_SQL
+    offs = [(i, t) for i, t in enumerate(to_list) if t.get("cmp")]
+    if not offs:
+        return None
+    # Lift per discount point across the offers (least squares, never below 0 — 3 points are indicative only)
+    pts = [(t["cmp"]["realDiscPct"], t["cmp"]["lift"]) for _, t in offs
+           if t["cmp"].get("realDiscPct") is not None and t["cmp"].get("lift") is not None]
+    slope = 0.0
+    if len(pts) >= 2:
+        mx = sum(x for x, _ in pts) / len(pts)
+        my = sum(y for _, y in pts) / len(pts)
+        vx = sum((x - mx) ** 2 for x, _ in pts)
+        if vx > 0:
+            slope = max(sum((x - mx) * (y - my) for x, y in pts) / vx, 0.0)
+    avg_lift = round(sum(y for _, y in pts) / len(pts), 1) if pts else None
+    avg_disc = round(sum(x for x, _ in pts) / len(pts), 1) if pts else None
+    # Every bag across the offers
+    bags = {}
+    for i, t in offs:
+        for r in t["cmp"]["bagRows"]:
+            e = bags.setdefault(r["name"].upper(), {"name": r["name"], "category": r["category"], "offers": []})
+            e["category"] = e["category"] or r["category"]
+            e["offers"].append(dict(r, offer=i, offerDisc=t["cmp"].get("realDiscPct")))
+    # Each bag's walk-in rate now: the last CMP_BASE_DAYS full days, offer days left out, whole of Kenya
+    today = date.today()
+    s, e = today - timedelta(days=CMP_BASE_DAYS), today - timedelta(days=1)
+    keep = (_BAGS_UP, _SHOP_SQL, _TIME_SQL)
+    _BAGS_UP, _SHOP_SQL, _TIME_SQL = list(bags), "", ""
+    try:
+        lines = _cmp_lines(s, e) or []
+        days = {d for d in _days(s, e) if not any(a.isoformat() <= d <= b.isoformat() for a, b in ALL_WINDOWS)}
+        now = {b: _acc() for b in bags}
+        for d, prod, sub, bulk, q, v in lines:
+            b = _bucket(prod)
+            if not b or d not in days or bulk:
+                continue
+            now[b]["qx"] += q
+            if not sub:
+                now[b]["qpx"] += q
+                now[b]["vx"] += v
+    finally:
+        _BAGS_UP, _SHOP_SQL, _TIME_SQL = keep
+    for b, x in bags.items():
+        n = now[b]
+        x["nowPerDay"] = round(n["qx"] / len(days), 2) if days else None
+        was = next((o["was"] for o in reversed(x["offers"]) if o.get("was")), None)
+        x["was"] = was
+        x["normalPrice"] = round(n["vx"] / n["qpx"]) if n["qpx"] else was
+        lifts = [o["lift"] for o in x["offers"] if o.get("lift") is not None]
+        x["avgLift"] = round(sum(lifts) / len(lifts)) if lifts else None
+        x["units"] = sum(o["units"] for o in x["offers"])
+        st = [o for o in x["offers"] if o.get("stockStart")]
+        x["sellThrough"] = round(sum(o["units"] for o in st) / sum(o["stockStart"] for o in st) * 100, 1) if st else None
+        pr = [o for o in x["offers"] if o.get("price")]
+        x["avgPrice"] = round(sum(o["price"] * o["units"] for o in pr) / sum(o["units"] for o in pr)) \
+            if pr and sum(o["units"] for o in pr) else None
+    return {"offers": [{"index": i, "name": t["name"], "window": t["windowLabel"], **{k: v for k, v in t["cmp"].items()
+                                                                                    if k != "bagRows"}}
+                       for i, t in offs],
+            "bags": sorted(bags.values(), key=lambda x: -x["units"]),
+            "fit": {"slope": round(slope, 2), "points": len(pts), "avgLift": avg_lift, "avgDisc": avg_disc},
+            "rules": {"baseDays": CMP_BASE_DAYS, "postDays": CMP_POST_DAYS, "bulkQty": BULK_LINE_QTY,
+                      "minBase": CMP_MIN_BASE, "nowFrom": s.isoformat(), "nowTo": e.isoformat(),
+                      "nowDays": len(days)}}
 
 
 # ── BUILD ─────────────────────────────────────────────────────
@@ -1151,6 +1424,8 @@ def build_offer(offer):
             "bags": _pw_bags,
         }
 
+    cmp = _offer_compare(why_bags)        # Offers compared row (clean baseline, walk-in)
+
     TO = {
         "name":       CFG["name"],
         "market":     CFG["market"],
@@ -1177,6 +1452,7 @@ def build_offer(offer):
         "bestSold":   best["sold"]  if best  else 0,
         "mostPName":  mostp["name"] if mostp else "",
         "mostPosts":  mostp["posts"] if mostp else 0,
+        "cmp":        cmp,
     }
 
     return TO
@@ -1191,9 +1467,18 @@ def build_offer(offer):
 if __name__ == "__main__":
     cfg = load_config()
 
+    # Every timed price offer's window (clearance trackers aside): Offers compared leaves these days out of
+    # each other's baselines.
+    for _o in cfg["offers"]:
+        if _o.get("nameLike") or _o.get("clearanceStart"):
+            continue
+        try:
+            ALL_WINDOWS.append((date.fromisoformat(_o["startDate"]), date.fromisoformat(_o["endDate"])))
+        except (ValueError, TypeError, KeyError):
+            pass
     # Build every live offer for the current month (stacked on the page).
     TO_LIST = [build_offer(off) for off in cfg["offers"]]
-    payload = {"month": cfg["month"], "offers": TO_LIST}
+    payload = {"month": cfg["month"], "offers": TO_LIST, "compare": build_compare(TO_LIST)}
 
     # ── INJECT ────────────────────────────────────────────────
     inline_script = (

@@ -57,6 +57,9 @@ follows the bag type in the name ("ACE BLACK TT" → BLACK TT). Lines that match
    - **Selling without posts:** sold here with no Kenya posts this month; a candidate to post.
    - **Not posted, not selling:** neither.
    Each bag opens to its colours (opening, sold, left). Sorted by sold, then opening stock.
+   **Total row (26 Oct 2026, user's call):** at the foot of the table, the bags listed (it follows the filter and the
+   search): opening, sold, sell-through (sold ÷ opening), left, posts this month and last week, and how many of the
+   listed bags were posted this month.
 5. **Marketing panel:** how many stocked bags were posted this month (Kenya), and the average sell-through of
    posted vs unposted bags at this shop.
 

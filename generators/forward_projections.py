@@ -40,24 +40,79 @@ SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 
 
 def _corporate_bags(year, month):
-    """Corporate bags sold in the given month, live from Odoo invoices.
-    Returns 0 when Postgres isn't reachable (projection falls back to POS-only
-    rather than a stale hardcoded figure)."""
+    """(corporate bags, corporate KES received) in the given month, live from
+    Odoo invoices. Returns (0, 0) when Postgres isn't reachable (projection falls
+    back to POS-only rather than a stale hardcoded figure)."""
     try:
         from lib import db, queries
         ok, _ = db.check_connection()
         if not ok:
-            return 0
+            return 0, 0
         m_start = date(year, month, 1)
         m_end   = date(year, month, calendar.monthrange(year, month)[1])
         df = db.run_query(queries.CORPORATE_BAGS,
                           {"start_date": m_start.isoformat(),
                            "end_date":   m_end.isoformat()})
         if df is not None and not df.empty:
-            return int(df.iloc[0]["bags"] or 0)
+            return int(df.iloc[0]["bags"] or 0), round(float(df.iloc[0]["kes"] or 0))
     except Exception:
         pass
-    return 0
+    return 0, 0
+
+
+def _corporate_lines(year, month):
+    """The corporate app bags behind _corporate_bags(), one row per product with its clients
+    (sql/corporate_bag_lines.sql). [] when Postgres isn't reachable."""
+    try:
+        from lib import db, queries
+        df = db.run_query(queries.CORPORATE_BAG_LINES,
+                          {"start_date": date(year, month, 1).isoformat(),
+                           "end_date":   date(year, month, calendar.monthrange(year, month)[1]).isoformat()})
+        if df is not None and not df.empty:
+            return [{"product": r["product"], "bags": float(r["bags"] or 0), "kes": float(r["kes"] or 0),
+                     "clients": r["clients"] or ""} for _, r in df.iterrows()]
+    except Exception:
+        pass
+    return []
+
+
+def _bag_revenue(year, month):
+    return _bag_revenue_range(date(year, month, 1), date(year, month, calendar.monthrange(year, month)[1]))
+
+
+def _bag_revenue_range(start, end):
+    """POS bag revenue for the month, split by how the bags were sold (sql/bag_revenue.sql —
+    combo money taken from the '+' wrapper line). Same month window as monthly_sales.py, so it
+    sits on the same bags as Total Sales. None when Postgres isn't reachable."""
+    try:
+        from lib import db, queries
+        ok, _ = db.check_connection()
+        if not ok:
+            return None
+        df = db.run_query(queries.BAG_REVENUE,
+                          {"start_date": start.isoformat(),
+                           "end_date":   end.isoformat(),
+                           "excluded":   queries.excluded_products()})
+        if df is not None and not df.empty:
+            return {k: round(float(v or 0)) for k, v in df.iloc[0].items()}
+    except Exception:
+        pass
+    return None
+
+
+def _revenue_target(year, month):
+    """The month's revenue target (KES): Odoo sales_pos_target amount (pos +
+    corporate), else REVENUE_TARGETS in lib/product_targets. 0 = none / no DB."""
+    try:
+        from lib import db, product_targets
+        ok, _ = db.check_connection()
+        if ok:
+            t = db.run_query(product_targets.TOTAL_SQL, {"m": date(year, month, 1).isoformat()})
+            if t is not None and len(t) and t.amt[0] is not None and float(t.amt[0]) > 0:
+                return round(float(t.amt[0]))
+        return product_targets.REVENUE_TARGETS.get(f"{year}-{month:02d}", 0)
+    except Exception:
+        return 0
 
 
 # ── PERFECT (COMPLETE) WEEKS IN THE MONTH ─────────────────────
@@ -210,7 +265,12 @@ velocity_factor = days_in_month / current_day
 proj_month      = proj_ref.strftime("%B")
 
 # Corporate bags for the projected month (dynamic — from Odoo invoices).
-corporate_bags = _corporate_bags(proj_ref.year, proj_ref.month)
+corporate_bags, corporate_kes = _corporate_bags(proj_ref.year, proj_ref.month)
+revenue_target = _revenue_target(proj_ref.year, proj_ref.month)
+# POS bag revenue month-to-date — live month only (the sheet has no money column).
+bag_rev     = _bag_revenue(proj_ref.year, proj_ref.month) if sales_is_live else None
+total_value = (bag_rev["single_kes"] + bag_rev["combo_kes"] + bag_rev["gift_kes"]
+               + bag_rev["discount_kes"]) if bag_rev else None
 
 # Perfect (complete) weeks in the month — used for the bare minimum
 perfect_weeks = count_complete_weeks_in_month()
@@ -227,6 +287,206 @@ standard_projection_pct = (total_sales * velocity_factor) / total_target * 100
 #    Step 1: (total_sales + corporate_bags) × (days_in_month ÷ current_day)
 #    Step 2: ÷ total_target × 100                         → as % of target
 forecasted_projection_pct = ((total_sales + corporate_bags) * velocity_factor) / total_target * 100
+
+# 2b. Projected revenue (KES) — same pace as the bags projections, so the two read together.
+#     Standard = POS revenue × velocity; Forecasted = (POS revenue + corporate KES) × velocity.
+#     None when there's no live month figure (the cards then leave the revenue line off).
+if total_value is not None:
+    standard_revenue   = total_value * velocity_factor
+    forecasted_revenue = (total_value + corporate_kes) * velocity_factor
+else:
+    standard_revenue = forecasted_revenue = None
+standard_revenue_pct   = (standard_revenue   / revenue_target * 100) if standard_revenue   is not None and revenue_target else None
+forecasted_revenue_pct = (forecasted_revenue / revenue_target * 100) if forecasted_revenue is not None and revenue_target else None
+
+# 2c. Price per bag — why the revenue % and the bags % differ. The targets assume each bag brings
+#     in revenue_target ÷ total_target; this month's bags actually bring in total_value ÷ bags.
+#     revenue % ≈ bags % × (actual ÷ target price). Split by how bags were sold so the reader can
+#     see what lifts or drags the average.
+price_mix = None
+if bag_rev and bag_rev["bags"] and revenue_target and total_target:
+    vel        = velocity_factor
+    target_ppb = revenue_target / total_target          # the bag target has no gift bags in it
+    main_bags  = bag_rev["single_bags"] + bag_rev["combo_bags"]
+    main_kes   = bag_rev["single_kes"] + bag_rev["combo_kes"] + bag_rev["discount_kes"]
+    actual_ppb = main_kes / main_bags if main_bags else 0
+
+    # Gift bags have no Odoo target, so they get their own: the average month of the three complete
+    # months before (product_targets.base_period, the same base as the bag targets), at their own
+    # price then. Judged against that, not the KES ~2,000 a bag that targeted bags carry.
+    from lib import product_targets as _pt
+    _bs, _be = _pt.base_period(date(proj_ref.year, proj_ref.month, 1))
+    _base = _bag_revenue_range(_bs, _be)
+    gift_target_bags = round(_base["gift_bags"] / 3) if _base else 0
+    gift_target_ppb  = (_base["gift_kes"] / _base["gift_bags"]) if _base and _base["gift_bags"] else 0
+
+    def _row(label, bags, kes, tppb, target_bags=None):
+        """One table row, month-end projected. expected = what the targets expect from this group
+        by month end: projected bags × target price, or (gift bags) their own target × own price."""
+        pb, pk = bags * vel, kes * vel
+        expected = ((target_bags if target_bags is not None else pb) * tppb) if tppb else 0
+        ppb = (kes / bags) if bags else None
+        return {"label": label, "bags": bags, "kes": kes, "projBags": round(pb), "projKes": round(pk),
+                "ppb": round(ppb) if ppb is not None else None,
+                "targetPpb": round(tppb) if tppb else None,
+                "targetBags": target_bags,
+                "gapPct": round((ppb / tppb - 1) * 100, 1) if ppb is not None and tppb else None,
+                "share": round(bags / bag_rev["bags"] * 100, 1) if bags else None,
+                "expectedKes": round(expected),
+                "effectKes": round(pk - expected),
+                "effectPts": round((pk - expected) / revenue_target * 100, 2)}
+    rows = [
+        _row("Single bags", bag_rev["single_bags"], bag_rev["single_kes"], target_ppb),
+        _row("Combos",      bag_rev["combo_bags"],  bag_rev["combo_kes"],  target_ppb),
+        _row("Gift bags",   bag_rev["gift_bags"],   bag_rev["gift_kes"],   gift_target_ppb,
+             gift_target_bags if gift_target_bags else None),
+        _row("Discounts",   0,                      bag_rev["discount_kes"], 0),
+    ]
+    total = {"label": "All bags", "bags": bag_rev["bags"], "kes": total_value,
+             "projBags": sum(r["projBags"] for r in rows), "projKes": sum(r["projKes"] for r in rows),
+             "ppb": round(total_value / bag_rev["bags"]), "share": 100.0,
+             "expectedKes": sum(r["expectedKes"] for r in rows),
+             "effectKes": sum(r["effectKes"] for r in rows),
+             "effectPts": round(sum(r["effectKes"] for r in rows) / revenue_target * 100, 2)}
+    price_mix = {
+        "targetPpb": round(target_ppb),
+        "actualPpb": round(actual_ppb),                  # single bags + combos (after discounts) — like for like with the target
+        "gapPct":    round((actual_ppb / target_ppb - 1) * 100, 1),
+        "mainBags":  main_bags,
+        "bagsPct":   round(total_sales / total_target * 100, 2),
+        "revPct":    round(total_value / revenue_target * 100, 2),
+        "velocity":  round(vel, 4),
+        "revenueTarget": revenue_target,
+        "giftBase":  {"from": _bs.strftime("%b"), "to": _be.strftime("%b"), "bags": gift_target_bags,
+                      "ppb": round(gift_target_ppb)},
+        "rows": rows,
+        "total": total,
+    }
+
+    # On offer vs not on offer — the Bags On vs Off Offer page's sorting of the same month's bags
+    # (data/offer_mix.json, written by bags_on_offer.py), judged on the same prices: KES ~2,000 a bag,
+    # gift bags on their own target, samples expect nothing (not in the bag target). Each offer row
+    # carries the bags inside it.
+    try:
+        with open(paths.data("offer_mix.json"), encoding="utf-8") as _f:
+            _om = json.load(_f)
+    except (OSError, ValueError):
+        _om = None
+    if _om and _om.get("month") == proj_ref.strftime("%B %Y"):
+        # Corporate app bags (paid invoices, not POS) — the same bags and KES the Forecasted card adds.
+        _capp = _corporate_lines(proj_ref.year, proj_ref.month)
+        _capp_bags = sum(c["bags"] for c in _capp)
+        # The till's KES 300 discount line has qty 1 but isn't a bag: keep its money, drop its count.
+        _disc_units = sum(u["units"] for u in _om.get("unclassifiedBags", []) if "DISCOUNT" in u["name"].upper())
+        _unc = dict(_om["unclassified"], units=_om["unclassified"]["units"] - _disc_units)
+        _all = (sum(r["units"] for r in _om["rows"] if r["key"] != "CORP")       # CORP = the Corporate app, added once below
+                + _unc["units"] + _capp_bags)                                    # _unc = the non-discount lines
+
+        def _orow(label, units, kes, key=None, on=None, bags=None):
+            if key == "GIFT":
+                tppb, tb = gift_target_ppb, (gift_target_bags or None)
+            elif key == "SAMPLE":
+                tppb, tb = 0, None
+            else:
+                tppb, tb = target_ppb, None
+            r = _row(label, units, kes, tppb, tb)
+            r["bags"] = round(units)
+            r["projBags"] = round(units * vel)
+            r["share"] = round(units / _all * 100, 1) if units and _all else None
+            r["key"], r["on"] = key, on
+            if key == "UNC":            # the till discount: no bags, nothing expected, so its effect = the money off
+                r.update(gapPct=None, targetPpb=None, ppb=None, share=None)
+            if bags is not None and key in ("CAPP", "UNC", "PART"):
+                r["items"] = bags            # already shaped (bag, sub, bags, kes, ppb, gapPct)
+            elif bags is not None:
+                r["items"] = [{"bag": b["bag"], "category": b["category"], "tier": b["tier"],
+                               "bags": round(b["units"], 1), "kes": b["revenue"],
+                               "ppb": round(b["revenue"] / b["units"]) if b["units"] else None,
+                               "gapPct": round((b["revenue"] / b["units"] / tppb - 1) * 100, 1)
+                                         if b["units"] and tppb else None}
+                              for b in bags]
+            return r
+
+        _on = [r for r in _om["rows"] if r["on"]]
+        # bag → (category, tier) from the offer page's tree, so the Mid-month parts' bags group by category too
+        _cat_of = {b["bag"]: (b["category"], b["tier"]) for r in _om["rows"] for b in r["bags"]
+                   if b["category"] and b["category"] != "UNASSIGNED"}
+        groups = []
+        for r in _om["rows"]:
+            # The offer page's Corporate row is the Corporate app too (26 Oct 2026), so only the per-bag
+            # "Corporate app" row below is shown — never both.
+            if r["key"] != "CORP":
+                groups.append(_orow(r["label"], r["units"], r["revenue"], r["key"], r["on"], r["bags"]))
+            if r["key"] == "MID":
+                # What the Mid-month offers are made of: new products, runway bags, timed offers (Kenya),
+                # the month's listed singles (Tanzania / Uganda). Rows sit under Mid-month offers.
+                _part_lbl = {mp["part"]: f'{mp["part"]} ({", ".join(mp.get("countries") or ["Kenya"])})'
+                             for mp in _om.get("midParts", [])}
+                groups[-1]["parts"] = [
+                    _orow(_part_lbl.get(mp["part"], mp["part"]), mp["units"], mp["revenue"], "PART", True,
+                          [{"bag": b["bag"], "category": _cat_of.get(b["bag"], ("", ""))[0],
+                            "tier": _cat_of.get(b["bag"], ("", ""))[1],
+                            "bags": round(b["units"], 1), "kes": b["revenue"],
+                            "ppb": round(b["revenue"] / b["units"]) if b["units"] else None,
+                            "gapPct": round((b["revenue"] / b["units"] / target_ppb - 1) * 100, 1) if b["units"] else None}
+                           for b in mp["bags"]])
+                    for mp in _om.get("midParts", [])]
+                if groups[-1]["parts"]:
+                    groups[-1].pop("items", None)        # its bags are listed under each part instead
+            if r["key"] == "CORP" and _capp:
+                items = [{"bag": c["product"].title() if c["product"] != "Fees and other" else c["product"],
+                          "sub": c["clients"], "bags": round(c["bags"], 1), "kes": round(c["kes"]),
+                          "ppb": round(c["kes"] / c["bags"]) if c["bags"] else None,
+                          "gapPct": round((c["kes"] / c["bags"] / target_ppb - 1) * 100, 1) if c["bags"] else None}
+                         for c in _capp]
+                groups.append(_orow("Corporate app", _capp_bags, sum(c["kes"] for c in _capp),
+                                    "CAPP", None, items))
+        # "Not yet sorted" is only the KES 300 till discount line (money off the bill, not bags). The few
+        # other unsorted lines are items the offer lists don't know (PPM, Passport Holder…) sold at full
+        # price, so they're added to Not on offer, each listed with why.
+        _ub = _om.get("unclassifiedBags", [])
+        _disc = [u for u in _ub if "DISCOUNT" in u["name"].upper()]
+        _rest = [u for u in _ub if "DISCOUNT" not in u["name"].upper()]
+        _off = next((g for g in groups if g["key"] == "OFF"), None)
+        if _off is not None and _rest:
+            _orig = next(r for r in _om["rows"] if r["key"] == "OFF")
+            _extra = [{"bag": u["name"], "category": "NOT IN THE BAG LIST YET", "tier": "full price",
+                       "units": u["units"], "revenue": u["revenue"]} for u in _rest]
+            groups[groups.index(_off)] = _orow(_off["label"], _orig["units"] + sum(u["units"] for u in _rest),
+                                               _orig["revenue"] + sum(u["revenue"] for u in _rest),
+                                               "OFF", False, _orig["bags"] + _extra)
+        if _disc:
+            _dk = sum(u["revenue"] for u in _disc)
+            _dn = round(sum(u["units"] for u in _disc))
+            groups.append(_orow("KES 300 till discount", 0, _dk, "UNC", None,
+                                [{"bag": "KES 300 discount on total amount", "bags": 0, "kes": _dk, "ppb": None,
+                                  "gapPct": None, "sub": f"given {_dn} times this month"}]))
+        _where = {r["key"]: r.get("where") for r in _om["rows"]}
+        for g in groups:
+            if g["key"] == "CAPP":
+                g["where"] = "Kenya (Corporate app)"
+            elif _where.get(g["key"]):
+                g["where"] = _where[g["key"]]
+            for pt in g.get("parts") or []:
+                pt["where"] = None              # the label says where
+        on_total = _orow("On offer", sum(r["units"] for r in _on), sum(r["revenue"] for r in _on), "ON", True)
+        off = next((g for g in groups if g["key"] == "OFF"), None)
+        price_mix["offerMix"] = {
+            "generated": _om["generated"],
+            "range":     _om["range"],
+            "on":        on_total,
+            "rows":      groups,
+            # corporate counted as the Sales card counts it (whole bags), so the two totals agree
+            "total":     {"label": "All bags", "bags": round(_all - _capp_bags) + corporate_bags,
+                          "kes": sum(g["kes"] for g in groups),
+                          "projBags": sum(g["projBags"] for g in groups),
+                          "projKes": sum(g["projKes"] for g in groups),
+                          "ppb": round(sum(g["kes"] for g in groups) / _all) if _all else None,
+                          "share": 100.0,
+                          "effectKes": sum(g["effectKes"] for g in groups),
+                          "effectPts": round(sum(g["effectKes"] for g in groups) / revenue_target * 100, 2)},
+            "offPpb":    off["ppb"] if off else None,
+        }
 
 # 3. Bare Minimum = monthly target ÷ perfect weeks in the month
 bare_minimum       = round(total_target / perfect_weeks) if perfect_weeks else 0
@@ -294,7 +554,8 @@ def odoo_weekly_breakdown():
     m_start, m_end = report_month.live_month_window()
     ws      = m_start - timedelta(days=(m_start.weekday() + 1) % 7)   # Sunday of the week holding the 1st
 
-    entries, idx, cum = [], 0, 0
+    weeks = []                                            # (seg_start, label, till bags, corporate bags)
+    idx = 0
     while ws <= m_end:
         we        = ws + timedelta(days=6)                # Saturday
         seg_start = max(ws, m_start)
@@ -302,25 +563,38 @@ def odoo_weekly_breakdown():
         if seg_start <= seg_end:                          # this Sun–Sat week has in-month days
             idx += 1
             if seg_start <= today:                        # …and it has already started
+                win = {"start_date": seg_start.isoformat(), "end_date": seg_end.isoformat()}
                 df = db.run_query(queries.BAGS_SOLD_TOTAL,   # same total definition as monthly Sales
-                                  {"start_date": seg_start.isoformat(),
-                                   "end_date":   seg_end.isoformat(),
-                                   "excluded":   queries.excluded_products()})
-                bags = int(round(float(df.iloc[0]["bags"]))) if df is not None and not df.empty else 0
-                prev_cum = cum
-                cum += bags
-                entries.append({
-                    "weekStart":    seg_start.isoformat(),
-                    "label":        "Wk " + str(idx),
-                    "month":        today.strftime("%b"),
-                    "salesPct":     round((cum / total_target * 100) if total_target else 0, 2),
-                    "salesBags":    cum,
-                    "prevSalesPct": round((prev_cum / total_target * 100) if total_target else 0, 2),
-                    "prevSalesBags": prev_cum,
-                    "weeklySales":  bags,
-                    "declinedBy":   bags - bare_minimum,
-                })
+                                  {**win, "excluded": queries.excluded_products()})
+                pos = int(round(float(df.iloc[0]["bags"]))) if df is not None and not df.empty else 0
+                # Corporate bags paid this week — the Sales card's corporate rule over the week's dates
+                cdf = db.run_query(queries.CORPORATE_BAGS, win)
+                corp = int(cdf.iloc[0]["bags"] or 0) if cdf is not None and not cdf.empty else 0
+                weeks.append([seg_start, "Wk " + str(idx), pos, corp])
         ws += timedelta(days=7)
+    # Part-paid invoices round down per window, so the weeks' corporate can fall a bag short of the month's;
+    # the remainder goes on the latest week so the rows add up to the Sales card.
+    if weeks and corporate_bags:
+        weeks[-1][3] += corporate_bags - sum(w[3] for w in weeks)
+
+    entries, cum = [], 0
+    for seg_start, label, pos, corp in weeks:
+        bags = pos + corp
+        prev_cum = cum
+        cum += bags
+        entries.append({
+            "weekStart":    seg_start.isoformat(),
+            "label":        label,
+            "month":        today.strftime("%b"),
+            "salesPct":     round((cum / total_target * 100) if total_target else 0, 2),
+            "salesBags":    cum,
+            "prevSalesPct": round((prev_cum / total_target * 100) if total_target else 0, 2),
+            "prevSalesBags": prev_cum,
+            "weeklySales":  bags,
+            "posBags":      pos,
+            "corporateBags": corp,
+            "declinedBy":   bags - bare_minimum,
+        })
     return entries or None
 
 
@@ -413,6 +687,12 @@ def fmt_pct(p):
 def fmt_signed(n):
     return f"+{n:,}" if n > 0 else f"{n:,}"
 
+def fmt_kes(n):
+    return f"KES {round(n):,}" if n is not None else ""
+
+def fmt_opt_pct(p):
+    return fmt_pct(p) if p is not None else ""
+
 
 # ── INJECT INTO HTML ──────────────────────────────────────────
 
@@ -429,6 +709,13 @@ inline_script = (
     f'  standardProjection:       "{fmt_pct(standard_projection_pct)}",\n'
     f'  forecastedProjection:     "{fmt_pct(forecasted_projection_pct)}",\n'
     f'  corporateBags:            "{fmt_int(corporate_bags)}",\n'
+    f'  corporateKes:             "{fmt_kes(corporate_kes) if corporate_kes else ""}",\n'
+    f'  standardRevenue:          "{fmt_kes(standard_revenue)}",\n'
+    f'  forecastedRevenue:        "{fmt_kes(forecasted_revenue)}",\n'
+    f'  revenueTarget:            "{fmt_kes(revenue_target) if revenue_target else ""}",\n'
+    f'  standardRevenuePct:       "{fmt_opt_pct(standard_revenue_pct)}",\n'
+    f'  forecastedRevenuePct:     "{fmt_opt_pct(forecasted_revenue_pct)}",\n'
+    f'  priceMix:                 {json.dumps(price_mix)},\n'
     f'  bareMinimum:              "{fmt_int(bare_minimum_value) if bare_minimum_value else ""}",\n'
     f'  bareMinimumGrowthPct:     "{fmt_pct(bare_minimum_growth_pct)}",\n'
     f'  declinedBy:               "{("-" + fmt_int(abs(declined_by))) if bare_minimum_value else ""}",\n'
@@ -447,7 +734,7 @@ def _inject(path):
         content = f.read()
     content = re.sub(
         r"<!-- PROJ_DATA_START -->.*?<!-- PROJ_DATA_END -->",
-        inline_script,
+        lambda _m: inline_script,     # a function, so backslashes in the JSON (–) stay literal
         content,
         flags=re.DOTALL
     )
@@ -473,6 +760,11 @@ print(f"  Total Target (bags)   : {fmt_int(total_target)}")
 print(f"  Total Sales  ({'Odoo' if sales_is_live else 'sheet'})  : {fmt_int(total_sales)}")
 print(f"  Standard Proj.        : {fmt_pct(standard_projection_pct)}")
 print(f"  Forecasted Proj.      : {fmt_pct(forecasted_projection_pct)}  (incl. {fmt_int(corporate_bags)} corporate)")
+print(f"  Standard revenue      : {fmt_kes(standard_revenue) or '(no live month value)'}  {fmt_opt_pct(standard_revenue_pct)}")
+print(f"  Forecasted revenue    : {fmt_kes(forecasted_revenue) or '(no live month value)'}  {fmt_opt_pct(forecasted_revenue_pct)}  (incl. {fmt_kes(corporate_kes)} corporate)")
+print(f"  Revenue target        : {fmt_kes(revenue_target) if revenue_target else '(none)'}")
+if price_mix:
+    print(f"  Price per bag         : {fmt_kes(price_mix['actualPpb'])} actual vs {fmt_kes(price_mix['targetPpb'])} target ({price_mix['gapPct']:+.1f}%)")
 print(f"  Perfect weeks / month : {perfect_weeks}")
 print(f"  Bare Minimum          : {fmt_int(bare_minimum_value)}  (= {fmt_int(total_target)} / {perfect_weeks})")
 print(f"  Bare Min Growth %     : {fmt_pct(bare_minimum_growth_pct)}")

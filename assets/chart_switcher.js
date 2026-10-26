@@ -459,7 +459,7 @@
   // ── Week-on-week change on every week chart (docs/chart-switcher.md › Week change) ──
   // A bar / line chart whose x labels are weeks ("Wk 1", "Week 2", "W3", ["Wk 4 (now)", "dates"])
   // gets ▲ / ▼ % vs the week before above each week from the 2nd on: green up, red down, grey flat.
-  // Stacked bars (or one series) → change of the total; 2–3 side-by-side series → one per series.
+  // Stacked bars (or one series) → change of the total; 2–3 side-by-side series → one per series; 4+ → the total.
   // Opt out with options.plugins.weekChange = false.
   var WEEK_RE = /^\s*(?:wk|week|w)\s*\.?\s*(\d+)/i;
   function weekNo(l) { var m = String(Array.isArray(l) ? l[0] : l).match(WEEK_RE); return m ? +m[1] : null; }
@@ -575,7 +575,11 @@
     var labels = chart.data.labels, wk = mode === 'week' ? labels.map(weekNo) : labels.map(function (_, i) { return i; });
     var lastOnly = mode === 'line' && labels.length > 12;           // long day-by-day lines: the latest point only
     var horiz = o.indexAxis === 'y', sc = o.scales || {};
-    var partial = (pl.weekChange && pl.weekChange.partial) || [];
+    var partial = ((pl.weekChange && pl.weekChange.partial) || []).slice();
+    // A week labelled "now" / "so far" is still running on any chart, flagged or not (docs/chart-switcher.md).
+    labels.forEach(function (l, i) {
+      if (partial.indexOf(i) < 0 && /\b(now|so far)\b/i.test([].concat(l).join(' '))) partial.push(i);
+    });
     var isBarNow = chart.config.type === 'bar';
     var stacked = !!((sc.x && sc.x.stacked) || (sc.y && sc.y.stacked));
     var vis = chart.data.datasets.map(function (ds, di) { return di; }).filter(function (di) {
@@ -585,8 +589,9 @@
     var prevDs = stacked ? [] : vis.filter(function (di) { return isPrevSeries(chart, di); });
     var curDs = vis.filter(function (di) { return prevDs.indexOf(di) < 0; });
     if (!curDs.length) { curDs = vis; prevDs = []; }
-    var groups = (stacked || curDs.length === 1) ? [curDs] : (curDs.length <= 3 ? curDs.map(function (d) { return [d]; }) : null);
-    if (!groups) return;
+    // Stacked or one series → the total; 2–3 side by side → one pill each; 4+ side by side → the total again,
+    // so every weekly chart shows each week's gain on the week before.
+    var groups = (stacked || curDs.length === 1 || curDs.length > 3) ? [curDs] : curDs.map(function (d) { return [d]; });
     var ctx = chart.ctx, area = chart.chartArea || { left: 0, top: 0, right: chart.width, bottom: chart.height };
     var fs = groups.length === 1 ? 12 : 11, padX = 6, h = 20;        // even sizes keep edges on whole pixels
     var lift = pl.valueLabels && pl.valueLabels.totals ? 24 : 10;             // clear of a page's own total label

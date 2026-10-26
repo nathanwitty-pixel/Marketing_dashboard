@@ -1,6 +1,7 @@
 """Guard: the dashboard reads ONLY three Google-Sheet tabs — MONTHLY_TARGET, MONTHLY_MARKETING_POST,
 WEEKLY_MARKETING_POST — of the main spreadsheet, plus marketing's daily posting sheets (Kenya "2026",
 "MARKETING POSTS_SINZA", "MARKETING POSTS_UGANDA" — only via lib/marketing_posts.py, 16 Oct 2026)
+and the NEGATIVE FIX LOG tab of STOCKS LEVELS 2026 (only via lib/negative_fixes.py, 22 Oct 2026)
 (docs/README.md › Where the data comes from).
 Fails if live code (not export/, archive/, tests/) reads another tab, a range of another tab, or another sheet.
     python -m pytest tests/test_sheet_reads.py -q
@@ -13,6 +14,9 @@ ALLOWED_TABS = {"MONTHLY_TARGET", "MONTHLY_MARKETING_POST", "WEEKLY_MARKETING_PO
 MAIN_SHEET = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 POSTS_MODULE = os.path.join("lib", "marketing_posts.py")
 POSTS_SHEETS = {"1Os81LhnsbTLrLScv4_M1tq_xb6Das2SDABR7Tlg0eYU", "1DGrRYrvAKRD5t1X1jxcAB7Abp8TkcXmpPjc8FGJutiM"}
+NEGFIX_MODULE = os.path.join("lib", "negative_fixes.py")
+NEGFIX_SHEET = "1xWmk1CJldzs8H7G8QcNk7Q7xDbQMQpN454jy-bm-teY"
+NEGFIX_TAB = "NEGATIVE FIX LOG"
 SKIP = ("export", "archive", "tests", "graphify-out", ".git", "__pycache__", ".claude")
 
 
@@ -30,6 +34,11 @@ def test_only_three_tabs_are_read():
     for rel, src in _sources():
         if rel == POSTS_MODULE:                 # reads its tabs from SOURCES (checked below)
             continue
+        if rel == NEGFIX_MODULE:                # one tab of one other spreadsheet (checked below)
+            tabs = set(re.findall(r"""worksheet\(\s*["']([^"']+)["']""", src))
+            if tabs != {NEGFIX_TAB}:
+                bad.append(f"{rel}: worksheet tabs {sorted(tabs)}")
+            continue
         for tab in re.findall(r"""worksheet\(\s*["']([^"']+)["']""", src):
             if tab not in ALLOWED_TABS:
                 bad.append(f"{rel}: worksheet('{tab}')")
@@ -45,7 +54,8 @@ def test_only_the_main_spreadsheet():
     ids = set()
     for rel, src in _sources():
         ids |= {(rel, i) for i in re.findall(r"""["'](1[A-Za-z0-9_-]{40,})["']""", src)}
-    bad = sorted((rel, i) for rel, i in ids if i != MAIN_SHEET and not (rel == POSTS_MODULE and i in POSTS_SHEETS))
+    bad = sorted((rel, i) for rel, i in ids if i != MAIN_SHEET and not (rel == POSTS_MODULE and i in POSTS_SHEETS)
+                 and not (rel == NEGFIX_MODULE and i == NEGFIX_SHEET))
     assert not bad, bad
 
 

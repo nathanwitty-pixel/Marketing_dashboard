@@ -23,11 +23,24 @@ money comes from*, Offer type summary) covers all three countries, Tanzania and 
 | **Combos** | ✓ running combos (combo button) | ✓ running combos (receipts) | ✓ running combos (receipts) | on offer |
 | **Deal of wk** | ✓ | — | — | on offer |
 | **Corporate** | ✓ (invoices) | — | — | others |
-| **Mid-month offers** | new products + timed offers | listed singles + new products | listed singles + new products | on offer |
+| **Mid-month offers** | new products + timed offers + runway bags | listed singles + new products | listed singles + new products | on offer |
 | **Samples** | ✓ | — | — | others |
-| **Gift bags** | ✓ | — | — | others |
+| **Gift bags** | ✓ | ✓ (receipts, refunds netted) | ✓ (receipts, refunds netted) | others |
 
 - **On offer = Power deals + Combos + Deal of wk + Mid-month offers.** Others = Corporate + Samples + Gift bags.
+- **Deal of the Week from 25 Oct 2026** = the regional lists (docs/self-made-combos.md › Regional Deals of the Week).
+  A Kenya single sale counts as Deal of wk only at a shop in that region, in the weeks from 25 Oct.
+- **Corporate** = the **Denri Corporate app** (`denri_corporate_invoice` / `_line` / `_payment`), the same source and
+  rule as the Sales card (`sql/corporate_bags.sql`): an invoice's bags × the share of its agreed amount paid, counted
+  on the payment date (a deposit before the invoice counts on the invoice date), whole bags per invoice per day;
+  revenue = KES received, capped at the agreed amount (`CORPORATE_SQL`). *Fixed 26 Oct 2026:* the page still read
+  Odoo Accounting customer invoices, which no longer hold corporate sales, so the row was empty (Oct: 865 bags missing).
+- **Runway bags are a Mid-month offer (22 Oct 2026, user's call).** A Kenya till line whose name the offer lists
+  don't know, but whose style is a runway bag (`lib/runway_bags`: first created in Odoo in the last 30 days),
+  goes to Mid-month offers tagged `Runway` instead of Unclassified. Each Mid-month sale is also tagged with its
+  part (Runway bags → New products → Timed offers in Kenya; New products / Listed singles in TZ / UG): period
+  field `midParts`. Unclassified lines are listed with their money in `unclassifiedBags`. The month's split is
+  saved to `data/offer_mix.json` for the Price per Bag card (docs/current-performance.md).
 - A Kenya single sale counts in the first that applies: **Power Deal → Deal of the Week → Mid-month offer**
   (sold inside a timed-offer campaign, or a new product), else **not on offer**. A combo bag bought on its own
   is still not on offer.
@@ -37,9 +50,14 @@ money comes from*, Offer type summary) covers all three countries, Tanzania and 
   (*Jumbo + Jumbo* = 2). A **self-made** combo is not on offer as a combo: each of its bags is counted **on its
   own**, exactly like a single sale (Kenya: Power Deal → Deal of wk → Mid-month → Not on offer; Tanzania / Uganda:
   listed single / new product → Mid-month, else Not on offer), with the combo's money split evenly over its bags.
-  Kenya's bags come from the combo's **sub-lines** (`parent_id` = the combo line's product, same order); a
-  returned combo (no sub-lines) falls back to its name's slots. Checked 14 Oct 2026 against the marketing sheet:
+  Kenya's bags come from the combo's **sub-lines** (`parent_id` = the combo line's product, same order). A
+  returned combo's bags come from `POS_LINES` (docs/README.md › Combo refunds): its KES 0 return lines, else the
+  original sale's sub-lines; only a refund with neither falls back to its name's slots. *Fixed 25 Oct 2026:* the
+  KES 0 return lines were also taken off as single bags, so 16 Oct bags came off twice. Checked 14 Oct 2026 against the marketing sheet:
   Oct Wk 1 running-combo bags 234 vs sheet 232, Wk 2 452 vs 451.
+- **Tanzania / Uganda count every bag Sales counts (25 Oct 2026, user's call):** a bag the offer lists don't know
+  (Mini Washbag…) is still counted, under its own name (Not on offer / self-made like any single), and gift bags
+  go to **Gift bags**. Before, 7 Dar-es-Salaam Mini Washbags and 3 Gift Bag A3 were skipped (Oct 2026).
 - Tanzania / Uganda receipts (`lib/receipt_combos`): a running combo → **Combos** (one unit per bag, money split
   evenly over its bags for category / tier); a self-made combo's bags → counted as singles; a single on the market's singles list in
   `offers_monthly.csv`, or a new product → **Mid-month offers**; every other single → **Not on offer**;
@@ -86,8 +104,8 @@ not-on-offer table are point-in-time (today's stock, this month's selling pace) 
 
 ## Buckets
 
-Every Kenya POS line in the window (returns netted, `qty <> 0`; delivery, customisation and
-straps excluded) and every qualifying corporate invoice line falls into exactly one bucket:
+Every Kenya POS line in the window (returns netted, `qty <> 0`; delivery, customisation fees ("Customization …")
+and straps excluded; customized bags count like any bag, as on Sales) and every qualifying corporate invoice line falls into exactly one bucket:
 
 | Bucket | Rule | Tag |
 |---|---|---|
@@ -95,7 +113,7 @@ straps excluded) and every qualifying corporate invoice line falls into exactly 
 | **On offer** | a single bag sold inside a **timed offer** campaign, or that resolves to a bag that is a **running-combo component**, a **Deal of the Week** or a **Power Deal** | `Timed offer` / `Combo component` / `Deal of the Week` / `Power Deal` (several allowed; money counted **once** — see *Counted by how it was sold*) |
 | **Not on offer** | a single bag that resolves to a catalogue bag on no offer | — |
 | **Not on offer** | a **new product** (`data/new_products.txt` — the New Products list; the sheet's col I ticks are no longer read) that is on no offer, **even if it isn't in the price catalogue yet** (e.g. LaFemme) | `NEW` |
-| **Others** | **gift bags** (POS `name ILIKE 'gift bag%'`), **samples** (`SAMPLE…`) and **corporate** sales (customer invoices, same qualifying rule as `sql/corporate_bags.sql`: posted `out_invoice`, paid / in payment or ≤25 % outstanding; product lines; `price_total`) | `Gift bags` / `Samples` / `Corporate` |
+| **Others** | **gift bags** (POS `name ILIKE 'gift bag%'`), **samples** (`SAMPLE…`) and **corporate** sales (Denri Corporate app, paid share on the payment date — see *Corporate* above) | `Gift bags` / `Samples` / `Corporate` |
 | **Unclassified** | a single POS product that matches no catalogue bag and no new product | footnote count/revenue |
 
 - A new product that **is** on an offer (Sep 2026: **Lola** — combo component, **Zoezi** — deal)
@@ -155,7 +173,14 @@ Every sale is counted **once**, in the channel it actually went through (agreed 
   self-made combos, net of refunds) next to **units sold on its own** (every single sale: Power Deal, Deal of the
   Week or not on offer), the share inside combos, and which wins. Combo list: `combos` in
   `bags_offer_source.json` (`self_made_combos.write_bags_offer_source`, one `{label, bags}` per running card).
-  Data: `periods[*].comboVsAlone = [{combo, bags: [{bag, inCombos, alone, aloneKes}]}]`.
+  Data: `periods[*].comboVsAlone = [{combo, bags: [{bag, inThis, inCombos, alone, aloneKes}]}]`.
+  **Per combo, and which combo did better (26 Oct 2026, user's call):** a bag is counted **inside that combo only**
+  (`inThis`: Kenya running-combo sales matched to that combo's label), so Jumbo in Jumbo+Jumbo, Jumbo+Mega and
+  Jumbo+Standard shows each combo's own units (before, every combo showed Jumbo's total across all combos).
+  Each row reads **% in combo** = in this combo ÷ (in this combo + alone), the units, and **combo wins / alone wins /
+  even**. ★ = the bag the combo pulls hardest (highest % in combo, 10+ sales). A summary on top counts how many bags
+  sold more inside their combo than alone and lists the five highest shares. Hover a row for the sum and the bag's
+  total inside all combos (running and self-made).
 - **Row layout (Oct 2026):** each row shows its money (**KES 1.38M**) in the row's bar colour, its share of
   on-offer money, and its units spelled out. Combo sales read "**312 combos · 647 bags**": combos rung, plus the
   bags inside them (`comboPrints`, net of refunded combos; a 3-bag combo holds 3). The other rows read "**N bags**".
@@ -171,8 +196,8 @@ Every sale is counted **once**, in the channel it actually went through (agreed 
 **Bags printed inside combos** come from Odoo's combo **sub-lines** (`sub_product_line = true`):
 one line per bag inside every combo, with the exact colour variant and a KES 0 price — they cover
 every combo exactly (Sep: 2,053 bags across 946 combo orders). Sub-lines are therefore **excluded
-from single sales** (else each combo bag counted twice). Combo **returns** have no sub-lines, so for a
-returned combo the bags come from `combo_product_attribute_values` (padded to the combo's bag count,
+from single sales** (else each combo bag counted twice). Combo **returns** get their sub-lines from
+`POS_LINES` (docs/README.md › Combo refunds); one that still has none takes its bags from `combo_product_attribute_values` (padded to the combo's bag count,
 name split on `+` if empty). Units only — combo **money** stays on the combo line in Combo sales.
 
 **Colour coverage (audited 25 Sep 2026):** every product variant resolves to its bag — colours,
@@ -269,11 +294,17 @@ Columns (revenue / units / share toggle): **All**, **Top 5 categories**, **Other
     - *Weekly breakdown*: Wk 1 … the current week (Sun–Sat weeks, clipped to the month, same as
       the trend chart), from `periods.monthly.offerTypesByWeek`: stacked chart + table with a
       **Weeks** filter; the change column compares the **first and last week picked** (absolute
-      and %). **Totals / Per day** divides each week by its days so far, so a part-week compares
+      and %). **Last complete week vs the week before (26 Oct 2026, user's call):** a second change column before
+      it, e.g. **Wk 3 → Wk 4** while Wk 5 is running — the last two finished weeks picked (the running week is never
+      used), same basis (Totals / Per day / Mix %). Left out when it would repeat the first → last column. **Totals / Per day** divides each week by its days so far, so a part-week compares
       fairly.
     - *Week 1 → latest week*: grouped bars per offer type — the first picked week beside the last
       (default Wk 1 vs the current week), each bar labelled with its number and the change
       (▲ / ▼ %) above the pair; a Total pair on the right. Same filters and switches as above.
+      **Pick the two weeks (26 Oct 2026, user's call):** two dropdowns in its heading, *Compare [week] → [week]*,
+      list every week of the month (the Weeks chips don't limit them). Default = the last complete week vs the week
+      before (e.g. Wk 3 → Wk 4); the choice is remembered per browser and falls back to the default when a new month
+      doesn't have those weeks. Same week twice shows that week alone.
   - **Numbers on the bars:** the Offer type tab's charts print each segment's value inside it
     (when the segment is big enough to hold it) and each stacked bar's total above it.
   - **Category** — for the page's selected period: the 18 categories ranked by revenue (Top 5

@@ -45,7 +45,7 @@ combo_sales AS (   -- this month's Kenya sales for each combo product
     FROM params pr
     JOIN pos_order      p  ON p.date_order::date BETWEEN pr.start_date AND pr.end_date
                           AND p.state IN ('done', 'invoiced', 'paid')
-    JOIN pos_order_line pl ON pl.order_id = p.id AND pl.qty <> 0
+    JOIN POS_LINES(p) pl ON pl.order_id = p.id AND pl.qty <> 0
     JOIN product_product  pp ON pp.id = pl.product_id
     JOIN combo_flags      cf ON cf.tmpl_id = pp.product_tmpl_id
     LEFT JOIN pos_session ps ON ps.id = p.session_id

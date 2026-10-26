@@ -87,6 +87,13 @@ MASTER_BAGS_SOLD = _load_sql("master_bags_sold.sql")
 # Params :start_date / :end_date over the payment date.
 CORPORATE_BAGS = _load_sql("corporate_bags.sql")
 
+# Same bags, one row per product (+ clients) — the Corporate row's bag list on the Price per Bag card.
+CORPORATE_BAG_LINES = _load_sql("corporate_bag_lines.sql")
+
+# Bag revenue split by how the bags were sold (single / combo / gift / discounts), with combo
+# money taken from the '+' wrapper line. Forward Projections revenue + Price per bag card.
+BAG_REVENUE = _load_sql("bag_revenue.sql")
+
 # Same rule, one row per client/company: quoted · invoiced · paid · sold in the period.
 # Feeds the Sales card's "Corporate by client" list. Params :start_date / :end_date.
 CORPORATE_CLIENTS = _load_sql("corporate_clients.sql")
@@ -125,7 +132,7 @@ _BAGS_WHERE = """
   AND l.full_product_name NOT ILIKE '%+%'
   AND l.full_product_name NOT ILIKE 'gift bag%'
   AND l.full_product_name NOT ILIKE '%delivery%'
-  AND l.full_product_name NOT ILIKE '%customi%'
+  AND l.full_product_name NOT ILIKE '%customization%'
   AND l.full_product_name NOT ILIKE '%strap%'
 """
 
@@ -134,8 +141,8 @@ WEEKLY_BAGS_TOTAL = f"""
 SELECT COALESCE(SUM(l.qty), 0)::numeric              AS bags,
        COALESCE(SUM(l.price_subtotal_incl), 0)::numeric AS value,
        COUNT(*)                                       AS lines
-FROM pos_order_line l
-JOIN pos_order o ON o.id = l.order_id
+FROM pos_order o
+JOIN POS_LINES(o) l ON l.order_id = o.id
 WHERE {_BAGS_WHERE}
 """
 
@@ -150,8 +157,8 @@ WEEKLY_BAGS_SOLD = f"""
 SELECT l.full_product_name                            AS product,
        SUM(l.qty)::numeric                            AS bags,
        SUM(l.price_subtotal_incl)::numeric            AS value
-FROM pos_order_line l
-JOIN pos_order o ON o.id = l.order_id
+FROM pos_order o
+JOIN POS_LINES(o) l ON l.order_id = o.id
 WHERE {_BAGS_WHERE}
 GROUP BY l.full_product_name
 ORDER BY bags DESC

@@ -14,7 +14,7 @@ SELECT
   COUNT(DISTINCT trim(regexp_replace(lower(replace(COALESCE(pt."name", ''), '.', ' ')), '\s+', ' ', 'g'))) AS products
 FROM pos_order p
 CROSS JOIN params dp
-JOIN pos_order_line pl ON pl.order_id = p.id
+JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 WHERE p.date_order::date BETWEEN dp.start_date AND dp.end_date

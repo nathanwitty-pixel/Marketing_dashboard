@@ -18,6 +18,8 @@
         "weekly_sales.py",
         "monthly_sales.py",
         "current_performance.py",
+        "self_made_combos.py",
+        "bags_on_offer.py",
         "forward_projections.py"
       ],
       "icon": "monitoring",
@@ -161,6 +163,19 @@
     {
       "order": 12,
       "section": "Marketing",
+      "label": "Footfall and Marketing",
+      "html": "footfall_marketing.html",
+      "title": "Footfall and Marketing",
+      "scripts": [
+        "footfall_marketing.py"
+      ],
+      "icon": "directions_walk",
+      "purpose": "Visitors at each shop, walk-in buyers, WhatsApp leads, and whether posts and ads bring people in",
+      "short": "Footfall"
+    },
+    {
+      "order": 13,
+      "section": "Marketing",
       "label": "Shop Launch",
       "html": "shop_launch.html",
       "title": "Shop Launch",
@@ -172,7 +187,7 @@
       "short": "Launch"
     },
     {
-      "order": 13,
+      "order": 14,
       "section": "Marketing",
       "label": "Push Planner",
       "html": "push_planner.html",
@@ -186,7 +201,7 @@
       "password_secret": "PUSH_PLANNER_PASSWORD"
     },
     {
-      "order": 14,
+      "order": 15,
       "section": "Marketing",
       "label": "Bag Signals",
       "html": "bag_signals.html",
@@ -200,7 +215,7 @@
       "password_secret": "BAG_SIGNALS_PASSWORD"
     },
     {
-      "order": 15,
+      "order": 16,
       "section": "Intelligence",
       "label": "Monthly Report",
       "html": "monthly_report.html",
@@ -213,7 +228,7 @@
       "short": "Monthly Report"
     },
     {
-      "order": 16,
+      "order": 17,
       "section": "Intelligence",
       "label": "History",
       "html": "history.html",
