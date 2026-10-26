@@ -676,6 +676,152 @@ def update_weekly_history():
 weekly_history = update_weekly_history()
 
 
+# ── WHY DID WE MOVE? (waterfall) ──────────────────────────────
+# Splits the change between two periods into a selling-days bar plus one bar per
+# region (docs/shop-regions.md) and Corporate, so the dashboard can draw
+#   last period → days → regions … → this period.
+# Days bar  = last period's bags/day × (days now − days then).
+# Region r  = (r's bags/day now − r's bags/day then) × days now.
+# The bars add up to the change exactly. Both ends use the Sales definition
+# (bags_sold_by_shop.sql = bags_sold_total.sql per till, + corporate paid).
+# Each period comes in three filters — all / normal (bulk orders out) / bulk only —
+# so a one-off 300-bag order can't hide the normal selling rate.
+#   wow: the two latest COMPLETE dashboard weeks (Sun–Sat, cut at month ends —
+#        so Oct Wk 1 is 1–3 Oct and the days bar explains the short week)
+#   mom: month to date (1st → yesterday) vs the same days last month; on the
+#        1st, the month just finished vs the one before it.
+_REGION_ALIAS = {"DAR-ES-ALAM": "SINZA", "KTDA SHOP": "KTDA", "WEBSITE SALES": "WEBSITE",
+                 "WEBSITE": "WEBSITE", "JUMIA": "WEBSITE"}
+
+
+def _shop_label(shop):
+    return _REGION_ALIAS.get(shop, shop).title().replace("Ktda", "KTDA")
+
+
+def _period_bags(start, end, regions):
+    """[(region, shop, bags, bulk bags)] for start..end, plus the day count. Bulk = an order with
+    a 10+ unit line (bags_sold_by_shop.sql); every Corporate-app bag is bulk."""
+    from lib import db, queries
+    win = {"start_date": start.isoformat(), "end_date": end.isoformat()}
+    df = db.run_query(queries.BAGS_SOLD_BY_SHOP, {**win, "excluded": queries.excluded_products()})
+    rows = []
+    for _, row in (df.iterrows() if df is not None else []):
+        shop = _REGION_ALIAS.get(str(row["shop"]).upper(), str(row["shop"]).upper())
+        rows.append((regions.get(shop, "Other"), _shop_label(shop),
+                     float(row["bags"] or 0), float(row["bulk_bags"] or 0)))
+    cdf = db.run_query(queries.CORPORATE_BAGS, win)
+    corp = int(cdf.iloc[0]["bags"] or 0) if cdf is not None and not cdf.empty else 0
+    if corp:
+        rows.append(("Corporate", None, float(corp), float(corp)))
+    return {"days": (end - start).days + 1, "rows": rows}
+
+
+def _view(p, mode):
+    """One filter of a period: {"days", "total", "regions": {region: {"bags", "bulk", "shops"}}}.
+    mode: "all" (every sale), "normal" (bulk orders out), "bulk" (bulk orders only)."""
+    out = {}
+    for reg, shop, bags, bulk in p["rows"]:
+        v = {"all": bags, "normal": bags - bulk, "bulk": bulk}[mode]
+        r = out.setdefault(reg, {"bags": 0.0, "bulk": 0.0, "shops": {}})
+        r["bags"] += v
+        r["bulk"] += bulk if mode == "all" else 0
+        if shop:
+            r["shops"][shop] = r["shops"].get(shop, 0) + v
+    out = {k: r for k, r in out.items() if round(r["bags"]) or r["shops"]}
+    return {"days": p["days"], "total": sum(r["bags"] for r in out.values()), "regions": out}
+
+
+def _views(a, b, *labels):
+    """{all, normal, bulk} waterfalls between raw periods a and b."""
+    return {m: _waterfall(_view(a, m), _view(b, m), *labels) for m in ("all", "normal", "bulk")}
+
+
+def _waterfall(a, b, a_label, b_label, a_range, b_range):
+    """The bars between period a (then) and period b (now); ints that add up to b − a."""
+    scale = b["days"] / a["days"] if a["days"] else 1
+    days_eff = round(a["total"] * scale) - round(a["total"])
+    names = sorted(set(a["regions"]) | set(b["regions"]))
+    raw = {n: b["regions"].get(n, {}).get("bags", 0) - a["regions"].get(n, {}).get("bags", 0) * scale
+           for n in names}
+    bars = {n: round(v) for n, v in raw.items()}
+    # Rounding leftovers go on the biggest mover so the bars land exactly on b.
+    left = round(b["total"]) - round(a["total"]) - days_eff - sum(bars.values())
+    if left and bars:
+        bars[max(bars, key=lambda n: abs(raw[n]))] += left
+    rows = []
+    for n in names:
+        ra, rb = a["regions"].get(n, {}), b["regions"].get(n, {})
+        shops = sorted(set(ra.get("shops", {})) | set(rb.get("shops", {})))
+        rows.append({
+            "region": n, "delta": bars[n],
+            "then": round(ra.get("bags", 0)), "now": round(rb.get("bags", 0)),
+            "bulkThen": round(ra.get("bulk", 0)), "bulkNow": round(rb.get("bulk", 0)),
+            "shops": [{"shop": s,
+                       "then": round(ra.get("shops", {}).get(s, 0)),
+                       "now": round(rb.get("shops", {}).get(s, 0)),
+                       "delta": round(rb.get("shops", {}).get(s, 0) - ra.get("shops", {}).get(s, 0) * scale)}
+                      for s in shops],
+        })
+    return {"then": {"label": a_label, "range": a_range, "days": a["days"], "bags": round(a["total"])},
+            "now":  {"label": b_label, "range": b_range, "days": b["days"], "bags": round(b["total"])},
+            "daysEffect": days_eff, "regions": rows}
+
+
+def _rng(s, e):                                  # "1 Oct", "18–24 Oct", "27 Sep–3 Oct"
+    if s == e:
+        return f"{s.day} {s:%b}"
+    return f"{s.day}–{e.day} {e:%b}" if s.month == e.month else f"{s.day} {s:%b}–{e.day} {e:%b}"
+
+
+def why_moved():
+    try:
+        from lib import db, shop_regions
+    except Exception:
+        return None
+    if not db.check_connection()[0]:
+        return None
+    regions = {k.upper(): v for k, v in shop_regions.load().items()}
+    m_start, m_end = report_month.live_month_window()
+    last_day = min(date.today() - timedelta(days=1), m_end)     # last COMPLETE day
+    out = {}
+
+    # wow — dashboard weeks (Sun–Sat cut at month ends) that ended by last_day.
+    segs, ws = [], _week_start(last_day) - timedelta(days=21)
+    while ws <= last_day:
+        we, s = ws + timedelta(days=6), ws
+        while s <= we:
+            me = (date(s.year + (s.month == 12), s.month % 12 + 1, 1) - timedelta(days=1))
+            e = min(we, me)
+            if e <= last_day:
+                segs.append((s, e))
+            s = e + timedelta(days=1)
+        ws += timedelta(days=7)
+    if len(segs) >= 2:
+        (a_s, a_e), (b_s, b_e) = segs[-2], segs[-1]
+        lab = lambda s: f"Wk {_perfect_week_index(s)} {s.strftime('%b')}"
+        out["wow"] = _views(_period_bags(a_s, a_e, regions), _period_bags(b_s, b_e, regions),
+                            lab(a_s), lab(b_s), _rng(a_s, a_e), _rng(b_s, b_e))
+
+    # mom — month to date vs the same days last month (or, on the 1st, the full months).
+    if last_day >= m_start:
+        b_s, b_e = m_start, last_day
+        a_s = (m_start - timedelta(days=1)).replace(day=1)
+        a_e = a_s.replace(day=min(last_day.day, calendar.monthrange(a_s.year, a_s.month)[1]))
+    else:
+        b_e = m_start - timedelta(days=1); b_s = b_e.replace(day=1)
+        a_e = b_s - timedelta(days=1);     a_s = a_e.replace(day=1)
+    out["mom"] = _views(_period_bags(a_s, a_e, regions), _period_bags(b_s, b_e, regions),
+                        a_s.strftime("%B"), b_s.strftime("%B"), _rng(a_s, a_e), _rng(b_s, b_e))
+    return out
+
+
+try:
+    why_moved_data = why_moved()
+except Exception as _e:                          # never let the waterfall break the page build
+    print(f"  WARNING: why-moved waterfall skipped: {_e}")
+    why_moved_data = None
+
+
 # ── FORMAT HELPERS ────────────────────────────────────────────
 
 def fmt_int(n):
@@ -720,7 +866,8 @@ inline_script = (
     f'  bareMinimumGrowthPct:     "{fmt_pct(bare_minimum_growth_pct)}",\n'
     f'  declinedBy:               "{("-" + fmt_int(abs(declined_by))) if bare_minimum_value else ""}",\n'
     f'  weeklySalesTotal:         "{fmt_int(weekly_sales_total)}",\n'
-    f'  weeklyHistory:            {json.dumps(weekly_history)}\n'
+    f'  weeklyHistory:            {json.dumps(weekly_history)},\n'
+    f'  whyMoved:                 {json.dumps(why_moved_data)}\n'
     "};\n"
     "</script>\n"
     "<!-- PROJ_DATA_END -->"

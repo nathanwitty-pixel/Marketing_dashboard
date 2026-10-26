@@ -175,6 +175,17 @@ Custom) and [REJECT]; Choco / Chocolate Brown → Chocolate, D.Brown → Dark Br
   col E + outside col H; the week before from `bag_posts_history.json` (Bag Signals saves it each run — shows
   "—" when that week isn't saved).
 
+## Popover waterfall — why the units moved (26 Oct 2026, user's call)
+
+Every bag, category and colour popover has a small waterfall under the This period / Previous table:
+**Before → Days → parts → Now** (`wfHtml()` in `product_performance.html`, HTML/CSS bars, no Chart.js).
+Parts are the bag's **colours** (bag popover) or the **bags** in the group (category / colour popover).
+The 4 biggest movers show; the rest join "Other colours" / "Other bags". The method is the same as
+[Current Performance › Why Did We Move?](current-performance.md): Days = old pace × day difference (shows
+only when the periods differ, e.g. Last month 30 vs 31 days); a part's bar = its units/day change × days now; the
+bars add up exactly. The amber box and "The reason" line mark the biggest move in the direction of the total.
+In the bag popover, a bag with bulk orders adds "⚠ Bulk orders are in these units. Without them: X → Y".
+
 ## Bulk orders
 
 **Corporate-lead till orders (16 Oct 2026, user's call — revised the same day):** when a client the **Corporate team** brought in (a Corporate-app lead) pays at a shop till, the sale is **credited to that shop** like any till sale, but it's still marked as a Corporate lead (October: ESK Company, HAZINA/29958 + 29613, KES 1,707,197 → Hazina, "Corporate app lead 17 Sep · Scola Mithiri"). One that hasn't paid yet goes to the shop that hunted it (quote note → bought there before → client's town), still noted as a Corporate lead; with no shop link it isn't shown at all until something is paid at a till. Here: they stay in the totals and are flagged ⚠ like bulk orders, noted as a Corporate lead credited to the shop.

@@ -107,6 +107,10 @@ CORPORATE_CLIENTS = _load_sql("corporate_clients.sql")
 # breakdown all use, so they reconcile. Params :start_date / :end_date.
 BAGS_SOLD_TOTAL = _load_sql("bags_sold_total.sql")
 
+# BAGS_SOLD_TOTAL split per till (rows add up to it exactly) — the "Why did we move?"
+# waterfall groups these into regions. Same params + :excluded.
+BAGS_SOLD_BY_SHOP = _load_sql("bags_sold_by_shop.sql")
+
 # The reject-clearance subset of BAGS_SOLD_TOTAL (products tagged "[REJECT]"), so the
 # Sales card can split "of N sold, R were rejects". Same params + :excluded.
 REJECT_BAGS_SOLD = _load_sql("reject_bags_sold.sql")

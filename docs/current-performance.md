@@ -76,6 +76,32 @@ Rules the implementation must hold to:
 The control's markup, CSS and JS all live **outside** the `PERF_DATA_*` and `PROJ_DATA_*` markers,
 so `current_performance.py`'s regex rewrite never touches them.
 
+## Why Did We Move? — waterfall (26 Oct 2026, user's call)
+
+A full-width card under Weekly Performance (`#wm-grid`, canvas `#chart-why-moved`, chart switcher off).
+It explains a rise or drop as a waterfall: **last period → Selling days → one bar per region → this period**.
+Toggle **Week on week / Month on month** (`#wm-period`, remembered in `localStorage` key `cp-wm-period`).
+
+- **Data:** `PROJ.whyMoved = {wow, mom}`, built by `why_moved()` in `generators/forward_projections.py`.
+  Per-till bags come from `sql/bags_sold_by_shop.sql` (`BAGS_SOLD_TOTAL` split by till, so it adds up exactly),
+  grouped by [shop-regions.md](shop-regions.md); corporate paid bags (`CORPORATE_BAGS`) are their own bar.
+  Till names: `DAR-ES-ALAM` → Sinza, `KTDA SHOP` → KTDA, `WEBSITE SALES` / no session → Website, unknown → Other.
+- **Periods:** complete days only (up to yesterday). `wow` = the two latest complete dashboard weeks
+  (Sun–Sat cut at month ends, so Wk 1 Oct = 1–3 Oct). `mom` = 1st → yesterday vs the same days last month;
+  on the 1st, the month just finished vs the one before.
+- **Maths:** Selling days = then bags/day × (days now − days then). Region bar = (its bags/day now − then) × days now.
+  Rounding leftovers go on the biggest mover, so the bars always land on the end total. The days bar hides when
+  the day counts match.
+- **The reason** (amber box) = the biggest bar in the direction of the total move. The line under the chart names
+  its top shops; the tooltip lists every shop's change in that region.
+- The y axis starts below the lowest level (stated in the sub-line), so small moves stay visible.
+- **Which sales filter** (`#wm-mode`, `localStorage` key `cp-wm-mode`): **All sales / Normal selling / Bulk orders**.
+  Bulk order = an order with any counted line of 10+ units (the dashboard's rule, see
+  [product-performance.md](product-performance.md#bulk-orders)) plus every corporate bag. `bags_sold_by_shop.sql`
+  returns `bulk_bags` per till, and `whyMoved.{wow,mom}` holds `{all, normal, bulk}` (all = normal + bulk).
+  The All view adds "normal selling (no bulk)" to the title and "⚠ bulk orders X → Y" on regions with bulk.
+  Oct 2026 example: month on month, all sales +174, but normal selling −1,802, because bulk went from 54 to 2,030.
+
 ## Sales card — the one bags figure (reject + gift-bag split)
 
 **Sales is the only bags-sold KPI** (27 Sep 2026: the separate *Net Bags Sold · Catalogue* card —
