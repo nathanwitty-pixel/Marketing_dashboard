@@ -95,12 +95,16 @@ Toggle **Week on week / Month on month** (`#wm-period`, remembered in `localStor
 - **The reason** (amber box) = the biggest bar in the direction of the total move. The line under the chart names
   its top shops; the tooltip lists every shop's change in that region.
 - The y axis starts below the lowest level (stated in the sub-line), so small moves stay visible.
-- **Which sales filter** (`#wm-mode`, `localStorage` key `cp-wm-mode`): **All sales / Normal selling / Bulk orders**.
-  Bulk order = an order with any counted line of 10+ units (the dashboard's rule, see
-  [product-performance.md](product-performance.md#bulk-orders)) plus every corporate bag. `bags_sold_by_shop.sql`
-  returns `bulk_bags` per till, and `whyMoved.{wow,mom}` holds `{all, normal, bulk}` (all = normal + bulk).
-  The All view adds "normal selling (no bulk)" to the title and "⚠ bulk orders X → Y" on regions with bulk.
-  Oct 2026 example: month on month, all sales +174, but normal selling −1,802, because bulk went from 54 to 2,030.
+- **Bulk filter** (`#wm-mode`, `localStorage` key `cp-wm-mode`): **With bulk orders / Without bulk orders**
+  (26 Oct 2026, user's call; data keys `with` / `without`). **Corporate is in both** — it is treated as a shop
+  and is never a bulk order. With = every sale (= the Sales card); Without = every sale minus the bulk till orders.
+  Bulk order = a **till** order with any counted line of 10+ units (the dashboard's rule, see
+  [product-performance.md](product-performance.md#bulk-orders)). **The Corporate app is not a bulk order**
+  (user, 26 Oct 2026): it is its own sales channel.
+  `bags_sold_by_shop.sql` returns `bulk_bags` per till, and `whyMoved.{wow,mom}` holds `{with, without}`.
+  With shows "without bulk orders: ±N" beside the title and "⚠ bulk orders X → Y" on regions where bulk moved.
+  Oct 2026, week on week: with bulk −251 (3,701 → 3,450), Nairobi CBD −700; without bulk +274 (3,176 → 3,450),
+  Corporate +534, Nairobi CBD only −200 — the rest was a 500-bag Hazina bulk order in Wk 3.
 
 ## Sales card — the one bags figure (reject + gift-bag split)
 

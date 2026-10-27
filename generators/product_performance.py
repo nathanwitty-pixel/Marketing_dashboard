@@ -54,8 +54,7 @@ WHERE (o.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETW
   AND pt."name" NOT ILIKE '%customization%'
   AND pt."name" NOT ILIKE '%strap%'
   AND pt."name" NOT ILIKE '%discount%'      -- KES and % discount lines aren't bags
-  AND pt."name" NOT ILIKE '%sample%'
-  AND pt."name" NOT ILIKE 'gift bag%'
+  -- gift bags and samples ARE counted (user, 26 Oct 2026), so totals match the Sales card / Bags on Offer
   AND COALESCE(pcat."name", '') NOT ILIKE '%Pos%'
   AND lower(pt."name") <> ALL(:excluded)
 ORDER BY o.id, pl.id

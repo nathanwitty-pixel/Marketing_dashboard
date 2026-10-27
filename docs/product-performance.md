@@ -157,8 +157,10 @@ Custom) and [REJECT]; Choco / Chocolate Brown → Chocolate, D.Brown → Dark Br
 
 - **Sales (Odoo POS, line level):** every till, `done / invoiced / paid`, Nairobi dates, refunds netted
   (qty ≠ 0). Bags = every bag line **including bags inside combos** (`sub_product_line`); the combo wrapper
-  ('+' name) is not a bag. Left out: delivery, customisation, straps, KES discount, samples, gift bags, POS
-  category lines, `sales_exclusions.txt`. Corporate invoices are **not** included (POS only).
+  ('+' name) is not a bag. Left out: delivery, customisation, straps, KES discount, POS category lines,
+  `sales_exclusions.txt`. **Gift bags and samples are counted** (26 Oct 2026, user's call), so the totals match
+  the Sales card and Bags on Offer (before: Wk 4 Oct showed 3,408 here vs 3,449 there = 41 gift bags + 1 sample).
+  Corporate is a row of its own (see Corporate row).
 - **Revenue (KES):** line `price_subtotal_incl`; Sinza ÷ 25, Uganda ÷ 29 (as `sql/bags_sold_total.sql`).
   Bags inside a combo ring at 0 — the **combo line's money is split across the bag lines that follow it on
   the same receipt**, in proportion to each bag's full price (`bag_original_prices.json`; equal split when a
@@ -190,6 +192,9 @@ In the bag popover, a bag with bulk orders adds "⚠ Bulk orders are in these un
 
 **Corporate-lead till orders (16 Oct 2026, user's call — revised the same day):** when a client the **Corporate team** brought in (a Corporate-app lead) pays at a shop till, the sale is **credited to that shop** like any till sale, but it's still marked as a Corporate lead (October: ESK Company, HAZINA/29958 + 29613, KES 1,707,197 → Hazina, "Corporate app lead 17 Sep · Scola Mithiri"). One that hasn't paid yet goes to the shop that hunted it (quote note → bought there before → client's town), still noted as a Corporate lead; with no shop link it isn't shown at all until something is paid at a till. Here: they stay in the totals and are flagged ⚠ like bulk orders, noted as a Corporate lead credited to the shop.
 
+
+**Corporate app ≠ corporate bulk orders (26 Oct 2026, user's call):** the Corporate app (denri_corporate invoices)
+is its own sales channel, like a till, and is **never** a bulk order. "Corporate bulk orders" means big **till** orders only.
 
 A POS line of **10+ units** is a corporate / bulk order. It stays in every total (it was a real sale), is
 listed with ⚠ wherever a change is shown, and the change is also given **without** it. The Biggest mover is

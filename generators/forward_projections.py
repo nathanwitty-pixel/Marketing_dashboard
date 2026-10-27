@@ -684,8 +684,10 @@ weekly_history = update_weekly_history()
 # Region r  = (r's bags/day now − r's bags/day then) × days now.
 # The bars add up to the change exactly. Both ends use the Sales definition
 # (bags_sold_by_shop.sql = bags_sold_total.sql per till, + corporate paid).
-# Each period comes in three filters — all / normal (bulk orders out) / bulk only —
-# so a one-off 300-bag order can't hide the normal selling rate.
+# Each period comes in two filters (user, 26 Oct 2026):
+#   with    = "With bulk orders": every sale — shop tills + Corporate (treated as a shop)
+#   without = "Without bulk orders": the same, minus the bulk till orders, so one big order
+#             can't hide the everyday selling rate. Corporate stays: it is never a bulk order.
 #   wow: the two latest COMPLETE dashboard weeks (Sun–Sat, cut at month ends —
 #        so Oct Wk 1 is 1–3 Oct and the days bar explains the short week)
 #   mom: month to date (1st → yesterday) vs the same days last month; on the
@@ -699,8 +701,12 @@ def _shop_label(shop):
 
 
 def _period_bags(start, end, regions):
-    """[(region, shop, bags, bulk bags)] for start..end, plus the day count. Bulk = an order with
-    a 10+ unit line (bags_sold_by_shop.sql); every Corporate-app bag is bulk."""
+    """Corporate app ≠ corporate bulk orders: Corporate app is a sales channel, never bulk.
+    Returns [(region, shop, bags, bulk bags)] for start..end, plus the day count. Bulk = a TILL order
+    with a 10+ unit line (bags_sold_by_shop.sql) — that includes Corporate-team clients paying at a shop.
+    The Corporate app (denri_corporate invoices) is its own channel, like a till (user, 26 Oct 2026 —
+    same rule as product_performance.shop_breakdown): it is treated as a shop, so it is in both "With
+    bulk orders" and "Without bulk orders", and "without" never takes it off as a bulk order."""
     from lib import db, queries
     win = {"start_date": start.isoformat(), "end_date": end.isoformat()}
     df = db.run_query(queries.BAGS_SOLD_BY_SHOP, {**win, "excluded": queries.excluded_products()})
@@ -712,19 +718,20 @@ def _period_bags(start, end, regions):
     cdf = db.run_query(queries.CORPORATE_BAGS, win)
     corp = int(cdf.iloc[0]["bags"] or 0) if cdf is not None and not cdf.empty else 0
     if corp:
-        rows.append(("Corporate", None, float(corp), float(corp)))
+        rows.append(("Corporate", None, float(corp), 0.0))     # Corporate app: a channel, never bulk
     return {"days": (end - start).days + 1, "rows": rows}
 
 
 def _view(p, mode):
     """One filter of a period: {"days", "total", "regions": {region: {"bags", "bulk", "shops"}}}.
-    mode: "all" (every sale), "normal" (bulk orders out), "bulk" (bulk orders only)."""
+    mode: "with" (every sale, bulk till orders included), "without" (bulk till orders taken out).
+    Corporate is in both — it is treated as a shop, and its bulk is always 0 (never a bulk order)."""
     out = {}
     for reg, shop, bags, bulk in p["rows"]:
-        v = {"all": bags, "normal": bags - bulk, "bulk": bulk}[mode]
+        v = bags if mode == "with" else bags - bulk
         r = out.setdefault(reg, {"bags": 0.0, "bulk": 0.0, "shops": {}})
         r["bags"] += v
-        r["bulk"] += bulk if mode == "all" else 0
+        r["bulk"] += bulk if mode != "without" else 0
         if shop:
             r["shops"][shop] = r["shops"].get(shop, 0) + v
     out = {k: r for k, r in out.items() if round(r["bags"]) or r["shops"]}
@@ -732,8 +739,8 @@ def _view(p, mode):
 
 
 def _views(a, b, *labels):
-    """{all, normal, bulk} waterfalls between raw periods a and b."""
-    return {m: _waterfall(_view(a, m), _view(b, m), *labels) for m in ("all", "normal", "bulk")}
+    """{with, without} waterfalls between raw periods a and b."""
+    return {m: _waterfall(_view(a, m), _view(b, m), *labels) for m in ("with", "without")}
 
 
 def _waterfall(a, b, a_label, b_label, a_range, b_range):
