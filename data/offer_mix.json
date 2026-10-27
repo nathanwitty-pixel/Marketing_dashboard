@@ -1,6 +1,6 @@
 {
  "month": "October 2026",
- "generated": "26 Oct 2026 21:45",
+ "generated": "27 Oct 2026 09:44",
  "range": "01 Oct – 31 Oct 2026",
  "rows": [
   {
@@ -830,8 +830,8 @@
    "label": "Power deals",
    "on": true,
    "where": "Kenya only",
-   "units": 3649.0,
-   "revenue": 7389044,
+   "units": 3650.0,
+   "revenue": 7391444,
    "bags": [
     {
      "bag": "ANTITHEFT",
@@ -858,8 +858,8 @@
      "bag": "PRIME",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 321.0,
-     "revenue": 775725
+     "units": 322.0,
+     "revenue": 778125
     },
     {
      "bag": "TRAVEL",
@@ -910,15 +910,15 @@
    "label": "Combos",
    "on": true,
    "where": "Kenya, Tanzania, Uganda",
-   "units": 1495.0,
-   "revenue": 3197208,
+   "units": 1497.0,
+   "revenue": 3202007,
    "bags": [
     {
      "bag": "JUMBO",
      "category": "TRAVEL",
      "tier": "Premium",
-     "units": 361.0,
-     "revenue": 850976
+     "units": 363.0,
+     "revenue": 855775
     },
     {
      "bag": "TRAVEL",
@@ -1109,8 +1109,8 @@
    "label": "Deal of wk",
    "on": true,
    "where": "Kenya only",
-   "units": 1571.0,
-   "revenue": 2908082,
+   "units": 1572.0,
+   "revenue": 2910482,
    "bags": [
     {
      "bag": "FABELA",
@@ -1130,8 +1130,8 @@
      "bag": "REO TRAVEL",
      "category": "TRAVEL",
      "tier": "Core",
-     "units": 119.0,
-     "revenue": 284600
+     "units": 120.0,
+     "revenue": 287000
     },
     {
      "bag": "KAI",
