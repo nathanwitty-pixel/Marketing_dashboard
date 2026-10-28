@@ -82,16 +82,24 @@ A full-width card under Weekly Performance (`#wm-grid`, canvas `#chart-why-moved
 It explains a rise or drop as a waterfall: **last period → Selling days → one bar per region → this period**.
 Toggle **Week on week / Month on month** (`#wm-period`, remembered in `localStorage` key `cp-wm-period`).
 
-- **Data:** `PROJ.whyMoved = {wow, mom}`, built by `why_moved()` in `generators/forward_projections.py`.
+- **Data:** `PROJ.whyMoved = {weeks, mom}`, built by `why_moved()` in `generators/forward_projections.py`.
   Per-till bags come from `sql/bags_sold_by_shop.sql` (`BAGS_SOLD_TOTAL` split by till, so it adds up exactly),
   grouped by [shop-regions.md](shop-regions.md); corporate paid bags (`CORPORATE_BAGS`) are their own bar.
   Till names: `DAR-ES-ALAM` → Sinza, `KTDA SHOP` → KTDA, `WEBSITE SALES` / no session → Website, unknown → Other.
-- **Periods:** complete days only (up to yesterday). `wow` = the two latest complete dashboard weeks
-  (Sun–Sat cut at month ends, so Wk 1 Oct = 1–3 Oct). `mom` = 1st → yesterday vs the same days last month;
+- **Periods:** complete days only (up to yesterday). Week on week = any two complete dashboard weeks
+  (Sun–Sat cut at month ends, so Wk 1 Oct = 1–3 Oct), default the latest two. `mom` = 1st → yesterday vs the same days last month;
   on the 1st, the month just finished vs the one before.
 - **Maths:** Selling days = then bags/day × (days now − days then). Region bar = (its bags/day now − then) × days now.
   Rounding leftovers go on the biggest mover, so the bars always land on the end total. The days bar hides when
   the day counts match.
+- **Week picker + best week** (28 Oct 2026, user's call): on Week on week, *Compare [week] with [week]* picks
+  any two of the last `WM_WEEKS` (26) weeks (`#wm-a` / `#wm-b`, latest first, not remembered). `whyMoved.weeks` =
+  `[{label, range, start, days, rows: [[region, shop, bags, bulk]]}]`, from ONE `bags_sold_by_shop.sql` run
+  (it returns a row per till per **day**) + `CORPORATE_BAGS` per week; the page's `view()` / `waterfall()` are
+  the JS twins of `_view()` / `_waterfall()`. **Best week** = most bags among full 7-day weeks, for the current
+  bulk filter: ★ in the dropdown, a dashed amber line on the chart, and a line saying how far the later week is
+  from it. *Compare with best week* puts the best week on the left. Oct 2026: best = Wk 2 Oct 4,334
+  (without bulk: Wk 5 Aug 4,194).
 - **The reason** (amber box) = the biggest bar in the direction of the total move. The line under the chart names
   its top shops; the tooltip lists every shop's change in that region.
 - The y axis starts below the lowest level (stated in the sub-line), so small moves stay visible.

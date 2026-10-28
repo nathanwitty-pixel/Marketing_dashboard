@@ -5,6 +5,7 @@
 -- bulk_bags = the part of `bags` on BULK orders: an order with any counted line of 10+ units (the
 -- dashboard's bulk rule — docs/product-performance.md › Bulk orders, footfall_walkins.sql). ABS(qty),
 -- so the refund of a bulk sale is bulk too and nets against it.
+-- One row per till per DAY, so one query over months can be split into any weeks (week picker, 28 Oct 2026).
 WITH params AS (
   SELECT
     CAST(:start_date AS DATE) AS start_date,
@@ -13,6 +14,7 @@ WITH params AS (
 lines AS (
 SELECT
   CASE WHEN p.session_id IS NULL THEN 'WEBSITE' ELSE UPPER(COALESCE(pc."name", '')) END AS shop,
+  p.date_order::date AS day,
   pl.qty,
   MAX(ABS(pl.qty)) OVER (PARTITION BY p.id) AS order_max_line
 FROM pos_order p
@@ -35,8 +37,8 @@ WHERE p.date_order::date BETWEEN dp.start_date AND dp.end_date
   AND COALESCE(pcat."name", '') NOT ILIKE '%Pos%'          -- non-bag POS lines
   AND lower(COALESCE(pt."name", '')) <> ALL(:excluded)     -- editable not-a-sale list (sales_exclusions.txt)
 )
-SELECT shop,
+SELECT shop, day,
        COALESCE(SUM(qty), 0)::numeric                                        AS bags,
        COALESCE(SUM(CASE WHEN order_max_line >= 10 THEN qty END), 0)::numeric AS bulk_bags
 FROM lines
-GROUP BY 1
+GROUP BY 1, 2

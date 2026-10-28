@@ -688,10 +688,12 @@ weekly_history = update_weekly_history()
 #   with    = "With bulk orders": every sale — shop tills + Corporate (treated as a shop)
 #   without = "Without bulk orders": the same, minus the bulk till orders, so one big order
 #             can't hide the everyday selling rate. Corporate stays: it is never a bulk order.
-#   wow: the two latest COMPLETE dashboard weeks (Sun–Sat, cut at month ends —
-#        so Oct Wk 1 is 1–3 Oct and the days bar explains the short week)
+#   weeks: every COMPLETE dashboard week for WM_WEEKS back (Sun–Sat, cut at month ends —
+#        so Oct Wk 1 is 1–3 Oct and the days bar explains the short week). The page picks
+#        any two (default: the latest two) and marks the best full week (28 Oct 2026).
 #   mom: month to date (1st → yesterday) vs the same days last month; on the
 #        1st, the month just finished vs the one before it.
+WM_WEEKS = 26                                    # how far back the week picker goes
 _REGION_ALIAS = {"DAR-ES-ALAM": "SINZA", "KTDA SHOP": "KTDA", "WEBSITE SALES": "WEBSITE",
                  "WEBSITE": "WEBSITE", "JUMIA": "WEBSITE"}
 
@@ -700,21 +702,39 @@ def _shop_label(shop):
     return _REGION_ALIAS.get(shop, shop).title().replace("Ktda", "KTDA")
 
 
-def _period_bags(start, end, regions):
-    """Corporate app ≠ corporate bulk orders: Corporate app is a sales channel, never bulk.
-    Returns [(region, shop, bags, bulk bags)] for start..end, plus the day count. Bulk = a TILL order
-    with a 10+ unit line (bags_sold_by_shop.sql) — that includes Corporate-team clients paying at a shop.
-    The Corporate app (denri_corporate invoices) is its own channel, like a till (user, 26 Oct 2026 —
-    same rule as product_performance.shop_breakdown): it is treated as a shop, so it is in both "With
-    bulk orders" and "Without bulk orders", and "without" never takes it off as a bulk order."""
+def _till_days(start, end, regions):
+    """[(day, region, shop, bags, bulk bags)] for start..end: one row per till per day, so one query
+    can be cut into any number of weeks."""
     from lib import db, queries
     win = {"start_date": start.isoformat(), "end_date": end.isoformat()}
     df = db.run_query(queries.BAGS_SOLD_BY_SHOP, {**win, "excluded": queries.excluded_products()})
     rows = []
     for _, row in (df.iterrows() if df is not None else []):
         shop = _REGION_ALIAS.get(str(row["shop"]).upper(), str(row["shop"]).upper())
-        rows.append((regions.get(shop, "Other"), _shop_label(shop),
+        day = row["day"].date() if hasattr(row["day"], "hour") else row["day"]
+        rows.append((day, regions.get(shop, "Other"), _shop_label(shop),
                      float(row["bags"] or 0), float(row["bulk_bags"] or 0)))
+    return rows
+
+
+def _period_bags(start, end, regions, tills=None):
+    """Corporate app ≠ corporate bulk orders: Corporate app is a sales channel, never bulk.
+    Returns [(region, shop, bags, bulk bags)] for start..end, plus the day count. Bulk = a TILL order
+    with a 10+ unit line (bags_sold_by_shop.sql) — that includes Corporate-team clients paying at a shop.
+    The Corporate app (denri_corporate invoices) is its own channel, like a till (user, 26 Oct 2026 —
+    same rule as product_performance.shop_breakdown): it is treated as a shop, so it is in both "With
+    bulk orders" and "Without bulk orders", and "without" never takes it off as a bulk order.
+    tills: _till_days() rows already fetched for a wider window (cut to start..end here)."""
+    from lib import db, queries
+    win = {"start_date": start.isoformat(), "end_date": end.isoformat()}
+    if tills is None:
+        tills = _till_days(start, end, regions)
+    merged = {}                                   # (region, shop) → [bags, bulk], days added up
+    for day, reg, shop, bags, bulk in tills:
+        if start <= day <= end:
+            m = merged.setdefault((reg, shop), [0.0, 0.0])
+            m[0] += bags; m[1] += bulk
+    rows = [(reg, shop, b, k) for (reg, shop), (b, k) in merged.items()]
     cdf = db.run_query(queries.CORPORATE_BAGS, win)
     corp = int(cdf.iloc[0]["bags"] or 0) if cdf is not None and not cdf.empty else 0
     if corp:
@@ -792,8 +812,10 @@ def why_moved():
     last_day = min(date.today() - timedelta(days=1), m_end)     # last COMPLETE day
     out = {}
 
-    # wow — dashboard weeks (Sun–Sat cut at month ends) that ended by last_day.
-    segs, ws = [], _week_start(last_day) - timedelta(days=21)
+    # weeks — every dashboard week (Sun–Sat cut at month ends) that ended by last_day, WM_WEEKS back.
+    # The page builds the waterfall between ANY two of them (default: the latest two) and marks the
+    # best week (user, 28 Oct 2026). One till query for the whole span, split by day.
+    segs, ws = [], _week_start(last_day) - timedelta(weeks=WM_WEEKS)
     while ws <= last_day:
         we, s = ws + timedelta(days=6), ws
         while s <= we:
@@ -804,10 +826,15 @@ def why_moved():
             s = e + timedelta(days=1)
         ws += timedelta(days=7)
     if len(segs) >= 2:
-        (a_s, a_e), (b_s, b_e) = segs[-2], segs[-1]
-        lab = lambda s: f"Wk {_perfect_week_index(s)} {s.strftime('%b')}"
-        out["wow"] = _views(_period_bags(a_s, a_e, regions), _period_bags(b_s, b_e, regions),
-                            lab(a_s), lab(b_s), _rng(a_s, a_e), _rng(b_s, b_e))
+        tills = _till_days(segs[0][0], segs[-1][1], regions)
+        out["weeks"] = []
+        for s, e in segs:
+            p = _period_bags(s, e, regions, tills)
+            out["weeks"].append({
+                "label": f"Wk {_perfect_week_index(s)} {s:%b}", "range": _rng(s, e), "start": s.isoformat(),
+                "days": p["days"],
+                "rows": [[reg, shop, round(b), round(k)] for reg, shop, b, k in p["rows"] if round(b) or round(k)],
+            })
 
     # mom — month to date vs the same days last month (or, on the 1st, the full months).
     if last_day >= m_start:
