@@ -688,12 +688,12 @@ weekly_history = update_weekly_history()
 #   with    = "With bulk orders": every sale — shop tills + Corporate (treated as a shop)
 #   without = "Without bulk orders": the same, minus the bulk till orders, so one big order
 #             can't hide the everyday selling rate. Corporate stays: it is never a bulk order.
-#   weeks: every COMPLETE dashboard week for WM_WEEKS back (Sun–Sat, cut at month ends —
-#        so Oct Wk 1 is 1–3 Oct and the days bar explains the short week). The page picks
-#        any two (default: the latest two) and marks the best full week (28 Oct 2026).
+#   weeks: the dashboard weeks of last month and this month (Sun–Sat, cut at month ends —
+#        so Oct Wk 1 is 1–3 Oct and the days bar explains the short week), plus the current
+#        week so far. The page picks any two (default: last full week vs the current week)
+#        and marks last month's best full week (29 Oct 2026).
 #   mom: month to date (1st → yesterday) vs the same days last month; on the
 #        1st, the month just finished vs the one before it.
-WM_WEEKS = 26                                    # how far back the week picker goes
 _REGION_ALIAS = {"DAR-ES-ALAM": "SINZA", "KTDA SHOP": "KTDA", "WEBSITE SALES": "WEBSITE",
                  "WEBSITE": "WEBSITE", "JUMIA": "WEBSITE"}
 
@@ -812,29 +812,33 @@ def why_moved():
     last_day = min(date.today() - timedelta(days=1), m_end)     # last COMPLETE day
     out = {}
 
-    # weeks — every dashboard week (Sun–Sat cut at month ends) that ended by last_day, WM_WEEKS back.
-    # The page builds the waterfall between ANY two of them (default: the latest two) and marks the
-    # best week (user, 28 Oct 2026). One till query for the whole span, split by day.
-    segs, ws = [], _week_start(last_day) - timedelta(weeks=WM_WEEKS)
+    # weeks — the dashboard weeks (Sun–Sat cut at month ends) of last month and this month, plus the
+    # current week so far (to last_day) (user, 29 Oct 2026). The page builds the waterfall between ANY
+    # two of them and marks last month's best week. One till query for the whole span, split by day.
+    first = (last_day.replace(day=1) - timedelta(days=1)).replace(day=1)   # 1st of last month
+    segs, ws = [], _week_start(first)
     while ws <= last_day:
         we, s = ws + timedelta(days=6), ws
-        while s <= we:
+        while s <= we and s <= last_day:
             me = (date(s.year + (s.month == 12), s.month % 12 + 1, 1) - timedelta(days=1))
             e = min(we, me)
-            if e <= last_day:
-                segs.append((s, e))
+            if s >= first:
+                segs.append((s, min(e, last_day), e > last_day))       # (start, end, current week?)
             s = e + timedelta(days=1)
         ws += timedelta(days=7)
     if len(segs) >= 2:
         tills = _till_days(segs[0][0], segs[-1][1], regions)
         out["weeks"] = []
-        for s, e in segs:
+        for s, e, cur in segs:
             p = _period_bags(s, e, regions, tills)
-            out["weeks"].append({
-                "label": f"Wk {_perfect_week_index(s)} {s:%b}", "range": _rng(s, e), "start": s.isoformat(),
-                "days": p["days"],
+            wk = {
+                "label": f"Wk {_perfect_week_index(s)} {s:%b}" + (" so far" if cur else ""),
+                "range": _rng(s, e), "start": s.isoformat(), "days": p["days"],
                 "rows": [[reg, shop, round(b), round(k)] for reg, shop, b, k in p["rows"] if round(b) or round(k)],
-            })
+            }
+            if cur:
+                wk["current"] = True
+            out["weeks"].append(wk)
 
     # mom — month to date vs the same days last month (or, on the 1st, the full months).
     if last_day >= m_start:

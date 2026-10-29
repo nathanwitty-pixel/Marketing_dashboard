@@ -93,13 +93,15 @@ Toggle **Week on week / Month on month** (`#wm-period`, remembered in `localStor
   Rounding leftovers go on the biggest mover, so the bars always land on the end total. The days bar hides when
   the day counts match.
 - **Week picker + best week** (28 Oct 2026, user's call): on Week on week, *Compare [week] with [week]* picks
-  any two of the last `WM_WEEKS` (26) weeks (`#wm-a` / `#wm-b`, latest first, not remembered). `whyMoved.weeks` =
-  `[{label, range, start, days, rows: [[region, shop, bags, bulk]]}]`, from ONE `bags_sold_by_shop.sql` run
+  any two weeks of **last month and this month only** (29 Oct 2026, user's call), plus the **current week so
+  far** (`current: true`, labelled "so far", up to yesterday) (`#wm-a` / `#wm-b`, latest first, not remembered;
+  default = last full week vs the current week). `whyMoved.weeks` =
+  `[{label, range, start, days, current?, rows: [[region, shop, bags, bulk]]}]`, from ONE `bags_sold_by_shop.sql` run
   (it returns a row per till per **day**) + `CORPORATE_BAGS` per week; the page's `view()` / `waterfall()` are
-  the JS twins of `_view()` / `_waterfall()`. **Best week** = most bags among full 7-day weeks, for the current
-  bulk filter: ★ in the dropdown, a dashed amber line on the chart, and a line saying how far the later week is
-  from it. *Compare with best week* puts the best week on the left. Oct 2026: best = Wk 2 Oct 4,334
-  (without bulk: Wk 5 Aug 4,194).
+  the JS twins of `_view()` / `_waterfall()`. **Best week** = most bags among **last month's** full 7-day weeks
+  (29 Oct 2026, user's call), for the current bulk filter: ★ in the dropdown, a dashed amber line on the chart,
+  and a line saying how far the later week is from it. *Compare with best week* puts the best week on the left.
+  The current week is scaled by days in the waterfall like any short week.
 - **The reason** (amber box) = the biggest bar in the direction of the total move. The line under the chart names
   its top shops; the tooltip lists every shop's change in that region.
 - The y axis starts below the lowest level (stated in the sub-line), so small moves stay visible.
