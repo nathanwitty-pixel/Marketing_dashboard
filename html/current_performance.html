@@ -1898,29 +1898,46 @@ window.addEventListener('DOMContentLoaded', function() {
     // win on size). The list starts on the 1st of last month, so WEEKS[0] names that month.
     var LAST_MONTH = WEEKS.length ? WEEKS[0].start.slice(0, 7) : '';
     var MONTH_NAME = LAST_MONTH ? new Date(LAST_MONTH + '-01T00:00:00').toLocaleString('en-GB', { month: 'long' }) : '';
-    function bestWeek(mode) {
+    // This month's best week is marked too (cyan), from the weeks after last month's.
+    var THIS_MONTH = (WEEKS.filter(function (wk) { return wk.start.slice(0, 7) > LAST_MONTH; })[0] || {}).start;
+    THIS_MONTH = THIS_MONTH ? THIS_MONTH.slice(0, 7) : '';
+    var THIS_MONTH_NAME = THIS_MONTH ? new Date(THIS_MONTH + '-01T00:00:00').toLocaleString('en-GB', { month: 'long' }) : '';
+    var BEST_COL = { last: '#fbbf24', 'this': '#22d3ee' };
+    function shortMonth(name) { return name.slice(0, 3); }
+    function bestWeek(mode, month) {
+      month = month || LAST_MONTH;
       var best = -1, bags = -Infinity;
       WEEKS.forEach(function (wk, i) {
         var t = Math.round(view(wk, mode).total);
-        if (wk.days === 7 && wk.start.slice(0, 7) === LAST_MONTH && t > bags) { best = i; bags = t; }
+        if (wk.days === 7 && !wk.current && wk.start.slice(0, 7) === month && t > bags) { best = i; bags = t; }
       });
       return best < 0 ? null : { i: best, wk: WEEKS[best], bags: bags };
+    }
+    // Both reference weeks: [{best, name, col}] — last month's first, then this month's.
+    function bestWeeks(mode) {
+      var out = [];
+      var a = bestWeek(mode, LAST_MONTH), b = THIS_MONTH ? bestWeek(mode, THIS_MONTH) : null;
+      if (a) out.push({ i: a.i, wk: a.wk, bags: a.bags, name: MONTH_NAME, col: BEST_COL.last });
+      if (b) out.push({ i: b.i, wk: b.wk, bags: b.bags, name: THIS_MONTH_NAME, col: BEST_COL['this'] });
+      return out;
     }
 
     function build(key, mode) {
       var w = getW(key, mode);
       if (!w) return;
       var wNorm = mode !== 'without' ? getW(key, 'without') : null;   // the "without bulk orders" figure beside the title
-      var best = key === 'wow' ? bestWeek(mode) : null;               // the reference line
+      var bests = key === 'wow' ? bestWeeks(mode) : [];               // the reference lines (last month, this month)
       var bestNote = document.getElementById('wm-best-note');
-      bestNote.innerHTML = best ? (
-        '<span style="color:#fbbf24;font-weight:700">★ Best week in ' + MONTH_NAME + ':</span> ' + best.wk.label + ' (' + best.wk.range + ') ' +
-        '<strong style="color:#e2e8f0">' + fmt(best.bags) + ' bags</strong>' + (function () {
-          var gap = w.now.bags - best.bags;
-          if (best.i === selB) return ', and that is ' + w.now.label + '.';
-          return '. ' + w.now.label + ' is <strong style="color:' + (gap < 0 ? '#f87171' : '#34d399') + '">' +
-            sgn(gap) + ' bags (' + (gap >= 0 ? '+' : '−') + Math.abs(gap / best.bags * 100).toFixed(1) + '%)</strong> from it.';
-        })()) : '';
+      bestNote.innerHTML = bests.map(function (best) {
+        return '<div><span style="color:' + best.col + ';font-weight:700">★ Best week in ' + best.name + ':</span> ' +
+          best.wk.label + ' (' + best.wk.range + ') ' +
+          '<strong style="color:#e2e8f0">' + fmt(best.bags) + ' bags</strong>' + (function () {
+            var gap = w.now.bags - best.bags;
+            if (best.i === selB) return ', and that is ' + w.now.label + '.';
+            return '. ' + w.now.label + ' is <strong style="color:' + (gap < 0 ? '#f87171' : '#34d399') + '">' +
+              sgn(gap) + ' bags (' + (gap >= 0 ? '+' : '−') + Math.abs(gap / best.bags * 100).toFixed(1) + '%)</strong> from it.';
+          })() + '</div>';
+      }).join('');
       var then = w.then, now = w.now, delta = now.bags - then.bags;
       var pct = then.bags ? delta / then.bags * 100 : 0;
       var down = delta < 0;
@@ -1951,7 +1968,7 @@ window.addEventListener('DOMContentLoaded', function() {
       // Start the axis below the lowest level so a 20-bag move is still visible next to 3,000-bag totals.
       var lows = bars.filter(function (b) { return !b.total; }).map(function (b) { return b.lo; }).concat([then.bags, now.bags]);
       var highs = bars.map(function (b) { return b.hi; });
-      if (best) { lows.push(best.bags); highs.push(best.bags); }
+      bests.forEach(function (best) { lows.push(best.bags); highs.push(best.bags); });
       var lo = Math.min.apply(null, lows), hi = Math.max.apply(null, highs), span = Math.max(hi - lo, 1);
       var mag = Math.pow(10, Math.floor(Math.log10(span)));
       var yMin = Math.max(0, Math.floor((lo - span * 0.6) / mag) * mag);
@@ -2010,22 +2027,36 @@ window.addEventListener('DOMContentLoaded', function() {
             var lvl = bars[i].total ? bars[i].hi : bars[i].to, y = ys.getPixelForValue(lvl);
             x.beginPath(); x.moveTo(a.x + a.width / 2, y); x.lineTo(b.x - b.width / 2, y); x.stroke();
           }
-          if (best) {                                       // ★ best week: dashed line across the chart
+          bests.forEach(function (best, n) {                // ★ best weeks: a dashed line each across the chart
             var by = ys.getPixelForValue(best.bags), ca = ch.chartArea;
             x.save();
-            x.strokeStyle = 'rgba(251,191,36,0.75)'; x.lineWidth = 1.5; x.setLineDash([6, 4]);
+            x.strokeStyle = best.col; x.globalAlpha = 0.8; x.lineWidth = 1.5; x.setLineDash([6, 4]);
             x.beginPath(); x.moveTo(ca.left, by); x.lineTo(ca.right, by); x.stroke();
-            x.setLineDash([]); x.fillStyle = '#fbbf24'; x.font = 'bold 11px "Segoe UI", system-ui, sans-serif';
+            x.globalAlpha = 1; x.setLineDash([]); x.fillStyle = best.col; x.font = 'bold 11px "Segoe UI", system-ui, sans-serif';
             x.textAlign = 'center'; x.textBaseline = 'bottom';
-            // Label over the right-most bar slot whose bar, value label and reason box stay clear of the line.
-            var slot = null;
-            for (var k = bars.length - 1; k >= 0 && !slot; k--) {
+            // Label over a bar slot whose bar, value label and reason box stay clear of the line —
+            // last month's searched from the right, this month's from the left, so the two never meet.
+            var slot = null, k;
+            for (var s = 0; s < bars.length && !slot; s++) {
+              k = n === 0 ? bars.length - 1 - s : s;
               var bt = ys.getPixelForValue(bars[k].hi), bb = ys.getPixelForValue(bars[k].lo);
               if (by - 16 > bb + 42 || by < bt - 24) slot = meta.data[k];
             }
-            x.fillText('★ Best ' + fmt(best.bags), slot ? slot.x : ca.right - 50, by - 3);
+            // Keep the whole label inside the chart (it was clipped at the right edge) on a dark backing.
+            var txt = '★ Best ' + shortMonth(best.name) + ' ' + fmt(best.bags);
+            x.font = 'bold 12px "Segoe UI", system-ui, sans-serif';
+            var tw = x.measureText(txt).width, pad = 5;
+            var tx = slot ? slot.x : (n === 0 ? ca.right : ca.left);
+            tx = Math.min(Math.max(tx, ca.left + tw / 2 + pad + 2), ca.right - tw / 2 - pad - 2);
+            var ty = Math.max(by - 4, ca.top + 18);
+            x.fillStyle = 'rgba(15,23,42,0.92)';
+            x.fillRect(tx - tw / 2 - pad, ty - 16, tw + pad * 2, 18);
+            x.strokeStyle = best.col; x.lineWidth = 1;
+            x.strokeRect(tx - tw / 2 - pad, ty - 16, tw + pad * 2, 18);
+            x.fillStyle = best.col;
+            x.fillText(txt, tx, ty);
             x.restore();
-          }
+          });
           x.textAlign = 'center'; x.font = 'bold 12px "Segoe UI", system-ui, sans-serif';
           bars.forEach(function (bar, i) {
             var el = meta.data[i];
@@ -2070,10 +2101,17 @@ window.addEventListener('DOMContentLoaded', function() {
                   if (b.step.days) return [' ' + sgn(b.delta) + ' bags',
                     ' ' + now.days + ' days vs ' + then.days + ' at ' + Math.round(then.bags / then.days).toLocaleString() + ' bags/day'];
                   var r = b.step.row, out = [' ' + sgn(b.delta) + ' bags', ' ' + fmt(r.then) + ' → ' + fmt(r.now) + ' bags'];
+                  // Different week lengths: the earlier week is scaled to the later week's days before
+                  // subtracting, so show that step (the rest of the raw gap is in the Selling days bar).
+                  var sc = then.days && then.days !== now.days ? now.days / then.days : 1;
+                  if (sc !== 1) out.push(' ' + fmt(r.then) + ' in ' + then.days + ' days = ' + fmt(Math.round(r.then * sc)) +
+                    ' for ' + now.days + ' days, so ' + fmt(r.now) + ' is ' + sgn(b.delta),
+                    ' (the rest of the gap is in the Selling days bar)');
                   if (bulkNote(r)) out.push(' ' + bulkNote(r));
+                  if (sc !== 1) out.push(' Shops, earlier week scaled to ' + now.days + ' days:');
                   (r.shops || []).filter(function (s) { return s.delta; })
                     .sort(function (a, z) { return Math.abs(z.delta) - Math.abs(a.delta); }).slice(0, 6)
-                    .forEach(function (s) { out.push('   ' + s.shop + ': ' + sgn(s.delta) + '  (' + fmt(s.then) + ' → ' + fmt(s.now) + ')'); });
+                    .forEach(function (s) { out.push('   ' + s.shop + ': ' + sgn(s.delta) + '  (' + fmt(Math.round(s.then * sc)) + ' → ' + fmt(s.now) + ')'); });
                   return out;
                 }
               }
@@ -2096,11 +2134,12 @@ window.addEventListener('DOMContentLoaded', function() {
     if (!getW(pick, mode)) mode = 'with';
     var selElA = document.getElementById('wm-a'), selElB = document.getElementById('wm-b');
     function fillWeeks() {                              // option text carries the bags for the current filter
-      var best = bestWeek(mode);
+      var bests = bestWeeks(mode);
       [selElA, selElB].forEach(function (el, j) {
         el.innerHTML = WEEKS.map(function (wk, i) {
+          var star = bests.filter(function (b) { return b.i === i; })[0];
           return '<option value="' + i + '">' + wk.label + ' (' + wk.range + ') ' +
-            fmt(Math.round(view(wk, mode).total)) + ' bags' + (best && best.i === i ? '  ★ best' : '') + '</option>';
+            fmt(Math.round(view(wk, mode).total)) + ' bags' + (star ? '  ★ best ' + shortMonth(star.name) : '') + '</option>';
         }).slice().reverse().join('');                   // latest week first
         el.value = String(j ? selB : selA);
       });

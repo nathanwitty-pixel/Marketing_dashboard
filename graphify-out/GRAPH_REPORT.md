@@ -1,7 +1,7 @@
 # Graph Report - Marketing_dashboard  (2026-10-30)
 
 ## Corpus Check
-- 231 files · ~1,096,379 words
+- 231 files · ~1,098,094 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 20 file(s) not represented in the graph (top: .csv 13, (none) 2, .toml 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0794a705`
+- Built from commit: `40627400`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -23,7 +23,7 @@
 - chart_switcher.js
 - graw(block, key) function (bare numeric getter)
 - Kitengela Rejects tracker (timed offer)
-- push_rules.py
+- os
 - publish.py
 - v5_theme.js
 - name_match.py
@@ -58,7 +58,7 @@
 - Shops Efficiency Tracking spec doc
 - ads_panel.js
 - shop_launch.py
-- os
+- push_rules.py
 - page_sidebar.js
 - generators/self_made_combos.py
 - Combos & Power Deals by Shop panel (#combo-shop)
@@ -76,7 +76,7 @@
 - offer_picking.py
 - bag_classifier
 - High-End Visual Design skill
-- data
+- Monthly Report (doc)
 - self_made_combos_bundle/self_made_combos.py
 - month_end_lift
 - daydream skill (Vault Daydream)
@@ -94,7 +94,7 @@
 - shop_birthdays.py
 - push_planner.py
 - Denri Africa Dashboard Design System (skill)
-- Monthly Report (doc)
+- data
 - Ralph task — "Out of stock — call back" demand per shop
 - theme.py
 - push_laya.py
@@ -248,9 +248,9 @@ Nodes (35): alpha(), apply(), attach(), axisOpts(), build(), changeTxt(), Chart(
 Cohesion: 0.07
 Nodes (28): bom_costs.json (offline fallback mirror), build() function (writes xlsx export), _CAT_KEYWORDS fallback rule, offer_picking._read_bom_costs (BOM reader), offer_picking._read_offers (category source), Offline fallback pattern (mirror sheet data to local JSON), Reject Sale (doc: reject_sales.py -> reject_sales.html, RJ), reject_sales_export.csv (fallback export) (+20 more)
 
-### Community 7 - "push_rules.py"
-Cohesion: 0.13
-Nodes (17): action(), _cover_txt(), _days_back(), _kind(), _n(), lib/push_rules.py — the Push Planner's pure logic (spec: docs/push-planner.md).…, (code, plain sentence, units at stake, confidence 0..1) for one bag × market.…, HANDBAG' → 'handbags', 'SCHOOL BAG' → 'school bags', 'SPORT' → 'sport bags', ''… (+9 more)
+### Community 7 - "os"
+Cohesion: 0.14
+Nodes (13): main(), _query_ready(), weekly_sales.py — the weekly-sales fix. Computes the CURRENT Sun–Sat week's…, get_gspread_client(), Shared Google Sheets authentication for every dashboard generator. Two modes,…, os, build_all.py ────────────────────────────────────────────────────────────────…, main() (+5 more)
 
 ### Community 8 - "publish.py"
 Cohesion: 0.18
@@ -380,9 +380,9 @@ Nodes (16): act(), axes(), cell(), charts(), drawCmp(), drawWow(), values(), esc
 Cohesion: 0.18
 Nodes (15): build(), _cfg(), first_sale(), kenya_posts(), load_workplan(), make_matcher(), match(), _parse_workplan() (+7 more)
 
-### Community 42 - "os"
-Cohesion: 0.14
-Nodes (13): main(), _query_ready(), weekly_sales.py — the weekly-sales fix. Computes the CURRENT Sun–Sat week's…, get_gspread_client(), Shared Google Sheets authentication for every dashboard generator. Two modes,…, os, build_all.py ────────────────────────────────────────────────────────────────…, main() (+5 more)
+### Community 42 - "push_rules.py"
+Cohesion: 0.13
+Nodes (17): action(), _cover_txt(), _days_back(), _kind(), _n(), lib/push_rules.py — the Push Planner's pure logic (spec: docs/push-planner.md).…, (code, plain sentence, units at stake, confidence 0..1) for one bag × market.…, HANDBAG' → 'handbags', 'SCHOOL BAG' → 'school bags', 'SPORT' → 'sport bags', ''… (+9 more)
 
 ### Community 43 - "page_sidebar.js"
 Cohesion: 0.35
@@ -448,9 +448,9 @@ Nodes (18): Buckets, Counted by how it was sold, bag_of(), _add_noffer_posts(), 
 Cohesion: 0.40
 Nodes (5): Creative Variance Engine (vibe/layout archetypes), Double-Bezel Card Architecture, Glassmorphism recipe, Motion Requirements (custom cubic-bezier, GPU-safe transforms), High-End Visual Design skill
 
-### Community 60 - "data"
-Cohesion: 0.29
-Nodes (7): _db_count(), monthly_from_db(), Reporting month's subset count (e.g. rejectBags, giftBags) from…, Prefer the REPORTING month's real bags from Postgres (monthly_sales_db.json,…, _live_bags(), load_dispatch(), data()
+### Community 60 - "Monthly Report (doc)"
+Cohesion: 0.22
+Nodes (9): Data Sources table (PERF/PROJ, NP, OA, PA), Dashboard Insights skill, Insight Categories & Thresholds (velocity_factor distortion, WoW decline), Monthly Report (doc), Finalized month pin (DENRI_REPORT_MONTH), Response-ladder tag (Update / New Timing / Acknowledge / Collaborate), Alignment universe (sold ∪ stock ∪ posted, region-present bags), Posting - Sales Yields from Accurate Posting (doc) (+1 more)
 
 ### Community 61 - "self_made_combos_bundle/self_made_combos.py"
 Cohesion: 0.18
@@ -516,9 +516,9 @@ Nodes (27): build_facts(), build_reasons(), _categories(), inject(), _kenya_targ
 Cohesion: 0.08
 Nodes (29): Card component (base building block), Card entrance animation via CSS @keyframes + animation-fill-mode: both, dashboard-insights (related skill), Data Injection Block pattern (SECTION_DATA_START/END markers), Denri Africa Dashboard Design System (skill), design-taste-frontend (related skill), Design Tokens (colors, typography, spacing), Signature Element — Flowing Border (achievement cards) (+21 more)
 
-### Community 78 - "Monthly Report (doc)"
-Cohesion: 0.22
-Nodes (9): Data Sources table (PERF/PROJ, NP, OA, PA), Dashboard Insights skill, Insight Categories & Thresholds (velocity_factor distortion, WoW decline), Monthly Report (doc), Finalized month pin (DENRI_REPORT_MONTH), Response-ladder tag (Update / New Timing / Acknowledge / Collaborate), Alignment universe (sold ∪ stock ∪ posted, region-present bags), Posting - Sales Yields from Accurate Posting (doc) (+1 more)
+### Community 78 - "data"
+Cohesion: 0.29
+Nodes (7): _db_count(), monthly_from_db(), Reporting month's subset count (e.g. rejectBags, giftBags) from…, Prefer the REPORTING month's real bags from Postgres (monthly_sales_db.json,…, _live_bags(), load_dispatch(), data()
 
 ### Community 79 - "Ralph task — "Out of stock — call back" demand per shop"
 Cohesion: 0.25
@@ -832,12 +832,12 @@ Nodes (4): Deliver, Sales-share targets per product, Steps, Tests
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `run_query()` connect `run_query` to `sales`, `shop_corporate.py`, `self_made_combos_bundle/lib/__init__.py`, `product_performance.py`, `current_performance.py`, `oos_callbacks.py`, `build_payload`, `timed_offers.py`, `_combo_button_usage`, `snapshot.py`, `shop_requests.py`, `_enrich_deals`, `fetch_new_products_data`, `footfall.py`, `chronos_train.py`, `stock.py`, `build_payload`, `_bags_not_on_offer`, `shop_launch.py`, `os`, `generators/self_made_combos.py`, `norm`, `_num`, `shops_efficiency.py`, `build`, `offer_picking.py`, `fetch_posting_data`, `_enrich_deals`, `_apply_receipt_offers`, `colours.py`, `forward_projections.py`, `queries.py`, `_combo_button_usage`, `requests_block`, `negative_fixes.py`, `product_targets.py`, `excluded_products`, `odoo_month_product_bags`, `bag_quant.py`, `bags_on_offer.py`?**
-  _High betweenness centrality (0.056) - this node is a cross-community bridge._
+- **Why does `run_query()` connect `run_query` to `sales`, `shop_corporate.py`, `self_made_combos_bundle/lib/__init__.py`, `product_performance.py`, `os`, `current_performance.py`, `oos_callbacks.py`, `build_payload`, `timed_offers.py`, `_combo_button_usage`, `snapshot.py`, `shop_requests.py`, `_enrich_deals`, `fetch_new_products_data`, `footfall.py`, `chronos_train.py`, `stock.py`, `build_payload`, `_bags_not_on_offer`, `shop_launch.py`, `generators/self_made_combos.py`, `norm`, `_num`, `shops_efficiency.py`, `build`, `offer_picking.py`, `fetch_posting_data`, `_enrich_deals`, `_apply_receipt_offers`, `colours.py`, `forward_projections.py`, `queries.py`, `_combo_button_usage`, `requests_block`, `negative_fixes.py`, `product_targets.py`, `excluded_products`, `odoo_month_product_bags`, `bag_quant.py`, `bags_on_offer.py`?**
+  _High betweenness centrality (0.057) - this node is a cross-community bridge._
 - **Why does `bag_classifier()` connect `bag_classifier` to `_apply_receipt_offers`, `push_planner.py`, `generators/self_made_combos.py`, `oos_callbacks.py`, `Push Planner (`push_planner.py` → `push_planner.html`, `PP`)`, `Product (bag) targets`?**
-  _High betweenness centrality (0.042) - this node is a cross-community bridge._
+  _High betweenness centrality (0.047) - this node is a cross-community bridge._
 - **Why does `Bags on offer vs not on offer` connect `Bags on offer vs not on offer` to `self_made_combos_bundle/lib/__init__.py`, `oos_callbacks.py`, `offer_picking.py`, `bag_classifier`, `shop-birthdays.md`?**
-  _High betweenness centrality (0.040) - this node is a cross-community bridge._
+  _High betweenness centrality (0.042) - this node is a cross-community bridge._
 - **What connects `PERF`, `graphify`, `Use in another project` to the rest of the system?**
   _251 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `laya.py` be split into smaller, more focused modules?**

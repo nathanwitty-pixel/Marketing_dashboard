@@ -101,7 +101,15 @@ Toggle **Week on week / Month on month** (`#wm-period`, remembered in `localStor
   the JS twins of `_view()` / `_waterfall()`. **Best week** = most bags among **last month's** full 7-day weeks
   (29 Oct 2026, user's call), for the current bulk filter: ★ in the dropdown, a dashed amber line on the chart,
   and a line saying how far the later week is from it. *Compare with best week* puts the best week on the left.
+  **This month's best week too** (30 Oct 2026, user's call): the same pick among **this month's** full 7-day
+  weeks (the in-progress week never counts), drawn as a second dashed line in **cyan**. Each line is labelled
+  with its month (`★ Best Sep 3,871` amber, `★ Best Oct …` cyan) and the two labels sit at opposite ends of the
+  chart so they never overlap. The note under the picker has one line per month in the same colours, and the
+  dropdown marks each with `★ best Sep` / `★ best Oct`. *Compare with best week* still uses last month's.
   The current week is scaled by days in the waterfall like any short week.
+  **Region tooltip shows the scaling** (30 Oct 2026): when the two weeks have different days, the hover adds
+  "2,074 in 7 days = 1,481 for 5 days, so 908 is −572" and lists each shop as *(earlier week scaled → now)*,
+  so the figures subtract on sight; the rest of the raw gap sits in the Selling days bar.
 - **The reason** (amber box) = the biggest bar in the direction of the total move. The line under the chart names
   its top shops; the tooltip lists every shop's change in that region.
 - The y axis starts below the lowest level (stated in the sub-line), so small moves stay visible.
