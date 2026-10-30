@@ -144,6 +144,46 @@ def _read_bom_costs():
         return {}
 
 
+# Staff price list wording → the catalogue bag type (staff_prices.json keeps the list's own names).
+STAFF_ALIAS = {
+    "ADRIAN CAMERA BACK PACK": "ADRIAN", "ALPHA": "ALPHA TRAVEL", "ARIA": "ARIA SLING",
+    "ARLO": "ARLO MAN BAG", "AVANA": "AVANA HB", "BUTTERFLY/ROUND SLING": "BUTTERFLY SLING",
+    "CAIRO": "CAIRO BP", "CATHY SLING BAG": "CATHY HANDBAG", "CELINE": "CELINE SLING BAG",
+    "CESS HB": "CESS", "CHASE THIGH BAG": "CHASE", "CLAIRE": "CLAIRE HANDBAG", "COLLEGE": "COLLEGE HB",
+    "DARIA BACKPACK": "DARIA", "DOUBLE PRESS BACKPACK": "DOUBLE PRESS", "ELEKTRA THIGH BAG": "ELEKTRA",
+    "ELLA": "ELLA SLING", "FABELLA": "FABELA", "FANNYPACK AMAPIANO": "FANNY AMAPIANO",
+    "JAYDEN": "JAYDEN MAN", "KAI BACKPACK": "KAI", "KAOS BACKPACK": "KAOS", "KATE SLING BAG": "KATE",
+    "KAZ TRAVEL BAG": "KAZ", "LEGACY BRIEFCASE": "LEGACY", "LIAM TRAVELER": "LIAM", "LITE TRAVEL": "LITE",
+    "LOOP(IMARA) BP": "LOOP BP", "MANDY HANDBAG": "MANDY HB", "MEGA BACKPACK": "MEGA",
+    "MINI SCHOOL BAG": "MINI SCHOOL", "MONAH BACKPACK": "MONAH BP", "MONTANA SLING BAG": "MONTANA",
+    "MRADI": "MRADI TRAVEL", "NEO MANBAG": "NEO MAN", "NYLA": "NYLA BP", "OLD MESSENGER": "0LD MESSENGER",
+    "POH": "POH HAIRISTIC", "PRIME BACKPACK": "PRIME", "REESTO CHEST BAG": "REESTO CHEST",
+    "REO": "REO TRAVEL", "RUNNING ARMBAND": "ARM BAND", "S .TRAVEL": "TRAVEL",
+    "SAFIRI BACKPACK": "SAFIRI BP", "SCARLET HB": "SCARLET", "SHUGLI": "SHUGLI BACKPACK",
+    "TRI MIO": "TRIO MIO", "VAL TOTE": "VAL", "VOYAGE TRAVEL BAG": "VOYAGE",
+    "WONDER LUXE": "WANDER LUXE", "ZANE MAN BAG": "ZANE MAN", "ZING": "ZING SLING",
+}
+
+
+def _staff_key(name):
+    """Letters and digits only, so 'CODE3' meets 'CODE 3' and 'FANNYPACK(N)' meets 'FANNYPACK N'."""
+    return re.sub(r"[^A-Z0-9]", "", str(name).upper())
+
+
+def _read_staff_prices():
+    """{_staff_key(catalogue bag type): staff price} from staff_prices.json (a 0 = no price)."""
+    try:
+        raw = json.load(open(paths.data("staff_prices.json"), encoding="utf-8"))
+    except Exception:                                        # noqa: BLE001
+        return {}
+    out = {}
+    for k, v in raw.get("prices", {}).items():
+        up = str(k).strip().upper()
+        if isinstance(v, (int, float)) and v > 0:
+            out[_staff_key(STAFF_ALIAS.get(up, up))] = round(v)
+    return out
+
+
 def _read_bag_prices():
     """{BAG (upper): official full price} from bag_original_prices.json (fallback)."""
     p = paths.data("bag_original_prices.json")
@@ -337,6 +377,7 @@ def _build_catalog(cost, prod, bomkeys, offers):
             canon = next((k for k in offer_keys if canon == k or canon.startswith(k + " ")), canon)
         bag_stock[canon] = bag_stock.get(canon, 0) + int(q or 0)
     names = set(cost.keys()) | set(bag_stock.keys()) | set(offers.keys())
+    staff = _read_staff_prices()
     cat = []
     for n in sorted(names):
         c = round(cost[n]) if n in cost else None
@@ -359,6 +400,7 @@ def _build_catalog(cost, prod, bomkeys, offers):
                     "valueNow": (round(now) if now else None),
                     "value": (round(now) if now else None),
                     "valueAlts": (alts if len(alts) > 1 else []),
+                    "staff": staff.get(_staff_key(n)),
                     "isHandbag": o.get("category", "") == "HANDBAG",
                     "category": o.get("category", "")})
     return cat, bag_stock

@@ -92,6 +92,16 @@ word-prefix via `_is_full_price`, so "LOOP" catches "LOOP BP", "MEGA" catches "M
 are priced at the **original full price for NOW too** — `valueNow` is forced equal to
 `valueWas`, so they carry no offer reduction anywhere they're used (combos, power deals).
 
+### Staff price (30 Oct 2026)
+
+Every bag in the slot dropdowns also shows its **staff price** (cyan, `staff KES …`) after the
+BOM cost. It comes from **`data/staff_prices.json`**, the internal staff price list (25% margin),
+kept with the list's own bag names and edited by hand. `_read_staff_prices` maps those names to
+the catalogue bag types through `STAFF_ALIAS` (e.g. `KAI BACKPACK` → `KAI`, `FABELLA` → `FABELA`)
+and then compares letters and digits only (`CODE3` = `CODE 3`). The catalog stores it as
+`staff`. A price of 0 (Hazel) means no staff price and shows nothing. The staff price is shown
+for reference only: it does not change any combo price, margin or power deal.
+
 ### Alternate offer prices — `offerAlts` and the per-bag price picker
 
 Some bags may be sold at **any one of several offer prices** — the price list writes them with a

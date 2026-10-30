@@ -43,11 +43,11 @@
       }
     },
     {
-      "name": "19–23 Oct · Mashujaa Offers (Kenya)",
+      "name": "19–24 Oct · Mashujaa Offers (Kenya)",
       "market": "Kenya",
       "shops": [],
       "startDate": "2026-10-19",
-      "endDate": "2026-10-23",
+      "endDate": "2026-10-24",
       "bags": ["Avana HB", "Belt Bag", "Big Man Bag", "Double Press", "Fabela", "Fayola", "Gym Bag", "Liam", "Neo Man", "Pioneer"],
       "prices": {
         "Avana HB":     {"was": 2100, "now": 1500},
