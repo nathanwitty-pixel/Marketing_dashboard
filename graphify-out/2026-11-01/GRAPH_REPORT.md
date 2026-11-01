@@ -1,7 +1,7 @@
 # Graph Report - Marketing_dashboard  (2026-11-01)
 
 ## Corpus Check
-- 241 files · ~1,191,737 words
+- 241 files · ~1,191,864 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 21 file(s) not represented in the graph (top: .csv 14, (none) 2, .toml 1)
 
@@ -894,10 +894,10 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `run_query()` connect `run_query` to `_apply_receipt_offers`, `shop_corporate.py`, `lib/receipt_combos.py`, `product_performance.py`, `runway_bags.py`, `current_performance.py`, `odoo_marketing.py`, `fetch_posting_data`, `check_connection`, `forward_projections.py`, `oos_callbacks.py`, `build_payload`, `shop_requests.py`, `shop_stock_levels.py`, `json`, `_enrich_deals`, `_bags_not_on_offer`, `queries.py`, `chronos_train.py`, `stock.py`, `build_payload`, `shop_launch.py`, `generators/self_made_combos.py`, `shops_efficiency.py`, `product_targets.py`, `offer_picking.py`, `_combo_button_usage`, `snapshot.py`, `_combo_button_usage`, `odoo_month_product_bags`, `shop_breakdown`, `lib/db.py`, `test_snapshot.py`, `_enrich_deals`, `norm`, `ads_impact.py`, `fetch_new_products_data`, `month_extras.py`, `odoo_marketing_audit.py`, `footfall.py`, `fetch`?**
   _High betweenness centrality (0.053) - this node is a cross-community bridge._
-- **Why does `bag_classifier()` connect `bag_classifier` to `_apply_receipt_offers`, `push_planner.py`, `generators/self_made_combos.py`, `oos_callbacks.py`, `Push Planner (`push_planner.py` → `push_planner.html`, `PP`)`, `Bags on offer vs not on offer`, `fetch`, `Product (bag) targets`?**
-  _High betweenness centrality (0.046) - this node is a cross-community bridge._
 - **Why does `Bags on offer vs not on offer` connect `Bags on offer vs not on offer` to `oos_callbacks.py`, `lib/receipt_combos.py`, `shop-birthdays.md`, `offer_picking.py`?**
-  _High betweenness centrality (0.042) - this node is a cross-community bridge._
+  _High betweenness centrality (0.050) - this node is a cross-community bridge._
+- **Why does `bag_classifier()` connect `bag_classifier` to `_apply_receipt_offers`, `push_planner.py`, `generators/self_made_combos.py`, `oos_callbacks.py`, `Push Planner (`push_planner.py` → `push_planner.html`, `PP`)`, `Bags on offer vs not on offer`, `fetch`, `Product (bag) targets`?**
+  _High betweenness centrality (0.048) - this node is a cross-community bridge._
 - **What connects `PERF`, `graphify`, `Use in another project` to the rest of the system?**
   _255 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `shop_corporate.py` be split into smaller, more focused modules?**
