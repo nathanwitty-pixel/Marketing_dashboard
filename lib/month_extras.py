@@ -232,6 +232,33 @@ def product_performance_month(month_name: str, year: int, base: str | None = Non
             "shops": (pp.get("shops") or {}).get("lastmonth") or {}, "topN": pp.get("topN", 15)}
 
 
+def self_made_regions_month(month_name: str, year: int, warn=print):
+    """6 · Self-Made Combos for Sinza / Uganda (History): running (listed) vs self-made combos from the month's till
+    receipts (lib/receipt_combos). {market: {running: [[offer, count, revenue]], selfMade: [[label, count, revenue]],
+    bulk, receipts, currency}} or None."""
+    import sys
+    from lib import paths, receipt_combos
+    m, first, last = _month_dates(month_name, year)
+    try:
+        if paths.GENERATORS not in sys.path:
+            sys.path.insert(0, paths.GENERATORS)
+        import self_made_combos as smc
+        infer = smc.bag_classifier(set())[0]
+    except Exception as ex:                                  # noqa: BLE001
+        warn(f"  extras: self-made regions skipped ({ex})")
+        return None
+    out = {}
+    for mkt, cur in (("sinza", "TSh"), ("uganda", "USh")):
+        s = receipt_combos.market_summary(mkt, first, last, infer, month_name=month_name)
+        if not s:
+            continue
+        rows = lambda t: sorted(([k, v["count"], round(v["revenue"])] for k, v in (s.get(t) or {}).items()),   # noqa: E731
+                                key=lambda r: -r[1])
+        out[mkt] = {"running": rows("running"), "selfMade": rows("selfMade"), "bulk": s.get("bulk"),
+                    "receipts": s.get("receipts"), "currency": cur}
+    return out or None
+
+
 def build_extras(base: str, month_name: str, year: int, warn=print) -> dict:
     """Everything above for `month_name year` (e.g. "September", 2026). Pages for another month are skipped.
     `base` is the folder holding the built pages (paths.HTML)."""
@@ -243,6 +270,7 @@ def build_extras(base: str, month_name: str, year: int, warn=print) -> dict:
     out = {"deals": None, "selfMadeMore": None, "posting": None, "bagsOnOffer": None,
            "shopCorporate": shop_corporate_month(month_name, year, warn),
            "cpMore": cp_more_month(month_name, year, warn),
+           "selfMadeRegions": self_made_regions_month(month_name, year, warn),
            "productPerformance": product_performance_month(month_name, year, base, warn)}
     if smc.get("month") == label:
         out["deals"], out["selfMadeMore"] = _deals(smc), _self_made_more(smc)

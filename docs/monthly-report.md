@@ -63,6 +63,27 @@ runs **after** them:
   archived.
 - A **finalized** month is static — its report HTML is frozen and never regenerated.
 
+## Sales = tills + corporate (1 Nov 2026, user's call)
+
+The report's sales figure — the bottom line, % of target, bags missing, the Sales vs Target donut and what's stored
+in History — is **shop till bags + Corporate-app bags paid in the month**, the same count as the Current Performance
+Sales card (`PROJ.totalSales` + `PROJ.corporateBags`). Before 1 Nov 2026 it was till bags only; July–October 2026 in
+History were corrected the same day (October: 16,227 → 17,225 bags, 57.9% → 61.5%, missing 11,786 → 10,788).
+
+## Offer units (1 Nov 2026, user's call)
+
+From October 2026 the offer lists come from the monthly uploads (`offers_monthly.csv`, `deals_kenya.csv`): names and
+prices, no units. When a list's units all read 0, they're counted from Odoo for the report month by
+`lib/offer_units.py`:
+- **Kenya combos:** combo sales whose bags fill a listed combo (any order, alternatives); 1 combo = 1 unit.
+- **Power Deals:** single bags of the deal's type sold at the Kenya tills (bags inside combos left out).
+- **Sinza / Uganda:** listed combos found on receipts and listed singles sold (`lib/receipt_combos`).
+Value = units × the offer's price (Now). This feeds Offer Type Analysis (section 3) and what's stored in History.
+October 2026 was archived with 0 units and was refilled the same way on 1 Nov 2026.
+
+**Removed (1 Nov 2026, user's call):** the "Each new product — posts done vs current stock" chart under New Products, on the
+Monthly Report and in History.
+
 ## Manual input
 
 - `AVG_PRICE` (default 2500 KES/bag) — set to the real average selling price to quantify

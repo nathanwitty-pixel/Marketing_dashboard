@@ -147,11 +147,12 @@ except Exception:                                             # noqa: BLE001 —
 
 # Current performance
 total_target = num(gstr(proj, "totalTarget"))
-total_sales  = num(gstr(proj, "totalSales"))
+# Sales = shop tills + Corporate-app bags paid — the Sales card's count (docs/monthly-report.md › Sales = tills + corporate)
+corporate    = num(gstr(proj, "corporateBags"))
+total_sales  = num(gstr(proj, "totalSales")) + corporate
 achieved     = (total_sales / total_target * 100) if total_target else 0
 gap          = max(total_target - total_sales, 0)
 bare_min     = num(gstr(proj, "bareMinimum"))
-corporate    = num(gstr(proj, "corporateBags"))
 forecast     = gstr(proj, "forecastedProjection")
 
 # Average weekly output for the report month (from weekly_history.json)
@@ -335,6 +336,33 @@ def _agg_offers(offers):
 
 combo_offers = _parse_offers(_garr_line(oa, "juneComboHeaders"), _garr_line(oa, "juneCombos"))
 deal_offers  = _parse_offers(_garr_line(oa, "powerDealHeaders"), _garr_line(oa, "powerDeals"))
+
+
+# The uploaded offer lists (Oct 2026+) carry no units: count them from Odoo (docs/monthly-report.md › Offer units).
+_ODOO_UNITS = {}
+
+
+def _fill_units(offers, market):
+    if not offers or any(o["units"] for o in offers):
+        return offers
+    if "u" not in _ODOO_UNITS:
+        try:
+            from lib import offer_units
+            _s = datetime.date(year, _fin_num, 1)
+            _e = datetime.date(year, _fin_num, _cal_fin.monthrange(year, _fin_num)[1])
+            _ODOO_UNITS["u"] = offer_units.units(_s, min(_e, datetime.date.today()))
+        except Exception as _ex:                                 # noqa: BLE001
+            print(f"  Offer units from Odoo skipped: {_ex}")
+            _ODOO_UNITS["u"] = None
+    got = (_ODOO_UNITS["u"] or {}).get(market) or {}
+    low = {k.strip().lower(): v for k, v in got.items()}
+    for o in offers:
+        o["units"] = low.get(o["name"].strip().lower(), 0)
+    return offers
+
+
+combo_offers = _fill_units(combo_offers, "kenya")
+deal_offers  = _fill_units(deal_offers, "power")
 combo_units, combo_value, combo_avg = _agg_offers(combo_offers)
 deal_units, deal_value, deal_avg = _agg_offers(deal_offers)
 offer_more_units = "combos" if combo_units >= deal_units else "power deals"
@@ -417,12 +445,12 @@ for _w in garr(proj, "weeklyHistory"):
 # ── Sinza / Uganda offer movement (counts + units + value) ────
 def _offers(hkey, rkey):
     return _parse_offers(_garr_line(oa, hkey), _garr_line(oa, rkey))
-sz_combos_l  = _offers("sinzaComboHeaders",  "sinzaCombos")
-sz_singles_l = _offers("sinzaSinglesHeaders", "sinzaSingles")
+sz_combos_l  = _fill_units(_offers("sinzaComboHeaders",  "sinzaCombos"), "sinza")
+sz_singles_l = _fill_units(_offers("sinzaSinglesHeaders", "sinzaSingles"), "sinza")
 sz_special_l = _offers("sinzaSpecialHeaders", "sinzaSpecials")
 sz_off_units, sz_off_value, sz_off_avg = _agg_offers(sz_combos_l + sz_singles_l + sz_special_l)
-ug_combos_l  = _offers("ugComboHeaders",  "ugCombos")
-ug_singles_l = _offers("ugSinglesHeaders", "ugSingles")
+ug_combos_l  = _fill_units(_offers("ugComboHeaders",  "ugCombos"), "uganda")
+ug_singles_l = _fill_units(_offers("ugSinglesHeaders", "ugSingles"), "uganda")
 ug_off_units, ug_off_value, ug_off_avg = _agg_offers(ug_combos_l + ug_singles_l)
 
 # Best-effort per-offer Uganda stock: sum STOCK_LEVELS Uganda stock by bag type / product name.
@@ -1126,8 +1154,6 @@ body = f"""
     </div>
     <div class="chart-cap">Each new product — sold vs remaining to target</div>
     <div class="chart-wrap"><canvas id="np-chart"></canvas></div>
-    <div class="chart-cap">Each new product — posts done vs current stock (the dead-stock read)</div>
-    <div class="chart-wrap"><canvas id="np-stock-chart"></canvas></div>
     <div class="row"><div class="tag bottom">The Bottom Line</div>
       <p>The {np_count} new products ({names_txt}) reached only <b>{pct(np_pct)} of their {fmt(np_target)}-bag target ({fmt(np_sales)} sold)</b> — a <b>{fmt(np_deficit)}-bag deficit</b>.</p></div>
     <div class="row"><div class="tag insight">The Insight</div>

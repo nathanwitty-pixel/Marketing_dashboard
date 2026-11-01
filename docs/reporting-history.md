@@ -29,10 +29,30 @@ from Odoo for that month by `lib/shop_corporate.build(month)` when the month is 
 - **Inside 1 · Current Performance** (`extras.cpMore`):
   - **Revenue:** the month's POS bag revenue (single bags, combos, gift bags, discounts — `sql/bag_revenue.sql`),
     Corporate-app KES received, their total vs the month's Odoo revenue target, and bags vs the bag target.
-  - **Why did we move — month on month:** the full month vs the month before, per region (with and without bulk
-    orders), the selling-days effect and each region's change (`lib/why_moved.build_month`).
+  - **Why did we move — month on month:** the full month vs the month before as a **waterfall chart** like the live
+    page's (last month → selling days → each region, biggest rise first → this month; numbers on every bar; the
+    biggest bar in the direction the month moved boxed amber as "the reason"; With / Without bulk orders buttons;
+    a bar's tooltip lists its shops). The same numbers sit under it as a table you can unfold
+    (`lib/why_moved.build_month`; 1 Nov 2026, user's call).
   - **Followers & reach (Kenya):** month-end Facebook / Instagram followers, new follows in the month, Instagram
     reach and views on both (Odoo Meta sync — from 18 Oct 2026, so October is part-month and says so).
+- **2 · New Products chart in the waterfall style** (1 Nov 2026, user's call): headline "N bags sold of T target (P%), S short",
+  then one bar per new product stacking up from 0 (its bags sold, number on top) to a **Total sold** bar, a dashed
+  **Target** line, the top seller boxed amber ("top seller"); hover a bar for its own target and what's left. The Sort
+  menu sets the bar order.
+- **7 · Bags On vs Off Offer charts in the waterfall style** (1 Nov 2026): a headline (the month's money, % on offer), then
+  **Money per week** — each week's money stacking up to the month total (best week boxed; hover = on / not on / others) —
+  and **Where the money came from** — each offer source (green), Not on offer (red), Others (grey) stacking up to the
+  total (biggest boxed). Numbers on every bar.
+- **9 · Product Performance: Top bags and Shops as waterfalls** (1 Nov 2026): month before (those bags' / every shop's
+  total) → each bag's / shop's change (biggest rise first) → this month, numbers on every bar, the biggest bar in the
+  direction of the move boxed as "the reason", axis starting near the lowest level; hover = month before → this
+  month, money and share. The tables stay underneath, folded ("Show the numbers as a table").
+- **6 · Self-Made Combos: Kenya · Sinza · Uganda buttons** (`extras.selfMadeRegions`, 1 Nov 2026, user's call). Kenya is
+  the CBR view as before. Sinza / Uganda come from their till receipts (`lib/receipt_combos.market_summary` for the
+  month): combos that fit a listed offer = running, other combos = self-made, in the market's own currency — summary
+  cards, the running offers and the self-made combos. The **combo request log** shows the first 10 rows with
+  "Show all N" / "Show fewer" (also for the self-made lists); "nan" reject reasons are no longer printed.
 - **9 · Product Performance** (`extras.productPerformance`): the Product Performance page's **Last month** view for
   that month vs the month before — bag of the month (top seller, biggest mover and why it moved, with its support
   score and verdict) per market, the top bags table and the shop breakdown. Built with

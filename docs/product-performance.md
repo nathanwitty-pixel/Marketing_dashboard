@@ -7,6 +7,12 @@
 
 ## What the page shows
 
+**Why Did We Move? waterfall (1 Nov 2026, user's call):** the first panel is the same waterfall as Current Performance
+(`assets/why_moved.js`, data `PP.whyMoved` from `lib/why_moved.build()` — every bag): With / Without bulk orders,
+Week on week (any two weeks, best week marked) / Month on month; last period → selling days → each region → this
+period, numbers on the bars, "the reason" boxed. It follows its own buttons, not the page's Market / Period
+filters (it covers every market, like the Current Performance one).
+
 **The filter bar follows the reader** (Market, Period, Share by; 19 Oct 2026): it pins at the top while scrolling, so
 the period can be changed beside any chart (`assets/sticky_controls.js`, docs/sticky-controls.md).
 

@@ -833,7 +833,13 @@ def build(today=None):
         info[b] = {"cat": cats.get(b, "OTHER"), "stock": [stock_now[m].get(b, 0) for m in MARKETS],
                    "tags": offers.tags_now(b, today), "postsW": pw_, "postsM": pm_}
 
-    return {"generated": datetime.datetime.now().strftime("%d %b %Y %H:%M"), "topN": TOP_N,
+    try:                                                  # the Why did we move? waterfall (docs/product-performance.md)
+        from lib import why_moved
+        wm = why_moved.build()
+    except Exception as e:                                # noqa: BLE001
+        print(f"  Why-moved waterfall skipped: {e}")
+        wm = None
+    return {"generated": datetime.datetime.now().strftime("%d %b %Y %H:%M"), "topN": TOP_N, "whyMoved": wm,
             "bulkQty": BULK_LINE_QTY, "moverMin": MOVER_MIN,
             "week": {"cur": f"{_fmt_d(s1)} – {_fmt_d(e1)}", "prev": f"{_fmt_d(s0)} – {_fmt_d(e0)}"},
             "periods": out_periods, "botw": botw, "why": why, "info": info, "shops": shops_out}

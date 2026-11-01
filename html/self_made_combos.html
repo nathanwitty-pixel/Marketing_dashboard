@@ -252,6 +252,7 @@ window.smcOosComboSlot = function (key) {
     </div>
 
     <div class="grid" id="smc-kpis"></div>
+    <div class="panel" id="smc-success-kenya"></div>
 
     <div class="grid" id="smc-offer-kpis" style="margin-bottom:1.6rem"></div>
 
@@ -2730,6 +2731,72 @@ window.addEventListener('DOMContentLoaded', function () {
       + '<div style="overflow-x:auto"><table><thead><tr><th>Bag</th><th class="r">Times paired</th><th class="r">In # combos</th><th>On the list?</th><th class="r">' + esc(reg.label) + ' stock</th></tr></thead><tbody>' + rows2 + '</tbody></table></div>';
   }
 
+  // ── How the chosen combos are doing (docs/self-made-combos.md › Success rate of the chosen combos) ──
+  function renderSuccess(key) {
+    var box = document.getElementById('smc-success-' + key); if (!box) return;
+    var fmt = function (n) { return Math.round(n || 0).toLocaleString('en-US'); };
+    var chosen, selfMade, goal, cur = key === 'kenya' ? 'KES' : ((SMC.regions || {})[key] || {}).currency || '';
+    if (key === 'kenya') {
+      chosen = (SMC.comboUsage || []).map(function (u) { return { name: u.combo, sold: u.rung || 0 }; });
+      selfMade = (SMC.smTotals || {}).units || 0;
+      goal = SMC.combosGoal || {};
+    } else {
+      var reg = (SMC.regions || {})[key] || {}, g = (reg.groups || []).filter(function (x) { return x.key === 'combos'; })[0];
+      chosen = ((g || {}).cards || []).map(function (c) { return { name: c.name, sold: c.total || 0 }; });
+      goal = reg.goal || {};
+      var soldC = chosen.reduce(function (t, c) { return t + c.sold; }, 0);
+      selfMade = Math.max((goal.septSoFar || 0) - soldC, 0);
+    }
+    if (!chosen.length) { box.style.display = 'none'; return; }
+    box.style.display = '';
+    var ms = new Date(SMC.monthStart + 'T00:00:00'), me = new Date(SMC.monthEnd + 'T00:00:00'), now = new Date(new Date().toDateString());
+    var dim = Math.round((me - ms) / 864e5) + 1, gone = Math.max(1, Math.min(dim, Math.round((Math.min(now, me) - ms) / 864e5) + 1));
+    var weeks = Math.max(1, goal.curWeek || Math.ceil(gone / 7));
+    var last = goal.augTotal || 0, n = chosen.length, tPer = last ? last / n : 0, tNow = tPer * gone / dim;
+    var sold = chosen.reduce(function (t, c) { return t + c.sold; }, 0), all = sold + selfMade;
+    var pct = function (a, b) { return b ? Math.round(a / b * 100) : null; };
+    var col = function (p, good) { return p == null ? '#64748b' : p >= good ? '#34d399' : p >= good / 2 ? '#fbbf24' : '#f87171'; };
+    var rows = chosen.map(function (c) {
+      var pace = tNow ? c.sold / tNow * 100 : null, hit = c.sold >= weeks;
+      return { name: c.name, sold: c.sold, target: Math.round(tPer), of: pct(c.sold, tPer), pace: pace == null ? null : Math.round(pace),
+               share: pct(c.sold, all), status: !hit ? 'Not landing' : (pace != null && pace >= 100 ? 'On pace' : 'Behind') };
+    }).sort(function (a, b) { return (b.pace || 0) - (a.pace || 0) || b.sold - a.sold; });
+    var hits = rows.filter(function (r) { return r.status !== 'Not landing'; }).length;
+    var monthPct = pct(sold, last), pacePct = tNow ? Math.round(sold / (tPer * n * gone / dim) * 100) : null;
+    var flops = rows.filter(function (r) { return r.status === 'Not landing'; }).map(function (r) { return esc(r.name); });
+    var kpi = function (l, v, c, sub) { return '<div class="card"><div class="k-lbl">' + l + '</div><div class="k-val" style="color:' + c + '">' + v + '</div><div class="k-sub">' + sub + '</div></div>'; };
+    var stc = { 'On pace': '#34d399', 'Behind': '#fbbf24', 'Not landing': '#f87171' };
+    var th = 'text-align:left;padding:0.45rem 0.6rem;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;border-bottom:1px solid #2d3148';
+    var td = 'padding:0.42rem 0.6rem;border-top:1px solid #262a3d;font-size:0.78rem';
+    box.innerHTML = '<h2>How the chosen combos are doing</h2>'
+      + '<div class="cap">The ' + n + ' combos chosen for ' + esc(goal.septLabel || 'this month') + '. <b style="color:#94a3b8">Target</b> = last month’s '
+      +   fmt(last) + ' combos (chosen + self-made) shared across them, ' + fmt(Math.round(tPer)) + ' each; <b style="color:#94a3b8">pace</b> = sold against the target for the '
+      +   gone + ' of ' + dim + ' days gone. <b style="color:#94a3b8">Hit</b> = sold at least 1 a week (' + weeks + ' week' + (weeks === 1 ? '' : 's') + ' so far).</div>'
+      + '<div class="grid" style="margin:0.6rem 0 0.9rem">'
+      +   kpi('Sold vs target', (monthPct == null ? '—' : monthPct + '%'), col(pacePct, 100),
+              fmt(sold) + ' of ' + fmt(last) + ' combos for the month' + (pacePct != null ? ', <b style="color:' + col(pacePct, 100) + '">' + pacePct + '% of pace</b>' : ''))
+      +   kpi('Share of all combos', (pct(sold, all) == null ? '—' : pct(sold, all) + '%'), col(pct(sold, all), 60),
+              fmt(sold) + ' chosen vs ' + fmt(selfMade) + ' self-made combos this month')
+      +   kpi('Hit rate', pct(hits, n) + '%', col(pct(hits, n), 70), hits + ' of ' + n + ' chosen combos sold at least 1 a week'
+              + (flops.length ? '. Not landing: ' + flops.slice(0, 4).join(', ') + (flops.length > 4 ? ' +' + (flops.length - 4) : '') : ''))
+      + '</div>'
+      + '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr>'
+      +   '<th style="' + th + '">Chosen combo</th><th style="' + th + ';text-align:right">Sold</th><th style="' + th + ';text-align:right">Month target</th>'
+      +   '<th style="' + th + ';text-align:right">% of target</th><th style="' + th + ';text-align:right">Pace</th><th style="' + th + ';text-align:right">Share of all combos</th><th style="' + th + '">Status</th>'
+      + '</tr></thead><tbody>'
+      + rows.map(function (r) {
+          return '<tr><td style="' + td + ';color:#f1f5f9;font-weight:600">' + esc(r.name) + '</td>'
+            + '<td style="' + td + ';text-align:right">' + fmt(r.sold) + '</td><td style="' + td + ';text-align:right;color:#94a3b8">' + fmt(r.target) + '</td>'
+            + '<td style="' + td + ';text-align:right">' + (r.of == null ? '—' : r.of + '%') + '</td>'
+            + '<td style="' + td + ';text-align:right;color:' + col(r.pace, 100) + ';font-weight:700">' + (r.pace == null ? '—' : r.pace + '%') + '</td>'
+            + '<td style="' + td + ';text-align:right">' + (r.share == null ? '—' : r.share + '%') + '</td>'
+            + '<td style="' + td + '"><span style="font-size:0.62rem;font-weight:800;text-transform:uppercase;padding:0.1rem 0.45rem;border-radius:6px;color:' + stc[r.status]
+            +   ';border:1px solid ' + stc[r.status] + '66">' + r.status + '</span></td></tr>';
+        }).join('')
+      + '</tbody></table></div>';
+  }
+  renderSuccess('kenya');
+
   function renderRegion(key) {
     var view = views[key], reg = R[key]; if (!view) return;
     var groups = groupsOf(key);
@@ -2748,6 +2815,7 @@ window.addEventListener('DOMContentLoaded', function () {
         + groups.map(function (g, i) { return opt(String(i), g.label, i === gi); }).join('') + '</select></label>'
       : '';
     view.innerHTML = splitPanel(reg)
+      + '<div class="panel" id="smc-success-' + key + '"></div>'
 
       + '<div class="panel">'
       + '<div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:0.2rem">'
@@ -2778,6 +2846,7 @@ window.addEventListener('DOMContentLoaded', function () {
       +   '<div id="smc-noffer-' + key + '-list"></div>'
       + '</div>';
     drawRegionGoal(key, reg);
+    renderSuccess(key);
     renderCards(key, cur);
     // This region's own "Bags not on offer" (sold · stock · days-cover), rendered under its combos.
     if (window.smcRenderNoffer) {

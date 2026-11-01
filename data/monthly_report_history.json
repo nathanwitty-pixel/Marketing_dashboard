@@ -5,10 +5,10 @@
     "key": "2026-07",
     "generatedOn": "2026-08-03",
     "currentPerformance": {
-      "achievedPct": 71.8,
-      "totalSales": 16680.0,
+      "achievedPct": 73.14,
+      "totalSales": 16992,
       "totalTarget": 23232.0,
-      "gap": 6552.0,
+      "gap": 6240,
       "bareMinimum": 5808.0,
       "avgWeekly": 3270.5,
       "corporate": 312.0,
@@ -59,7 +59,8 @@
           "targetToBeat": 5808.0,
           "declinedBy": -1224.0
         }
-      ]
+      ],
+      "salesBasis": "tills + corporate"
     },
     "newProducts": {
       "count": 7,
@@ -460,10 +461,10 @@
     "key": "2026-08",
     "generatedOn": "2026-09-01",
     "currentPerformance": {
-      "achievedPct": 76.06,
-      "totalSales": 17671.0,
+      "achievedPct": 76.34,
+      "totalSales": 17736,
       "totalTarget": 23232.0,
-      "gap": 5561.0,
+      "gap": 5496,
       "bareMinimum": 5808.0,
       "avgWeekly": 2945.1666666666665,
       "corporate": 65.0,
@@ -505,7 +506,8 @@
           "cum": 76.06,
           "bags": 864.0
         }
-      ]
+      ],
+      "salesBasis": "tills + corporate"
     },
     "newProducts": {
       "count": 7,
@@ -1568,7 +1570,7 @@
         "section": "Executive Summary",
         "label": "The Bottom Line",
         "type": "bottom",
-        "text": "August closed at 76.1% of target — 17,671 of 23,232 bags, missing by 5,561 bags. The gap is not weak demand; it is stock we never marketed."
+        "text": "August closed at 76.3% of target — 17,736 of 23,232 bags, missing by 5,496 bags. The gap is not weak demand; it is stock we never marketed."
       },
       {
         "section": "Executive Summary",
@@ -1592,7 +1594,7 @@
         "section": "Current Performance",
         "label": "The Bottom Line",
         "type": "bottom",
-        "text": "We finished August at 76.1% of target (17,671 bags), 5,561 bags short. Weekly output averaged about 2,945 bags — under the 5,808-bag weekly floor the target requires."
+        "text": "We finished August at 76.3% of target (17,736 bags), 5,496 bags short. Weekly output averaged about 2,945 bags — under the 5,808-bag weekly floor the target requires."
       },
       {
         "section": "Current Performance",
@@ -1604,7 +1606,7 @@
         "section": "Current Performance",
         "label": "Business Impact",
         "type": "impact",
-        "text": "Closing even half the weekly gap (~1,431 bags/week) across the month adds ~5,726 bags — lifting achievement from 76.1% to ~100.7%."
+        "text": "Closing even half the weekly gap (~1,431 bags/week) across the month adds ~5,726 bags — lifting achievement from 76.3% to ~101.0%."
       },
       {
         "section": "New Products",
@@ -1724,7 +1726,7 @@
         "section": "Posting Yields (Sales from Accurate Posting)",
         "label": "Focus — move the bags NOT on offerMarketing's real target is the stock sitting not on offer. Read across the three posting lenses:CombinedSales vs Expected (Posted & Unposted) — of Kenya's in-stock bags, 4,841 are on offer but 5,478 sit not on offer: dead stock we aren't even putting in front of buyers.With postingSales with Posting vs Expected — where marketing posted, sales ran ~3.9× expected. Posting demonstrably works, so aiming it at the not-on-offer pile is the lever.No postingSales with no Posting vs Opportunity if Marketed — the sales team already moved 2,023 bags with zero marketing; the gap up to the opportunity is what marketing leaves on the table by not posting the not-on-offer stock.Not-on-offer stock by region: Kenya 5,478, Sinza 308, Uganda 436 — and Sinza (20.4%) and Uganda (15.3%) move it far slower than Kenya (85.9%). Same playbook, all three regions. Bags NOT on offer, by region — the dead stock marketing must move Recommendation",
         "type": "rec",
-        "text": "Systematically posting the 5,478 unmarketed in-stock bags — the single largest, cheapest lever against the 5,561-bag target gap."
+        "text": "Systematically posting the 5,478 unmarketed in-stock bags — the single largest, cheapest lever against the 5,496-bag target gap."
       },
       {
         "section": "Posting Yields (Sales from Accurate Posting)",
@@ -1746,10 +1748,10 @@
     "key": "2026-09",
     "generatedOn": "2026-10-01",
     "currentPerformance": {
-      "achievedPct": 60.1,
-      "totalSales": 16312.0,
+      "achievedPct": 60.38,
+      "totalSales": 16389,
       "totalTarget": 27141.0,
-      "gap": 10829.0,
+      "gap": 10752,
       "bareMinimum": 6785.0,
       "avgWeekly": 3262.4,
       "corporate": 77.0,
@@ -1785,7 +1787,8 @@
           "cum": 60.1,
           "bags": 1945.0
         }
-      ]
+      ],
+      "salesBasis": "tills + corporate"
     },
     "newProducts": {
       "count": 9,
@@ -9607,7 +9610,7 @@
         "section": "Executive Summary",
         "label": "The Bottom Line",
         "type": "bottom",
-        "text": "September closed at 60.1% of target — 16,312 of 27,141 bags, 10,829 bags short. Unposted stock (4,388 bags) explains only 40.5% of that — the rest is sales pace."
+        "text": "September closed at 60.4% of target — 16,389 of 27,141 bags, 10,752 bags short. Unposted stock (4,388 bags) explains only 40.8% of that — the rest is sales pace."
       },
       {
         "section": "Executive Summary",
@@ -9637,7 +9640,7 @@
         "section": "Current Performance",
         "label": "The Bottom Line",
         "type": "bottom",
-        "text": "We finished September at 60.1% of target (16,312 bags), 10,829 bags short. Weekly output averaged about 3,262 bags — under the 6,785-bag weekly floor the target requires."
+        "text": "We finished September at 60.4% of target (16,389 bags), 10,752 bags short. Weekly output averaged about 3,262 bags — under the 6,785-bag weekly floor the target requires."
       },
       {
         "section": "Current Performance",
@@ -9649,7 +9652,7 @@
         "section": "Current Performance",
         "label": "Business Impact",
         "type": "impact",
-        "text": "Closing even half the weekly gap (~1,761 bags/week) across the month adds ~7,045 bags — lifting achievement from 60.1% to ~86.1%."
+        "text": "Closing even half the weekly gap (~1,761 bags/week) across the month adds ~7,045 bags — lifting achievement from 60.4% to ~86.4%."
       },
       {
         "section": "New Products",
@@ -9835,7 +9838,7 @@
         "section": "Posting Yields (Sales from Accurate Posting)",
         "label": "Focus — move the bags NOT on offerMarketing's real target is the stock sitting not on offer. Read across the three posting lenses:CombinedSales vs Expected (Posted & Unposted) — of Kenya's in-stock bags, 6,201 are on offer but 4,388 sit not on offer: dead stock we aren't even putting in front of buyers.With postingSales with Posting vs Expected — where marketing posted, sales ran ~2.6× expected. Posting demonstrably works, so aiming it at the not-on-offer pile is the lever.No postingSales with no Posting vs Opportunity if Marketed — the sales team already moved 4,278 bags with zero marketing; the gap up to the opportunity is what marketing leaves on the table by not posting the not-on-offer stock.Not-on-offer stock by region: Kenya 4,388, Sinza 215, Uganda 385 — and Sinza (59.0%) and Uganda (50.8%) move it far slower than Kenya (53.2%). Same playbook, all three regions. Bags NOT on offer, by region — the dead stock marketing must move Recommendation",
         "type": "rec",
-        "text": "Systematically posting the 4,388 unmarketed in-stock bags — the single largest, cheapest lever against the 10,829-bag target gap."
+        "text": "Systematically posting the 4,388 unmarketed in-stock bags — the single largest, cheapest lever against the 10,752-bag target gap."
       },
       {
         "section": "Posting Yields (Sales from Accurate Posting)",
@@ -11043,10 +11046,10 @@
     "key": "2026-10",
     "generatedOn": "2026-11-01",
     "currentPerformance": {
-      "achievedPct": 57.93,
-      "totalSales": 16227.0,
+      "achievedPct": 61.49,
+      "totalSales": 17225,
       "totalTarget": 28013.0,
-      "gap": 11786.0,
+      "gap": 10788,
       "bareMinimum": 7003.0,
       "avgWeekly": 3445.0,
       "corporate": 998.0,
@@ -11082,7 +11085,8 @@
           "cum": 61.49,
           "bags": 3500.0
         }
-      ]
+      ],
+      "salesBasis": "tills + corporate"
     },
     "newProducts": {
       "count": 9,
@@ -11173,16 +11177,16 @@
       "combos": 10,
       "powerDeals": 10,
       "kenya": {
-        "comboUnits": 0,
-        "comboValue": 0.0,
+        "comboUnits": 797,
+        "comboValue": 0,
         "comboAvg": 0,
-        "dealUnits": 0,
-        "dealValue": 0.0,
+        "dealUnits": 4453,
+        "dealValue": 9038000.0,
         "dealAvg": 1970.0,
         "offers": [
           {
             "name": "Amaya/Elyse+Moon/Nizana",
-            "units": 0,
+            "units": 218,
             "type": "combo",
             "bags": [
               {
@@ -11201,22 +11205,24 @@
                 "name": "Nizana",
                 "stock": null
               }
-            ]
+            ],
+            "value": null
           },
           {
             "name": "Jumbo+Jumbo",
-            "units": 0,
+            "units": 139,
             "type": "combo",
             "bags": [
               {
                 "name": "Jumbo",
                 "stock": null
               }
-            ]
+            ],
+            "value": null
           },
           {
             "name": "Mega+Man Bag/Mini Umbra",
-            "units": 0,
+            "units": 58,
             "type": "combo",
             "bags": [
               {
@@ -11231,11 +11237,12 @@
                 "name": "Mini Umbra",
                 "stock": null
               }
-            ]
+            ],
+            "value": null
           },
           {
             "name": "Jumbo+Mega",
-            "units": 0,
+            "units": 93,
             "type": "combo",
             "bags": [
               {
@@ -11246,7 +11253,8 @@
                 "name": "Jumbo",
                 "stock": null
               }
-            ]
+            ],
+            "value": null
           },
           {
             "name": "Sierra+Moon/Nizana",
@@ -11265,11 +11273,12 @@
                 "name": "Nizana",
                 "stock": null
               }
-            ]
+            ],
+            "value": null
           },
           {
             "name": "Jumbo+Standard",
-            "units": 0,
+            "units": 56,
             "type": "combo",
             "bags": [
               {
@@ -11280,11 +11289,12 @@
                 "name": "Standard",
                 "stock": null
               }
-            ]
+            ],
+            "value": null
           },
           {
             "name": "Code 3+Travel",
-            "units": 0,
+            "units": 72,
             "type": "combo",
             "bags": [
               {
@@ -11295,11 +11305,12 @@
                 "name": "Travel",
                 "stock": null
               }
-            ]
+            ],
+            "value": null
           },
           {
             "name": "Sarai+Anti Theft/Prime",
-            "units": 0,
+            "units": 61,
             "type": "combo",
             "bags": [
               {
@@ -11314,11 +11325,12 @@
                 "name": "Prime",
                 "stock": null
               }
-            ]
+            ],
+            "value": null
           },
           {
             "name": "Fabela+Code 3/ Doublepress +Man Bag",
-            "units": 0,
+            "units": 22,
             "type": "combo",
             "bags": [
               {
@@ -11337,11 +11349,12 @@
                 "name": "Man Bag",
                 "stock": null
               }
-            ]
+            ],
+            "value": null
           },
           {
             "name": "Safiri+Standard/Antitheft",
-            "units": 0,
+            "units": 78,
             "type": "combo",
             "bags": [
               {
@@ -11356,128 +11369,139 @@
                 "name": "Standard",
                 "stock": null
               }
-            ]
+            ],
+            "value": null
           },
           {
             "name": "Antitheft",
-            "units": 0,
+            "units": 823,
             "type": "deal",
             "bags": [
               {
                 "name": "Antitheft",
                 "stock": 581.0
               }
-            ]
+            ],
+            "value": 1810600.0
           },
           {
             "name": "Aria Sling",
-            "units": 0,
+            "units": 304,
             "type": "deal",
             "bags": [
               {
                 "name": "Aria Sling",
                 "stock": 116.0
               }
-            ]
+            ],
+            "value": 364800.0
           },
           {
             "name": "Aurora",
-            "units": 0,
+            "units": 328,
             "type": "deal",
             "bags": [
               {
                 "name": "Aurora",
                 "stock": null
               }
-            ]
+            ],
+            "value": 557600.0
           },
           {
             "name": "Bonita",
-            "units": 0,
+            "units": 159,
             "type": "deal",
             "bags": [
               {
                 "name": "Bonita",
                 "stock": 27.0
               }
-            ]
+            ],
+            "value": 477000.0
           },
           {
             "name": "Code 3",
-            "units": 0,
+            "units": 899,
             "type": "deal",
             "bags": [
               {
                 "name": "Code 3",
                 "stock": 562.0
               }
-            ]
+            ],
+            "value": 1618200.0
           },
           {
             "name": "Jumbo",
-            "units": 0,
+            "units": 626,
             "type": "deal",
             "bags": [
               {
                 "name": "Jumbo",
                 "stock": null
               }
-            ]
+            ],
+            "value": 1752800.0
           },
           {
             "name": "Moon Bag",
-            "units": 0,
+            "units": 260,
             "type": "deal",
             "bags": [
               {
                 "name": "Moon Bag",
                 "stock": null
               }
-            ]
+            ],
+            "value": 312000.0
           },
           {
             "name": "Nizana",
-            "units": 0,
+            "units": 250,
             "type": "deal",
             "bags": [
               {
                 "name": "Nizana",
                 "stock": null
               }
-            ]
+            ],
+            "value": 300000.0
           },
           {
             "name": "Prime",
-            "units": 0,
+            "units": 381,
             "type": "deal",
             "bags": [
               {
                 "name": "Prime",
                 "stock": null
               }
-            ]
+            ],
+            "value": 914400.0
           },
           {
             "name": "Standard Travel",
-            "units": 0,
+            "units": 423,
             "type": "deal",
             "bags": [
               {
                 "name": "Standard Travel",
                 "stock": null
               }
-            ]
+            ],
+            "value": 930600.0
           }
         ]
       },
       "sinza": {
-        "units": 0,
-        "value": 0.0,
+        "units": 74,
+        "value": 5920000.0,
         "cleared": 0.0,
         "offers": [
           {
             "name": "BONITA + JADE",
-            "units": 0,
+            "units": 2,
             "type": "combo",
             "bags": [
               {
@@ -11488,11 +11512,12 @@
                 "name": "JADE",
                 "stock": 0.0
               }
-            ]
+            ],
+            "value": 256000.0
           },
           {
             "name": "CESS + TRECENTO",
-            "units": 0,
+            "units": 1,
             "type": "combo",
             "bags": [
               {
@@ -11503,11 +11528,12 @@
                 "name": "CESS",
                 "stock": 11.0
               }
-            ]
+            ],
+            "value": 100000.0
           },
           {
             "name": "FABELA + PIONEER + MAN BAG",
-            "units": 0,
+            "units": 11,
             "type": "combo",
             "bags": [
               {
@@ -11522,11 +11548,12 @@
                 "name": "MAN BAG",
                 "stock": 8.0
               }
-            ]
+            ],
+            "value": 1463000.0
           },
           {
             "name": "Fabela+zane",
-            "units": 0,
+            "units": 4,
             "type": "combo",
             "bags": [
               {
@@ -11537,11 +11564,12 @@
                 "name": "zane",
                 "stock": 10.0
               }
-            ]
+            ],
+            "value": 320000.0
           },
           {
             "name": "GYMBAG + ARI SLING",
-            "units": 0,
+            "units": 3,
             "type": "combo",
             "bags": [
               {
@@ -11552,11 +11580,12 @@
                 "name": "ARI SLING",
                 "stock": null
               }
-            ]
+            ],
+            "value": 246000.0
           },
           {
             "name": "LIAM + CAIRO",
-            "units": 0,
+            "units": 1,
             "type": "combo",
             "bags": [
               {
@@ -11567,7 +11596,8 @@
                 "name": "CAIRO",
                 "stock": 13.0
               }
-            ]
+            ],
+            "value": 80000.0
           },
           {
             "name": "LOLA + AVANA + MINI UMBRA",
@@ -11586,7 +11616,8 @@
                 "name": "LOLA",
                 "stock": 7.0
               }
-            ]
+            ],
+            "value": 0.0
           },
           {
             "name": "MINIZURI + NIZANA",
@@ -11601,11 +11632,12 @@
                 "name": "MINIZURI",
                 "stock": 19.0
               }
-            ]
+            ],
+            "value": 0.0
           },
           {
             "name": "SAFIRI + CODE 3",
-            "units": 0,
+            "units": 11,
             "type": "combo",
             "bags": [
               {
@@ -11616,11 +11648,12 @@
                 "name": "SAFIRI",
                 "stock": 1.0
               }
-            ]
+            ],
+            "value": 1320000.0
           },
           {
             "name": "STANDARD + ANTITHEFT",
-            "units": 0,
+            "units": 12,
             "type": "combo",
             "bags": [
               {
@@ -11631,29 +11664,32 @@
                 "name": "STANDARD",
                 "stock": null
               }
-            ]
+            ],
+            "value": 1200000.0
           },
           {
             "name": "ARIA SLING",
-            "units": 0,
+            "units": 3,
             "type": "single",
             "bags": [
               {
                 "name": "ARIA SLING",
                 "stock": 24.0
               }
-            ]
+            ],
+            "value": 97500.0
           },
           {
             "name": "BIGMAN",
-            "units": 0,
+            "units": 3,
             "type": "single",
             "bags": [
               {
                 "name": "BIGMAN",
                 "stock": 37.0
               }
-            ]
+            ],
+            "value": 135000.0
           },
           {
             "name": "BONITA",
@@ -11664,40 +11700,44 @@
                 "name": "BONITA",
                 "stock": 21.0
               }
-            ]
+            ],
+            "value": 0.0
           },
           {
             "name": "CAIRO",
-            "units": 0,
+            "units": 3,
             "type": "single",
             "bags": [
               {
                 "name": "CAIRO",
                 "stock": 13.0
               }
-            ]
+            ],
+            "value": 127500.0
           },
           {
             "name": "CODE 3",
-            "units": 0,
+            "units": 5,
             "type": "single",
             "bags": [
               {
                 "name": "CODE 3",
                 "stock": 33.0
               }
-            ]
+            ],
+            "value": 225000.0
           },
           {
             "name": "ELYSE",
-            "units": 0,
+            "units": 1,
             "type": "single",
             "bags": [
               {
                 "name": "ELYSE",
                 "stock": 15.0
               }
-            ]
+            ],
+            "value": 70000.0
           },
           {
             "name": "MANDY",
@@ -11708,18 +11748,20 @@
                 "name": "MANDY",
                 "stock": 7.0
               }
-            ]
+            ],
+            "value": 0.0
           },
           {
             "name": "SLEEVE",
-            "units": 0,
+            "units": 14,
             "type": "single",
             "bags": [
               {
                 "name": "SLEEVE",
                 "stock": 0.0
               }
-            ]
+            ],
+            "value": 280000.0
           },
           {
             "name": "TRECENTO",
@@ -11730,7 +11772,8 @@
                 "name": "TRECENTO",
                 "stock": 15.0
               }
-            ]
+            ],
+            "value": 0.0
           },
           {
             "name": "ZANE",
@@ -11741,64 +11784,75 @@
                 "name": "ZANE",
                 "stock": 10.0
               }
-            ]
+            ],
+            "value": 0.0
           }
         ]
       },
       "uganda": {
-        "units": 0,
-        "value": 0.0,
+        "units": 19,
+        "value": 2220500.0,
         "cleared": 0.0,
         "offers": [
           {
             "name": "Amaya handbag + Mistque briefcase",
             "units": 0,
-            "stock": 0
+            "stock": 0,
+            "value": 0.0
           },
           {
             "name": "Double press backpack + Zeno travel bag",
-            "units": 0,
-            "stock": 0
+            "units": 8,
+            "stock": 0,
+            "value": 880000.0
           },
           {
             "name": "Elyse hb + belt bag/nizana slingbag",
-            "units": 0,
-            "stock": 0
+            "units": 1,
+            "stock": 0,
+            "value": 122500.0
           },
           {
             "name": "Jumbo travel +Antitheft + Manbag",
-            "units": 0,
-            "stock": 0
+            "units": 1,
+            "stock": 0,
+            "value": 210500.0
           },
           {
             "name": "Sarai travel bag + code 3 backpack",
-            "units": 0,
-            "stock": 0
+            "units": 4,
+            "stock": 0,
+            "value": 680000.0
           },
           {
             "name": "Kai backpack",
-            "units": 0,
-            "stock": 0
+            "units": 2,
+            "stock": 0,
+            "value": 153000.0
           },
           {
             "name": "Luna manbag",
             "units": 0,
-            "stock": 0
+            "stock": 0,
+            "value": 0.0
           },
           {
             "name": "Mini umbra chest bag",
             "units": 0,
-            "stock": 0
+            "stock": 0,
+            "value": 0.0
           },
           {
             "name": "Mini Zuri",
-            "units": 0,
-            "stock": 6.0
+            "units": 1,
+            "stock": 6.0,
+            "value": 69500.0
           },
           {
             "name": "Sky handbag",
-            "units": 0,
-            "stock": 0
+            "units": 2,
+            "stock": 0,
+            "value": 105000.0
           }
         ]
       }
@@ -16132,7 +16186,7 @@
         "section": "Executive Summary",
         "label": "The Bottom Line",
         "type": "bottom",
-        "text": "October closed at 57.9% of target — 16,227 of 28,013 bags, 11,786 bags short. Unposted stock (4,243 bags) explains only 36.0% of that — the rest is sales pace."
+        "text": "October closed at 61.5% of target — 17,225 of 28,013 bags, 10,788 bags short. Unposted stock (4,243 bags) explains only 39.3% of that — the rest is sales pace."
       },
       {
         "section": "Executive Summary",
@@ -16162,7 +16216,7 @@
         "section": "Current Performance",
         "label": "The Bottom Line",
         "type": "bottom",
-        "text": "We finished October at 57.9% of target (16,227 bags), 11,786 bags short. Weekly output averaged about 3,445 bags — under the 7,003-bag weekly floor the target requires."
+        "text": "We finished October at 61.5% of target (17,225 bags), 10,788 bags short. Weekly output averaged about 3,445 bags — under the 7,003-bag weekly floor the target requires."
       },
       {
         "section": "Current Performance",
@@ -16174,7 +16228,7 @@
         "section": "Current Performance",
         "label": "Business Impact",
         "type": "impact",
-        "text": "Closing even half the weekly gap (~1,779 bags/week) across the month adds ~7,116 bags — lifting achievement from 57.9% to ~83.3%."
+        "text": "Closing even half the weekly gap (~1,779 bags/week) across the month adds ~7,116 bags — lifting achievement from 61.5% to ~86.9%."
       },
       {
         "section": "New Products",
@@ -16390,7 +16444,7 @@
         "section": "Posting Yields (Sales from Accurate Posting)",
         "label": "Focus — move the bags NOT on offerMarketing's real target is the stock sitting not on offer. Read across the three posting lenses:CombinedSales vs Expected (Posted & Unposted) — of Kenya's in-stock bags, 6,587 are on offer but 4,243 sit not on offer: dead stock we aren't even putting in front of buyers.With postingSales with Posting vs Expected — where marketing posted, sales ran ~2.4× expected. Posting demonstrably works, so aiming it at the not-on-offer pile is the lever.No postingSales with no Posting vs Opportunity if Marketed — the sales team already moved 4,755 bags with zero marketing; the gap up to the opportunity is what marketing leaves on the table by not posting the not-on-offer stock.Not-on-offer stock by region: Kenya 4,243, Sinza 356, Uganda 364 — and Sinza (53.3%) and Uganda (54.0%) move it far slower than Kenya (48.7%). Same playbook, all three regions. Bags NOT on offer, by region — the dead stock marketing must move Recommendation",
         "type": "rec",
-        "text": "Systematically posting the 4,243 unmarketed in-stock bags — the single largest, cheapest lever against the 11,786-bag target gap."
+        "text": "Systematically posting the 4,243 unmarketed in-stock bags — the single largest, cheapest lever against the 10,788-bag target gap."
       },
       {
         "section": "Posting Yields (Sales from Accurate Posting)",
@@ -38557,6 +38611,774 @@
           }
         },
         "topN": 15
+      },
+      "selfMadeRegions": {
+        "sinza": {
+          "running": [
+            [
+              "STANDARD + ANTITHEFT",
+              12,
+              1200000
+            ],
+            [
+              "SAFIRI + CODE 3",
+              11,
+              1320000
+            ],
+            [
+              "FABELA + PIONEER + MAN BAG",
+              11,
+              1454910
+            ],
+            [
+              "Fabela+zane",
+              4,
+              320000
+            ],
+            [
+              "GYMBAG + ARI SLING",
+              3,
+              246000
+            ],
+            [
+              "BONITA + JADE",
+              2,
+              256000
+            ],
+            [
+              "LIAM + CAIRO",
+              1,
+              80000
+            ],
+            [
+              "CESS + TRECENTO",
+              1,
+              100000
+            ]
+          ],
+          "selfMade": [
+            [
+              "JUMBO + PIONEER",
+              4,
+              450000
+            ],
+            [
+              "FABELA + PIONEER",
+              4,
+              355000
+            ],
+            [
+              "FABELA + PIONEER + ZANE MAN",
+              4,
+              531960
+            ],
+            [
+              "BONITA + REMI",
+              3,
+              384000
+            ],
+            [
+              "DOUBLE PRESS + JUMBO",
+              3,
+              310000
+            ],
+            [
+              "MEGA + SARAI",
+              3,
+              400000
+            ],
+            [
+              "BIG MAN BAG + FABELA",
+              2,
+              170000
+            ],
+            [
+              "JUMBO + MEGA",
+              2,
+              245000
+            ],
+            [
+              "FABELA + MAN BAG",
+              2,
+              160000
+            ],
+            [
+              "DOUBLE PRESS + TRAVEL",
+              2,
+              200000
+            ],
+            [
+              "FABELA + MEGA",
+              2,
+              205000
+            ],
+            [
+              "ANTITHEFT + FABELA",
+              2,
+              190000
+            ],
+            [
+              "MAN BAG + MEGA",
+              2,
+              170000
+            ],
+            [
+              "POCKET TRAVEL + REMI",
+              2,
+              260000
+            ],
+            [
+              "CODE 3 + GYM BAG",
+              2,
+              165000
+            ],
+            [
+              "BONITA + ELYSE",
+              2,
+              258000
+            ],
+            [
+              "CODE 3 + FABELA",
+              2,
+              170000
+            ],
+            [
+              "ANTITHEFT + JUMBO",
+              2,
+              230000
+            ],
+            [
+              "CODE 3 + JUMBO",
+              2,
+              210000
+            ],
+            [
+              "JADE + SLEEVE",
+              1,
+              85000
+            ],
+            [
+              "MAN BAG + REMI",
+              1,
+              80000
+            ],
+            [
+              "KATE + KATE + TRECENTO + TRECENTO",
+              1,
+              140000
+            ],
+            [
+              "PRIME + SAFIRI TRAVEL",
+              1,
+              125000
+            ],
+            [
+              "BIG MAN BAG + GYM BAG",
+              1,
+              85000
+            ],
+            [
+              "CESS + SARAI",
+              1,
+              150000
+            ],
+            [
+              "BIG MAN BAG + SAFIRI TRAVEL",
+              1,
+              110000
+            ],
+            [
+              "BONITA + PIONEER",
+              1,
+              120000
+            ],
+            [
+              "FABELA + MAN BAG + MEGA",
+              1,
+              140010
+            ],
+            [
+              "ARIA SLING + FABELA",
+              1,
+              80000
+            ],
+            [
+              "BONITA + COSMO",
+              1,
+              100000
+            ],
+            [
+              "MAN BAG + POCKET TRAVEL",
+              1,
+              100000
+            ],
+            [
+              "CODE 3 + FABELA + KATE",
+              1,
+              120000
+            ],
+            [
+              "LEGACY + SAFIRI TRAVEL",
+              1,
+              120000
+            ],
+            [
+              "ANTITHEFT + SARAI",
+              1,
+              120000
+            ],
+            [
+              "AVANA HB + MANDY HB",
+              1,
+              70000
+            ],
+            [
+              "FEROZ + JUMBO",
+              1,
+              130000
+            ],
+            [
+              "ANTITHEFT + MAN BAG + TRAVEL",
+              1,
+              132990
+            ],
+            [
+              "JUMBO + MAN BAG + MEGA",
+              1,
+              150000
+            ],
+            [
+              "BONITA + MEGA",
+              1,
+              130000
+            ],
+            [
+              "JUMBO + REMI",
+              1,
+              120000
+            ],
+            [
+              "AURORA + MEGA",
+              1,
+              90000
+            ],
+            [
+              "ANTITHEFT + BELT BAG",
+              1,
+              80000
+            ],
+            [
+              "BONITA + CODE 3 + CODE 3 + SAFIRI TRAVEL",
+              1,
+              230000
+            ],
+            [
+              "FEROZ + SLEEVE",
+              1,
+              100000
+            ],
+            [
+              "BABY BAG + ZANE MAN",
+              1,
+              105000
+            ],
+            [
+              "MINI ZURI + PRIME",
+              1,
+              110000
+            ],
+            [
+              "MEGA + SAFIRI TRAVEL",
+              1,
+              130000
+            ],
+            [
+              "DOUBLE PRESS + SARAI",
+              1,
+              130000
+            ],
+            [
+              "ARIA SLING + CODE 9",
+              1,
+              80000
+            ],
+            [
+              "MINI UMBRA + PRIME",
+              1,
+              90000
+            ],
+            [
+              "CAIRO BP + FABELA",
+              1,
+              80000
+            ],
+            [
+              "ANTITHEFT + BIG MAN BAG",
+              1,
+              100000
+            ],
+            [
+              "LOOP BP + MEGA + SARAI + SARAI",
+              1,
+              270000
+            ],
+            [
+              "ANTITHEFT + MAN BAG",
+              1,
+              80000
+            ],
+            [
+              "BIG MAN BAG + FEROZ",
+              1,
+              95000
+            ],
+            [
+              "MINI ZURI + TRECENTO",
+              1,
+              73000
+            ],
+            [
+              "AURORA + CESS",
+              1,
+              100000
+            ],
+            [
+              "CAIRO BP + MAN BAG + MINI ZURI",
+              1,
+              122010
+            ],
+            [
+              "MANDY HB + SLEEVE + ZANE MAN",
+              1,
+              82500
+            ],
+            [
+              "DOUBLE PRESS + SLEEVE",
+              1,
+              80000
+            ],
+            [
+              "AURORA + MINI ZURI",
+              1,
+              80000
+            ],
+            [
+              "FEROZ + MINI UMBRA",
+              1,
+              90000
+            ],
+            [
+              "PRIME + TRAVEL",
+              1,
+              100000
+            ],
+            [
+              "MAN BAG + PIONEER + SARAI",
+              1,
+              150000
+            ],
+            [
+              "JUMBO + PRIME",
+              1,
+              110000
+            ],
+            [
+              "CODE 3 + TRAVEL",
+              1,
+              85000
+            ],
+            [
+              "FEROZ + MAN BAG",
+              1,
+              90000
+            ],
+            [
+              "BONITA + SLEEVE",
+              1,
+              110000
+            ],
+            [
+              "DOUBLE PRESS + GYM BAG + SLEEVE",
+              1,
+              140010
+            ],
+            [
+              "FABELA + LEGACY",
+              1,
+              117500
+            ],
+            [
+              "BONITA + LEGACY",
+              1,
+              128000
+            ],
+            [
+              "SLEEVE + SLEEVE",
+              1,
+              40000
+            ],
+            [
+              "KAI + PRIME",
+              1,
+              105000
+            ],
+            [
+              "BIG MAN BAG + MEGA",
+              1,
+              80000
+            ],
+            [
+              "BIG MAN BAG + DOUBLE PRESS",
+              1,
+              85000
+            ],
+            [
+              "ANTITHEFT + LIAM",
+              1,
+              80000
+            ],
+            [
+              "ELYSE + ZANE MAN",
+              1,
+              92000
+            ],
+            [
+              "JADE + SAFIRI TRAVEL",
+              1,
+              120000
+            ],
+            [
+              "GYM BAG + REMI",
+              1,
+              100000
+            ],
+            [
+              "ANTITHEFT + BONITA",
+              1,
+              120000
+            ],
+            [
+              "BONITA + DOUBLE PRESS",
+              1,
+              120000
+            ],
+            [
+              "CAIRO BP + GYM BAG + REMI",
+              1,
+              135000
+            ],
+            [
+              "MAN BAG + PIONEER + TRAVEL",
+              1,
+              132990
+            ],
+            [
+              "PIONEER + SAFIRI TRAVEL",
+              1,
+              120000
+            ],
+            [
+              "AMAYA + TRECENTO",
+              1,
+              90000
+            ],
+            [
+              "ANTITHEFT + SAFIRI TRAVEL",
+              1,
+              120000
+            ],
+            [
+              "CODE 3 + MINI UMBRA",
+              1,
+              75000
+            ],
+            [
+              "REMI + SAFIRI TRAVEL",
+              1,
+              120000
+            ],
+            [
+              "BIG MAN BAG + BONITA",
+              1,
+              110000
+            ],
+            [
+              "GYM BAG + ZELUS",
+              1,
+              85000
+            ],
+            [
+              "ANTITHEFT + FAYOLA",
+              1,
+              80000
+            ],
+            [
+              "FABELA + MINI UMBRA",
+              1,
+              80000
+            ],
+            [
+              "FABELA + MAN BAG + REMI",
+              1,
+              135000
+            ],
+            [
+              "BONITA + CODE 3",
+              1,
+              110000
+            ],
+            [
+              "ARIA SLING + GYM BAG + PIONEER",
+              1,
+              114990
+            ]
+          ],
+          "bulk": {
+            "receipts": 0,
+            "bags": 0,
+            "revenue": 0
+          },
+          "receipts": 213,
+          "currency": "TSh"
+        },
+        "uganda": {
+          "running": [
+            [
+              "Double press backpack + Zeno travel bag",
+              8,
+              880000
+            ],
+            [
+              "Sarai travel bag + code 3 backpack",
+              4,
+              686500
+            ],
+            [
+              "Elyse hb + belt bag/nizana slingbag",
+              1,
+              122500
+            ],
+            [
+              "Jumbo travel +Antitheft + Manbag",
+              1,
+              210000
+            ]
+          ],
+          "selfMade": [
+            [
+              "MAN BAG + REO TRAVEL",
+              1,
+              120000
+            ],
+            [
+              "ANTITHEFT + SLEEVE",
+              1,
+              170000
+            ],
+            [
+              "CODE 3 + LUNA",
+              1,
+              125000
+            ],
+            [
+              "LOOP BP + SARAI",
+              1,
+              210000
+            ],
+            [
+              "LEGACY + TRECENTO",
+              1,
+              176000
+            ],
+            [
+              "MEGA + SCHOOL BAG",
+              1,
+              167000
+            ],
+            [
+              "ALPHA TRAVEL + SAFIRI TRAVEL",
+              1,
+              230000
+            ],
+            [
+              "BIG MAN BAG + FAYOLA",
+              1,
+              132000
+            ],
+            [
+              "ANTITHEFT + LUNCHSET",
+              1,
+              125500
+            ],
+            [
+              "CLAIRE HANDBAG + ESMERALDA",
+              1,
+              160000
+            ],
+            [
+              "CATHY HANDBAG + FEROZ + MINI UMBRA",
+              1,
+              212490
+            ],
+            [
+              "REO TRAVEL + REO TRAVEL",
+              1,
+              155000
+            ],
+            [
+              "GYM BAG + LEGACY",
+              1,
+              200000
+            ],
+            [
+              "DOUBLE PRESS + MAN BAG",
+              1,
+              110000
+            ],
+            [
+              "LEGACY + SARAI",
+              1,
+              253000
+            ],
+            [
+              "MINI SCHOOL + REO TRAVEL + SCHOOL BAG",
+              1,
+              180000
+            ],
+            [
+              "ANTITHEFT + CATHY HANDBAG",
+              1,
+              130000
+            ],
+            [
+              "NIZANA + SIERRA HANDBAG",
+              1,
+              122500
+            ],
+            [
+              "CODE 3 + FAYOLA",
+              1,
+              120000
+            ],
+            [
+              "ELYSE + LIAM",
+              1,
+              162000
+            ],
+            [
+              "BIG MAN BAG + ELYSE",
+              1,
+              165000
+            ],
+            [
+              "JUMBO + LEGACY",
+              1,
+              240000
+            ],
+            [
+              "MEGA + MINI SCHOOL",
+              1,
+              148500
+            ],
+            [
+              "BIG MAN BAG + REO TRAVEL",
+              1,
+              152000
+            ],
+            [
+              "MANDY HB + NIZANA",
+              1,
+              82500
+            ],
+            [
+              "CODE 3 + MINI ZURI",
+              1,
+              122000
+            ],
+            [
+              "MAN BAG + POCKET TRAVEL",
+              1,
+              168000
+            ],
+            [
+              "MAN BAG + MAN BAG",
+              1,
+              80000
+            ],
+            [
+              "BIG MAN BAG + JUMBO",
+              1,
+              185000
+            ],
+            [
+              "JUMBO + MINI UMBRA",
+              1,
+              148800
+            ],
+            [
+              "MEGA + MINI ZURI",
+              1,
+              150000
+            ],
+            [
+              "ANTITHEFT + KAI",
+              1,
+              147000
+            ],
+            [
+              "CLAIRE HANDBAG + MONAH BP",
+              1,
+              140000
+            ],
+            [
+              "MEGA + REO TRAVEL",
+              1,
+              170000
+            ],
+            [
+              "AMAYA + MINI UMBRA",
+              1,
+              115000
+            ],
+            [
+              "MEGA + MINI UMBRA",
+              1,
+              140000
+            ],
+            [
+              "MEGA + TRAVEL",
+              1,
+              180000
+            ],
+            [
+              "JUMBO + SARAI",
+              1,
+              220000
+            ],
+            [
+              "MEGA + SLEEVE",
+              1,
+              130000
+            ],
+            [
+              "LEGACY + MINI UMBRA",
+              1,
+              162500
+            ],
+            [
+              "BRIEF CASE + CODE 3",
+              1,
+              150000
+            ]
+          ],
+          "bulk": {
+            "receipts": 3,
+            "bags": 78,
+            "revenue": 5328000
+          },
+          "receipts": 121,
+          "currency": "USh"
+        }
       }
     }
   }

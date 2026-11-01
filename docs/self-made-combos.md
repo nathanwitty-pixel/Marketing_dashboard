@@ -97,6 +97,23 @@ Three areas, all scoped to the **current live month** (`report_month.live_month_
 > match the list, however it was rung) — no hand-typed sheet columns. Bullets below that mention the COMBOS
 > tab or the deals sheet describe the old source.
 
+## Success rate of the chosen combos (1 Nov 2026, user's call)
+
+A **"How the chosen combos are doing"** panel — Kenya under the KPI cards, Sinza / Uganda at the top of their view —
+for the month's **chosen (listed) combos**, three ways:
+- **Sold vs target:** each chosen combo's target = **last month's combos sold** (chosen + self-made, the "target to
+  beat last month" — `combosGoal.augTotal` / `regions[r].goal.augTotal`) ÷ the number of chosen combos this month.
+  Overall % = chosen combos sold ÷ last month's total; **pace** = sold ÷ the target for the days gone
+  (target × days so far ÷ days in month). The Kenya stock-based card targets are far above what combos sell, so they
+  aren't used here.
+- **Share of all combos:** chosen combos sold ÷ every combo sold this month (chosen + self-made). Kenya self-made =
+  the CBR units (`smTotals`); Sinza / Uganda self-made = the month's combos so far (`goal.septSoFar`) − chosen sold.
+- **Hit rate:** % of the chosen combos that sold at least **1 a week** so far (weeks = Sun–Sat weeks touched); the
+  ones below are listed as "not landing".
+Per-combo table: sold, target, % of target, pace, share of all combos, status (On pace / Behind / Not landing).
+Kenya counts a chosen combo's sales from `comboUsage[].rung` (rung as that combo); Sinza / Uganda from the region's
+combo cards (`groups[combos].cards[].total`).
+
 ## Data sources
 
 - **Odoo combos:** `COMBO_SQL` (name `LIKE '%+%'`, `is_cbr`, `include_all`,
