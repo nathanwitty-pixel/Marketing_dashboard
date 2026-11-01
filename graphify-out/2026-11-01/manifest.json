@@ -246,9 +246,9 @@
     "semantic_hash": ""
   },
   "docs/current-performance.md": {
-    "mtime": 1793550365.203859,
-    "seen": 1793550475.2334433,
-    "ast_hash": "ea4f2e4e90ea5494bd2e68c7aca1734a",
+    "mtime": 1793552550.2170978,
+    "seen": 1793552710.0825427,
+    "ast_hash": "33295ae3994c0d0db6245e372f242fa1",
     "semantic_hash": ""
   },
   "docs/dashboard-insights.md": {
@@ -906,8 +906,8 @@
     "semantic_hash": ""
   },
   "data/weekly_history.json": {
-    "mtime": 1793549957.515018,
-    "seen": 1793550058.3145125,
+    "mtime": 1793552656.7444777,
+    "seen": 1793552710.0823193,
     "ast_hash": "0d3ba922ca3b8fc28d6548fa812e1f6d",
     "semantic_hash": ""
   },
@@ -936,9 +936,9 @@
     "semantic_hash": ""
   },
   "generators/forward_projections.py": {
-    "mtime": 1793539670.0536053,
-    "seen": 1793540029.2506208,
-    "ast_hash": "80b18180f7157ef1065463c15be2932a",
+    "mtime": 1793552603.3768184,
+    "seen": 1793552710.0823445,
+    "ast_hash": "231685fe48fa44d6c2bd24f4adc853d1",
     "semantic_hash": ""
   },
   "generators/generate_insights.py": {
@@ -1176,15 +1176,15 @@
     "semantic_hash": ""
   },
   "html/current_performance.html": {
-    "mtime": 1793550458.8453894,
-    "seen": 1793550475.2334952,
-    "ast_hash": "161f173b21888d89f52be28e61162fc2",
+    "mtime": 1793552663.569072,
+    "seen": 1793552710.0825887,
+    "ast_hash": "76f8014d2acab690fc53b614ba5c301a",
     "semantic_hash": ""
   },
   "html/forward_projections.html": {
-    "mtime": 1793549964.218908,
-    "seen": 1793550058.3150907,
-    "ast_hash": "f0ff8558b482ec90509250ddc3d1c947",
+    "mtime": 1793552663.3780842,
+    "seen": 1793552710.0825915,
+    "ast_hash": "cb79a92ecb18683cefd21fd52740acd9",
     "semantic_hash": ""
   },
   "html/history.html": {
