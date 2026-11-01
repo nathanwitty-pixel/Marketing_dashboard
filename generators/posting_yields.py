@@ -2890,6 +2890,55 @@ html = re.sub(
 with open(html_path, "w", encoding="utf-8") as f:
     f.write(html)
 
+
+
+# ── Posting sheet vs Odoo, Kenya (docs/posting-yields.md › Posting sheet vs Odoo) ──
+def _odoo_post_check(weeks=3):
+    import datetime as _dt
+    from lib import odoo_marketing, product_targets
+    key = product_targets.bag_key_fn()
+    today = _dt.date.today()
+    sun = today - _dt.timedelta(days=(today.weekday() + 1) % 7)           # this week's Sunday
+    out = []
+    try:
+        sheet_daily = marketing_posts.daily()
+    except Exception as e:                                               # noqa: BLE001
+        print(f"  Posting check: sheets unreadable ({e})")
+        sheet_daily = None
+    for i in range(weeks, 0, -1):
+        s = sun - _dt.timedelta(days=7 * i)
+        e = s + _dt.timedelta(days=6)
+        odoo, tot = odoo_marketing.meta_posts_by_bag(s, e, key)
+        sheet = {}
+        if sheet_daily is not None:
+            for (bt, _col), v in marketing_posts.posts(s, e).items():
+                n = v.get("KENYA", 0)
+                b = key(bt) or bt
+                if n:
+                    sheet[b] = sheet.get(b, 0) + n
+        out.append({"start": s.isoformat(), "end": e.isoformat(), "odooPosts": tot["posts"], "odooTagged": tot["tagged"],
+                    "sheetKnown": sheet_daily is not None,
+                    "sheet": {b: round(n) for b, n in sheet.items()}, "odoo": {b: v["posts"] for b, v in odoo.items()}})
+    return out
+
+
+try:
+    _opc = _odoo_post_check()
+except Exception as _e:                                                  # noqa: BLE001 — never break the page
+    print(f"  WARNING: posting check skipped: {_e}")
+    _opc = []
+_block = ("<!-- ODOO_POSTS_START -->\n<script>\nconst OPC = "
+          + json.dumps(_opc, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+          + ";\n</script>\n<!-- ODOO_POSTS_END -->")
+with open(html_path, "r", encoding="utf-8") as f:
+    html = f.read()
+html = re.sub(r"<!-- ODOO_POSTS_START -->.*?<!-- ODOO_POSTS_END -->", lambda _m: _block, html, flags=re.DOTALL)
+with open(html_path, "w", encoding="utf-8") as f:
+    f.write(html)
+for w in _opc:
+    print(f"  Posting check {w['start']}: Odoo {w['odooPosts']} posts, {w['odooTagged']} tagged; "
+          f"sheet {sum(w['sheet'].values())} bag-posts on {len(w['sheet'])} bags, Odoo {len(w['odoo'])} bags")
+
 if not os.environ.get("DENRI_LAUNCHER"):
     webbrowser.open_new_tab(pathlib.Path(html_path).as_uri())
 print("\nposting_yields.html updated.")

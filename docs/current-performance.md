@@ -18,6 +18,22 @@ week-over-week movement, and a **current-vs-previous-month weekly comparison cha
 month solid, previous month dashed — `cpPrevWeekly` from `monthly_report_history.json`; the
 month names are dynamic, from `PERF.cpCurLabel` / `PERF.cpPrevLabel`), plus forward projections.
 
+## Followers & reach (1 Nov 2026, user's call)
+
+A row of three cards under the Sales / Weekly Sales / Remaining cards, from Odoo's Meta sync
+(`denri_meta_account_day`, Kenya's Facebook page and Instagram account, refreshed hourly; history from 18 Oct 2026),
+read by `lib/odoo_marketing.followers_daily()` into `PROJ.followers`:
+
+- **Instagram followers** and **Facebook followers:** the latest count, new follows in the **last 7 full days**
+  (up to the latest day both platforms have, never today — it's still filling in) vs the 7 days before.
+- **Reach & views, last 7 days:** Instagram reach and views on both platforms over the same 7 days vs the 7 before
+  (Facebook doesn't report reach). Rolling 7 days, not the Sun–Sat week, so a Sunday morning doesn't read as a crash.
+  A % change shows only when the platform has all 7 days before (Instagram's history starts 20 Oct).
+
+**Market buttons (1 Nov 2026, user's call): Kenya · Sinza · Uganda** above the cards, and each card label names the
+market. Kenya shows the figures. Sinza and Uganda show "—" and say their pages aren't connected to Odoo yet (the Meta
+sync holds only Kenya's page and account); they fill in once Odoo syncs those pages. No data at all → the row is hidden.
+
 ## Weekly Performance — corporate in each week (26 Oct 2026, user's call)
 
 Each Sun–Sat week's **Sales bags** = its till bags (`BAGS_SOLD_TOTAL`) **+ the corporate bags paid that week**
@@ -157,6 +173,14 @@ refunds netted, → `PERF.samples` / `customBags` / `customFees`):
 Sep 2026: 4 samples, 1 customised bag, 0 customisation charges.
 
 **Corporate-lead till orders (16 Oct 2026, user's call — revised the same day):** when a client the **Corporate team** brought in (a Corporate-app lead) pays at a shop till, the sale is **credited to that shop** like any till sale, but it's still marked as a Corporate lead (October: ESK Company, HAZINA/29958 + 29613, KES 1,707,197 → Hazina, "Corporate app lead 17 Sep · Scola Mithiri"). One that hasn't paid yet goes to the shop that hunted it (quote note → bought there before → client's town), still noted as a Corporate lead; with no shop link it isn't shown at all until something is paid at a till. Here: their bags count in **POS** in the Sales-card split; **corporate** shows only the Corporate-app figures. The "Shop corporate" tab credits them to the shop and notes the Corporate lead under it. **Shop corporate tab (16 Oct 2026, user's call):** an unpaid quote with no shop link (no till payment, no shop on the quote note, never bought at a shop, no shop town) and not in the Corporate app is left off the tab until it is part-paid.
+
+**Shop corporate = this month only (1 Nov 2026, user's call):** the tab shows the **live month** (1st → today): clients
+with a till payment this month or a quote dated this month. **Paid** = money taken at the tills this month; the
+**balance** still uses every payment since the quote (so a client who part-paid last month isn't shown owing it
+all again — "KES X paid earlier" under the row). Quotes from last month are still read so a payment this month
+matches its quote. Clients whose only activity was last month leave the tab; each finished month is kept in
+**History** (section 8 · Shop Corporate Orders, `extras.shopCorporate`) and backed up in
+`data/shop_corporate_history.json`.
 
 **Corporate by client** (its own section after Forward Projections since 18 Oct 2026 — it used to sit in the Sales popover. Each tab opens with a chart: Corporate app = bags per client stacked Sold (paid) · Invoiced, not paid yet · Quoted, to invoice; Shop corporate = KES paid vs owed per hunting shop, a bar click filters the table like the shop boxes; `sql/corporate_clients.sql` → `PERF.corporateClients`. **% on the bars** (18 Oct 2026): each bar's end label adds its **share of the tab's bags** (client bags ÷ all bars' bags; Shop corporate = the shop's bags ÷ all hunting shops' bags) and its **% of the corporate target** (bags ÷ `PERF.corporateTarget.bags`, the Odoo corporate target — the same target on both tabs); the tooltip shows the share too. Shares on a tab add up to 100 % (± rounding)):
 one row per client: quoted · invoiced · paid % · sold. In the Invoiced column, a **month badge** marks

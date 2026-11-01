@@ -183,7 +183,8 @@ def inject(payload):
              f"</script>\n{END}")
 
     if START in html and END in html:
-        html = re.sub(re.escape(START) + r".*?" + re.escape(END), block, html, flags=re.DOTALL)
+        # literal replacement — the JSON holds \n / \u escapes re.sub would turn into real characters
+        html = re.sub(re.escape(START) + r".*?" + re.escape(END), lambda _m: block, html, flags=re.DOTALL)
     else:
         # First run before the markers exist — nothing to do; the template ships
         # with the markers, so this only guards a hand-edited file.

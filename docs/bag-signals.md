@@ -24,6 +24,7 @@ per bag, refunds netted, gift bags / delivery / samples out; colours fold into t
 | **Run-out risk (14 d)** | P(demand over 14 days > stock), demand ~ Normal(14μ, σ√14) — the square-root rule | chance of a stock-out in the next two weeks |
 | **Safe stock (14 d)** | 14μ + 1.645·σ·√14 | stock needed to be 95 % sure of not running out in 14 days; **Restock** = safe stock − stock when positive |
 | **Posts** (last week / this month) | WEEKLY / MONTHLY_MARKETING_POST, Kenya | |
+| **WhatsApp taps** (7 d / 28 d) | taps on the website's "order on WhatsApp" button for the bag, last 7 and 28 days (Odoo `denri_marketing_wa_click` via `lib/odoo_marketing`, recorded from 23 Oct 2026; combo pages not counted per bag) | online interest the shop stock doesn't show (1 Nov 2026, user's call) |
 | **Posting beta** | slope of weekly sales on weekly posts once ≥ 6 weeks of `bag_posts_history.json` exist | extra bags sold per post; "learning" until then |
 
 ## Action (first rule that fits)

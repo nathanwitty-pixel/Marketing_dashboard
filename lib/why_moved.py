@@ -224,3 +224,22 @@ def build(match=None):
                         _period_bags(b_s, b_e, regions, tills if inside else None, match),
                         a_s.strftime("%B"), b_s.strftime("%B"), _rng(a_s, a_e), _rng(b_s, b_e))
     return out
+
+
+def build_month(year, month, match=None):
+    """{"with", "without"} waterfalls of a finished month vs the month before (full months) — for History
+    (docs/reporting-history.md). None if Odoo is unreachable."""
+    try:
+        from lib import db, shop_regions
+    except Exception:
+        return None
+    if not db.check_connection()[0]:
+        return None
+    regions = {k.upper(): v for k, v in shop_regions.load().items()}
+    b_s = date(year, month, 1)
+    b_e = date(year, month, calendar.monthrange(year, month)[1])
+    a_e = b_s - timedelta(days=1)
+    a_s = a_e.replace(day=1)
+    tills = _till_days(a_s, b_e, regions, match)
+    return _views(_period_bags(a_s, a_e, regions, tills, match), _period_bags(b_s, b_e, regions, tills, match),
+                  a_s.strftime("%B"), b_s.strftime("%B"), _rng(a_s, a_e), _rng(b_s, b_e))

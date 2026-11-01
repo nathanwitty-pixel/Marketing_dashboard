@@ -691,6 +691,15 @@ except Exception as _e:                          # never let the waterfall break
     why_moved_data = None
 
 
+# Followers & reach cards (docs/current-performance.md › Followers & reach) — Odoo's Meta account sync.
+try:
+    from lib import odoo_marketing as _om
+    followers_data = _om.followers_daily()
+except Exception as _e:                          # noqa: BLE001
+    print(f"  WARNING: followers skipped: {_e}")
+    followers_data = []
+
+
 # ── FORMAT HELPERS ────────────────────────────────────────────
 
 def fmt_int(n):
@@ -736,7 +745,8 @@ inline_script = (
     f'  declinedBy:               "{("-" + fmt_int(abs(declined_by))) if bare_minimum_value else ""}",\n'
     f'  weeklySalesTotal:         "{fmt_int(weekly_sales_total)}",\n'
     f'  weeklyHistory:            {json.dumps(weekly_history)},\n'
-    f'  whyMoved:                 {json.dumps(why_moved_data)}\n'
+    f'  whyMoved:                 {json.dumps(why_moved_data)},\n'
+    f'  followers:                {json.dumps(followers_data)}\n'
     "};\n"
     "</script>\n"
     "<!-- PROJ_DATA_END -->"

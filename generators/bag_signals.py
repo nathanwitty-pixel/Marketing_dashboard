@@ -13,7 +13,7 @@ import webbrowser
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # project root → lib/
 from lib import paths
 from lib import marketing_posts
-from lib import bag_quant as bq, product_targets
+from lib import bag_quant as bq, product_targets, odoo_marketing
 
 HTML = paths.html("bag_signals.html")
 HISTORY = paths.data("bag_posts_history.json")
@@ -62,12 +62,16 @@ def build():
     m_rows, w_rows = _posts()
     posts = bq.bag_posts(m_rows, w_rows, key) if (m_rows or w_rows) else {}
     hist = _save_history(posts, daily, end) if posts else []
+    today = datetime.date.today()                            # website WhatsApp taps (docs/bag-signals.md)
+    wa7, _, _ = odoo_marketing.wa_clicks_by_bag(today - datetime.timedelta(days=6), today, key)
+    wa28, _, _ = odoo_marketing.wa_clicks_by_bag(today - datetime.timedelta(days=27), today, key)
     rows = []
     for b, s in sig.items():
         r = {"bag": b, **s, "launch": launch[b].isoformat() if launch.get(b) and launch[b] >= start else None}
         pm, pw = posts.get(b, (0, 0))
         r["postsMonth"], r["postsWeek"] = pm, pw
         r["postBeta"] = bq.posting_beta(hist, b)
+        r["wa7"], r["wa28"] = wa7.get(b, {}).get("clicks", 0), wa28.get(b, {}).get("clicks", 0)
         rows.append(r)
     rows.sort(key=lambda r: (r.get("tooFew", False), -(r.get("avg") or 0)))
     weeks = len(hist)

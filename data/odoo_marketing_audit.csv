@@ -1,0 +1,26 @@
+﻿status,tab,source,table,every,rows,first,latest,behind,filled,fields,use
+✅ Ready,WhatsApp checkouts,Website WhatsApp clicks per product,denri_marketing_wa_click,day,209,2026-10-23,2026-11-01,up to date,100,product 100%,Per-bag online demand (Bag Signals / Product Performance).
+✅ Ready,Meta / Social reach,"Account per day (followers, reach)",denri_meta_account_day,day,28,2026-10-18,2026-11-01,up to date,96,"reach in 50%, followers in 96%",Follower growth and reach trend next to sales.
+✅ Ready,Foot traffic,"Foot traffic, daily (POS door counts)",denri_marketing_foot_daily,day,4472,2026-01-02,2026-10-31,up to date,91,"visitors 100%, purchased 100%",ALREADY USED: Footfall & Marketing reads the same door counts (denri_footfall_count).
+🟡 Partial (only 6% tagged with a bag),Content,Facebook + Instagram posts,denri_meta_post,day,1288,2026-09-06,2026-11-01,up to date,100,"tagged with a bag 6%, content tag 14%, reach in 100%",Posting per bag (replace the posting sheets) + reach/views per bag; needs every post tagged with its bags.
+🟡 Partial (only 0% sentiment),Meta,Comments (brand listening),denri_listening_mention,day,6367,2026-09-17,2026-11-01,up to date,100,"sentiment 0%, topic 0%",Comment volume per post / bag; sentiment needs the Claude key in Setup.
+🟡 Partial,Channels / Ad spend,"Meta ads, daily per campaign",denri_marketing_ads,day,120,2026-10-12,2026-11-01,up to date,85,"spend 94%, messages 100%, purchases 0%","Bring back the Ads impact panel from Odoo: spend, cost per message vs bags sold."
+🟡 Partial,"Sales / Net revenue, GA4, checkouts",Website weekly snapshot,denri_marketing_web_snapshot,week,130,2025-12-22,2026-10-26,up to date,83,"GA4 sessions 100%, net revenue 100%, add to carts 45%, checkouts 45%, abandoned 45%, WhatsApp orders 100%, Shopify sessions 0%","Website funnel card + online share of revenue, week on week."
+🟡 Partial,Website new users,Website new users,denri_marketing_web_traffic,month,79,2026-01-01,2026-09-01,1 month,83,,New users per month.
+🟡 Partial,Leads,Social DM leads (FB / IG / TikTok),denri_social_dm,day,6087,2025-12-29,2026-10-31,up to date,72,"bag asked about 1%, shop 100%, outcome recorded 100%, from an ad (yes/no) 100%",DM → sale conversion by channel and per bag; ad vs organic leads.
+🟡 Partial,Sales,Back-in-stock sign-ups,denri_marketing_restock_request,day,5,2026-10-26,2026-10-30,1 day,67,product 100%,Out-of-stock demand per bag (few rows).
+❌ Stale,Channels / Ad spend,"Ads, weekly (typed in)",denri_marketing_ads,week,410,2026-01-05,2026-10-05,2 weeks,75,spend 97%,History before the Meta sync (Jan–early Oct).
+❌ Stale,Social reach,"Social, weekly per platform (typed in)",denri_marketing_social,week,511,2026-01-12,2026-10-05,2 weeks,75,"reach 100%, followers 100%",TikTok / YouTube / X / LinkedIn reach (the only place they are).
+❌ Stale,Leads,"Leads, daily (typed in)",denri_marketing_lead,day,814,2026-04-01,2026-10-11,20 days,42,,Old daily lead counts.
+❌ Stale,Leads,Influencer leads,denri_marketing_influencer_lead,month,29,2026-02-01,2026-06-01,4 months,33,,Influencer leads per month.
+❌ Stale,Leads,WhatsApp engagement (CRM),denri_crm_whatsapp_engagement,day,45,2026-10-05,2026-10-23,8 days,20,sale amount 100%,Small; agent follow-ups.
+❌ Stale,Content,Old daily posting log (all platforms),denri_marketing_post,day,2875,2026-03-22,2026-08-03,89 days,0,bags named 83%,"Was the all-platform log; stopped, so not usable."
+❌ Stale,Content,Content calendar,denri_marketing_content,week,114,2026-04-13,2026-06-22,17 weeks,0,status 100%,Content plan vs delivered.
+❌ Stale,Home,Weekly activity notes,denri_marketing_activity,week,21,2026-04-13,2026-06-22,17 weeks,0,,Text notes only.
+❌ Stale,Sales,Website channel / product / referrer,denri_marketing_web_channel,week,19,2026-06-08,2026-06-08,19 weeks,0,,One week only (8 Jun).
+❌ Stale,Calls,"Calls, weekly per shop",denri_marketing_calls,week,70,2026-04-20,2026-05-11,23 weeks,0,,Calls per shop.
+❌ Stale,Home,Shop social performance (WhatsApp status),denri_marketing_shop_week,week,25,2026-03-02,2026-07-27,12 weeks,0,,"Shop status posts, views, contacts saved."
+❌ Stale,Setup,Marketing expense,denri_marketing_expense,month,49,2025-01-01,2026-01-01,9 months,0,,Monthly spend per market.
+⛔ Empty,Channels,Google Ads,denri_marketing_ads,day,0,,,,,,Syncs hourly but writes nothing yet.
+⛔ Empty,TikTok,TikTok Ads,denri_marketing_ads,day,0,,,,,,Needs the TikTok business ID in Setup.
+⛔ Empty,Home,"Messages handled, daily per shop",denri_marketing_messages_daily,day,0,,,,,,Online vs shop messages.

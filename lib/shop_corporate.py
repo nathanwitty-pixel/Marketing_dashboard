@@ -228,9 +228,12 @@ def _versions(quotes: list[dict]) -> tuple[list[dict], list[str]]:
 
 
 def build(today: _dt.date | None = None) -> dict | None:
-    """Everything the "Shop corporate" tab needs, or None when the DB isn't reachable."""
+    """Everything the "Shop corporate" tab needs for the month holding `today` (1st → today), or None when the DB
+    isn't reachable. Pass the month's last day to rebuild a finished month (History). Quotes from the month before
+    are read too, so a payment this month still finds its quote (docs/current-performance.md › Shop corporate)."""
     today = today or _dt.date.today()
-    start = (today.replace(day=1) - _dt.timedelta(days=1)).replace(day=1)   # start of last month
+    month_start = today.replace(day=1)
+    start = (month_start - _dt.timedelta(days=1)).replace(day=1)            # quotes looked up from last month
     p = {"s": start.isoformat(), "e": today.isoformat(),
          "s0": (start - _dt.timedelta(days=14)).isoformat(), "e1": (today + _dt.timedelta(days=2)).isoformat()}
 
@@ -321,7 +324,7 @@ def build(today: _dt.date | None = None) -> dict | None:
     # bulk till orders with no quote at all
     by_cust: dict = {}
     for t in loose:
-        if not t.get("used") and t["bags"] >= 100 and t["d"] >= start:
+        if not t.get("used") and t["bags"] >= 100 and t["d"] >= month_start:
             by_cust.setdefault(t["cpid"], []).append(t)
     for ts in by_cust.values():
         clients.append({"quotes": [], "merged": [], "name": _txt(ts[0]["cust"]).strip(), "names": {ts[0]["cust"]},
@@ -365,9 +368,13 @@ def build(today: _dt.date | None = None) -> dict | None:
                if shop_label(s) != "Corporate"]
     out = []
     for c in rows:
-        pays = sorted(c["pays"], key=lambda t: t["d"])
-        paid, quoted = c["paid"], c["quotedKes"]
-        status = "paid" if (paid and (not quoted or paid >= 0.99 * quoted)) else ("part" if paid else "unpaid")
+        # this month only: its till payments, or a quote dated this month (earlier months live in History)
+        pays = sorted((t for t in c["pays"] if _day(t["d"]) >= month_start), key=lambda t: t["d"])
+        if not pays and not any(_day(q["d"]) >= month_start for q in c["quotes"]):
+            continue
+        paid_all, quoted = c["paid"], c["quotedKes"]
+        paid = sum(t["kes"] for t in pays)
+        status = "paid" if (paid_all and (not quoted or paid_all >= 0.99 * quoted)) else ("part" if paid_all else "unpaid")
         paid_shop = ""
         if pays:
             per = {}
@@ -377,7 +384,7 @@ def build(today: _dt.date | None = None) -> dict | None:
         top = max(pays, key=lambda t: t["kes"]) if pays else None
         lead = (f'Corporate app lead {_d(c["lead"]["created"])}' + (
             f' · {c["lead"]["owner"]}' if _txt(c["lead"]["owner"]) else "")) if c["lead"] else ""
-        if paid:                       # a Corporate lead paid at a till is the shop's sale (user, 16 Oct 2026)
+        if pays:                       # a Corporate lead paid at a till is the shop's sale (user, 16 Oct 2026)
             hunted, how = paid_shop, "paid there" + (f' · {top["cashier"]}' if top and _txt(top["cashier"]) else "")
         else:                          # unpaid (lead or not): find the shop that hunted the client
             hunted, how = "", ""
@@ -414,7 +421,7 @@ def build(today: _dt.date | None = None) -> dict | None:
             "merged": sorted(c["merged"]),
             "quotedKes": quoted, "quotedBags": c["quotedBags"],
             "paidKes": paid, "bags": sum(t["bags"] for t in pays),
-            "balance": max(quoted - paid, 0), "status": status,
+            "balance": max(quoted - paid_all, 0), "status": status, "paidBefore": paid_all - paid,
             "payments": [{"receipt": t["receipt"], "on": _d(t["d"]), "date": str(t["d"])[:10], "bags": int(t["bags"] or 0), "shop": shop_label(t["shop"]), "kes": t["kes"],
                           "by": _txt(t["paid_by"]), "cashier": _txt(t["cashier"]), "cust": _txt(t["cust"]).strip()}
                          for t in pays],
@@ -435,9 +442,12 @@ def build(today: _dt.date | None = None) -> dict | None:
     if "Corporate" in summary:
         shops_out.append(summary["Corporate"])
 
-    months = start.strftime("%b") + ("–" + today.strftime("%b") if today.month != start.month else "")
-    return {"rows": out, "shops": shops_out, "leftOut": left_out, "period": months,
-            "asOf": _d(today)}
+    return {"rows": out, "shops": shops_out, "leftOut": left_out, "period": month_start.strftime("%b %Y"),
+            "month": month_start.strftime("%Y-%m"), "asOf": _d(today)}
+
+
+def _day(d):
+    return d.date() if isinstance(d, _dt.datetime) else d
 
 
 _TEAM_CACHE: dict = {}

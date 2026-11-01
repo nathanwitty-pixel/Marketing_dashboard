@@ -127,6 +127,111 @@ def _bags_on_offer(boo: dict):
     }
 
 
+SHOP_CORP_BACKUP = "shop_corporate_history.json"
+
+
+def shop_corporate_month(month_name: str, year: int, warn=print):
+    """The month's Shop corporate tab, rebuilt from Odoo for that month (lib/shop_corporate), and saved to
+    data/shop_corporate_history.json as a local backup. None when Odoo can't be read."""
+    import calendar
+    import datetime
+    import json
+    from lib import paths, shop_corporate
+    m = list(calendar.month_name).index(month_name)
+    last = datetime.date(year, m, calendar.monthrange(year, m)[1])
+    try:
+        data = shop_corporate.build(min(last, datetime.date.today()))
+    except Exception as ex:                                  # noqa: BLE001
+        warn(f"  extras: shop corporate skipped ({ex})")
+        return None
+    if data is None:
+        warn("  extras: shop corporate skipped (Odoo unreachable)")
+        return None
+    path = paths.data(SHOP_CORP_BACKUP)
+    try:
+        hist = json.load(open(path, encoding="utf-8"))
+    except (OSError, ValueError):
+        hist = {}
+    hist[f"{year}-{m:02d}"] = dict(data, savedOn=datetime.date.today().isoformat())
+    json.dump(hist, open(path, "w", encoding="utf-8"), indent=1, ensure_ascii=False, default=str)
+    return data
+
+
+def _month_dates(month_name: str, year: int):
+    import calendar
+    import datetime
+    m = list(calendar.month_name).index(month_name)
+    return m, datetime.date(year, m, 1), datetime.date(year, m, calendar.monthrange(year, m)[1])
+
+
+def cp_more_month(month_name: str, year: int, warn=print):
+    """1 · Current Performance extras for History: revenue, month-on-month waterfall, Kenya followers & reach
+    (docs/reporting-history.md). Each part None when its source can't be read."""
+    from lib import db, queries, product_targets, why_moved, odoo_marketing
+    m, first, last = _month_dates(month_name, year)
+    out = {"revenue": None, "whyMoved": None, "followers": None}
+    try:
+        r = db.run_query(queries.BAG_REVENUE, {"start_date": first.isoformat(), "end_date": last.isoformat(),
+                                               "excluded": queries.excluded_products()})
+        c = db.run_query(queries.CORPORATE_BAGS, {"start_date": first.isoformat(), "end_date": last.isoformat()})
+        t = db.run_query(product_targets.TOTAL_SQL, {"m": first.isoformat()})
+        if r is not None and len(r):
+            rev = {k: round(float(v or 0)) for k, v in r.iloc[0].items()}
+            pos = rev["single_kes"] + rev["combo_kes"] + rev["gift_kes"] + rev["discount_kes"]
+            corp = c.iloc[0] if c is not None and len(c) else {}
+            out["revenue"] = dict(rev, posKes=pos, corporateKes=round(float(corp.get("kes") or 0)),
+                                  corporateBags=round(float(corp.get("bags") or 0)),
+                                  revenueTarget=round(float(t.amt[0])) if t is not None and len(t) and t.amt[0] else None,
+                                  bagTarget=round(float(t.qty[0])) if t is not None and len(t) and t.qty[0] else None)
+    except Exception as ex:                                  # noqa: BLE001
+        warn(f"  extras: revenue skipped ({ex})")
+    try:
+        out["whyMoved"] = why_moved.build_month(year, m)
+    except Exception as ex:                                  # noqa: BLE001
+        warn(f"  extras: why-moved skipped ({ex})")
+    try:
+        days = [d for d in odoo_marketing.followers_daily() if first.isoformat() <= d["date"] <= last.isoformat()]
+        if days:
+            fol = {}
+            for plat in ("instagram", "facebook"):
+                ds = [d for d in days if d["platform"] == plat]
+                counts = [d for d in ds if d["followers"] is not None]
+                fol[plat] = {"followers": counts[-1]["followers"] if counts else None,
+                             "newFollows": sum(d["newFollows"] or 0 for d in ds),
+                             "reach": sum(d["reach"] or 0 for d in ds), "views": sum(d["views"] or 0 for d in ds),
+                             "from": ds[0]["date"] if ds else None, "to": ds[-1]["date"] if ds else None}
+            out["followers"] = fol
+    except Exception as ex:                                  # noqa: BLE001
+        warn(f"  extras: followers skipped ({ex})")
+    return out
+
+
+def product_performance_month(month_name: str, year: int, base: str | None = None, warn=print):
+    """9 · Product Performance for History: the page's Last-month view for this month (vs the month before) —
+    rows, bag of the month per market, why it moved, shop breakdown. Read from the built page when its Last month
+    is this month, else built for the 1st of the next month. None on failure."""
+    import datetime
+    import sys
+    from lib import paths
+    m, first, last = _month_dates(month_name, year)
+    pp = _block(os.path.join(base or paths.HTML, "product_performance.html"), "PP") or {}
+    lm = (pp.get("periods") or {}).get("lastmonth") or {}
+    if (lm.get("cur") or [None])[0] != first.isoformat():
+        try:
+            if paths.GENERATORS not in sys.path:
+                sys.path.insert(0, paths.GENERATORS)
+            import product_performance
+            pp = product_performance.build(last + datetime.timedelta(days=1))
+        except Exception as ex:                              # noqa: BLE001
+            warn(f"  extras: product performance skipped ({ex})")
+            return None
+        lm = pp["periods"]["lastmonth"]
+    return {"label": f"{month_name} {year}", "cur": lm.get("cur"), "prev": lm.get("prev"),
+            "curLabel": lm.get("curLabel"), "prevLabel": lm.get("prevLabel"), "rows": lm.get("rows") or [],
+            "botw": (pp.get("botw") or {}).get("lastmonth") or {}, "why": (pp.get("why") or {}).get("lastmonth") or {},
+            "shops": (pp.get("shops") or {}).get("lastmonth") or {}, "topN": pp.get("topN", 15)}
+
+
 def build_extras(base: str, month_name: str, year: int, warn=print) -> dict:
     """Everything above for `month_name year` (e.g. "September", 2026). Pages for another month are skipped.
     `base` is the folder holding the built pages (paths.HTML)."""
@@ -135,7 +240,10 @@ def build_extras(base: str, month_name: str, year: int, warn=print) -> dict:
     boo = _block(os.path.join(base, "bags_on_offer.html"), "BOO") or {}
     pa = _posting_block(os.path.join(base, POSTING_HTML)) or {}
 
-    out = {"deals": None, "selfMadeMore": None, "posting": None, "bagsOnOffer": None}
+    out = {"deals": None, "selfMadeMore": None, "posting": None, "bagsOnOffer": None,
+           "shopCorporate": shop_corporate_month(month_name, year, warn),
+           "cpMore": cp_more_month(month_name, year, warn),
+           "productPerformance": product_performance_month(month_name, year, base, warn)}
     if smc.get("month") == label:
         out["deals"], out["selfMadeMore"] = _deals(smc), _self_made_more(smc)
     else:

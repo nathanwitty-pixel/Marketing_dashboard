@@ -579,6 +579,15 @@ def explain(b, mkt, w, ctx):
         lines.append(["Marketing", "info", f"This week's posts are counted next week — last week: {p1[0] + p1[1]} posts"])
     if ctx["posts_w"] is not None and w["key"] != "lastmonth":
         lines.append(["Marketing", "info", f"{pm[0] + pm[1]} posts this month ({pm[0]} in Kenya, {pm[1]} outside)"])
+    wa = ctx.get("wa")                                       # website WhatsApp taps — Kenya, info only
+    if wa and mkt in ("ALL", "KE"):
+        t1 = wa(s1, e1).get(b, {}).get("clicks", 0)
+        if s0 >= WA_FROM:
+            t0 = wa(s0, e0).get(b, {}).get("clicks", 0)
+            if t1 or t0:
+                lines.append(["Marketing", "info", f"Website WhatsApp taps: {t1} {C} vs {t0} {P}"])
+        elif t1 and e1 >= WA_FROM:
+            lines.append(["Marketing", "info", f"Website WhatsApp taps: {t1} {C} (recorded from 23 Oct)"])
     elif w["key"] == "lastmonth" and pb is None:
         lines.append(["Marketing", "info", "Posting sheets couldn't be read — no posting comparison"])
 
@@ -615,6 +624,18 @@ def explain(b, mkt, w, ctx):
     return {"lw": int(lw), "pw": int(pw), "lwNb": int(lw_nb), "pwNb": int(pw_nb), "bulk": bool(bulk),
             "head": head or ("No single driver — steady demand" if delta >= 0 else "No single driver found — demand eased"),
             "lines": lines, "score": score}
+
+
+def _wa_taps():
+    """(start, end) → {bag: {"clicks", …}} website WhatsApp taps, one Odoo pull per window."""
+    from lib import odoo_marketing, product_targets
+    cache, key = {}, product_targets.bag_key_fn()
+
+    def get(s, e):
+        if (s, e) not in cache:
+            cache[(s, e)] = odoo_marketing.wa_clicks_by_bag(s, e, key)[0]
+        return cache[(s, e)]
+    return get
 
 
 # ── build ─────────────────────────────────────────────────────
@@ -714,6 +735,9 @@ def shop_breakdown(lines, P, corp=None):
     return out
 
 
+WA_FROM = datetime.date(2026, 10, 23)                       # first day Odoo records website WhatsApp taps
+
+
 def build(today=None):
     today = today or datetime.date.today()
     P = periods(today)
@@ -763,7 +787,7 @@ def build(today=None):
     offers = Offers(typ)
     base_ctx = {"levels": levels, "disp": disp, "stock_now": stock_now, "offers": offers,
                 "posts_w": posts_w, "posts_m": posts_m or {}, "posts_prev": posts_prev,
-                "posts_between": posts_between(typ),
+                "posts_between": posts_between(typ), "wa": _wa_taps(),
                 "listings": Offers.listings(today.strftime("%B"), typ)}
     words = {"lastweek": ("last week", "the week before"),
              "weekly": ("this week", "the same days last week"),

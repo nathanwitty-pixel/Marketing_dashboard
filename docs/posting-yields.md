@@ -68,6 +68,21 @@ injects `accuracyBags`, `postRelevance` and the s3 figures into `PA`; nothing on
 5. Header `<th title=…>` tooltips explain Alignment, Dead-stock effort, Sold · no
    marketing, Not sold · untouched.
 
+## Posting sheet vs Odoo — Kenya (1 Nov 2026, user's call)
+
+Posts will move from marketing's posting sheets to Odoo, where marketing tags each Facebook / Instagram post with the
+bags in it (`denri_meta_post` + its product tags, via `lib/odoo_marketing.meta_posts_by_bag`). Until the tagging
+catches up, a card at the foot of the **Kenya** panel compares the two for the **last 3 complete Sun–Sat weeks**:
+
+- **Per week:** Odoo posts, how many carry a bag tag (and the %), posts per bag in the sheet vs in Odoo.
+- **Per bag:** sheet posts vs Odoo posts for each week (bags in either), sorted by the sheet's latest week.
+  "Missing in Odoo" = the sheet has posts, Odoo has none.
+- The sheet counts a post once per bag in it on every platform; Odoo counts Facebook + Instagram posts once per bag
+  tagged, so Odoo will stay lower (no TikTok / WhatsApp) — the check is about **which bags** are missing.
+- Sinza / Uganda aren't in Odoo (only Kenya's page and account are synced): they stay on the sheets.
+
+Data block: `<!-- ODOO_POSTS_START -->…<!-- ODOO_POSTS_END -->` → `const OPC`, written by `posting_yields.py`.
+
 ## Custom range (Oct 2026)
 
 The **Posting yield** and **Dead Stock Clearance** Period dropdowns (all three regions) get **Custom

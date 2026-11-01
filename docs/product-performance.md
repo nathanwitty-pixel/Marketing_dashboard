@@ -42,7 +42,7 @@ Each card: bag, units (and share of the week), revenue, change vs the week befor
 |---|---|
 | **Stock** | shop stock at the start of each week · units dispatched into the shops in each week from a warehouse (with the date of the biggest delivery). Combo products ('+' names) are left out of stock — they carry their own stock in Odoo · days in stock each week. *Back in stock* = in stock more days than the week before; *Restocked* (▲) = dispatched ≥ 10 units and ≥ 30 % of the week's sales **and** the shops started the week with less than the week sold (bulk orders aside) (otherwise it's context: "stock was already enough"); *Ran short* = fewer days in stock than the week before. |
 | **Offer** | Power Deal (all month) · Deal of the Week (tier, shops, weeks) · Timed offer (dates, was → now) · running combo component — plus units sold **inside combos** each week. *Started* / *Ended* when an offer runs in one week and not the other. Sinza / Uganda: listed combos / singles from `offers_monthly.csv`. |
-| **Marketing** | posts last week vs the week before (Kenya + outside) and posts this month. |
+| **Marketing** | posts last week vs the week before (Kenya + outside) and posts this month. Kenya / All also get **website WhatsApp taps** for the bag in the period vs the period before (Odoo `denri_marketing_wa_click`, from 23 Oct 2026 — when the period before starts earlier, only this period's taps are shown). Info only, not scored (1 Nov 2026, user's call). |
 | **⚠ Bulk** | any single POS line of **10+ units** in either week: qty × product, receipt, till, date — and the change **without** it (rule: [bulk orders flag](#bulk-orders)). |
 
 Each line is marked ▲ (helped), ▼ (held it back) or · (context only). The headline reason is the first ▲

@@ -1,0 +1,321 @@
+{
+ "2026-10": {
+  "rows": [
+   {
+    "client": "ESK COMPANY",
+    "quotes": [
+     {
+      "no": "S00801",
+      "on": "23 Sep",
+      "kes": 1699998,
+      "state": "draft",
+      "by": "Rosemary Njoki"
+     }
+    ],
+    "merged": [
+     "S00797",
+     "S00798"
+    ],
+    "quotedKes": 1699998,
+    "quotedBags": 500,
+    "paidKes": 1699997,
+    "bags": 500,
+    "balance": 0,
+    "status": "paid",
+    "paidBefore": 7200,
+    "payments": [
+     {
+      "receipt": "HAZINA/29958",
+      "on": "12 Oct",
+      "date": "2026-10-12",
+      "bags": 500,
+      "shop": "Hazina",
+      "kes": 1699997,
+      "by": "Bank",
+      "cashier": "Faith Dawe",
+      "cust": "ESK COMPANY"
+     }
+    ],
+    "hunted": "Hazina",
+    "how": "paid there · Faith Dawe",
+    "lead": "Corporate app lead 17 Sep · Scola Mithiri",
+    "paidAt": "",
+    "age": null,
+    "flags": []
+   },
+   {
+    "client": "KENNEDY KALAA",
+    "quotes": [
+     {
+      "no": "S00789",
+      "on": "8 Sep",
+      "kes": 1012000,
+      "state": "draft",
+      "by": "Rosemary Njoki"
+     }
+    ],
+    "merged": [],
+    "quotedKes": 1012000,
+    "quotedBags": 440,
+    "paidKes": 1012001,
+    "bags": 440,
+    "balance": 0,
+    "status": "paid",
+    "paidBefore": 0,
+    "payments": [
+     {
+      "receipt": "HILTON/99665",
+      "on": "5 Oct",
+      "date": "2026-10-05",
+      "bags": 440,
+      "shop": "Hilton",
+      "kes": 1012001,
+      "by": "Till No. Hilton",
+      "cashier": "Doreen Omondi",
+      "cust": "Kennedy corporate"
+     }
+    ],
+    "hunted": "Hilton",
+    "how": "paid there · Doreen Omondi",
+    "lead": "",
+    "paidAt": "",
+    "age": null,
+    "flags": [
+     "matched by amount (till: \"Kennedy corporate\")"
+    ]
+   },
+   {
+    "client": "Sospeter Okumu",
+    "quotes": [],
+    "merged": [],
+    "quotedKes": 0,
+    "quotedBags": 0,
+    "paidKes": 320000,
+    "bags": 200,
+    "balance": 0,
+    "status": "paid",
+    "paidBefore": 0,
+    "payments": [
+     {
+      "receipt": "KISUMU/16272",
+      "on": "9 Oct",
+      "date": "2026-10-09",
+      "bags": 200,
+      "shop": "Kisumu",
+      "kes": 320000,
+      "by": "Bank",
+      "cashier": "Olgha Anyango",
+      "cust": "Sospeter Okumu"
+     }
+    ],
+    "hunted": "Kisumu",
+    "how": "paid there · Olgha Anyango",
+    "lead": "",
+    "paidAt": "",
+    "age": null,
+    "flags": [
+     "no quote in Odoo"
+    ]
+   },
+   {
+    "client": "KENYA FLOWER COUNCIL",
+    "quotes": [
+     {
+      "no": "S00811",
+      "on": "2 Oct",
+      "kes": 124000,
+      "state": "draft",
+      "by": "Rosemary Njoki"
+     }
+    ],
+    "merged": [
+     "S00806"
+    ],
+    "quotedKes": 124000,
+    "quotedBags": 20,
+    "paidKes": 126800,
+    "bags": 40,
+    "balance": 0,
+    "status": "paid",
+    "paidBefore": 0,
+    "payments": [
+     {
+      "receipt": "HILTON/100347",
+      "on": "12 Oct",
+      "date": "2026-10-12",
+      "bags": 39,
+      "shop": "Hilton",
+      "kes": 124200,
+      "by": "Bank",
+      "cashier": "Doreen Omondi",
+      "cust": "KENYA FLOWER COUNCIL"
+     },
+     {
+      "receipt": "HILTON/100348",
+      "on": "12 Oct",
+      "date": "2026-10-12",
+      "bags": 1,
+      "shop": "Hilton",
+      "kes": 2600,
+      "by": "Bank",
+      "cashier": "Doreen Omondi",
+      "cust": "KENYA FLOWER COUNCIL"
+     }
+    ],
+    "hunted": "Hilton",
+    "how": "paid there · Doreen Omondi",
+    "lead": "",
+    "paidAt": "",
+    "age": null,
+    "flags": []
+   },
+   {
+    "client": "KE0410 VLI NAUDO CYDC",
+    "quotes": [
+     {
+      "no": "S00805",
+      "on": "28 Sep",
+      "kes": 12798,
+      "state": "draft",
+      "by": "Ann Tracy Kimani"
+     },
+     {
+      "no": "S00796",
+      "on": "8 Oct",
+      "kes": 4600,
+      "state": "sale",
+      "by": "Collins Oduor"
+     }
+    ],
+    "merged": [],
+    "quotedKes": 17398,
+    "quotedBags": 6,
+    "paidKes": 17200,
+    "bags": 9,
+    "balance": 198,
+    "status": "part",
+    "paidBefore": 0,
+    "payments": [
+     {
+      "receipt": "NAKURU/22566",
+      "on": "13 Oct",
+      "date": "2026-10-13",
+      "bags": 2,
+      "shop": "Nakuru",
+      "kes": 4400,
+      "by": "Bank",
+      "cashier": "Itenya Lewis Albahai",
+      "cust": "KE0410 VLI NAUDO CYDC"
+     },
+     {
+      "receipt": "NAKURU/22577",
+      "on": "14 Oct",
+      "date": "2026-10-14",
+      "bags": 7,
+      "shop": "Nakuru",
+      "kes": 12800,
+      "by": "Bank + Delivery",
+      "cashier": "Vivian Namokwa",
+      "cust": "VICTORIA LIFE INTERNATION"
+     }
+    ],
+    "hunted": "Nakuru",
+    "how": "paid there · Vivian Namokwa",
+    "lead": "",
+    "paidAt": "",
+    "age": null,
+    "flags": []
+   },
+   {
+    "client": "BIYINZIKA POULTRY KENYA LIMITED",
+    "quotes": [
+     {
+      "no": "S00817",
+      "on": "14 Oct",
+      "kes": 10400,
+      "state": "draft",
+      "by": "Rosemary Njoki"
+     }
+    ],
+    "merged": [],
+    "quotedKes": 10400,
+    "quotedBags": 4,
+    "paidKes": 7800,
+    "bags": 3,
+    "balance": 2600,
+    "status": "part",
+    "paidBefore": 0,
+    "payments": [
+     {
+      "receipt": "WEBSITE SALES/30042",
+      "on": "14 Oct",
+      "date": "2026-10-14",
+      "bags": 3,
+      "shop": "Website",
+      "kes": 7800,
+      "by": "Till No. Website",
+      "cashier": "Lucy Mwende",
+      "cust": "Valerian"
+     }
+    ],
+    "hunted": "Website",
+    "how": "paid there · Lucy Mwende",
+    "lead": "",
+    "paidAt": "",
+    "age": null,
+    "flags": []
+   }
+  ],
+  "shops": [
+   {
+    "shop": "Hazina",
+    "paid": 1699997,
+    "bags": 500,
+    "owed": 0,
+    "clients": 1
+   },
+   {
+    "shop": "Hilton",
+    "paid": 1138801,
+    "bags": 480,
+    "owed": 0,
+    "clients": 2
+   },
+   {
+    "shop": "Kisumu",
+    "paid": 320000,
+    "bags": 200,
+    "owed": 0,
+    "clients": 1
+   },
+   {
+    "shop": "Nakuru",
+    "paid": 17200,
+    "bags": 9,
+    "owed": 198,
+    "clients": 1
+   },
+   {
+    "shop": "Website",
+    "paid": 7800,
+    "bags": 3,
+    "owed": 2600,
+    "clients": 1
+   }
+  ],
+  "leftOut": [
+   {
+    "client": "EQUITY BANK KENYA LIMITED(EBKL)",
+    "quotes": [
+     "S00795"
+    ],
+    "kes": 1000000,
+    "ref": "QUO-00054 (Equity Bank Kenya Ltd)"
+   }
+  ],
+  "period": "Oct 2026",
+  "month": "2026-10",
+  "asOf": "31 Oct",
+  "savedOn": "2026-11-01"
+ }
+}

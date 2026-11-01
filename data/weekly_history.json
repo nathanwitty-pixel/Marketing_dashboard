@@ -1,69 +1,17 @@
 {
   "weeks": [
     {
-      "weekStart": "2026-10-01",
+      "weekStart": "2026-11-01",
       "label": "Wk 1",
-      "month": "Oct",
-      "salesPct": 7.98,
-      "salesBags": 2236,
+      "month": "Nov",
+      "salesPct": 0.35,
+      "salesBags": 117,
       "prevSalesPct": 0.0,
       "prevSalesBags": 0,
-      "weeklySales": 2236,
-      "posBags": 2026,
-      "corporateBags": 210,
-      "declinedBy": -4767
-    },
-    {
-      "weekStart": "2026-10-04",
-      "label": "Wk 2",
-      "month": "Oct",
-      "salesPct": 23.45,
-      "salesBags": 6570,
-      "prevSalesPct": 7.98,
-      "prevSalesBags": 2236,
-      "weeklySales": 4334,
-      "posBags": 4221,
-      "corporateBags": 113,
-      "declinedBy": -2669
-    },
-    {
-      "weekStart": "2026-10-11",
-      "label": "Wk 3",
-      "month": "Oct",
-      "salesPct": 36.67,
-      "salesBags": 10271,
-      "prevSalesPct": 23.45,
-      "prevSalesBags": 6570,
-      "weeklySales": 3701,
-      "posBags": 3698,
-      "corporateBags": 3,
-      "declinedBy": -3302
-    },
-    {
-      "weekStart": "2026-10-18",
-      "label": "Wk 4",
-      "month": "Oct",
-      "salesPct": 49.0,
-      "salesBags": 13725,
-      "prevSalesPct": 36.67,
-      "prevSalesBags": 10271,
-      "weeklySales": 3454,
-      "posBags": 2917,
-      "corporateBags": 537,
-      "declinedBy": -3549
-    },
-    {
-      "weekStart": "2026-10-25",
-      "label": "Wk 5",
-      "month": "Oct",
-      "salesPct": 57.36,
-      "salesBags": 16069,
-      "prevSalesPct": 49.0,
-      "prevSalesBags": 13725,
-      "weeklySales": 2344,
-      "posBags": 2210,
-      "corporateBags": 134,
-      "declinedBy": -4659
+      "weeklySales": 117,
+      "posBags": 117,
+      "corporateBags": 0,
+      "declinedBy": -8211
     }
   ]
 }
