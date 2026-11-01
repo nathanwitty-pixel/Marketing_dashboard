@@ -1,6 +1,6 @@
 {
  "month": "November 2026",
- "generated": "01 Nov 2026 18:16",
+ "generated": "01 Nov 2026 20:42",
  "range": "01 Nov – 30 Nov 2026",
  "rows": [
   {
@@ -8,8 +8,8 @@
    "label": "Not on offer",
    "on": false,
    "where": "Kenya, Tanzania, Uganda",
-   "units": 58.0,
-   "revenue": 131668,
+   "units": 60.0,
+   "revenue": 135668,
    "bags": [
     {
      "bag": "CODE 3",
@@ -26,6 +26,13 @@
      "revenue": 10800
     },
     {
+     "bag": "PIONEER",
+     "category": "BACKPACK",
+     "tier": "Core",
+     "units": 4.0,
+     "revenue": 8573
+    },
+    {
      "bag": "POCKET TRAVEL",
      "category": "TRAVEL",
      "tier": "Premium",
@@ -38,13 +45,6 @@
      "tier": "Premium",
      "units": 2.0,
      "revenue": 7171
-    },
-    {
-     "bag": "PIONEER",
-     "category": "BACKPACK",
-     "tier": "Core",
-     "units": 3.0,
-     "revenue": 6573
     },
     {
      "bag": "TRAVEL",
@@ -73,6 +73,13 @@
      "tier": "Core",
      "units": 2.0,
      "revenue": 4800
+    },
+    {
+     "bag": "FABELA",
+     "category": "TRAVEL",
+     "tier": "Core",
+     "units": 2.0,
+     "revenue": 4000
     },
     {
      "bag": "BONITA",
@@ -157,13 +164,6 @@
      "tier": "Core",
      "units": 1.0,
      "revenue": 2100
-    },
-    {
-     "bag": "FABELA",
-     "category": "TRAVEL",
-     "tier": "Core",
-     "units": 1.0,
-     "revenue": 2000
     },
     {
      "bag": "ZANE MAN",

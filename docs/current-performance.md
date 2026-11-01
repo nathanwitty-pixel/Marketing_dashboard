@@ -34,6 +34,23 @@ read by `lib/odoo_marketing.followers_daily()` into `PROJ.followers`:
 market. Kenya shows the figures. Sinza and Uganda show "—" and say their pages aren't connected to Odoo yet (the Meta
 sync holds only Kenya's page and account); they fill in once Odoo syncs those pages. No data at all → the row is hidden.
 
+**Followers chart (1 Nov 2026, user's call):** a card just below the three cards, styled like "Why Did We Move?"
+(same card head and segmented buttons), from the same `PROJ.followers`:
+- **Metric:** New follows · Followers · Reach · Views.
+- **View:** **Week on week** — a **waterfall like "Why Did We Move?"** (1 Nov 2026, user's call): first bar = the total
+  for the 7 days before, then one bar per day = that day minus the same weekday the week before (green up, red down),
+  last bar = the total for the last 7 days; the bars add up exactly. **Followers:** first bar = followers the day before
+  the 7 days, each day's bar = its new follows, last bar = followers at the end. Every bar has its number on top; the
+  biggest day is outlined amber ("biggest change"); the headline reads "18–24 Oct → 25–31 Oct: +664 (+194%)". The axis
+  starts near the smallest bar (followers) so the steps show, and says so. **Platform:** Both · Instagram · Facebook
+  (Reach: Instagram only). For new follows / reach / views, a platform without all 7 days before (Instagram before
+  27 Oct 2026) isn't compared (Followers only needs the count the day before the 7 days): "Both"
+  leaves it out and says so; picked alone it shows "no full week before yet". **Every day** — each day since the sync
+  started, Instagram vs Facebook (bars for new follows / reach / views, lines for followers).
+- A note under the chart gives the 7-day totals and the change. Facebook has no reach (Facebook line left out).
+- It follows the Kenya / Sinza / Uganda buttons: Sinza and Uganda show "not in Odoo yet" instead of a chart.
+- The choices are remembered per viewer (`fol-chart-metric`, `fol-chart-view`).
+
 ## Weekly Performance — corporate in each week (26 Oct 2026, user's call)
 
 Each Sun–Sat week's **Sales bags** = its till bags (`BAGS_SOLD_TOTAL`) **+ the corporate bags paid that week**
@@ -223,6 +240,25 @@ total (312.5 → 312) while the table rounded each client (187.5 → 188, total 
 (`.corp-scroll`, max 300 px, about the donut column's height). The column header is pinned at the top and
 shows the **totals** beside each name: Quoted · Invoiced · Paid (all paid ÷ all agreed, after WHT) · Sold.
 They stay in view while you scroll.
+
+## Forward Projections — the pace (1 Nov 2026, user's call)
+
+The projections multiply a **daily pace** by the days in the month. Which pace:
+
+- **Days 1–7 of the month (first-week pace):** one or two days — often the slowest of the month — can't set the
+  pace. Until the first week has passed (to the 7th inclusive), the pace is the **average day of days 1–7 of the
+  last 3 months** (e.g. for November: 1–7 Aug, 1–7 Sep, 1–7 Oct = 21 days): bags (`bags_sold_total.sql`), POS bag
+  revenue (`bag_revenue.sql`) and Corporate-app bags / KES (`corporate_bags.sql`), each ÷ 21.
+  Standard = POS bags/day × days in month; Forecasted = (POS + corporate) bags/day × days in month; revenue the same
+  with KES. The cards say so: "First week: pace = the average of 1–7 Aug, Sep, Oct (N bags a day); from 8 Nov it's
+  this month's own pace", and show this month's complete days so far against the same days' average
+  ("1–3 Nov: 1,400 bags vs 1,520 on average").
+- **From the 8th (normal pace):** this month's **complete days** only — sales up to yesterday ÷ days up to yesterday
+  (today is still filling in, so it's left out of both). Before 1 Nov 2026 the sales included today's part day but
+  the days didn't, which read a little high.
+- The **Sales card**, Remaining target and the rest still show every sale up to now; only the projections use the
+  pace above. The price-mix table keeps this month's mix and scales it to the projected total.
+- Pinned (archived) month → the whole month at ×1, as before.
 
 ## Forward Projections — revenue (21 Oct 2026, user's call)
 

@@ -276,22 +276,80 @@ total_value = (bag_rev["single_kes"] + bag_rev["combo_kes"] + bag_rev["gift_kes"
 perfect_weeks = count_complete_weeks_in_month()
 
 
+# ── PACE (docs/current-performance.md › Forward Projections — the pace) ──
+# Days 1–7: the average day of days 1–7 of the last 3 months (one slow first day can't set the pace).
+# From the 8th: this month's complete days only (sales up to yesterday ÷ days up to yesterday).
+def _range_totals(s, e):
+    """{bags, kes, corpBags, corpKes} for s..e — POS bags (bags_sold_total), POS bag revenue (bag_revenue),
+    Corporate-app bags / KES paid (corporate_bags). None if Postgres is down."""
+    try:
+        from lib import db, queries
+        p = {"start_date": s.isoformat(), "end_date": e.isoformat()}
+        b = db.run_query(queries.BAGS_SOLD_TOTAL, dict(p, excluded=queries.excluded_products()))
+        r = _bag_revenue_range(s, e)
+        c = db.run_query(queries.CORPORATE_BAGS, p)
+        if b is None or r is None:
+            return None
+        cb = c.iloc[0] if c is not None and not c.empty else {}
+        return {"bags": float(b.iloc[0]["bags"] or 0),
+                "kes": r["single_kes"] + r["combo_kes"] + r["gift_kes"] + r["discount_kes"],
+                "corpBags": float(cb.get("bags") or 0), "corpKes": float(cb.get("kes") or 0)}
+    except Exception as _e:                                  # noqa: BLE001
+        print(f"  WARNING: pace totals {s}–{e} skipped: {_e}")
+        return None
+
+
+pace = None                       # {"mode", per-day bags / kes / corp, note…}; None → the old sales × velocity
+if sales_is_live and not report_month.is_pinned():
+    _today = report_month.live_anchor()
+    _ms = _today.replace(day=1)
+    _done = (_today - _ms).days                              # complete days so far (0 on the 1st)
+    _sofar = _range_totals(_ms, _today - timedelta(days=1)) if _done else {"bags": 0, "kes": 0, "corpBags": 0, "corpKes": 0}
+    if _today.day <= 7:
+        _hist, _same, _mon = [], [], []
+        _m = _ms
+        for _ in range(3):
+            _m = (_m - timedelta(days=1)).replace(day=1)       # 1st of each of the 3 months before
+            _t = _range_totals(_m, _m + timedelta(days=6))
+            _s = _range_totals(_m, _m + timedelta(days=_done - 1)) if _done else None
+            if _t:
+                _hist.append(_t)
+                _mon.append(_m.strftime("%b"))
+            if _s:
+                _same.append(_s)
+        if len(_hist) == 3 and _sofar is not None:
+            _avg = {k: sum(h[k] for h in _hist) / 21 for k in ("bags", "kes", "corpBags", "corpKes")}
+            pace = dict(_avg, mode="week1", months=list(reversed(_mon)), done=_done, soFar=_sofar,
+                        sameDays=(sum(x["bags"] for x in _same) / len(_same)) if _same else None,
+                        switchOn=f"{(_ms + timedelta(days=7)).day} {_ms:%b}")
+    elif _done and _sofar is not None:
+        pace = {k: _sofar[k] / _done for k in ("bags", "kes", "corpBags", "corpKes")}
+        pace.update(mode="normal", done=_done, soFar=_sofar)
+if pace:
+    print(f"  Pace ({pace['mode']})      : {pace['bags']:.0f} bags/day, KES {pace['kes']:,.0f}/day"
+          + (f" — avg of 1–7 {', '.join(pace['months'])}" if pace['mode'] == 'week1' else f" over {pace['done']} complete days"))
+
+
 # ── CALCULATIONS ──────────────────────────────────────────────
 
 # 1. Standard Projection
 #    Step 1: total_sales × (days_in_month ÷ current_day)  → projected end-of-month bags
 #    Step 2: ÷ total_target × 100                         → as % of target
-standard_projection_pct = (total_sales * velocity_factor) / total_target * 100
+standard_projection_pct = ((pace["bags"] * days_in_month) if pace else (total_sales * velocity_factor)) / total_target * 100
 
 # 2. Forecasted Projection
 #    Step 1: (total_sales + corporate_bags) × (days_in_month ÷ current_day)
 #    Step 2: ÷ total_target × 100                         → as % of target
-forecasted_projection_pct = ((total_sales + corporate_bags) * velocity_factor) / total_target * 100
+forecasted_projection_pct = (((pace["bags"] + pace["corpBags"]) * days_in_month) if pace
+                             else ((total_sales + corporate_bags) * velocity_factor)) / total_target * 100
 
 # 2b. Projected revenue (KES) — same pace as the bags projections, so the two read together.
 #     Standard = POS revenue × velocity; Forecasted = (POS revenue + corporate KES) × velocity.
 #     None when there's no live month figure (the cards then leave the revenue line off).
-if total_value is not None:
+if pace:
+    standard_revenue   = pace["kes"] * days_in_month
+    forecasted_revenue = (pace["kes"] + pace["corpKes"]) * days_in_month
+elif total_value is not None:
     standard_revenue   = total_value * velocity_factor
     forecasted_revenue = (total_value + corporate_kes) * velocity_factor
 else:
@@ -305,7 +363,8 @@ forecasted_revenue_pct = (forecasted_revenue / revenue_target * 100) if forecast
 #     see what lifts or drags the average.
 price_mix = None
 if bag_rev and bag_rev["bags"] and revenue_target and total_target:
-    vel        = velocity_factor
+    # this month's mix, scaled to the projected bags (the pace above), so the table lands on the cards' total
+    vel        = (pace["bags"] * days_in_month / bag_rev["bags"]) if pace else velocity_factor
     target_ppb = revenue_target / total_target          # the bag target has no gift bags in it
     main_bags  = bag_rev["single_bags"] + bag_rev["combo_bags"]
     main_kes   = bag_rev["single_kes"] + bag_rev["combo_kes"] + bag_rev["discount_kes"]
@@ -728,6 +787,7 @@ inline_script = (
     f'  daysInMonth:              {days_in_month},\n'
     f'  projMonth:                "{proj_month}",\n'
     f'  velocityFactor:           "{velocity_factor:.2f}x",\n'
+    f'  pace:                     {json.dumps(pace)},\n'
     f'  totalTarget:              "{fmt_int(total_target)}",\n'
     f'  totalSales:               "{fmt_int(total_sales)}",\n'
     f'  standardProjection:       "{fmt_pct(standard_projection_pct)}",\n'
