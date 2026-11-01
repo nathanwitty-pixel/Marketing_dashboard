@@ -12,13 +12,14 @@ Built for **Nyeri** (Oct 2026); the next launch only needs a new config.
 ## Config
 
 ```json
-{"shop": "Nyeri", "till": "NYERI", "stockCode": "NYERI",
+{"shop": "Nyeri", "till": "NYERI", "stockCode": "NYERI", "transitLocation": "FINWH/Goods in Transit/NYERI",
  "workplanSheet": "17CQvuuvNUhNBp4LUImdxJ6pGeTmAC-D1Ediei9v0Yjs", "workplanCsv": "nyeri_workplan.csv",
  "benchmark": {"shop": "Rongai", "till": "RONGAI"}, "days": 28}
 ```
 
 - `till`: the Odoo POS till (`pos_config.name`). `stockCode`: its stock location's top code
-  (`NYERI/Stock` → `NYERI`). `days`: how many launch days the race chart and benchmark cover.
+  (`NYERI/Stock` → `NYERI`). `transitLocation`: where the warehouse parks stock on its way to the shop
+  (default `FINWH/Goods in Transit/{stockCode}`). `days`: how many launch days the race chart and benchmark cover.
 - **Opening stock = the workplan sheet** ("NYERI WORKPLAN": bag type, colour, quantity, with a TOTAL row per
   bag). It's read live with the dashboard's Google service account. If the sheet can't be read (not shared
   with `marketing-and-predictive-sales@steadfast-sign-498718-d9.iam.gserviceaccount.com`), the page falls back
@@ -47,21 +48,55 @@ follows the bag type in the name ("ACE BLACK TT" → BLACK TT). Lines that match
 1. **Status line:** Day N since the first sale on {date} (or "Not open yet"), the opening-stock source
    (live sheet / saved copy), and when it was built.
 2. **KPI cards:** bags sold · revenue · **sell-through** (sold ÷ opening stock) · bags per day vs Rongai's
-   first N days · stock left (live Odoo on-hand at `stockCode`; until stock lands there, opening − sold).
+   first N days · at shop · in transit · not sent yet (see below).
 3. **Race vs Rongai:** cumulative bags by launch day, Nyeri vs Rongai's first `days` days (Rongai day 1 =
    22 Apr 2026). The gap on today's day number reads "ahead / behind Rongai by N bags".
-4. **Per-bag table** (every stocked bag type, plus any bag sold that wasn't in the workplan): opening stock,
-   sold, sell-through %, stock left, Kenya posts this month and last week, and a **marketing verdict**:
+4. **Per-bag table** (every stocked bag type, plus any bag sold that wasn't in the workplan): price, opening
+   stock, not sent, in transit, at shop, where now, sold, sell-through %, Kenya posts this month and last week, and a **marketing verdict**:
    - **Posted & selling:** posted this month and sold here.
    - **Posted, not selling:** posted but 0 sold here; check display and pricing.
    - **Selling without posts:** sold here with no Kenya posts this month; a candidate to post.
    - **Not posted, not selling:** neither.
-   Each bag opens to its colours (opening, sold, left). Sorted by sold, then opening stock.
+   Each bag opens to its colours (opening, not sent, in transit with its sent date, at shop with its arrival
+   date, sold). Sorted by sold, then opening stock.
    **Total row (26 Oct 2026, user's call):** at the foot of the table, the bags listed (it follows the filter and the
-   search): opening, sold, sell-through (sold ÷ opening), left, posts this month and last week, and how many of the
+   search): opening, not sent, in transit, at shop, sold, sell-through (sold ÷ opening), posts this month and last week, and how many of the
    listed bags were posted this month.
+   **Export (30 Oct 2026, user's call):** two buttons above the table download a CSV (opens in Excel) of the
+   bags listed, so they follow the status filter, the marketing filter and the search:
+   - **Export bags:** one row per bag: bag, in workplan, price, opening, not sent, in transit, at shop, where now,
+     sent on, at shop since, sold, sell-through %, revenue, value of opening / at shop / in transit / not sent at
+     the price, posts this month, posts last week, marketing.
+   - **Export by colour:** one row per bag × colour: bag, colour, price, opening, not sent, in transit, sent on,
+     at shop, at shop since, sold.
+   File name: `{shop}_opening_stock_{date}.csv` / `{shop}_opening_stock_by_colour_{date}.csv`.
 5. **Marketing panel:** how many stocked bags were posted this month (Kenya), and the average sell-through of
    posted vs unposted bags at this shop.
+
+## Where the stock is (30 Oct 2026, user's call)
+
+Every bag in the opening stock is tracked from the warehouse to the shop, per bag and colour, live from Odoo:
+
+- **At shop** = on-hand at `stockCode` (e.g. everything under `NYERI/`).
+- **In transit** = on-hand at `transitLocation` (sent by the warehouse, not yet received at the shop).
+- **Not sent** = opening − sold − at shop − in transit (never below 0).
+- **Sent on:** the dates of the warehouse moves into transit that haven't been received yet (moves out of
+  transit are taken off the oldest send first).
+- **At shop since:** the date of the last move that brought that bag into the shop (from transit or straight
+  from CBD; customer returns don't count). A bag is **all at shop** when nothing is in transit or unsent.
+- Each bag gets a **Where now** status: **All at shop** (since {date}), **Part at shop** (some still in
+  transit or unsent), **In transit** (sent {date}, N days ago), **Not sent**. Filter buttons pick a status.
+- KPI cards **At shop**, **In transit** (oldest send still on the road) and **Not sent yet**, each in bags and KES
+  at the price below. They replace the old "Stock left" card; the table's "Left" column is now "At shop".
+- **Stock sent that isn't in the workplan** (extra bags the warehouse added) is listed as its own row, marked
+  "not in workplan", so the at-shop and in-transit totals match Odoo. Bag types for these come from the price
+  list's names too.
+
+## Prices (30 Oct 2026, user's call)
+
+Each bag's price is the dashboard's own full price: `offers_prices.json` (`price`, the list Offer Picking uses),
+else `bag_original_prices.json`. The table shows it per bag, and the stock cards value bags at it
+(opening stock value, value at shop / in transit / not sent). Revenue stays the till's real takings.
 
 ## Marketing posts
 

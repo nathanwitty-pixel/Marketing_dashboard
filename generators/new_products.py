@@ -970,6 +970,27 @@ except Exception as _err:                                     # noqa: BLE001 —
     shop_sales_data = {}
 
 
+# ── WHY DID WE MOVE? (new products only — docs/new-products.md › Why did we move?) ──
+# Current Performance's waterfall (lib/why_moved.py) counting only the new-product bags: same weeks,
+# regions, Corporate app and bulk rule. A product counts when its name is a listed bag or starts with
+# one ("LAFEMME PINK (E'CLAT)" → LAFEMME), the Sales by Shop rule.
+try:
+    from lib import why_moved as _wm
+    _np_match_order = sorted({str(p["name"]).upper().strip() for p in product_targets}, key=len, reverse=True)
+
+    def _is_np(u):
+        return any(u == x or u.startswith(x + " ") or u.startswith(x + "-") for x in _np_match_order)
+
+    np_why_moved = _wm.build(_is_np) if _np_match_order else None
+    if np_why_moved and np_why_moved.get("weeks"):
+        _w = np_why_moved["weeks"]
+        print(f"  Why did we move (NP) : {len(_w)} weeks, latest {_w[-1]['label']} "
+              f"{sum(r[2] for r in _w[-1]['rows'])} bags")
+except Exception as _err:                                     # noqa: BLE001 — the waterfall just hides
+    print(f"  Why did we move (NP) unavailable ({_err})")
+    np_why_moved = None
+
+
 # ── RUNWAY BAGS (bag types first created in Odoo in the last 30 days — docs/new-products.md › Runway bags) ──
 try:
     from lib import runway_bags
@@ -1031,6 +1052,7 @@ inline_script = (
     f'  oos:          {json.dumps(np_oos, ensure_ascii=False, separators=(",", ":"))},\n'
     f'  shopSales:    {json.dumps(shop_sales_data, ensure_ascii=False, separators=(",", ":"))},\n'
     f'  runway:       {json.dumps(np_runway, ensure_ascii=False, separators=(",", ":"))},\n'
+    f'  whyMoved:     {json.dumps(np_why_moved, ensure_ascii=False, separators=(",", ":"))},\n'
     f'  custom:       {json.dumps(NP_CUSTOM_BLOCK, ensure_ascii=False)}\n'
     "};\n"
     "</script>\n"

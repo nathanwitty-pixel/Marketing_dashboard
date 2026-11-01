@@ -110,6 +110,10 @@ Toggle **Week on week / Month on month** (`#wm-period`, remembered in `localStor
   **Region tooltip shows the scaling** (30 Oct 2026): when the two weeks have different days, the hover adds
   "2,074 in 7 days = 1,481 for 5 days, so 908 is −572" and lists each shop as *(earlier week scaled → now)*,
   so the figures subtract on sight; the rest of the raw gap sits in the Selling days bar.
+- **Shared code** (30 Oct 2026): the data is built by `lib/why_moved.build()` (moved out of
+  forward_projections.py; `why_moved()` there just calls it) and the chart is `assets/why_moved.js`
+  (`WhyMoved.init(PROJ.whyMoved, …)`), so New Products draws the same waterfall for its bags. The
+  y-axis now stretches to the best-week lines, so a best week above every bar still shows its line.
 - **The reason** (amber box) = the biggest bar in the direction of the total move. The line under the chart names
   its top shops; the tooltip lists every shop's change in that region.
 - The y axis starts below the lowest level (stated in the sub-line), so small moves stay visible.

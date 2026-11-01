@@ -1,8 +1,9 @@
 {
-  "_help": "Shop Launch menu (docs/shop-launch.md). shop = display name, till = Odoo pos_config name, stockCode = its stock location top code, workplanSheet = the opening-stock Google Sheet, workplanCsv = saved copy used when the sheet can't be read, benchmark = the earlier launch to race against, days = launch days covered.",
+  "_help": "Shop Launch menu (docs/shop-launch.md). shop = display name, till = Odoo pos_config name, stockCode = its stock location top code, transitLocation = where the warehouse parks its stock on the way (Odoo Goods in Transit), workplanSheet = the opening-stock Google Sheet, workplanCsv = saved copy used when the sheet can't be read, benchmark = the earlier launch to race against, days = launch days covered.",
   "shop": "Nyeri",
   "till": "NYERI",
   "stockCode": "NYERI",
+  "transitLocation": "FINWH/Goods in Transit/NYERI",
   "workplanSheet": "17CQvuuvNUhNBp4LUImdxJ6pGeTmAC-D1Ediei9v0Yjs",
   "workplanCsv": "nyeri_workplan.csv",
   "benchmark": {"shop": "Rongai", "till": "RONGAI"},

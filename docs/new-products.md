@@ -162,12 +162,27 @@ keeps its hover popover (deficit, monthly target + product list, Kenya/Outside s
 posts & stock, weekly sales & restock). No sparklines on the tiles. The **Weekly Sales vs
 Marketing Posts** sub-header now heads the Weekly Performance chart section below, not the cards.
 
-## Weekly Performance chart (Week 1 → latest)
+## Why did we move? — new products (30 Oct 2026, user's call)
 
-In the **Weekly Sales vs Marketing Posts** subsection, a Current-Performance-style chart +
-table (mirrors the [Current Performance](current-performance.md) weekly panel). Chart: each
-week's **Weekly Sales % of the weekly target** as an amber line with value labels, **this
-month only** (no last-month dashed line). Table columns: Week · Sales % Achieved · Sales Bags
+The **Weekly Performance % chart is replaced** by Current Performance's *Why did we move?*
+waterfall, counting **only the new-product bags** (data/new_products.txt): pick any two weeks of
+last month and this month (+ the current week so far), or Month on month; bars = the earlier
+week → **Selling days** → one bar per region → the later week; the **reason** box; **With / Without
+bulk orders**; dashed best-week lines (★ Best Sep amber, ★ Best Oct cyan); region hover lists the
+shops (earlier week scaled to the later week's days). Same code as Current Performance:
+`lib/why_moved.build(match)` with the new-product match (a product counts when its name is a listed
+bag or starts with one — the Sales by Shop rule) → `NP.whyMoved`; drawn by `assets/why_moved.js`
+(choices remembered under `np-wm-*`). Counting = the Sales card's (`sql/bags_sold_by_shop_product.sql`
+= bags_sold_by_shop.sql per product, bulk judged on the whole order; Corporate app bags of the
+listed products from `corporate_bag_lines.sql`). Weeks use Current Performance's labels (Wk 1 Oct =
+1–3 Oct), not this page's perfect-week labels. Last full week 18–24 Oct = 62 bags, the same as the
+old *last week* figure.
+
+## Weekly Performance table (Week 1 → latest)
+
+In the **Weekly Sales vs Marketing Posts** subsection, under the waterfall, the
+table (mirrors the [Current Performance](current-performance.md) weekly panel). (Its % of weekly target
+chart was removed for the waterfall above.) Table columns: Week · Sales % Achieved · Sales Bags
 (▲ green if it cleared the weekly floor, red if short) · Target to Beat (`weeklyTarget`) ·
 Declined By (`weeklyTotal − weeklyTarget`) · **Kenya Posts · Outside Posts** (the marketing
 effort behind each week). Fed by `NP.weeklyPostsHistory` **filtered to the current month by

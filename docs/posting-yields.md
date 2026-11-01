@@ -9,7 +9,7 @@
 **Each section's controls follow the reader** (19 Oct 2026): the header row with Segment, Period, Group and Sort of Marketing & Sales Alignment, Dead stock and the region cards pins at the top while that section is on screen, for Kenya, Sinza and Uganda (`assets/sticky_controls.js`, docs/sticky-controls.md).
 
 
-**Sidebar** ([page sidebar](README.md#page-sidebar)) — **Regions** picker (Kenya · Sinza · Uganda) replaces the three in-page tab rows (hidden; one click switches all of them), then the region's headline cards and its Accuracy / Dead Stock groups with folding sub-items.
+**Sidebar** ([page sidebar](README.md#page-sidebar)) — **Regions** picker (Kenya · Sinza · Uganda) replaces the three in-page tab rows (hidden; one click switches all of them), then the region's headline cards and its Dead Stock group with folding sub-items.
 
 How well marketing's **posting** lines up with actual **sales**, per region (Kenya /
 Sinza / Uganda), with a weekly/monthly toggle.
@@ -56,7 +56,15 @@ Sinza / Uganda), with a weekly/monthly toggle.
 3. **Marketing Alignment with Clearing Dead Stock** — a gauge (reframed from the old
    dead-stock donut) showing how aligned marketing is with clearing dead stock.
 4. **Visibility carry-over** — will last week's posts still be relevant this week, given
-   live stock (`_post_relevance`).
+   live stock (`_post_relevance`). Its card sat in the Accuracy section, so it went with it (30 Oct 2026).
+
+**Accuracy of Marketing Posting — removed (30 Oct 2026, user's call), on Kenya, Sinza and Uganda.**
+The whole section is gone: the *Actual vs Expected Sales — Top Posted Bags* chart, the *Marketing
+Visibility vs Target* chart, and its cards (Bags in-stock & posted, Total posts weekly/monthly,
+Visibility weekly/monthly, Target for visibility weekly/monthly, Last week's posts still relevant;
+Sinza/Uganda's four cards and Uganda's accuracy table), with the page code that drew them
+(`renderAccChart`, `visBullet`/`visRegion`, `renderS3`/`renderSZ3`/`renderUG3`). The generator still
+injects `accuracyBags`, `postRelevance` and the s3 figures into `PA`; nothing on the page reads them.
 5. Header `<th title=…>` tooltips explain Alignment, Dead-stock effort, Sold · no
    marketing, Not sold · untouched.
 
