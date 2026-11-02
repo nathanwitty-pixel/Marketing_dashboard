@@ -1087,6 +1087,65 @@ cp_strip   = ladder_strip(achieved, f"Recover ~<b>{fmt(weekly_short/2)}/wk</b> t
 np_strip   = ladder_strip(_np_pct,  f"New products at <b>{pct(_np_pct)}</b> of target — {fmt(np_deficit)} bags to go; push the launched lines with posting.")
 post_strip = ladder_strip(ke_mo_mkt, f"Lift every region toward the best posting yield ({_best_name} <b>{pct(_best_val)}</b>), and post the {pct(unposted_pct)} still unmarketed.")
 
+# ── 6 · Growth rate / 7 · Month-on-month tracking (docs/monthly-report.md) ──
+def _growth_tracking():
+    """data/growth_tracking.json + the report month: live (so far + projected + this month's tracking row) while it
+    runs; written into the file when the month is archived."""
+    _gp = paths.data("growth_tracking.json")
+    try:
+        _gt = json.load(open(_gp, encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    _mi = _fin_num - 1
+    # this month's tracking row from Product Performance's "This month" (same tills; total = the report's sales)
+    _row = None
+    try:
+        _pp = json.loads(re.search(r"const PP = (\{.*?\});\n", open(paths.html("product_performance.html"), encoding="utf-8").read(), re.S).group(1))
+        _mo = _pp["periods"]["monthly"]
+        if str(_mo["cur"][0]) == datetime.date(year, _fin_num, 1).isoformat():
+            from collections import Counter as _C
+            bag, col, cat, prod = _C(), _C(), _C(), _C()
+            for b, c, _m, u, *_r in _mo["rows"]:
+                shade = _r[3] if len(_r) > 3 else c
+                if "GIFT BAG" in str(b).upper():
+                    continue
+                bag[b] += u; col[c] += u; prod[f"{b} {shade}".strip()] += u
+                cat[(_pp.get("info", {}).get(b) or {}).get("cat", "OTHER")] += u
+            shops = (((_pp.get("shops") or {}).get("monthly") or {}).get("ALL") or {}).get("shops") or []
+            top = max(shops, key=lambda s: s.get("units", 0)) if shops else {}
+            if bag:
+                bt = bag.most_common(1)[0]
+                _row = {"month": month, "total": int(total_sales), "shop": str(top.get("shop", "")).upper(),
+                        "shopSales": int(top.get("units", 0)), "colour": str(col.most_common(1)[0][0]).upper(),
+                        "category": str(cat.most_common(1)[0][0]).upper(), "bagType": str(bt[0]).upper(),
+                        "bagTypeSales": int(bt[1]), "product": str(prod.most_common(1)[0][0]).upper()}
+    except Exception as _ex:                                         # noqa: BLE001
+        print(f"  Growth tracking: this month's row skipped ({_ex})")
+    ys = (_gt.get("growth") or {}).setdefault(str(year), [None] * 12)
+    if report_month.is_pinned():                                     # archiving: keep the month's final figures
+        changed = False
+        if ys[_mi] is None:
+            ys[_mi] = int(total_sales); changed = True
+        tr = _gt.get("tracking") or {}
+        if _row and str(tr.get("year")) == str(year) and not any(r.get("month") == month for r in tr.get("months", [])):
+            tr["months"].append(_row); changed = True
+        if changed:
+            json.dump(_gt, open(_gp, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+            print(f"  Growth tracking: {month} {year} saved to growth_tracking.json")
+        return _gt
+    if _in_progress and ys[_mi] is None:
+        try:
+            _proj = round(float(str(forecast).rstrip("%")) * total_target / 100) if forecast and total_target else None
+        except ValueError:
+            _proj = None
+        import calendar as _calg
+        _gt["live"] = {"month": month, "year": year, "soFar": int(total_sales), "projected": _proj,
+                       "day": datetime.date.today().day, "days": _calg.monthrange(year, _fin_num)[1], "row": _row}
+    return _gt
+
+
+_gt_json = json.dumps(_growth_tracking(), ensure_ascii=False).replace("</", "<\\/")
+
 body = f"""
   <div class="rpt-head">
     <span class="rpt-pill">Monthly Report</span>
@@ -1225,6 +1284,11 @@ body = f"""
     {post_strip}
   </div>
 {remaining_section}
+  <!-- 6 · Growth Rate + 7 · Month-on-Month Tracking (docs/monthly-report.md › Growth rate & month-on-month tracking) -->
+  <div id="gt-sections"></div>
+  <script>const GTM = {_gt_json};</script>
+  <script src="../assets/growth_tracking.js"></script>
+  <script>if (window.GrowthTracking) GrowthTracking.render(document.getElementById('gt-sections'), GTM, {{month: {json.dumps(month)}, year: {year}, num1: '6', num2: '7'}});</script>
   <div class="foot">Denri Africa · Marketing Analytics — {month} {year} report. Figures from the live dashboards (Current Performance, New Products, Offer Type Analysis, Posting Yields).</div>
 
 </div>

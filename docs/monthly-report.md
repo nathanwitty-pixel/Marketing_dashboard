@@ -63,6 +63,20 @@ runs **after** them:
   archived.
 - A **finalized** month is static — its report HTML is frozen and never regenerated.
 
+## Growth rate & month-on-month tracking (2 Nov 2026, user's call)
+
+Sections **6 · Growth Rate — Monthly & Annual** and **7 · Month-on-Month Tracking**, the same as History's 10 / 11
+(`assets/growth_tracking.js`, data `data/growth_tracking.json`), but **tracking the current month**:
+- The month in progress is **live**: its sales so far (tills + corporate, the report's figure), the projected month end
+  (Forecasted Projection % × target), and its tracking row worked out from this month's sales (Product Performance's
+  "This month": best shop by bags, best colour family, best category, best bag type and its bags, best product =
+  bag + exact colour). It shows in both tables marked "so far" (growth on the projected total, marked "projected"),
+  with a note above the chart; it stays off the waterfalls until the month closes (a part month isn't a fair bar).
+- **Annual / Monthly** buttons as in History; complete months only on the bars.
+- **When a month is archived** (`month_end.py` pins it), its final sales and tracking row are written into
+  `data/growth_tracking.json` (only if that month isn't already there — the user's own figures win), so History and
+  next month's report carry it.
+
 ## Sales = tills + corporate (1 Nov 2026, user's call)
 
 The report's sales figure — the bottom line, % of target, bags missing, the Sales vs Target donut and what's stored

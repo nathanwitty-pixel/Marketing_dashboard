@@ -190,6 +190,17 @@ def inject(payload):
         # with the markers, so this only guards a hand-edited file.
         print("  history.html is missing the data markers — not modified.")
         return
+    # 10 · Growth rate / 11 · Month-on-month tracking — the user's figures (docs/reporting-history.md)
+    try:
+        with open(paths.data("growth_tracking.json"), encoding="utf-8") as f:
+            gt = json.load(f)
+    except (OSError, ValueError):
+        gt = None
+    gblock = ("<!-- GROWTH_DATA_START -->\n<script>const GT = "
+              + json.dumps(gt, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+              + ";</script>\n<!-- GROWTH_DATA_END -->")
+    if "<!-- GROWTH_DATA_START -->" in html:
+        html = re.sub(r"<!-- GROWTH_DATA_START -->.*?<!-- GROWTH_DATA_END -->", lambda _m: gblock, html, flags=re.DOTALL)
     with open(HTML, "w", encoding="utf-8") as f:
         f.write(html)
 

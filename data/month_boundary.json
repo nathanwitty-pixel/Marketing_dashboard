@@ -1,6 +1,6 @@
 {
   "last_run": {
-    "date": "2026-11-01",
+    "date": "2026-11-02",
     "week_start": "2026-11-01",
     "weekly_sales_total": 147
   },
@@ -10,9 +10,5 @@
     "final_weekly_sales": 2193,
     "recorded_on": "2026-10-30"
   },
-  "straddle_anchor": {
-    "week_total": 147,
-    "data_date": "2026-10-31",
-    "prev_month_weekly": 2193
-  }
+  "straddle_anchor": {}
 }

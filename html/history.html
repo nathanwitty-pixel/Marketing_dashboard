@@ -155,7 +155,7 @@
 <script id="history-data" type="application/json">
 {
 "source": "Supabase",
-"generatedOn": "2026-11-01",
+"generatedOn": "2026-11-02",
 "months": [
 {
 "key": "2026-10",
@@ -38665,6 +38665,9 @@
 }
 </script>
 <!-- HISTORY_DATA_END -->
+<!-- GROWTH_DATA_START -->
+<script>const GT = {"_note":"History › 10 Growth rate and 11 Month-on-month tracking (docs/reporting-history.md). The user's own figures (pasted 2 Nov 2026) — add each new month's row here; history.py injects this file into history.html.","growth":{"2024":[9982,12365,12406,11955,14020,11205,15684,16430,12224,15449,19284,19148],"2025":[12826,15361,14811,16281,17186,13728,15769,17294,15760,15970,25156,24126],"2026":[14754,16977,17061,15443,16642,14921,16994,17586,16176,17022,null,null]},"tracking":{"year":2026,"months":[{"month":"January","total":14219,"shop":"HILTON","shopSales":3926,"colour":"BLACK","category":"BACKPACK","bagType":"CODE 3","bagTypeSales":1320,"product":"CODE 3 BLACK"},{"month":"February","total":15875,"shop":"HILTON","shopSales":3851,"colour":"BLACK","category":"BACKPACK","bagType":"MAN BAG","bagTypeSales":1258,"product":"MAN BAG BLACK"},{"month":"March","total":16597,"shop":"HILTON","shopSales":4199,"colour":"BLACK","category":"BACKPACK","bagType":"CODE 3","bagTypeSales":1160,"product":"FABELA GREY"},{"month":"April","total":15085,"shop":"HILTON","shopSales":3441,"colour":"BLACK","category":"BACKPACK","bagType":"JUMBO","bagTypeSales":1254,"product":"JUMBO BLACK"},{"month":"May","total":16134,"shop":"HILTON","shopSales":4793,"colour":"BLACK","category":"BACKPACK","bagType":"ANTITHEFT","bagTypeSales":1149,"product":"ANTITHEFT BLACK"},{"month":"June","total":14186,"shop":"HILTON","shopSales":3352,"colour":"BLACK","category":"BACKPACK","bagType":"ANTITHEFT","bagTypeSales":814,"product":"ANTITHEFT BLACK"},{"month":"July","total":16680,"shop":"HILTON","shopSales":4090,"colour":"BLACK","category":"BACKPACK","bagType":"JUMBO","bagTypeSales":1313,"product":"ANTITHEFT BLACK"},{"month":"August","total":17429,"shop":"HILTON","shopSales":3908,"colour":"BLACK","category":"BACKPACK","bagType":"JUMBO","bagTypeSales":1338,"product":"JUMBO BLACK"},{"month":"September","total":16117,"shop":"HILTON","shopSales":3569,"colour":"BLACK","category":"BACKPACK","bagType":"ANTITHEFT","bagTypeSales":1328,"product":"ANTITHEFT BLACK"},{"month":"October","total":16130,"shop":"HILTON","shopSales":3993,"colour":"BLACK","category":"TRAVEL","bagType":"JUMBO","bagTypeSales":1103,"product":"FABELA GREY"}]}};</script>
+<!-- GROWTH_DATA_END -->
 
 <script>
 /* ── Palette (matches theme.py) ──────────────────────────── */
@@ -38880,7 +38883,10 @@ function render(idx){
     + shopCorpHtml(m)
 
     /* 9 · Product Performance — the page's Last-month view (extras.productPerformance) */
-    + ppHtml(m);
+    + ppHtml(m)
+
+    /* 10 · Growth rate + 11 · Month-on-month tracking — the user's figures (GT, data/growth_tracking.json) */
+    + growthHtml(m) + trackingHtml(m);
 
   document.getElementById('report').innerHTML = html;
   buildCharts(m, wk, prevM);
@@ -39278,6 +39284,200 @@ function ppHtml(m){
     + '</div>';
 }
 
+/* 10 · Growth rate — 2024 / 2025 / 2026 per month, monthly + annual growth (GT.growth) */
+var GT_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function gtGrowth(){
+  var g = (typeof GT !== 'undefined' && GT && GT.growth) || null; if (!g) return null;
+  var years = Object.keys(g).sort(), ly = years[years.length - 1], py = years[years.length - 2];
+  var mom = [], yoy = [];
+  for (var i = 0; i < 12; i++) {
+    var v = g[ly][i], before = i ? g[ly][i - 1] : (py ? g[py][11] : null), last = py ? g[py][i] : null;
+    mom.push(v != null && before ? (v - before) / before * 100 : null);
+    yoy.push(v != null && last ? (v - last) / last * 100 : null);
+  }
+  return { g: g, years: years, ly: ly, py: py, mom: mom, yoy: yoy };
+}
+function growthHtml(m){
+  var G = gtGrowth(); if (!G) return '';
+  var mi = GT_MONTHS.indexOf(m.month), sel = String(m.year) === G.ly ? mi : -1;
+  var sg = function(v){ return v == null ? '<span style="color:#475569">—</span>' : '<b style="color:'+(v>=0?'#34d399':'#f87171')+'">'+(v>=0?'+':'')+v.toFixed(2)+'%</b>'; };
+  var tot = function(y){ return G.g[y].reduce(function(t, v){ return t + (v || 0); }, 0); };
+  var rows = GT_MONTHS.map(function(nm, i){
+    var r = [ (i === sel ? '<b style="color:#fbbf24">▶ ' : '') + nm.slice(0, 3).toUpperCase() + (i === sel ? '</b>' : '') ]
+      .concat(G.years.map(function(y){ return G.g[y][i] == null ? '<span style="color:#475569">—</span>' : nf(G.g[y][i]); }), [sg(G.mom[i]), sg(G.yoy[i])]);
+    return r;
+  });
+  rows.push(['<b>TOTALS</b>'].concat(G.years.map(function(y){ return '<b>'+nf(tot(y))+'</b>'; }), ['', '']));
+  var note = '';
+  if (sel >= 0 && G.g[G.ly][sel] != null) {
+    var v = G.g[G.ly][sel], b = sel ? G.g[G.ly][sel - 1] : (G.py ? G.g[G.py][11] : null), l = G.py ? G.g[G.py][sel] : null;
+    var line = function(lbl, p, d){ return p == null ? '' : '<div>'+lbl+': '+sg(p)+' <span style="color:#94a3b8">('+(d>=0?'up':'down')+' by <b style="color:#e2e8f0">'+nf(Math.abs(d))+' bags</b>)</span></div>'; };
+    note = '<div style="display:flex;gap:2rem;flex-wrap:wrap;justify-content:center;font-size:0.86rem;margin:0.4rem 0 0.8rem">'
+      + line('Monthly improvement (' + m.month + ' vs ' + (sel ? GT_MONTHS[sel - 1] : 'December ' + G.py) + ')', G.mom[sel], b != null ? v - b : 0)
+      + line('Annual improvement (' + m.month + ' ' + G.ly + ' vs ' + G.py + ')', G.yoy[sel], l != null ? v - l : 0) + '</div>';
+  }
+  return '<div class="sec"><div class="sec-head"><div class="sec-num" style="background:#22c55e">10</div><h2>Growth Rate — Monthly &amp; Annual</h2></div>'
+    + '<div class="sec-sub">Bags sold each month, '+G.years.join(' / ')+'. <b>Monthly growth</b> = the month vs the month before; <b>annual growth</b> = the month vs the same month last year ('+G.ly+' vs '+G.py+').</div>'
+    + note
+    + '<div id="xtGrowthMode" style="display:flex;justify-content:flex-end;gap:0.3rem;margin-bottom:0.3rem">'
+    +   ['annual', 'monthly'].map(function(k){ return '<button type="button" data-g="'+k+'" onclick="gtMode(\''+k+'\')" style="font:inherit;font-size:0.7rem;font-weight:700;padding:0.25rem 0.7rem;border-radius:7px;cursor:pointer;border:1px solid #2d3148;background:transparent;color:#94a3b8">'+(k === 'annual' ? 'Annual' : 'Monthly')+'</button>'; }).join('')
+    + '</div>'
+    + '<div id="xtGrowthHead" style="text-align:center;font-size:0.92rem;font-weight:800;color:#f8fafc"></div>'
+    + '<div class="chart-wrap" style="height:300px"><canvas id="xtGrowth"></canvas></div>'
+    + xtTable([{h:'Month'}].concat(G.years.map(function(y){ return {h:y, r:1}; }), [{h:'Monthly growth', r:1}, {h:'Annual growth', r:1}]), rows)
+    + '</div>';
+}
+/* Generic waterfall like "Why did we move?": start → each step → end. cfg: {startLabel, start, items:[{label, delta, tip}],
+   endLabel, unit, head (html), mark (item index to box, or -1 = biggest step in the direction of the total), markLabel} */
+function wfChart(id, headId, cfg){
+  var el = document.getElementById(id); if (!el || !cfg.items.length) return null;
+  var items = cfg.items, run = cfg.start, bars = [[0, cfg.start]], levels = [cfg.start];
+  items.forEach(function(x){ bars.push([run, run + x.delta]); run += x.delta; levels.push(run); });
+  var end = run; bars.push([0, end]); levels.push(end);
+  var up = end >= cfg.start, mark = cfg.mark;
+  if (mark == null || mark < 0) { mark = -1;
+    items.forEach(function(x, i){ if ((up ? x.delta > 0 : x.delta < 0) && (mark < 0 || Math.abs(x.delta) > Math.abs(items[mark].delta))) mark = i; }); }
+  var lo = Math.min.apply(null, levels), hi = Math.max.apply(null, levels), span = Math.max(hi - lo, 1);
+  var stepR = Math.pow(10, Math.floor(Math.log10(span))), yMin = lo > 0.5 * hi ? Math.max(0, Math.floor((lo - span * 0.6) / stepR) * stepR) : 0;
+  var hd = document.getElementById(headId);
+  if (hd) hd.innerHTML = (cfg.head || '') + '<div style="font-size:0.72rem;font-weight:400;color:#94a3b8;margin-top:0.1rem">'
+    + nf(cfg.start) + ' → ' + nf(end) + ' ' + (cfg.unit || '') + (yMin ? '. Axis starts at ' + nf(yMin) : '') + '</div>';
+  var lbl = { id:'wfChartLabels', afterDatasetsDraw:function(ch){
+    var ctx = ch.ctx, meta = ch.getDatasetMeta(0);
+    ctx.save(); ctx.textAlign = 'center';
+    meta.data.forEach(function(e, i){
+      var top = Math.min(e.y, e.base), bottom = Math.max(e.y, e.base), isEnd = i === 0 || i === bars.length - 1;
+      var v = isEnd ? bars[i][1] : items[i - 1].delta;
+      ctx.font = '700 10px Segoe UI, system-ui, sans-serif'; ctx.textBaseline = 'bottom';
+      ctx.fillStyle = isEnd ? '#f8fafc' : (v >= 0 ? '#34d399' : '#f87171');
+      ctx.fillText(isEnd ? nf(v) : (v >= 0 ? '+' : '') + nf(v), e.x, top - 4);
+      if (mark >= 0 && i === mark + 1) {
+        var bw = e.width + 8; ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
+        ctx.strokeRect(e.x - bw / 2, top - 18, bw, bottom - top + 22);
+        ctx.fillStyle = '#f59e0b'; ctx.fillText(cfg.markLabel || 'the reason', e.x, top - 21);
+      }
+    });
+    ctx.restore();
+  } };
+  return mk(id, {
+    type:'bar',
+    data:{ labels:[cfg.startLabel].concat(items.map(function(x){ return x.label; }), [cfg.endLabel]),
+           datasets:[{ data:bars, backgroundColor:bars.map(function(b, i){ return i === 0 ? '#3b5b8a' : i === bars.length - 1 ? '#3b82f6' : (items[i - 1].delta >= 0 ? '#10b981' : '#ef4444'); }),
+                       borderRadius:3, barPercentage:0.75, categoryPercentage:0.9 }] },
+    options:{ responsive:true, maintainAspectRatio:false, layout:{ padding:{ top:30 } },
+      plugins:{ weekChange:false, legend:{ display:false },
+        tooltip:{ callbacks:{ label:function(c){ var i = c.dataIndex;
+          if (i === 0 || i === bars.length - 1) return nf(bars[i][1]) + ' ' + (cfg.unit || '');
+          var x = items[i - 1]; return [(x.delta >= 0 ? '+' : '') + nf(x.delta) + ' ' + (cfg.unit || '')].concat(x.tip || []); } } } },
+      scales:{ x:{ grid:{ display:false }, ticks:{ color:'#94a3b8', maxRotation:30, minRotation:0, autoSkip:false, font:{ size:10 } } },
+               y:{ min:yMin, grid:{ color:GRID }, ticks:{ color:'#64748b', callback:function(v){ return nf(v); } } } } },
+    plugins:[lbl]
+  });
+}
+
+function gtMode(k){
+  try { localStorage.setItem('gt-growth-mode', k); } catch (e) {}
+  if (window._gtM) buildGrowthChart(window._gtM);
+}
+function buildGrowthChart(m){
+  var G = gtGrowth(); if (!G || !document.getElementById('xtGrowth')) return;
+  window._gtM = m;
+  var mode = 'annual'; try { mode = localStorage.getItem('gt-growth-mode') || 'annual'; } catch (e) {}
+  [].forEach.call(document.querySelectorAll('#xtGrowthMode button'), function(b){ var on = b.getAttribute('data-g') === mode;
+    b.style.borderColor = on ? '#6366f1' : '#2d3148'; b.style.background = on ? 'rgba(99,102,241,0.2)' : 'transparent'; b.style.color = on ? '#e2e8f0' : '#94a3b8'; });
+  if (window._gtChart) { try { window._gtChart.destroy(); } catch (e) {} window._gtChart = null; }
+  if (mode === 'monthly') {                      // last December → each month vs the month before → the latest month
+    var ys = G.g[G.ly], months = []; for (var q = 0; q < 12; q++) if (ys[q] != null) months.push(q);
+    var startV = G.py ? G.g[G.py][11] : null, startL = 'Dec ' + G.py;
+    if (startV == null) { startV = ys[months[0]]; startL = GT_MONTHS[months[0]].slice(0, 3); months = months.slice(1); }
+    var prevV = startV, prevL = startL;
+    var steps = months.map(function(j){ var v = ys[j], st = { label: GT_MONTHS[j].slice(0, 3), delta: v - prevV,
+        tip: [nf(prevV) + ' (' + prevL + ') → ' + nf(v) + (G.mom[j] != null ? ', ' + (G.mom[j] >= 0 ? '+' : '') + G.mom[j].toFixed(2) + '%' : '')] };
+      prevV = v; prevL = GT_MONTHS[j].slice(0, 3); return st; });
+    var lastM = GT_MONTHS[months[months.length - 1]], d2 = prevV - startV;
+    window._gtChart = wfChart('xtGrowth', 'xtGrowthHead', { startLabel: startL, start: startV, items: steps, endLabel: lastM.slice(0, 3) + ' ' + G.ly, unit: 'bags',
+      head: 'Monthly growth, ' + startL + ' → ' + lastM + ' ' + G.ly + ': <span style="color:' + (d2 >= 0 ? '#34d399' : '#f87171') + '">' + (d2 >= 0 ? '+' : '') + nf(d2)
+            + ' bags (' + (d2 >= 0 ? '+' : '') + (startV ? (d2 / startV * 100).toFixed(1) : 0) + '%)</span>' });
+    return;
+  }
+  if (G.py) {                                   // waterfall: last year's months so far → each month vs last year → this year's
+    var idx = []; for (var j = 0; j < 12; j++) if (G.g[G.ly][j] != null && G.g[G.py][j] != null) idx.push(j);
+    if (idx.length) {
+      var items = idx.map(function(j){ var a = G.g[G.py][j], b = G.g[G.ly][j];
+        return { label: GT_MONTHS[j].slice(0, 3), delta: b - a, tip: [nf(a) + ' (' + G.py + ') → ' + nf(b) + ' (' + G.ly + '), ' + (G.yoy[j] >= 0 ? '+' : '') + G.yoy[j].toFixed(2) + '%'] }; })
+        .sort(function(p, q){ return q.delta - p.delta; });
+      var a0 = idx.reduce(function(t, j){ return t + G.g[G.py][j]; }, 0), a1 = idx.reduce(function(t, j){ return t + G.g[G.ly][j]; }, 0);
+      var span = GT_MONTHS[idx[0]].slice(0, 3) + '–' + GT_MONTHS[idx[idx.length - 1]].slice(0, 3), d = a1 - a0;
+      window._gtChart = wfChart('xtGrowth', 'xtGrowthHead', { startLabel: span + ' ' + G.py, start: a0, items: items, endLabel: span + ' ' + G.ly, unit: 'bags',
+        head: 'Annual growth, ' + span + ' ' + G.py + ' → ' + G.ly + ': <span style="color:' + (d >= 0 ? '#34d399' : '#f87171') + '">' + (d >= 0 ? '+' : '') + nf(d) + ' bags ('
+              + (d >= 0 ? '+' : '') + (a0 ? (d / a0 * 100).toFixed(1) : 0) + '%)</span>' });
+      return;
+    }
+  }
+  var cols = ['#64748b', '#60a5fa', '#10b981', '#a78bfa'], sel = String(m.year) === G.ly ? GT_MONTHS.indexOf(m.month) : -1;
+  mk('xtGrowth', { type:'bar',
+    data:{ labels: GT_MONTHS.map(function(x){ return x.slice(0, 3); }),
+      datasets: G.years.map(function(y, k){ return { label: y, data: G.g[y], borderRadius: 3,
+        backgroundColor: G.g[y].map(function(_, i){ return y === G.ly && i === sel ? '#fbbf24' : (cols[k] || '#94a3b8'); }) }; }) },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ weekChange:false, legend:{ position:'bottom', labels:{ boxWidth:12, color:'#94a3b8' } },
+        tooltip:{ callbacks:{ label:function(c){ return c.dataset.label + ': ' + (c.raw == null ? '—' : nf(c.raw) + ' bags'); },
+          afterBody:function(items){ var i = items[0].dataIndex, out = [];
+            if (G.mom[i] != null) out.push('Monthly growth ' + G.ly + ': ' + (G.mom[i] >= 0 ? '+' : '') + G.mom[i].toFixed(2) + '%');
+            if (G.yoy[i] != null) out.push('Annual growth ' + G.ly + ': ' + (G.yoy[i] >= 0 ? '+' : '') + G.yoy[i].toFixed(2) + '%');
+            return out; } } } },
+      scales:{ x:{ grid:{ display:false }, ticks:{ color:'#94a3b8' } }, y:{ beginAtZero:true, grid:{ color:GRID }, ticks:{ callback:function(v){ return nf(v); } } } } } });
+}
+
+/* 11 · Month-on-month tracking — best shop / colour / category / bag type / product per month (GT.tracking) */
+function trackingHtml(m){
+  var T = (typeof GT !== 'undefined' && GT && GT.tracking) || null; if (!T || !(T.months||[]).length) return '';
+  var L = T.months, ttl = function(t){ return String(t||'').toLowerCase().replace(/\b\w/g, function(c){ return c.toUpperCase(); }); };
+  var ch = function(r, i, k){ return i && L[i - 1][k] !== r[k] ? ' <span title="Changed from '+hesc(ttl(L[i - 1][k]))+'" style="color:#fbbf24;font-size:0.7rem">●</span>' : ''; };
+  var rows = L.map(function(r, i){
+    var on = String(m.year) === String(T.year) && r.month === m.month, d = i ? r.total - L[i - 1].total : null;
+    return [ (on ? '<b style="color:#fbbf24">▶ ' : '') + hesc(r.month) + (on ? '</b>' : ''),
+             nf(r.total) + (d != null ? ' <span style="font-size:0.7rem;color:'+(d>=0?'#34d399':'#f87171')+'">'+(d>=0?'+':'')+nf(d)+'</span>' : ''),
+             hesc(ttl(r.shop)) + ch(r, i, 'shop'), nf(r.shopSales), hesc(ttl(r.colour)) + ch(r, i, 'colour'), hesc(ttl(r.category)) + ch(r, i, 'category'),
+             hesc(ttl(r.bagType)) + ch(r, i, 'bagType'), nf(r.bagTypeSales), hesc(ttl(r.product)) + ch(r, i, 'product') ];
+  });
+  return '<div class="sec"><div class="sec-head"><div class="sec-num" style="background:#0ea5e9">11</div><h2>Month-on-Month Tracking — '+hesc(T.year)+'</h2></div>'
+    + '<div class="sec-sub">Each month’s total sales and its best shop, colour, category, bag type and product. '
+    +   '<span style="color:#fbbf24">●</span> = changed from the month before.</div>'
+    + '<div id="xtTrackHead" style="text-align:center;font-size:0.92rem;font-weight:800;color:#f8fafc"></div>'
+    + '<div class="chart-wrap" style="height:300px"><canvas id="xtTrack"></canvas></div>'
+    + xtTable([{h:'Month'},{h:'Total sales',r:1},{h:'Best shop'},{h:'Shop sales',r:1},{h:'Best colour'},{h:'Best category'},{h:'Best bag type'},{h:'Bag type sales',r:1},{h:'Best product'}], rows)
+    + '</div>';
+}
+function buildTrackChart(m){
+  var T = (typeof GT !== 'undefined' && GT && GT.tracking) || null; if (!T || !document.getElementById('xtTrack')) return;
+  var L = T.months, sel = String(m.year) === String(T.year) ? L.map(function(r){ return r.month; }).indexOf(m.month) : -1;
+  if (L.length >= 2) {                          // waterfall: the first month → each month's change from the one before → the latest
+    var steps = L.slice(1).map(function(r, i){ var p = L[i];
+      return { label: r.month.slice(0, 3), delta: r.total - p.total,
+               tip: [nf(p.total) + ' (' + p.month.slice(0, 3) + ') → ' + nf(r.total), 'Best shop: ' + r.shop + ' (' + nf(r.shopSales) + ')',
+                     'Best bag type: ' + r.bagType + ' (' + nf(r.bagTypeSales) + ')', 'Best product: ' + r.product] }; });
+    var first = L[0], last = L[L.length - 1], dd = last.total - first.total;
+    wfChart('xtTrack', 'xtTrackHead', { startLabel: first.month.slice(0, 3), start: first.total, items: steps, endLabel: last.month.slice(0, 3) + ' total',
+      unit: 'bags', mark: -1,
+      head: first.month + ' → ' + last.month + ' ' + T.year + ': <span style="color:' + (dd >= 0 ? '#34d399' : '#f87171') + '">' + (dd >= 0 ? '+' : '') + nf(dd)
+            + ' bags (' + (dd >= 0 ? '+' : '') + (first.total ? (dd / first.total * 100).toFixed(1) : 0) + '%)</span>' });
+    return;
+  }
+  var VL = { id:'trackVals', afterDatasetsDraw:function(c){ var x = c.ctx; x.save(); x.font = '700 10px Segoe UI, system-ui, sans-serif';
+    x.textAlign = 'center'; x.textBaseline = 'bottom';
+    c.getDatasetMeta(0).data.forEach(function(p, i){ x.fillStyle = i === sel ? '#fbbf24' : '#cbd5e1'; x.fillText(nf(L[i].total), p.x, p.y - 7); }); x.restore(); } };
+  mk('xtTrack', { type:'line',
+    data:{ labels: L.map(function(r){ return r.month.slice(0, 3); }),
+      datasets:[{ label:'Total sales', data: L.map(function(r){ return r.total; }), borderColor:'#22d3ee', backgroundColor:'rgba(34,211,238,0.12)', fill:true, tension:0.3,
+                  pointRadius: L.map(function(_, i){ return i === sel ? 6 : 3; }), pointBackgroundColor: L.map(function(_, i){ return i === sel ? '#fbbf24' : '#22d3ee'; }) }] },
+    options:{ responsive:true, maintainAspectRatio:false, layout:{ padding:{ top:18 } },
+      plugins:{ weekChange:false, legend:{ display:false },
+        tooltip:{ callbacks:{ afterLabel:function(c){ var r = L[c.dataIndex]; return ['Best shop: ' + r.shop + ' (' + nf(r.shopSales) + ')', 'Best bag type: ' + r.bagType + ' (' + nf(r.bagTypeSales) + ')', 'Best product: ' + r.product]; } } } },
+      scales:{ x:{ grid:{ display:false }, ticks:{ color:'#94a3b8' } }, y:{ grid:{ color:GRID }, ticks:{ callback:function(v){ return nf(v); } } } } },
+    plugins:[VL] });
+}
+
 /* 8 · Shop Corporate Orders — clients quoted in Odoo Sales who paid at the shop tills (lib/shop_corporate) */
 function shopCorpHtml(m){
   var s = (m.extras||{}).shopCorporate; if (!s || !(s.rows||[]).length) return '';
@@ -39501,6 +39701,7 @@ function changeWf(id, headId, thenLbl, nowLbl, items, unit){
 
 function buildExtraCharts(m){
   var x = m.extras||{};
+  buildGrowthChart(m); buildTrackChart(m);
   if (x.productPerformance && (x.productPerformance.rows||[]).length) {
     var pp = x.productPerformance, ttl = function(t){ return String(t).toLowerCase().replace(/\b\w/g, function(c){ return c.toUpperCase(); }); };
     var mn = function(iso, d){ return iso ? new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', { month: 'long' }) : d; };

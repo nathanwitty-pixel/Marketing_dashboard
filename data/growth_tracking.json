@@ -1,0 +1,23 @@
+{
+  "_note": "History › 10 Growth rate and 11 Month-on-month tracking (docs/reporting-history.md). The user's own figures (pasted 2 Nov 2026) — add each new month's row here; history.py injects this file into history.html.",
+  "growth": {
+    "2024": [9982, 12365, 12406, 11955, 14020, 11205, 15684, 16430, 12224, 15449, 19284, 19148],
+    "2025": [12826, 15361, 14811, 16281, 17186, 13728, 15769, 17294, 15760, 15970, 25156, 24126],
+    "2026": [14754, 16977, 17061, 15443, 16642, 14921, 16994, 17586, 16176, 17022, null, null]
+  },
+  "tracking": {
+    "year": 2026,
+    "months": [
+      {"month": "January",   "total": 14219, "shop": "HILTON", "shopSales": 3926, "colour": "BLACK", "category": "BACKPACK", "bagType": "CODE 3",    "bagTypeSales": 1320, "product": "CODE 3 BLACK"},
+      {"month": "February",  "total": 15875, "shop": "HILTON", "shopSales": 3851, "colour": "BLACK", "category": "BACKPACK", "bagType": "MAN BAG",   "bagTypeSales": 1258, "product": "MAN BAG BLACK"},
+      {"month": "March",     "total": 16597, "shop": "HILTON", "shopSales": 4199, "colour": "BLACK", "category": "BACKPACK", "bagType": "CODE 3",    "bagTypeSales": 1160, "product": "FABELA GREY"},
+      {"month": "April",     "total": 15085, "shop": "HILTON", "shopSales": 3441, "colour": "BLACK", "category": "BACKPACK", "bagType": "JUMBO",     "bagTypeSales": 1254, "product": "JUMBO BLACK"},
+      {"month": "May",       "total": 16134, "shop": "HILTON", "shopSales": 4793, "colour": "BLACK", "category": "BACKPACK", "bagType": "ANTITHEFT", "bagTypeSales": 1149, "product": "ANTITHEFT BLACK"},
+      {"month": "June",      "total": 14186, "shop": "HILTON", "shopSales": 3352, "colour": "BLACK", "category": "BACKPACK", "bagType": "ANTITHEFT", "bagTypeSales": 814,  "product": "ANTITHEFT BLACK"},
+      {"month": "July",      "total": 16680, "shop": "HILTON", "shopSales": 4090, "colour": "BLACK", "category": "BACKPACK", "bagType": "JUMBO",     "bagTypeSales": 1313, "product": "ANTITHEFT BLACK"},
+      {"month": "August",    "total": 17429, "shop": "HILTON", "shopSales": 3908, "colour": "BLACK", "category": "BACKPACK", "bagType": "JUMBO",     "bagTypeSales": 1338, "product": "JUMBO BLACK"},
+      {"month": "September", "total": 16117, "shop": "HILTON", "shopSales": 3569, "colour": "BLACK", "category": "BACKPACK", "bagType": "ANTITHEFT", "bagTypeSales": 1328, "product": "ANTITHEFT BLACK"},
+      {"month": "October",   "total": 16130, "shop": "HILTON", "shopSales": 3993, "colour": "BLACK", "category": "TRAVEL",   "bagType": "JUMBO",     "bagTypeSales": 1103, "product": "FABELA GREY"}
+    ]
+  }
+}

@@ -53,6 +53,23 @@ from Odoo for that month by `lib/shop_corporate.build(month)` when the month is 
   month): combos that fit a listed offer = running, other combos = self-made, in the market's own currency — summary
   cards, the running offers and the self-made combos. The **combo request log** shows the first 10 rows with
   "Show all N" / "Show fewer" (also for the self-made lists); "nan" reject reasons are no longer printed.
+- **10 · Growth rate and 11 · Month-on-month tracking** (2 Nov 2026, user's call) — shown under every month, the chosen
+  month highlighted. Data: `data/growth_tracking.json` (the user's own figures; add each month's row), injected by
+  `history.py` as `const GT` between `<!-- GROWTH_DATA_START -->` / `<!-- GROWTH_DATA_END -->`.
+  - **10 · Growth rate:** bags sold per month for 2024 / 2025 / 2026 (grouped bars + table) with **monthly growth**
+    (the month vs the month before; January vs the previous December) and **annual growth** (the month vs the same
+    month last year) for the latest year, the year totals, and for the chosen month "Monthly improvement X% (N bags),
+    annual improvement Y% (M bags)".
+  - **Annual / Monthly buttons** on the Growth chart (2 Nov 2026): **Annual** = the waterfall below; **Monthly** = last
+    December → each month's change from the month before (the table's "Monthly growth", in month order) → the latest
+    month. The choice is remembered (`gt-growth-mode`).
+  - Both charts are **waterfalls like "Why did we move?"** (2 Nov 2026): Growth = last year's months so far
+    (e.g. Jan–Oct 2025) → each month's change vs the same month last year (biggest rise first, "the reason" boxed)
+    → this year's months so far; Tracking = the first month → each month's change from the month before, in month
+    order → the latest month. Headline + numbers on every bar; axis starts near the lowest level.
+  - **11 · Month-on-month tracking:** per month of the tracking year — total sales, best shop (and its sales), best
+    colour, best category, best bag type (and its sales), best product — with a line chart of the totals; a change in
+    the best shop / bag type / category from the month before is marked.
 - **9 · Product Performance** (`extras.productPerformance`): the Product Performance page's **Last month** view for
   that month vs the month before — bag of the month (top seller, biggest mover and why it moved, with its support
   score and verdict) per market, the top bags table and the shop breakdown. Built with
