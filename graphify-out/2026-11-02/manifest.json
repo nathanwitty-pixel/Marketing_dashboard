@@ -270,9 +270,9 @@
     "semantic_hash": ""
   },
   "docs/offer-picking.md": {
-    "mtime": 1793611410.7935705,
-    "seen": 1793611429.6660607,
-    "ast_hash": "7a0137dcea8277766f8fe3177c62269f",
+    "mtime": 1793611445.9435923,
+    "seen": 1793611500.1356063,
+    "ast_hash": "b61b58a3e61170068752b9b023229b59",
     "semantic_hash": ""
   },
   "docs/posting-yields.md": {
@@ -972,9 +972,9 @@
     "semantic_hash": ""
   },
   "generators/offer_picking.py": {
-    "mtime": 1793611333.1306508,
-    "seen": 1793611429.6658554,
-    "ast_hash": "8f9ba0741493a5d25211547a504cb8f9",
+    "mtime": 1793611445.9420297,
+    "seen": 1793611500.1353834,
+    "ast_hash": "52186e0bf17704d6b9f4be4676789b1c",
     "semantic_hash": ""
   },
   "generators/posting_yields.py": {
@@ -1212,9 +1212,9 @@
     "semantic_hash": ""
   },
   "html/offer_picking.html": {
-    "mtime": 1793611410.7924714,
-    "seen": 1793611429.6661122,
-    "ast_hash": "ad2238bfb00a981ad0dcba76d1539029",
+    "mtime": 1793611483.931916,
+    "seen": 1793611500.135662,
+    "ast_hash": "def5e9a7271af4deaeb00f8b7eeb790c",
     "semantic_hash": ""
   },
   "html/posting_yields.html": {

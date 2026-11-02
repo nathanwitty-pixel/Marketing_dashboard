@@ -1356,9 +1356,9 @@
     "semantic_hash": ""
   },
   "html/shop_stock_levels.html": {
-    "mtime": 1793561360.913252,
-    "seen": 1793563395.0724263,
-    "ast_hash": "6d97ebd339b013448ad28529218d5da3",
+    "mtime": 1793616235.9955413,
+    "seen": 1793617308.5320797,
+    "ast_hash": "4ef360a2ed1087f9db8419280f0080b5",
     "semantic_hash": ""
   },
   "lib/marketing_posts.py": {

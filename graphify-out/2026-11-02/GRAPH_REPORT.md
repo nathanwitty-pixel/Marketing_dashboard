@@ -1,7 +1,7 @@
 # Graph Report - Marketing_dashboard  (2026-11-02)
 
 ## Corpus Check
-- 244 files · ~1,202,339 words
+- 244 files · ~1,202,318 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 21 file(s) not represented in the graph (top: .csv 14, (none) 2, .toml 1)
 
@@ -887,11 +887,11 @@ Nodes (14): posts_by_market(), posts_lead_sales(), {market: [posts per week]} fr
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Bags on offer vs not on offer` connect `Bags on offer vs not on offer` to `lib/receipt_combos.py`, `_read_offers`, `fetch`, `bag_classifier`, `shop-birthdays.md`?**
-  _High betweenness centrality (0.067) - this node is a cross-community bridge._
+  _High betweenness centrality (0.063) - this node is a cross-community bridge._
 - **Why does `run_query()` connect `run_query` to `shop_corporate.py`, `lib/receipt_combos.py`, `build`, `type_fn`, `corporate_clients_from_db`, `lib/offer_data.py`, `fetch_posting_data`, `check_connection`, `forward_projections.py`, `test_oos_callbacks.py`, `build_payload`, `shop_requests.py`, `oos_callbacks.py`, `shop_stock_levels.py`, `_enrich_deals`, `fetch_new_products_data`, `chronos_train.py`, `stock.py`, `build_payload`, `build`, `corporate_return`, `os`, `test_product_targets.py`, `offer_picking.py`, `snapshot.py`, `_seasonality`, `_combo_button_usage`, `_q`, `_enrich_deals`, `build`, `live_month_window`, `fetch`, `read`, `negative_fixes.py`, `month_extras.py`, `odoo_marketing_audit.py`, `get_engine`, `fetch`?**
   _High betweenness centrality (0.061) - this node is a cross-community bridge._
 - **Why does `bag_classifier()` connect `bag_classifier` to `lib/receipt_combos.py`, `build_payload`, `push_planner.py`, `Push Planner (`push_planner.py` → `push_planner.html`, `PP`)`, `fetch`, `Bags on offer vs not on offer`, `os`, `fetch`, `Product (bag) targets`?**
-  _High betweenness centrality (0.057) - this node is a cross-community bridge._
+  _High betweenness centrality (0.053) - this node is a cross-community bridge._
 - **What connects `PERF`, `graphify`, `Use in another project` to the rest of the system?**
   _255 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `shop_corporate.py` be split into smaller, more focused modules?**
