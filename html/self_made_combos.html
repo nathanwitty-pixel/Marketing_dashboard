@@ -328,7 +328,7 @@ window.smcOosComboSlot = function (key) {
 
     <div class="panel" style="display:none">
       <h2>Self-made combos <span class="tag cbr">CBR</span></h2>
-      <div class="cap">Staff-created combos sold this month — each links to a real CBR request. <b style="color:#94a3b8">Colours</b> is low (1&ndash;3): a self-made combo is locked to one specific colour pairing.</div>
+      <div class="cap">Self-made combos sold this month — each links to a real CBR request. <b style="color:#94a3b8">Colours</b> is low (1&ndash;3): a self-made combo is locked to one specific colour pairing.</div>
       <div style="overflow:auto;max-height:34rem"><table>
         <thead><tr><th>Combo</th><th class="r">Units</th><th class="r">Revenue (KES)</th><th class="r">Unit price</th><th class="r">Colours</th></tr></thead>
         <tbody id="smc-sm-tbody"></tbody>
@@ -510,7 +510,7 @@ window.addEventListener('DOMContentLoaded', function () {
   var smShare = totUnits ? Math.round((sm.units || 0) / totUnits * 100) : 0;
 
   document.getElementById('smc-sub').innerHTML =
-    'Staff-created combos (CBR requests) vs the official running combos &mdash; <b>' + SMC.month + '</b> (Kenya). '
+    'Self-made combos (CBR requests: pairings staff build at the till) vs the official running combos &mdash; <b>' + SMC.month + '</b> (Kenya). '
     + 'Self-made combos are matched to the real <b>Combo Request</b> table (the CBR/2026 refs via <code style="color:#94a3b8">combo_product_id</code>); running combos are the official offer-sheet combos.';
 
   // Why self-made combos (units/combos that SOLD) come in under the request count.
@@ -1256,7 +1256,7 @@ window.addEventListener('DOMContentLoaded', function () {
           + '<div style="margin-top:0.65rem;padding-top:0.55rem;border-top:1px solid #2d3148;color:#cbd5e1">'
           +   'This running combo: <b style="color:#34d399">' + fmt(c.total) + ' units · KES ' + fmt(runVal) + '</b><br>'
           +   'Self-made on the same bag(s): <b style="color:#fbbf24">' + fmt(c.connUnits) + ' units · KES ' + fmt(c.connValue) + '</b>'
-          +   ' <span style="color:#64748b">(&asymp; ' + shiftPct + '% of this combo&rsquo;s revenue also flowed through staff combos)</span>'
+          +   ' <span style="color:#64748b">(&asymp; ' + shiftPct + '% of this combo&rsquo;s revenue also flowed through self-made combos)</span>'
           + '</div></span></span>';
       }
 

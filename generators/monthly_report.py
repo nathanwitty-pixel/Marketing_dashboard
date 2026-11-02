@@ -250,7 +250,7 @@ def _read_timed_offers():
 timed_offers = _read_timed_offers()
 
 # ── Self-Made Combos (CBR requests) vs running combos ─────────
-# Staff-created combos (Odoo pos_combo_request → the CBR/2026 refs) vs the
+# Self-made combos (Odoo pos_combo_request → the CBR/2026 refs) vs the
 # official running combos, for the REPORT month, Kenya tills. Queried directly
 # (like the master-bags KPI) via self_made_combos.build_payload so it is correct
 # whether the report is live or pinned to a past month, and stays in sync with
@@ -1034,7 +1034,7 @@ if self_made and (self_made.get("smTotals", {}).get("count") or self_made.get("r
     {_smc_kpis}
     {_smc_summary}
     <div class="row" style="margin-top:1rem"><div class="tag bottom">The Bottom Line</div>
-      <p>Staff-made combos were <b>{fmt(_sm["count"])} combos moving {fmt(_sm["units"])} units</b> (KES {fmt(_sm["value"])}) — <b>{_sm_share:.0f}% of all combo volume</b> — vs <b>{fmt(_run["count"])} official running combos moving {fmt(_run["units"])} units</b> (KES {fmt(_run["value"])}). {fmt(self_made.get("reqTotal",0))} combo requests were logged this month.{_rej_note}</p></div>
+      <p>Self-made combos (CBR: pairings staff build at the till) were <b>{fmt(_sm["count"])} combos moving {fmt(_sm["units"])} units</b> (KES {fmt(_sm["value"])}) — <b>{_sm_share:.0f}% of all combo volume</b> — vs <b>{fmt(_run["count"])} official running combos moving {fmt(_run["units"])} units</b> (KES {fmt(_run["value"])}). {fmt(self_made.get("reqTotal",0))} combo requests were logged this month.{_rej_note}</p></div>
     <div class="row"><div class="tag insight">The Insight</div>
       <p>Self-made combos average <b>KES {fmt(_sm_avg)}</b> vs running combos <b>KES {fmt(_run_avg)}</b>, so the <b>{_cheaper}</b> combos are the cheaper ticket. Every self-made combo needs an approved CBR, so the request table behind them is the audit trail — who requested what, from which shop, and whether it actually sold.</p>
       <p style="margin-top:0.5rem">The split also shows up at the till: an <b>official running combo offers a wide colour range</b> for the attendant to pick from (avg <b>{_run.get("avgColours",0):g} colour options</b>), while a <b>self-made combo is locked to one specific pairing</b> (avg <b>{_sm.get("avgColours",0):g}</b>) — the same divide the CBR link draws, from the shop floor’s point of view.</p></div>

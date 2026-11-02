@@ -8,6 +8,10 @@
   the HTML; the generator only replaces the data blocks.
 - **Global JS data:** `SMC` (combos, running cards, regions, deals) and `OA` (offer data).
 
+**One name: "self-made" (2 Nov 2026, user's call).** The combos staff build themselves at the till (CBR requests,
+CBR/2026/…) are always called **self-made** — never "staff-made" or "staff-created" — on this page, the Monthly Report
+and History. The first mention explains it: "Self-made combos (CBR: pairings staff build at the till)".
+
 ## What the page shows
 
 **The filter bars follow the reader** (19 Oct 2026): the 📞 Out of stock call-back period bar pins at the top while scrolling, and the Type switch (Combos, Power Deals) pins under it while the Kenya view is on screen (`assets/sticky_controls.js`, docs/sticky-controls.md).
