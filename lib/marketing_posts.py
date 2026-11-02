@@ -5,6 +5,8 @@ Replaces the main spreadsheet's WEEKLY_MARKETING_POST / MONTHLY_MARKETING_POST t
   • Sinza  — " STOCKS & POSTING RECORDS"    (1DGrRYrv…), tab "MARKETING POSTS_SINZA"
   • Uganda — same spreadsheet,                            tab "MARKETING POSTS_UGANDA"
 Both spreadsheets must be shared (Viewer) with the dashboard's service account.
+Backup (2 Nov 2026, user's call): every successful read is saved to data/marketing_posts_backup.json; when the sheets
+can't be read, that last good copy is used (with a warning saying how old it is) instead of zero posts.
 
 Layout (all three): the header row (row 2 — found as the row whose col A is "BAG TYPE") is
 BAG TYPE · COLOUR · one column per DAY (M/D/YYYY) with a weekly TOTAL / TOTL column after each Saturday.
@@ -42,6 +44,37 @@ HEADER = ["COLOUR", "", "PRODUCT NAME", "BAG TYPE", "KENYA", "SINZA", "UGANDA", 
 _DAILY = None        # {(BAG TYPE, COLOUR): {market: {date: posts}}} — read once per run
 _ORDER = []          # keys in sheet order (Kenya first)
 _FAIL = None         # the error, if the sheets couldn't be read this run
+BACKUP = paths.data("marketing_posts_backup.json")   # the last good read of the three sheets
+
+
+def _save_backup(out, order):
+    import json
+    try:
+        data = {"savedAt": _dt.datetime.now().isoformat(timespec="minutes"),
+                "sources": [list(s) for s in SOURCES],
+                "rows": [{"bag": k[0], "colour": k[1],
+                          "posts": {m: {d.isoformat(): v for d, v in days.items()} for m, days in out[k].items()}}
+                         for k in order]}
+        with open(BACKUP, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+    except Exception as ex:                                  # noqa: BLE001 — the backup never breaks a read
+        print(f"  Posting backup not saved: {ex}")
+
+
+def _load_backup():
+    """(out, order, savedAt) from the saved copy, or None."""
+    import json
+    try:
+        with open(BACKUP, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        return None
+    out, order = {}, []
+    for r in data.get("rows", []):
+        k = (r["bag"], r["colour"])
+        out[k] = {m: {_dt.date.fromisoformat(d): v for d, v in days.items()} for m, days in r["posts"].items()}
+        order.append(k)
+    return out, order, data.get("savedAt")
 
 
 def _num(v) -> float:
@@ -91,7 +124,7 @@ def parse(rows) -> dict:
 
 def daily() -> dict:
     """{(BAG TYPE, COLOUR): {market: {date: posts}}} from the three sheets (cached for the run).
-    Raises if a sheet can't be read — callers already treat a failed posting read as "no posts"."""
+    Sheets unreadable → the last good copy (data/marketing_posts_backup.json); raises only if there's no copy either."""
     global _DAILY, _FAIL
     if _FAIL is not None:
         raise _FAIL                                         # tried once this run already
@@ -108,8 +141,14 @@ def daily() -> dict:
                         order.append(key)
                     out[key][mkt] = days
         except Exception as ex:                              # noqa: BLE001
-            _FAIL = ex
-            raise
+            bk = _load_backup()
+            if bk is None:
+                _FAIL = ex
+                raise
+            out, order, saved = bk
+            print(f"  Posting sheets unreadable ({type(ex).__name__}: {ex}) — using the backup saved {saved}")
+        else:
+            _save_backup(out, order)
         _DAILY, _ORDER[:] = out, order
     return _DAILY
 

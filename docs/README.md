@@ -18,6 +18,11 @@ the old tabs' layout: **weekly = last complete Sun–Sat week, monthly = the liv
 marketing logs posts only on each bag's TOTAL row (no colour) → those come through as bag-level rows
 (`<BAG>` / "(all colours)"), compared per bag on New Products and Posting Yields. Both spreadsheets must be shared
 (Viewer) with the service account; until they are, the old two tabs are read (with a warning).
+**Posting backup (2 Nov 2026):** every successful read of those three tabs (Kenya `2026` gid 2119654449, `MARKETING
+POSTS_SINZA` gid 501896786, `MARKETING POSTS_UGANDA` gid 962568436 — header row 2 = BAG TYPE · COLOUR · dates) is saved to
+`data/marketing_posts_backup.json`; when the sheets can't be read the pages use that last good copy (a warning gives
+its age) instead of showing zero posts. Kenya's Odoo posts (Facebook / Instagram tags) are compared against the sheet on
+Posting Yields; Sinza / Uganda posts come only from the sheets.
 
 **Monthly uploads (the user sends them, Claude transcribes):**
 - `offers_monthly.csv` — Kenya / Sinza / Uganda combos and singles with prices (the old COMBOS tab).
