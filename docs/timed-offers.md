@@ -221,6 +221,14 @@ before has no lift — "too little before" — and is ranked by units instead).
   lift under 20 %) · *weak* (lift ≤ 0). With only the month's few offers behind it, the fit is **indicative** — the
   page says how many offers back each estimate.
 
+## "Why" notes wording (2 Nov 2026, user's call)
+
+The notes under each campaign (On offer? · Discount vs demand · Stock · Season · Corporate order · verdict) were
+written for August's 6-bag Back to School campaign and repeated "All six" and "back-to-school" for every campaign.
+Now: the **real bag count** ("All 10 were genuinely on offer"); **back-to-school / school wording only when the
+campaign's name contains "school"** — otherwise Season just lists the categories and the zero-post sellers; the
+verdict says the deepest cut "sold least" only when it really sold the fewest, else "sold only N".
+
 ## Editing a campaign
 
 Edit `timed_offers_config.json` — add/adjust items in `offers[]` (dates + shops + bag list +

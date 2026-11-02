@@ -63,6 +63,16 @@ runs **after** them:
   archived.
 - A **finalized** month is static — its report HTML is frozen and never regenerated.
 
+## Wording checks (2 Nov 2026, user's call)
+
+- **Regions "within N points":** N to one decimal (5.3, never rounded down to "within 5").
+- **Posting yield %** (e.g. 48.7%) is described as "reached X of their expected sales **bag by bag**", with the total
+  (posted bags sold ~N× what their posts should bring) beside it — they measure different things.
+- **Kenya not-on-offer stock** = Kenya stock of the bag types not on the month's offer list
+  (`bags_offer_source_YYYY-MM.json`: `stockMap` minus `onOffer`; October 2026 = 2,817). It is no longer the
+  never-posted figure (4,243), which stays labelled "never posted".
+- **Saved notes:** the response-ladder step isn't repeated ("… went unused. → Collaborate: …").
+
 ## Growth rate & month-on-month tracking (2 Nov 2026, user's call)
 
 Sections **6 · Growth Rate — Monthly & Annual** and **7 · Month-on-Month Tracking**, the same as History's 10 / 11

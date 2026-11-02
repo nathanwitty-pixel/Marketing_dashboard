@@ -567,6 +567,60 @@ def _seasonality(cost, prices, catalog):
             "note": "Combos are rung as POS products only from Jul 2025; earlier months show the plan, sales de-trend via month totals."}
 
 
+MONTHLY_BAG_SALES_SQL = """
+SELECT to_char(date_trunc('month', (p.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')), 'YYYY-MM') AS m,
+       UPPER(pt."name") AS name, SUM(pl.qty) AS units
+FROM pos_order p
+JOIN POS_LINES(p) pl ON pl.order_id = p.id
+JOIN pos_session ps ON ps.id = p.session_id
+JOIN pos_config pc ON pc.id = ps.config_id
+JOIN product_product pp ON pp.id = pl.product_id
+JOIN product_template pt ON pt.id = pp.product_tmpl_id
+WHERE (p.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETWEEN :s AND :e
+  AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
+  AND pt."name" NOT LIKE '%%+%%'
+  AND pt."name" !~* '(delivery|strap|customi[sz]ation|gift bag|kes discount|sample)'
+  AND lower(pc."name") NOT IN ('sinza', 'dar-es-alam', 'uganda')
+GROUP BY 1, 2
+"""
+
+
+def _monthly_bag_sales(catalog, cost, offers, months=5):
+    """{"months": ["Jun", …], "keys": ["2026-06", …], "bags": [{bag, category, stock, monthly[], was, now, cost}]} —
+    Kenya till units per bag type (bags inside combos count) for the last `months` complete months, oldest first."""
+    import datetime as _dt
+    from lib import db
+    first_this = _dt.date.today().replace(day=1)
+    keys, d = [], first_this
+    for _ in range(months):
+        d = (d - _dt.timedelta(days=1)).replace(day=1)
+        keys.insert(0, d.strftime("%Y-%m"))
+    s = _dt.date.fromisoformat(keys[0] + "-01")
+    e = first_this - _dt.timedelta(days=1)
+    df = db.run_query(MONTHLY_BAG_SALES_SQL, {"s": s.isoformat(), "e": e.isoformat()})
+    bomkeys = sorted(cost.keys(), key=len, reverse=True)
+    offer_keys = sorted(offers.keys(), key=len, reverse=True)
+    sold = {}
+    for r in (df.itertuples(index=False) if df is not None else []):
+        canon, _, in_bom = _resolve_bag(r.name, cost, bomkeys)
+        if not in_bom:
+            canon = next((k for k in offer_keys if canon == k or canon.startswith(k + " ")), canon)
+        if r.m in keys:
+            row = sold.setdefault(canon, [0] * months)
+            row[keys.index(r.m)] += float(r.units or 0)
+    out = []
+    not_bag = re.compile(r"(WIPE|CLEANER|GIFT BAG|FREE|SPRAY|STRAP|DISCOUNT|DELIVERY|SAMPLE)")
+    for b in catalog:
+        m = [round(x) for x in sold.get(b["name"], [0] * months)]
+        if (b.get("stock") or 0) <= 0 and not any(m):
+            continue
+        if not (b.get("valueNow") or b.get("valueWas")) or not_bag.search(b["name"]):   # real, priced bags only
+            continue
+        out.append({"bag": b["name"], "category": b.get("category", ""), "stock": int(b.get("stock") or 0),
+                    "monthly": m, "was": b.get("valueWas"), "now": b.get("valueNow"), "cost": b.get("cost")})
+    return {"keys": keys, "months": [_dt.date.fromisoformat(k + "-01").strftime("%b") for k in keys], "bags": out}
+
+
 def build():
     smc = _read_smc_payload()
     cost = _read_bom_costs()
@@ -689,8 +743,16 @@ def build():
         next_month["priceMin"], next_month["priceMax"], next_month["stockMin"] = PMIN, PMAX, STOCK_MIN
         next_month["smMonth"] = smc.get("month", "")
 
+    # Bags not on offer we can still sell — Kenya sales per bag for the last 5 complete months (docs/offer-picking.md)
+    not_on_offer = None
+    try:
+        not_on_offer = _monthly_bag_sales(catalog, cost, offer_prices)
+    except Exception as ex:                                   # noqa: BLE001
+        print(f"  Bags-not-on-offer sales skipped: {ex}")
+
     payload = {
         "month": smc.get("month", ""),
+        "notOnOffer": not_on_offer,
         "priceSource": "WAS = full price (col D), NOW = offer price (col F) · " + offers_source,
         "offers": offers,
         "bomBags": len(cost),

@@ -1333,11 +1333,15 @@ def build_offer(offer):
                        if _bestseller and w["name"] == _bestseller["name"]), None)
 
     _insights = []
+    _n = len(_priced)
+    _nw = {2: "Both", 3: "All three", 4: "All four", 5: "All five", 6: "All six"}.get(_n, f"All {_n}")
+    _school = "school" in str(CFG.get("name", "")).lower()        # back-to-school wording only for a school campaign
+    _least = min(why_bags, key=lambda w: w["sold"]) if why_bags else None
     # 1) On offer? — the real cuts
     if _all_cut:
         _list = ", ".join(f"{w['name']} −{w['discountKes']:,} ({w['discountPct']}%)" for w in _priced)
         _insights.append({"tag": "On offer?", "text":
-            f"<b>All six were genuinely on offer</b> — real list-price cuts of KES {min(_kes):,}–{max(_kes):,} "
+            f"<b>{_nw} were genuinely on offer</b> — real list-price cuts of KES {min(_kes):,}–{max(_kes):,} "
             f"({min(_pcts)}–{max(_pcts)}% off): {_list}."})
     elif _disc:
         _insights.append({"tag": "On offer?", "text":
@@ -1349,10 +1353,10 @@ def build_offer(offer):
     # 2) Did the discount drive it? — depth vs sales
     if _all_cut and _deepest and _bestseller:
         _insights.append({"tag": "Discount vs demand", "text":
-            f"Because <b>every bag was cut</b>, the discount and back-to-school timing can't be fully separated — both applied at once. "
+            f"Because <b>every bag was cut</b>, the discount and {'back-to-school ' if _school else 'the '}timing can't be fully separated — both applied at once. "
             f"But <b>discount depth didn't decide the winners</b>: the deepest cut, {_deepest['name']} ({_deepest['discountPct']}%), sold only {_deepest['sold']:,}, "
             f"while {_bestseller['name']} led with {_bestseller['sold']:,} on a shallower {_best_disc}% cut. "
-            f"The cut opened the door, but <b>demand — which bags people wanted for school — chose what actually moved</b>."})
+            f"The cut opened the door, but <b>demand — which bags people wanted{' for school' if _school else ''} — chose what actually moved</b>."})
 
     # 3) Stock
     if _topstock and _total_stock:
@@ -1360,12 +1364,15 @@ def build_offer(offer):
             f"Real inventory behind them — <b>{_total_stock:,} still in stock</b> "
             f"(led by {_topstock['name']} at {_topstock['stock']:,}). The offer draws down a genuine stock position, not a token one."})
 
-    # 4) Season — only for the all-cut back-to-school campaign, not a plain clearance tracker.
+    # 4) Season — the school framing only for a back-to-school campaign; otherwise just the categories + zero-post sellers.
     if _all_cut and _cats:
-        _season_bag = (" and ".join(_zero_post[:2]) + " even sold on zero marketing posts (pure demand). ") if _zero_post else ""
+        _zp = _zero_post[:3]
+        _season_bag = ((", ".join(_zp[:-1]) + " and " + _zp[-1] if len(_zp) > 1 else _zp[0])
+                       + " even sold on zero marketing posts (pure demand). ") if _zp else ""
         _insights.append({"tag": "Season", "text":
-            f"All six sit in <b>{', '.join(c.title() for c in _cats)}</b> — school categories — and the step-up landed in the offer week as schools opened. "
-            f"{_season_bag}The timing fits the sales pattern as much as the price cut does."})
+            (f"{_nw} sit in <b>{', '.join(c.title() for c in _cats)}</b> — school categories — and the step-up landed in the offer week as schools opened. "
+             f"{_season_bag}The timing fits the sales pattern as much as the price cut does.") if _school else
+            (f"The {_n} bags span <b>{', '.join(c.title() for c in _cats)}</b>. {_season_bag}".strip())})
 
     # 5) Corporate / bulk orders — why a bag's lift looks odd, and how it did without them.
     for w in why_bags:
@@ -1386,8 +1393,12 @@ def build_offer(offer):
             f"<b>Without it, {w['name']} did {_ex}</b> (walk-in pace only)."})
 
     if _all_cut and _deepest:
-        _verdict = (f"<b>Good move.</b> All six ran a real <b>{min(_pcts)}–{max(_pcts)}% cut</b> and daily sales rose <b>{_lift_txt}</b> during back-to-school. "
-                    f"The catch: <b>discount depth didn't pick the winners</b> — the deepest cut ({_deepest['name']}, {_deepest['discountPct']}%) sold least, while the popular school lines led. "
+        _least_txt = ("sold least" if _least and _least["name"] == _deepest["name"]
+                      else f"sold only {_deepest['sold']:,}")
+        _verdict = (f"<b>Good move.</b> {_nw} ran a real <b>{min(_pcts)}–{max(_pcts)}% cut</b> and daily sales rose <b>{_lift_txt}</b>"
+                    f"{' during back-to-school' if _school else ' in the offer window'}. "
+                    f"The catch: <b>discount depth didn't pick the winners</b> — the deepest cut ({_deepest['name']}, {_deepest['discountPct']}%) {_least_txt}, "
+                    f"while the {'popular school lines' if _school else 'favourites'} led. "
                     f"Repeat the timing; you can likely <b>trim the deepest cuts</b> on the slow movers without losing volume.")
     else:
         _verdict = ("<b>Tracking live.</b> Per-bag sales over the window for the scoped tills — "

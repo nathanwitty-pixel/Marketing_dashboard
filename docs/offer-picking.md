@@ -77,6 +77,22 @@ A planning menu for **which offers/combos to run**. The page **leads with the Fo
 
 > **Oct 2026:** no sheets — production costs from `bom_costs.json` and full / offer prices from `offers_prices.json` (local copies; edit them by hand).
 
+## Bags not on offer we can still sell (2 Nov 2026, user's call)
+
+A card right after **Power deal choosing**: the single bags worth selling once the power deals are chosen.
+- **Left out:** the bags picked in the 10 power-deal slots — live, it follows your picks. **Bags in the combos are
+  allowed** (marked "in a combo"): a combo bag can still sell on its own.
+- **Guided by stock and sales:** Kenya stock (the catalog's live Odoo stock) and Kenya till sales per bag for the last
+  **3 or 5 complete months** (buttons; bags inside combos count, refunds net, combo wrappers / delivery / straps / gift
+  bags / samples out — `OP.notOnOffer`, monthly units per bag type, oldest first).
+- Per bag: stock, average a month over the window, last month (with its change vs the average), **months of stock**
+  (stock ÷ average a month), price was → now, margin at the offer price, and a call:
+  - **Low stock — skip** — under 1 month of stock, or under 10 bags.
+  - **Sell now** — sells ≥ 15 a month with 1–4 months of stock: steady demand with stock behind it.
+  - **Needs a push** — the rest: 4+ months of stock, no sales, or slow (< 15 a month): stock sitting.
+  Only priced bags are listed (no wipes, cleaners, gift bags or "buy X get Y free" promo items).
+  Sorted Sell now (busiest first), then Needs a push (most stock first), then Low stock; first 15 shown, "Show all".
+
 ## Pricing — WAS vs NOW, from the offers sheet
 
 **The Seasonality search follows the reader** (19 Oct 2026): the bag search box and its count pin at the top while the Seasonality table is on screen (`assets/sticky_controls.js`, docs/sticky-controls.md).

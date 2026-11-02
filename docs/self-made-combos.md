@@ -716,6 +716,11 @@ and the bulk receipts line. `SMC.regions[r].receipts = {running, selfMade, singl
 
 ### Sinza & Uganda — the Kenya-style view (Oct 2026)
 
+**Type switch (2 Nov 2026, user's call):** Sinza / Uganda pick Combos · Singles (· Specials) with the same **Type**
+buttons as Kenya's Combos · Power Deals — same place (top of the region view) and look (`.smc-seg`), not a dropdown
+in the panel header. It also **follows the reader** like Kenya's: pinned at the top while that region's view is on screen
+(`StickyControls.init({ within: '#smc-region-<sinza|uganda>' })`, re-attached each time the view is drawn).
+
 Each region view opens like Kenya's **Self-made vs running combos** panel, but measured from the till
 receipts (no Request Hub / CBR in those markets): two bars (combos sold, revenue — self-made vs running),
 and cards **Self-made** (combos sold · distinct pairings · revenue; hover the number for *Sold as self-made

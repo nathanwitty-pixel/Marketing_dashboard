@@ -495,10 +495,19 @@ def _nested(block, key):
     return m.group(1) if m else ""
 _sz_pa = _nested(pa, "sinza")
 _ug_pa = _nested(pa, "uganda")
-ke_notoffer_stock = notposted                                    # s3NotPosted = not-on-offer Kenya stock
+ke_notoffer_stock = notposted                                    # fallback; replaced below by the real not-on-offer stock
+try:                                                             # Kenya stock of bags NOT on the month's offer list
+    _bos = json.load(open(paths.data(f"bags_offer_source_{year}-{_fin_num:02d}.json"), encoding="utf-8"))
+    _on = {str(k).upper() for k in (_bos.get("onOffer") or {})}
+    _sm = {str(k).upper(): num(v) for k, v in (_bos.get("stockMap") or {}).items()}
+    if _sm:
+        ke_notoffer_stock = sum(v for k, v in _sm.items() if k not in _on)
+        _ke_onoffer_stock = sum(v for k, v in _sm.items() if k in _on)
+except (OSError, ValueError):
+    _bos = None
 sz_notoffer_stock = gnum(_sz_pa, "stockNotOnOffer")
 ug_notoffer_stock = gnum(_ug_pa, "stockNotOnOffer")
-ke_offer_stock    = posted                                       # s3Posted = on-offer Kenya stock
+ke_offer_stock    = globals().get("_ke_onoffer_stock", posted)   # Kenya stock of bags on the month's offer list
 mo_sales_no_post  = gnum(pa, "monthlySalesNoPost")              # not-on-offer sales (still posted)
 
 # ── IMPACTS (quantified, with assumptions) ────────────────────
@@ -1066,7 +1075,7 @@ bl1_strip = ladder_strip(achieved,  (f"Own the {fmt(gap)}-bag miss vs the {fmt(t
 bl5_strip = ladder_strip(_post_cov, f"Post the biggest never-posted lines first; move the non-converters onto an offer; plan the rest for {next_month}.")
 remaining_section = remaining_section.replace("__REM_STRIP__", ladder_strip(
     _post_cov, f"Post the <b>{fmt(_unm_units)}</b> never-posted units first; put the <b>{fmt(_stuck_units)}</b> non-converting units on an offer."))
-bl2_strip = ladder_strip(_post_cov, f"Post the <b>{pct(unposted_pct)}</b> of Kenya stock left unmarketed — posted bags already sell at {pct(ke_mo_mkt)} of expectation.")
+bl2_strip = ladder_strip(_post_cov, f"Post the <b>{pct(unposted_pct)}</b> of Kenya stock left unmarketed — posted bags already reach {pct(ke_mo_mkt)} of their expected sales, bag by bag.")
 bl3_strip = ladder_strip(_wk_pace,  f"Hold a hard <b>{fmt(bare_min)}/wk</b> commit reviewed every Monday; recover ~{fmt(weekly_short/2)}/wk to close the gap.")
 # Regions point follows the data: name the best region, and only call them "uneven" when the
 # spread is real (≥ 10 points) — the yield is now posts × spp capped per bag, so they can be level.
@@ -1078,7 +1087,7 @@ if _reg_spread >= 10:
     bl4_strip = ladder_strip(_weak_reg, f"Run the {_best_name} playbook ({pct(_best_val)}) in {weak_name} ({pct(weak_val)}) — same posting discipline everywhere.")
 else:
     _reg_head = "Regions convert about the same:"
-    _reg_tail = (f"Posting yields within {_reg_spread:.0f} points of each other — the gap is "
+    _reg_tail = (f"Posting yields within {_reg_spread:.1f} points of each other — the gap is "
                  f"what gets posted, not where.")
     bl4_strip = ladder_strip(_weak_reg, f"Lift every region's posting yield (best {_best_name} {pct(_best_val)}) by pointing posts at bags that convert.")
 
@@ -1160,7 +1169,7 @@ body = f"""
     </div>
     {bl1_strip}
     <ul>
-      <li><b>{pct(unposted_pct)} of Kenya stock ({fmt(notposted)} bags) was never posted</b> — yet posted bags sold at {pct(ke_mo_mkt)} of expectation. Marketing is the lever, and much of it went unused.{bl2_strip}</li>
+      <li><b>{pct(unposted_pct)} of Kenya stock ({fmt(notposted)} bags) was never posted</b> — yet posted bags reached {pct(ke_mo_mkt)} of their expected sales bag by bag (in total they sold ~{posting_mult:.1f}× what their posts should bring, carried by a few big sellers). Marketing is the lever, and much of it went unused.{bl2_strip}</li>
       <li><b>Weekly output (~{fmt(avg_weekly)} bags) ran below the {fmt(bare_min)}/week floor</b> needed to hit target — the problem is consistency, not a bad month.{bl3_strip}</li>
       <li><b>{_reg_head}</b> Kenya posts at {pct(ke_mo_mkt)} sales-achieved, Sinza {pct(sz_mo_mkt)}, Uganda {pct(ug_mo_mkt)}. {_reg_tail}{bl4_strip}</li>
       <li><b>Why stock isn't moving, and how to sell it{' in the ' + str(_days_left) + ' days left' if _in_progress else ''}:</b> {fmt(_unm_units)} units were never posted (not seen) and {fmt(_stuck_units)} posted units sold under half their expected (seen, not bought). {('Posting at ~' + fmt(_posts_day) + '/day can still move ~' + fmt(_bags_left) + ' bags this month — see section 5.') if _in_progress else 'See section 5 for the ' + next_month + ' plan.'}{bl5_strip}</li>
@@ -1761,8 +1770,9 @@ def _collect_comments(html):
                       "type": "bottom", "text": _html_text(m.group(1))})
     for li in re.findall(r'<div class="exec">.*?<ul>(.*?)</ul>', html, re.S)[:1]:
         for one in re.findall(r'<li>(.*?)</li>', li, re.S):
+            one = re.sub(r'<span class="lstep[^"]*">.*?</span>', ' ', one, flags=re.S)   # the step label is repeated in the action
             items.append({"section": "Executive Summary", "label": "Key point",
-                          "type": "bullet", "text": _html_text(one)})
+                          "type": "bullet", "text": re.sub(r"\s+", " ", _html_text(one)).strip()})
     heads = [(mm.start(), _html_text(mm.group(1)))
              for mm in re.finditer(r'<div class="sec-head">.*?<h2>(.*?)</h2>', html, re.S)]
     def _section_for(pos):
