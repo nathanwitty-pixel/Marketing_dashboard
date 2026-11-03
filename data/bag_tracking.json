@@ -1,0 +1,26 @@
+{
+  "_about": "Bag Tracking (docs/bag-tracking.md): the chosen bags, tracked from `start` (Nairobi time). `now` overrides the offer price.",
+  "start": "2026-11-02 08:00",
+  "bags": [
+    {"bag": "CODE 3"},
+    {"bag": "AMAYA"},
+    {"bag": "ZURI"},
+    {"bag": "MINI ZURI"},
+    {"bag": "DOUBLE PRESS"},
+    {"bag": "GYM BAG"},
+    {"bag": "LIAM"},
+    {"bag": "PIONEER", "now": 2200},
+    {"bag": "BIG MAN BAG"},
+    {"bag": "NEO MAN"},
+    {"bag": "MAN BAG"},
+    {"bag": "KAI", "now": 2400},
+    {"bag": "TRAVEL"},
+    {"bag": "FABELA"},
+    {"bag": "TRECENTO"},
+    {"bag": "AURORA"},
+    {"bag": "AVANA HB"},
+    {"bag": "BELT BAG"},
+    {"bag": "MOON BAG"},
+    {"bag": "MONAH BP"}
+  ]
+}

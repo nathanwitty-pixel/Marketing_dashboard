@@ -92,6 +92,17 @@ A card right after **Power deal choosing**: the single bags worth selling once t
   - **Needs a push** — the rest: 4+ months of stock, no sales, or slow (< 15 a month): stock sitting.
   Only priced bags are listed (no wipes, cleaners, gift bags or "buy X get Y free" promo items).
   Sorted Sell now (busiest first), then Needs a push (most stock first), then Low stock; first 15 shown, "Show all".
+- **Filters** (row above the table): search by bag name, Call (Sell now / Needs a push / Low stock), Category, In a combo
+  or not; "Clear" resets filters and sort. "Showing X of Y" when a filter is on. The sell/push/low summary counts stay
+  for the whole list.
+- **Sort:** click a column heading (▼/▲ shows which). Numbers start biggest first, Bag and Call A→Z; a second click
+  flips it, a third goes back to the default order. "No sales" sorts as the most months of stock.
+- **Export CSV** (button beside the month buttons): every bag that passes the filters, not just the first 15, in the
+  on-screen order, for the chosen 3/5-month window and the current power-deal picks. Columns: Bag, Category, In a combo, Stock, one column per
+  month's sales, Avg a month, Last month, Change vs avg %, Months of stock, Price was, Price now, Margin %, Call.
+  File: `bags_not_on_offer_<last month>_<N>mo.csv`.
+- **Collapse / Expand** (button in the card title): folds the whole card down to its title; remembered per browser.
+  The rows themselves still have "Show all ▾ / Show fewer ▴".
 
 ## Pricing — WAS vs NOW, from the offers sheet
 

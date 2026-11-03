@@ -271,6 +271,7 @@ Reject Sale); this table is the per-menu spec index.
 | 4 | Self made combos vs running combos | [self-made-combos.md](self-made-combos.md) | `self_made_combos.py` (+ `offer_data.py`) | `self_made_combos.html` |
 | 5 | Bags on offer vs not on offer | [bags-on-offer.md](bags-on-offer.md) | `bags_on_offer.py` (reads `bags_offer_source.json` from `self_made_combos.py`) | `bags_on_offer.html` |
 | 5a | Shop Stock Levels (min / max per shop · stocks report · next-month preparedness · OOS leads) | [shop-stock-levels.md](shop-stock-levels.md) | `shop_stock_levels.py` | `shop_stock_levels.html` |
+| 5b | Bag Tracking (the chosen bags: Kenya shop stock at the start vs now · sold / received since · price was → now) | [bag-tracking.md](bag-tracking.md) | `bag_tracking.py` (config `bag_tracking.json`, frozen start stock `bag_tracking_baseline.json`) | `bag_tracking.html` |
 | 6 | Posting – Sales Yields from Accurate Posting | [posting-yields.md](posting-yields.md) | `posting_yields.py` | `posting_yields.html` |
 | 7 | Shops Efficiency Tracking | [shops-efficiency.md](shops-efficiency.md) | `shops_dispatch.py` → `shops_efficiency.py` | `shops_efficiency.html` |
 | 7a | Shop Launch (a new shop from its first sale · Nyeri, Oct 2026) | [shop-launch.md](shop-launch.md) | `shop_launch.py` (config `shop_launch_config.json`) | `shop_launch.html` |
