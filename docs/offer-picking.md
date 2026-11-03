@@ -208,6 +208,12 @@ Verified against the sheet: `LOLA + MINI ZURI/TRECENTO` → now = 1,700 + max(2,
 **3,900** (exact), was = 2,100 + 2,600 = 4,700. Each combo pre-fills its grid from the
 reference month but **every slot is a searchable combobox** the user can change freely.
 
+**Auto-fill all / Remove all** (3 Nov 2026, user's call) — buttons above the combos: *Auto-fill all* puts every
+slot back to its pre-filled bag, *Remove all* sets every slot to Zero so the user picks from scratch. Each combo
+also has its own **Fill** / **Clear**. They go through the normal slot change (`setCbx` → `cbxchange`), so the
+combo's price / margin, the live Forecast, the power-deal exclusions and the "Bags not on offer" list all update;
+the frozen baseline doesn't. A note beside them counts the combos in use and slots filled.
+
 ## Data sources
 
 - **`self_made_combos.html` → `SMC`** — reused (no re-query) for the running combos:
