@@ -1,7 +1,7 @@
 {
     "python-envs.defaultEnvManager": "ms-python.python:conda",
     "python-envs.defaultPackageManager": "ms-python.python:conda",
-    "python.defaultInterpreterPath": "C:\\ProgramData\\anaconda3\\python.exe",
+    "python.defaultInterpreterPath": "C:\\Users\\User\\.conda\\envs\\denri\\python.exe",
     "python.terminal.useEnvFile": true,
     "python.envFile": "${workspaceFolder}/.env",
     "files.autoSave": "afterDelay",
