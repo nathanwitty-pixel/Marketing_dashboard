@@ -107,6 +107,9 @@ CORPORATE_CLIENTS = _load_sql("corporate_clients.sql")
 # breakdown all use, so they reconcile. Params :start_date / :end_date.
 BAGS_SOLD_TOTAL = _load_sql("bags_sold_total.sql")
 
+# BAGS_SOLD_TOTAL per day (column `day`) — Forward Projections' weekday baseline. Same params + :excluded.
+BAGS_SOLD_DAILY = _load_sql("bags_sold_daily.sql")
+
 # BAGS_SOLD_TOTAL split per till (rows add up to it exactly) — the "Why did we move?"
 # waterfall groups these into regions. Same params + :excluded.
 BAGS_SOLD_BY_SHOP = _load_sql("bags_sold_by_shop.sql")

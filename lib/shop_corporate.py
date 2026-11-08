@@ -185,6 +185,26 @@ WHERE COALESCE(l.active, TRUE)
 
 SHOPS_SQL = "SELECT DISTINCT UPPER(name) AS shop FROM pos_config"
 
+# Bag styles (first word of the product: "Jumbo Brown" → jumbo) on quotes / till receipts, for the
+# "matched by bags" rule in build().
+QUOTE_STYLES_SQL = f"""
+SELECT DISTINCT l.order_id AS oid, split_part(trim(COALESCE(pt.name::text, l.name, '')), ' ', 1) AS style
+FROM sale_order_line l
+LEFT JOIN product_product pp ON pp.id = l.product_id LEFT JOIN product_template pt ON pt.id = pp.product_tmpl_id
+WHERE l.order_id = ANY(CAST(:ids AS int[])) AND l.display_type IS NULL
+  AND COALESCE(pt.name::text, l.name, '') !~* '{_NON_BAG}'
+"""
+
+TILL_STYLES_SQL = f"""
+SELECT l.order_id AS oid, split_part(trim(COALESCE(l.full_product_name, pt.name::text, '')), ' ', 1) AS style,
+       SUM(l.qty) AS qty
+FROM pos_order_line l
+LEFT JOIN product_product pp ON pp.id = l.product_id LEFT JOIN product_template pt ON pt.id = pp.product_tmpl_id
+WHERE l.order_id = ANY(CAST(:ids AS int[]))
+  AND COALESCE(l.full_product_name, pt.name::text, '') !~* '{_NON_BAG}'
+GROUP BY 1, 2
+"""
+
 
 # ── helpers ───────────────────────────────────────────────────
 class _UF:
@@ -320,6 +340,35 @@ def build(today: _dt.date | None = None) -> dict | None:
             c["pays"].append(t)
             c["flags"].append(f'matched by amount (till: "{_txt(t["cust"]).strip()}")')
             t["used"] = True
+
+    # same bags as an unpaid quote → that quote (customer saved under another name, money a little off).
+    # 10+ bags, the same bag count, at least 80% of the receipt's bags in the quote's styles (colour may
+    # differ), rung up within 14 days of the quote. Bank of India S00823 = HILTON/102633 (6 Nov 2026):
+    # 25 Jumbos, KES 90,000 quoted, KES 88,400 paid under "lucy".
+    cand = [t for t in loose if not t.get("used") and t["bags"] >= 10]
+    open_c = [c for c in clients if not c["pays"] and c["quotedBags"] >= 10]
+    if cand and open_c:
+        q_ids = [int(q["id"]) for c in open_c for q in c["quotes"]]
+        q_styles: dict = {}
+        for r in _rows(db.run_query(QUOTE_STYLES_SQL, {"ids": q_ids})):
+            q_styles.setdefault(r["oid"], set()).add(_txt(r["style"]).lower())
+        t_styles: dict = {}
+        for r in _rows(db.run_query(TILL_STYLES_SQL, {"ids": [int(t["id"]) for t in cand]})):
+            t_styles.setdefault(r["oid"], []).append((_txt(r["style"]).lower(), float(r["qty"] or 0)))
+        for t in sorted(cand, key=lambda t: -t["bags"]):
+            lines = t_styles.get(t["id"], [])
+            for c in open_c:
+                if c["pays"] or t["bags"] != c["quotedBags"]:
+                    continue
+                if not (c["first"] <= t["d"] <= c["first"] + _dt.timedelta(days=14)):
+                    continue
+                styles = set().union(*(q_styles.get(q["id"], set()) for q in c["quotes"]))
+                same = sum(qty for s, qty in lines if s in styles)
+                if t["bags"] and same >= 0.8 * t["bags"]:
+                    c["pays"].append(t)
+                    c["flags"].append(f'matched by bags (till: "{_txt(t["cust"]).strip()}")')
+                    t["used"] = True
+                    break
 
     # bulk till orders with no quote at all
     by_cust: dict = {}

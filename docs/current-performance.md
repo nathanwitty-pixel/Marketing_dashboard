@@ -198,6 +198,7 @@ all again — "KES X paid earlier" under the row). Quotes from last month are st
 matches its quote. Clients whose only activity was last month leave the tab; each finished month is kept in
 **History** (section 8 · Shop Corporate Orders, `extras.shopCorporate`) and backed up in
 `data/shop_corporate_history.json`.
+**Matched by bags (6 Nov 2026, user's call):** a till receipt that doesn't match a quote by customer, phone or email still belongs to an unpaid Odoo Sales quote when it has **10+ bags, the same bag count**, at least **80% of its bags in the quote's styles** (first word of the product, so a colour swap still matches) and is rung up **within 14 days of the quote**. Flagged "matched by bags (till: \"…\")". Example: Bank of India S00823 (25 Jumbo Brown, KES 90,000, draft) = HILTON/102633, 6 Nov, 24 Jumbo Brown + 1 Jumbo Black, KES 88,400 paid by bank under "lucy" → Hilton, KES 1,600 owed. Checked on Aug–Oct 2026: no other receipt matched. (Before: only the amount rule — 50+ bags within 0.5% of the quote.)
 
 **Corporate by client** (its own section after Forward Projections since 18 Oct 2026 — it used to sit in the Sales popover. Each tab opens with a chart: Corporate app = bags per client stacked Sold (paid) · Invoiced, not paid yet · Quoted, to invoice; Shop corporate = KES paid vs owed per hunting shop, a bar click filters the table like the shop boxes; `sql/corporate_clients.sql` → `PERF.corporateClients`. **% on the bars** (18 Oct 2026): each bar's end label adds its **share of the tab's bags** (client bags ÷ all bars' bags; Shop corporate = the shop's bags ÷ all hunting shops' bags) and its **% of the corporate target** (bags ÷ `PERF.corporateTarget.bags`, the Odoo corporate target — the same target on both tabs); the tooltip shows the share too. Shares on a tab add up to 100 % (± rounding)):
 one row per client: quoted · invoiced · paid % · sold. In the Invoiced column, a **month badge** marks
@@ -241,24 +242,35 @@ total (312.5 → 312) while the table rounded each client (187.5 → 188, total 
 shows the **totals** beside each name: Quoted · Invoiced · Paid (all paid ÷ all agreed, after WHT) · Sold.
 They stay in view while you scroll.
 
-## Forward Projections — the pace (1 Nov 2026, user's call)
+## Forward Projections — the pace (6 Nov 2026, user's call; replaces the 1 Nov first-week / own-pace rule)
 
-The projections multiply a **daily pace** by the days in the month. Which pace:
+**Month end = bags sold so far + the days left, each at its weekday's normal level, scaled by how the month is running.**
 
-- **Days 1–7 of the month (first-week pace):** one or two days — often the slowest of the month — can't set the
-  pace. Until the first week has passed (to the 7th inclusive), the pace is the **average day of days 1–7 of the
-  last 3 months** (e.g. for November: 1–7 Aug, 1–7 Sep, 1–7 Oct = 21 days): bags (`bags_sold_total.sql`), POS bag
-  revenue (`bag_revenue.sql`) and Corporate-app bags / KES (`corporate_bags.sql`), each ÷ 21.
-  Standard = POS bags/day × days in month; Forecasted = (POS + corporate) bags/day × days in month; revenue the same
-  with KES. The cards say so: "First week: pace = the average of 1–7 Aug, Sep, Oct (N bags a day); from 8 Nov it's
-  this month's own pace", and show this month's complete days so far against the same days' average
-  ("1–3 Nov: 1,400 bags vs 1,520 on average").
-- **From the 8th (normal pace):** this month's **complete days** only — sales up to yesterday ÷ days up to yesterday
-  (today is still filling in, so it's left out of both). Before 1 Nov 2026 the sales included today's part day but
-  the days didn't, which read a little high.
+- **So far** = this month's **complete days** (up to yesterday; today is still filling in): bags (`bags_sold_total.sql`),
+  POS bag revenue (`bag_revenue.sql`), Corporate-app bags / KES (`corporate_bags.sql`).
+- **Weekday baseline** = the average Monday, Tuesday … Sunday over the **8 full weeks before the 1st**
+  (`bags_sold_daily.sql`; for November: 6 Sep–31 Oct). Weekdays matter: a Sunday sells about a third of a Friday,
+  so a month with five Fridays left is ahead of one with five Sundays left.
+- **How the month is running** = bags so far ÷ what the baseline expected for those same days (e.g. 6 Nov: 2,184 vs
+  2,353 = 93%). It's **eased in**: counted at 1 + (run − 1) × d ÷ (d + 7), d = complete days, so after 5 days the
+  month's own run carries 42% and the baseline the rest (93% → counted at 97%); after 21 days it carries 75%. On the
+  1st (no complete days) the projection is the baseline month.
+- **Days left** = the baseline for each remaining day (today included) × that scale.
+- **Standard** = so far + days left. **Revenue** = revenue so far + the days-left bags × this month's KES per bag
+  (the baseline's before any bags are sold).
+- **Forecasted** adds corporate = paid so far + the baseline's **corporate per day** × days left. Corporate isn't
+  scaled by the month's run: one invoice can be 250 bags.
+- **Why (backtest Jun–Oct 2026, average miss on the month total):** days 1–6 5.2% (the old first-week rule 6.6%,
+  a plain so-far ÷ days pace 13.5%); days 7–13 6.1% (old 6.9%; the old rule jumped on the 8th, e.g. Oct day 10 read
+  +19%); days 14–20 4.1% (3.9%); days 21–29 2.1% (2.0%). No switch day, so no jump.
+- The **date line** above the cards spells it out: "month end = 2,184 bags so far (1–5 Nov) + 12,711 for the 25
+  days left = 14,895 bags", the baseline weeks and the scale. `PROJ.pace` (`mode: "weekday"`) carries `soFar`,
+  `restBags`, `projBags`, `expSoFar`, `expRest`, `rawRatio`, `ratio`, `weight`, `baseFrom` / `baseTo`, `weekdays`;
+  `bags` / `kes` / `corpBags` / `corpKes` are the per-day equivalents (× days in month = month end).
 - The **Sales card**, Remaining target and the rest still show every sale up to now; only the projections use the
   pace above. The price-mix table keeps this month's mix and scales it to the projected total.
-- Pinned (archived) month → the whole month at ×1, as before.
+- Settings: `PACE_WEEKS` (8) and `PACE_EASE` (7) in `forward_projections.py`.
+- Postgres down → the old sales × velocity factor. Pinned (archived) month → the whole month at ×1, as before.
 
 ## Forward Projections — revenue (21 Oct 2026, user's call)
 
