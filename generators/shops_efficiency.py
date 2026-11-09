@@ -43,7 +43,7 @@ SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 KENYA_SHOPS = [
     "STARMALL", "MOMBASA", "NAKURU", "ELDORET", "KISUMU", "MERU",
     "THIKA", "HAZINA", "KITENGELA", "NANYUKI", "KAKAMEGA", "HILTON",
-    "KISII", "KTDA", "BUSIA", "RONGAI",
+    "KISII", "KTDA", "BUSIA", "RONGAI", "NYERI",
 ]
 
 # Shop → Region grouping for the region-level view. Kenya only, so region
@@ -63,6 +63,7 @@ SHOP_REGION_MAP = {
     "Meru":      "Central Region",
     "Nanyuki":   "Central Region",
     "Thika":     "Central Region",
+    "Nyeri":     "Central Region",
     "Eldoret":   "Rift Valley",
     "Nakuru":    "Rift Valley",
 }
@@ -177,6 +178,7 @@ STOCK_CODE_TO_SHOP = {
     "KSM": "KISUMU", "MERU": "MERU", "THK": "THIKA", "HAZ": "HAZINA",
     "KITE": "KITENGELA", "NAN": "NANYUKI", "KAK": "KAKAMEGA", "HTN": "HILTON",
     "KSI": "KISII", "KTDA": "KTDA", "BUSIA": "BUSIA", "RONG": "RONGAI",
+    "NYERI": "NYERI",
 }
 
 

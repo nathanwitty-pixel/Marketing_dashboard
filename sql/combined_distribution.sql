@@ -46,6 +46,7 @@ code_mapping AS (
   UNION ALL SELECT 'KITENGELA', 'KITENGELA'
   UNION ALL SELECT 'RONG', 'RONGAI'
   UNION ALL SELECT 'RONGAI', 'RONGAI'
+  UNION ALL SELECT 'NYERI', 'NYERI'
   UNION ALL SELECT 'NAN', 'NANYUKI'
   UNION ALL SELECT 'NANYUKI', 'NANYUKI'
   UNION ALL SELECT 'KAK', 'KAKAMEGA'
@@ -83,6 +84,7 @@ receipts_raw AS (
       WHEN m.dest_path ILIKE '%KAK/Stock%'    THEN 'KAKAMEGA'
       WHEN m.dest_path ILIKE '%KSI/Stock%'    THEN 'KISII'
       WHEN m.dest_path ILIKE '%BUSIA/Stock%'  THEN 'BUSIA'
+      WHEN m.dest_path ILIKE '%NYERI/Stock%'  THEN 'NYERI'
       WHEN m.dest_path ILIKE '%RONG/Stock%'   THEN 'RONGAI'
       WHEN m.dest_path ILIKE '%STAR/Stock%'   THEN 'STARMALL'
       WHEN m.dest_path ILIKE '%CORP/Stock%'   THEN 'CORPORATE'
@@ -126,6 +128,7 @@ cbd_out_to_shops_raw AS (
       WHEN m.dest_path ILIKE '%KAK/Stock%'    THEN 'KAKAMEGA'
       WHEN m.dest_path ILIKE '%KSI/Stock%'    THEN 'KISII'
       WHEN m.dest_path ILIKE '%BUSIA/Stock%'  THEN 'BUSIA'
+      WHEN m.dest_path ILIKE '%NYERI/Stock%'  THEN 'NYERI'
       WHEN m.dest_path ILIKE '%RONG/Stock%' OR m.dest_path ILIKE '%RONG%' THEN 'RONGAI'
       WHEN m.dest_path ILIKE '%STAR/Stock%'   THEN 'STARMALL'
       WHEN m.dest_path ILIKE '%HTN/Stock%'    THEN 'HILTON'
@@ -286,6 +289,7 @@ v2_hilton_forward AS (
       WHEN m.dest_path ILIKE '%KAK/Stock%'    THEN 'KAKAMEGA'
       WHEN m.dest_path ILIKE '%KSI/Stock%'    THEN 'KISII'
       WHEN m.dest_path ILIKE '%BUSIA/Stock%'  THEN 'BUSIA'
+      WHEN m.dest_path ILIKE '%NYERI/Stock%'  THEN 'NYERI'
       WHEN m.dest_path ILIKE '%RONG%'         THEN 'RONGAI'
       WHEN m.dest_path ILIKE '%STAR/Stock%'   THEN 'STARMALL'
       WHEN m.dest_path ILIKE '%CORP/Stock%'   THEN 'CORPORATE'
@@ -433,6 +437,7 @@ pivoted_detail AS (
     SUM(CASE WHEN dest_name = 'KTDA NEW' THEN qty ELSE 0 END)   AS "KTDA NEW",
     SUM(CASE WHEN dest_name = 'BUSIA' THEN qty ELSE 0 END)      AS "BUSIA",
     SUM(CASE WHEN dest_name = 'RONGAI' THEN qty ELSE 0 END)     AS "RONGAI",
+    SUM(CASE WHEN dest_name = 'NYERI' THEN qty ELSE 0 END)      AS "NYERI",
     SUM(CASE WHEN dest_name = 'CORPORATE' THEN qty ELSE 0 END)  AS "CORPORATE",
     COALESCE(ds.denri_qty,0)                                    AS "DENRI SHOPS"
   FROM bag_universe b
@@ -448,7 +453,7 @@ pivoted_valued AS (
       OR "KITENGELA" <> 0 OR "NANYUKI" <> 0 OR "KAKAMEGA" <> 0 OR "HILTON" <> 0
       OR "JUMIA" <> 0 OR "MRKT" <> 0 OR "SINZA" <> 0 OR "UGANDA" <> 0
       OR "KISII" <> 0 OR "KTDA" <> 0 OR "KTDA NEW" <> 0 OR "BUSIA" <> 0
-      OR "RONGAI" <> 0 OR "CORPORATE" <> 0 OR "DENRI SHOPS" <> 0)
+      OR "RONGAI" <> 0 OR "NYERI" <> 0 OR "CORPORATE" <> 0 OR "DENRI SHOPS" <> 0)
 ),
 family_map AS (
   SELECT DISTINCT bag_name, SPLIT_PART(bag_name, ' ', 1) AS family
@@ -468,6 +473,7 @@ family_subtotals AS (
     SUM(p."UGANDA")     AS "UGANDA",   SUM(p."KISII")    AS "KISII",
     SUM(p."KTDA")       AS "KTDA",     SUM(p."KTDA NEW") AS "KTDA NEW",
     SUM(p."BUSIA")      AS "BUSIA",    SUM(p."RONGAI")   AS "RONGAI",
+    SUM(p."NYERI")      AS "NYERI",
     SUM(p."CORPORATE")  AS "CORPORATE",
     SUM(p."DENRI SHOPS") AS "DENRI SHOPS"
   FROM pivoted_valued p
@@ -488,6 +494,7 @@ grand_total AS (
     SUM("UGANDA")     AS "UGANDA",   SUM("KISII")    AS "KISII",
     SUM("KTDA")       AS "KTDA",     SUM("KTDA NEW") AS "KTDA NEW",
     SUM("BUSIA")      AS "BUSIA",    SUM("RONGAI")   AS "RONGAI",
+    SUM("NYERI")      AS "NYERI",
     SUM("CORPORATE")  AS "CORPORATE",
     SUM("DENRI SHOPS") AS "DENRI SHOPS"
   FROM pivoted_valued
@@ -496,7 +503,7 @@ combined AS (
   SELECT p.bag_name,
     "STARMALL","MOMBASA","NAKURU","ELDORET","KISUMU","MERU","THIKA","HAZINA",
     "KITENGELA","WEBSITE","NANYUKI","KAKAMEGA","HILTON","JUMIA","MRKT","SINZA","UGANDA",
-    "KISII","KTDA","KTDA NEW","BUSIA","RONGAI","CORPORATE","DENRI SHOPS",
+    "KISII","KTDA","KTDA NEW","BUSIA","RONGAI","NYERI","CORPORATE","DENRI SHOPS",
     js.src_txt AS jumia_src_txt, ms.src_txt AS mrkt_src_txt,
     SPLIT_PART(p.bag_name, ' ', 1) AS family, 0 AS sort_order
   FROM pivoted_valued p
@@ -506,7 +513,7 @@ combined AS (
   SELECT bag_name,
     "STARMALL","MOMBASA","NAKURU","ELDORET","KISUMU","MERU","THIKA","HAZINA",
     "KITENGELA","WEBSITE","NANYUKI","KAKAMEGA","HILTON","JUMIA","MRKT","SINZA","UGANDA",
-    "KISII","KTDA","KTDA NEW","BUSIA","RONGAI","CORPORATE","DENRI SHOPS",
+    "KISII","KTDA","KTDA NEW","BUSIA","RONGAI","NYERI","CORPORATE","DENRI SHOPS",
     NULL, NULL,
     bag_name AS family, 1 AS sort_order
   FROM family_subtotals
@@ -514,7 +521,7 @@ combined AS (
   SELECT bag_name,
     "STARMALL","MOMBASA","NAKURU","ELDORET","KISUMU","MERU","THIKA","HAZINA",
     "KITENGELA","WEBSITE","NANYUKI","KAKAMEGA","HILTON","JUMIA","MRKT","SINZA","UGANDA",
-    "KISII","KTDA","KTDA NEW","BUSIA","RONGAI","CORPORATE","DENRI SHOPS",
+    "KISII","KTDA","KTDA NEW","BUSIA","RONGAI","NYERI","CORPORATE","DENRI SHOPS",
     NULL, NULL,
     '~~~~' AS family, 2 AS sort_order
   FROM grand_total
@@ -523,10 +530,10 @@ SELECT
   bag_name AS "Product",
   "STARMALL","MOMBASA","NAKURU","ELDORET","KISUMU","MERU","THIKA","HAZINA",
   "KITENGELA","WEBSITE","NANYUKI","KAKAMEGA","HILTON","JUMIA","MRKT","SINZA","UGANDA",
-  "KISII","KTDA","KTDA NEW","BUSIA","RONGAI",
+  "KISII","KTDA","KTDA NEW","BUSIA","RONGAI","NYERI",
   ("STARMALL"+"MOMBASA"+"NAKURU"+"ELDORET"+"KISUMU"+"MERU"+"THIKA"+"HAZINA"+
    "KITENGELA"+"WEBSITE"+"NANYUKI"+"KAKAMEGA"+"HILTON"+"JUMIA"+"MRKT"+"SINZA"+"UGANDA"+
-   "KISII"+"KTDA"+"KTDA NEW"+"BUSIA"+"RONGAI") AS "TOTAL",
+   "KISII"+"KTDA"+"KTDA NEW"+"BUSIA"+"RONGAI"+"NYERI") AS "TOTAL",
   "CORPORATE",
   "DENRI SHOPS",
   CASE WHEN "JUMIA" <> 0 THEN "JUMIA" || ' (' || COALESCE(jumia_src_txt,'') || ')' END AS "JUMIA SRC",

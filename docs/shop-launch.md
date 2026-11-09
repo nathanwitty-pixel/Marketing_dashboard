@@ -26,6 +26,16 @@ Built for **Nyeri** (Oct 2026); the next launch only needs a new config.
   to `workplanCsv`, a saved copy (`BAG TYPE, COLOUR, QTY`, non-zero rows), and says so. The 8 Oct 2026 copy
   has 1,243 bags across 72 bag types (158 listed), and every TOTAL row matches its colours.
 
+## Sales keyed in late (9 Nov 2026, user's call)
+
+Days are Nairobi dates of the till order (the query converts Odoo's UTC `date_order`). When a shop's sales
+are keyed in after the day they happened, as with paper receipts, `salesDateFix` in the config moves them back:
+a list of `{"from": "YYYY-MM-DD HH:MM", "to": "…", "asDate": "YYYY-MM-DD"}` (Nairobi time, `to` exclusive).
+Every sale keyed in that window counts on `asDate`. **Nyeri:** Saturday 7 Nov's printed sales ran from Saturday
+morning to Monday 9 Nov morning, and were keyed in through Sunday night and early Monday. So Sat 7 Nov 06:00 to
+Mon 9 Nov 06:00 all counts as **Saturday 7 Nov** (374 bags, KES 645,169), and Nyeri has **no Sunday 8 Nov sales**.
+Friday 6 Nov stays as the till recorded it (62 bags).
+
 ## Launch day
 
 **Day 1 = the first day the till sells a bag** (by the sales rules below; a test or non-bag line doesn't count).
@@ -91,6 +101,13 @@ Every bag in the opening stock is tracked from the warehouse to the shop, per ba
 - **Stock sent that isn't in the workplan** (extra bags the warehouse added) is listed as its own row, marked
   "not in workplan", so the at-shop and in-transit totals match Odoo. Bag types for these come from the price
   list's names too.
+
+**All received (9 Nov 2026, user's call):** `"allReceived": true` in the config means the shop confirmed every
+bag arrived. Stock is then the **at-shop** figure only: in transit and not sent are 0 (the Odoo transit location
+isn't read, even if a transfer there was never validated), so every bag reads "All at shop". **Opening stock** is
+then **bags sold + at shop**, per bag and colour, instead of the workplan quantity, so sell-through = sold ÷ (sold
++ at shop). The workplan still decides which bags are listed and which are marked "not in workplan"; the opening
+KPI totals the workplan bags only, matching the sold figure the sell-through card uses. Nyeri is set this way.
 
 ## Prices (30 Oct 2026, user's call)
 

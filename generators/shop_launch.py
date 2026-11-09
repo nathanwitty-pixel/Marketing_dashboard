@@ -26,8 +26,9 @@ PRICES_FALLBACK = paths.data("bag_original_prices.json")
 POSTS_SHEET = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"     # MONTHLY / WEEKLY_MARKETING_POST
 
 # The headline "bags sold" rules (sql/bags_sold_total.sql), per day × product, for one till.
+# Days are Nairobi dates; {day_expr} is that date unless a salesDateFix window moves it (see _day_expr).
 SALES_SQL = """
-SELECT p.date_order::date AS d, UPPER(pt."name") AS name,
+SELECT {day_expr} AS d, UPPER(pt."name") AS name,
        SUM(pl.qty)::numeric AS bags, ROUND(SUM(pl.price_subtotal_incl))::numeric AS kes
 FROM pos_order p
 JOIN POS_LINES(p) pl ON pl.order_id = p.id
@@ -37,7 +38,7 @@ LEFT JOIN product_product pp ON pl.product_id = pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
 WHERE UPPER(pc."name") = :till
-  AND p.date_order::date BETWEEN :s AND :e
+  AND {day_expr} BETWEEN :s AND :e
   AND p.state IN ('done', 'invoiced', 'paid')
   AND pl.qty <> 0
   AND COALESCE(pt."name", '') NOT LIKE '%+%'
@@ -180,10 +181,29 @@ def stock_moves(code, transit):
     return out
 
 
-def till_sales(till, s, e):
+_LOCAL_TS = "(p.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')"
+
+
+def _day_expr(fixes):
+    """SQL for a sale's day: its Nairobi date, except sales keyed in a salesDateFix window
+    ({from, to, asDate}, Nairobi 'YYYY-MM-DD HH:MM') count on asDate (e.g. a shop's paper
+    receipts keyed in later). Returns (expr, params)."""
+    whens, params = [], {}
+    for i, f in enumerate(fixes or []):
+        whens.append(f"WHEN {_LOCAL_TS} >= CAST(:fx{i}_from AS timestamp) AND {_LOCAL_TS} < CAST(:fx{i}_to AS timestamp) "
+                     f"THEN CAST(:fx{i}_date AS date)")
+        params.update({f"fx{i}_from": f["from"], f"fx{i}_to": f["to"], f"fx{i}_date": f["asDate"]})
+    if not whens:
+        return f"{_LOCAL_TS}::date", params
+    return f"(CASE {' '.join(whens)} ELSE {_LOCAL_TS}::date END)", params
+
+
+def till_sales(till, s, e, fixes=None):
+    expr, fx_params = _day_expr(fixes)
     try:
-        df = db.run_query(SALES_SQL, {"till": till.upper(), "s": s.isoformat(), "e": e.isoformat(),
-                                      "excluded": queries.excluded_products()})
+        df = db.run_query(SALES_SQL.format(day_expr=expr),
+                          {"till": till.upper(), "s": s.isoformat(), "e": e.isoformat(),
+                           "excluded": queries.excluded_products(), **fx_params})
     except Exception as ex:                                  # noqa: BLE001
         print(f"  Sales unavailable for {till} ({ex})")
         return []
@@ -235,7 +255,7 @@ def build():
     # Sales since launch, per bag and colour, and per launch day.
     bags, daily, other = {}, {}, {"bags": 0, "kes": 0, "names": {}}
     if opened:
-        for r in till_sales(cfg["till"], opened, today):
+        for r in till_sales(cfg["till"], opened, today, cfg.get("salesDateFix")):
             bag, col = match(r["name"])
             day = (r["d"] - opened).days + 1
             daily.setdefault(day, [0, 0])
@@ -264,8 +284,11 @@ def build():
     for names in lstock.odoo_stock_by_shop_code((cfg["stockCode"],), positive_only=False).values():
         for name, q in names.items():
             _add(on_hand, name, q)
-    for name, q in lstock.odoo_stock_at_location(transit_loc).items():
-        _add(in_transit, name, q)
+    # allReceived: the shop confirmed every bag arrived, so stock = at shop only (nothing in transit or unsent).
+    all_received = bool(cfg.get("allReceived"))
+    if not all_received:
+        for name, q in lstock.odoo_stock_at_location(transit_loc).items():
+            _add(in_transit, name, q)
     for name, mv in stock_moves(cfg["stockCode"], transit_loc).items():
         bag, col = match(name)
         if not bag:
@@ -282,19 +305,21 @@ def build():
     month_posts, week_posts = kenya_posts()
     rows = []
     for bag in sorted(set(wp) | set(bags) | set(on_hand) | set(in_transit)):
-        opening = sum(wp.get(bag, {}).values())
         s = bags.get(bag, {"sold": 0, "kes": 0, "cols": {}})
         cols, tot = [], {"shop": 0, "transit": 0, "notSent": 0}
         for col in sorted(set(wp.get(bag, {})) | set(s["cols"]) | set(on_hand.get(bag, {})) | set(in_transit.get(bag, {})),
                           key=lambda c: -wp.get(bag, {}).get(c, 0)):
             o, sd = wp.get(bag, {}).get(col, 0), round(s["cols"].get(col, 0))
             sh, tr = max(on_hand.get(bag, {}).get(col, 0), 0), max(in_transit.get(bag, {}).get(col, 0), 0)
-            ns = max(o - sd - sh - tr, 0)
+            if all_received:                                  # everything arrived: opening = what sold + what's still there
+                o = max(sd, 0) + sh
+            ns = 0 if all_received else max(o - sd - sh - tr, 0)
             for k, v in (("shop", sh), ("transit", tr), ("notSent", ns)):
                 tot[k] += v
             sent = sent_on.get((bag, col), []) if tr else []
             cols.append({"col": col, "opening": o, "sold": sd, "shop": sh, "transit": tr, "notSent": ns,
                          "sent": [iso(d) for d in sent], "arrived": iso(arrived_on.get((bag, col)))})
+        opening = sum(c["opening"] for c in cols)
         sent = sorted({d for c in cols for d in c["sent"]})
         arrived = max((c["arrived"] for c in cols if c["arrived"] and c["shop"]), default=None)
         left = tot["shop"] if stock_live else max(opening - s["sold"], 0)
@@ -320,8 +345,8 @@ def build():
     return {
         "shop": cfg["shop"], "till": cfg["till"], "generated": datetime.datetime.now().strftime("%d %b %Y %H:%M"),
         "opened": opened.isoformat() if opened else None, "day": day_n, "days": days,
-        "workplanSource": wp_source, "stockLive": stock_live, "transitLocation": transit_loc, "postsKnown": month_posts is not None,
-        "openingTotal": sum(sum(c.values()) for c in wp.values()),
+        "workplanSource": "bags sold + at shop (all stock received)" if all_received else wp_source, "stockLive": stock_live, "transitLocation": transit_loc, "postsKnown": month_posts is not None,
+        "openingTotal": sum(r["opening"] for r in rows if r["inWorkplan"]),
         "daily": [[d, round(v[0]), round(v[1])] for d, v in sorted(daily.items())],
         "benchmark": {"shop": bm.get("shop"), "opened": bm_open.isoformat() if bm_open else None,
                       "daily": [[d, round(v[0]), round(v[1])] for d, v in sorted(bm_daily.items())]},

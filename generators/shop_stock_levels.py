@@ -30,11 +30,11 @@ WAREHOUSE = stock_lib.RESTOCK_LOCATION   # CBD/Stock — restocks the Kenya shop
 TILL_SHOP = {"STARMALL": "Starmall", "MOMBASA": "Mombasa", "NAKURU": "Nakuru", "ELDORET": "Eldoret", "KISUMU": "Kisumu",
              "MERU": "Meru", "THIKA": "Thika", "HAZINA": "Hazina", "KITENGELA": "Kitengela", "NANYUKI": "Nanyuki",
              "KAKAMEGA": "Kakamega", "HILTON": "Hilton", "KISII": "Kisii", "KTDA SHOP": "Ktda", "KTDA": "Ktda",
-             "BUSIA": "Busia", "RONGAI": "Rongai", "DAR-ES-ALAM": "Sinza", "SINZA": "Sinza", "UGANDA": "Uganda",
+             "BUSIA": "Busia", "RONGAI": "Rongai", "NYERI": "Nyeri", "DAR-ES-ALAM": "Sinza", "SINZA": "Sinza", "UGANDA": "Uganda",
              "WEBSITE SALES": "Website", "WEBSITE": "Website", "WEBSITE STORE": "Website"}
 CODE_SHOP = {"STAR": "Starmall", "MSA": "Mombasa", "NAKS": "Nakuru", "ELD": "Eldoret", "KSM": "Kisumu", "MERU": "Meru",
              "THK": "Thika", "HAZ": "Hazina", "KITE": "Kitengela", "NAN": "Nanyuki", "KAK": "Kakamega", "HTN": "Hilton",
-             "KSI": "Kisii", "KTDA": "Ktda", "BUSIA": "Busia", "RONG": "Rongai", "DAR": "Sinza", "UG": "Uganda",
+             "KSI": "Kisii", "KTDA": "Ktda", "BUSIA": "Busia", "RONG": "Rongai", "NYERI": "Nyeri", "DAR": "Sinza", "UG": "Uganda",
              "WEB": "Website"}
 OUTSIDE = {"Sinza", "Uganda"}
 ONLINE = {"Website"}                # no stock of its own — the page shows only who is waiting there

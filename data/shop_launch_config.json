@@ -7,5 +7,10 @@
   "workplanSheet": "17CQvuuvNUhNBp4LUImdxJ6pGeTmAC-D1Ediei9v0Yjs",
   "workplanCsv": "nyeri_workplan.csv",
   "benchmark": {"shop": "Rongai", "till": "RONGAI"},
-  "days": 28
+  "days": 28,
+  "allReceived": true,
+  "salesDateFix": [
+    {"from": "2026-11-07 06:00", "to": "2026-11-09 06:00", "asDate": "2026-11-07",
+     "note": "Saturday's printed sales ran Sat 7 Nov morning to Mon 9 Nov morning and were keyed in over Sun/Mon night: all of it is Saturday, Nyeri has no Sunday sales"}
+  ]
 }

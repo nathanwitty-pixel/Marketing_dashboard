@@ -170,7 +170,7 @@ _SHOP_TO_LOC = {
     "ELDORET": "Eldoret", "KISUMU": "Kisumu", "MERU": "Meru", "THIKA": "Thika",
     "HAZINA": "Hazina", "KITENGELA": "Kitengela", "NANYUKI": "Nanyuki",
     "KAKAMEGA": "Kakamega", "HILTON": "Hilton", "KISII": "Kisii",
-    "KTDA SHOP": "KTDA", "BUSIA": "Busia", "RONGAI": "Rongai",
+    "KTDA SHOP": "KTDA", "BUSIA": "Busia", "RONGAI": "Rongai", "NYERI": "Nyeri",
     "WEBSITE SALES": "Website",
 }
 # Shop → sales region, for the per-shop combo-button chips: a shop is flagged red when
@@ -185,6 +185,7 @@ _SHOP_REGION_DEFAULT = {
     "KAKAMEGA": "Western & Nyanza", "KISUMU": "Western & Nyanza",
     "KISII": "Western & Nyanza", "BUSIA": "Western & Nyanza",
     "MERU": "Central Region", "NANYUKI": "Central Region", "THIKA": "Central Region",
+    "NYERI": "Central Region",
     "ELDORET": "Rift Valley", "NAKURU": "Rift Valley",
     "WEBSITE": "Online",
 }
@@ -205,6 +206,7 @@ _STOCK_CODE_TO_LOC = {
     "KSM": "Kisumu", "MERU": "Meru", "THK": "Thika", "HAZ": "Hazina",
     "KITE": "Kitengela", "NAN": "Nanyuki", "KAK": "Kakamega", "HTN": "Hilton",
     "KSI": "Kisii", "KTDA": "KTDA", "BUSIA": "Busia", "RONG": "Rongai",
+    "NYERI": "Nyeri",
 }
 
 
