@@ -1,7 +1,7 @@
 # Graph Report - Marketing_dashboard  (2026-11-09)
 
 ## Corpus Check
-- 249 files · ~1,243,496 words
+- 249 files · ~1,243,556 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 21 file(s) not represented in the graph (top: .csv 14, (none) 2, .toml 1)
 

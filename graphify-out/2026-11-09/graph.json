@@ -5367,7 +5367,7 @@
       "file_type": "code",
       "norm_label": "inject()",
       "source_file": "generators/shop_launch.py",
-      "source_location": "L357"
+      "source_location": "L359"
     },
     {
       "id": "lib_paths_asset",
@@ -19228,7 +19228,7 @@
       "node_kind": "heading",
       "norm_label": "marketing posts",
       "source_file": "docs/shop-launch.md",
-      "source_location": "L115"
+      "source_location": "L118"
     },
     {
       "id": "docs_shop_launch_prices_30_oct_2026_user_s_call",
@@ -19240,7 +19240,7 @@
       "node_kind": "heading",
       "norm_label": "prices (30 oct 2026, user's call)",
       "source_file": "docs/shop-launch.md",
-      "source_location": "L109"
+      "source_location": "L112"
     },
     {
       "id": "docs_shop_launch_sales",
@@ -71082,7 +71082,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-launch.md",
-      "source_location": "L109",
+      "source_location": "L112",
       "weight": 1.0
     },
     {
@@ -71093,7 +71093,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/shop-launch.md",
-      "source_location": "L115",
+      "source_location": "L118",
       "weight": 1.0
     },
     {
@@ -75735,7 +75735,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "generators/shop_launch.py",
-      "source_location": "L357",
+      "source_location": "L359",
       "weight": 1.0
     },
     {
