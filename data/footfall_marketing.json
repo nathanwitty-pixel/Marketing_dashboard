@@ -108,10 +108,10 @@
   },
   {
    "k": "WhatsApp ad-lead conversion",
-   "v": "8.1%",
-   "pts": -2.0,
+   "v": "8.0%",
+   "pts": -2.1,
    "good": "up",
-   "n": "1,111 paid-ad chats (was 10.1%)"
+   "n": "1,119 paid-ad chats (was 10.1%)"
   }
  ],
  "shops": [
@@ -1741,10 +1741,10 @@
      "notCountedOrders": 0,
      "lowCount": true,
      "partial": false,
-     "waChats": 118,
+     "waChats": 126,
      "waBought": 4,
-     "waConv": 3.4,
-     "waReply": 1.0,
+     "waConv": 3.2,
+     "waReply": 0.5,
      "postsLast": 971.0,
      "posts": 796.0,
      "adSpend": null
@@ -7564,7 +7564,7 @@
      "waConv": 1.9,
      "waReply": 0.0,
      "postsLast": 209.0,
-     "posts": 165.0,
+     "posts": 180.0,
      "adSpend": null
     }
    ]
@@ -7774,8 +7774,8 @@
    "orders": 176,
    "conversion": 84.6,
    "rpv": 2127,
-   "waChats": 517,
-   "waConv": 8.5,
+   "waChats": 525,
+   "waConv": 8.4,
    "waReply": 0.5,
    "lowWeeks": 4,
    "bulkOrders": 0,

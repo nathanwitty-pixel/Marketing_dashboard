@@ -36,6 +36,45 @@ morning to Monday 9 Nov morning, and were keyed in through Sunday night and earl
 Mon 9 Nov 06:00 all counts as **Saturday 7 Nov** (374 bags, KES 645,169), and Nyeri has **no Sunday 8 Nov sales**.
 Friday 6 Nov stays as the till recorded it (62 bags).
 
+**Shown as one span (9 Nov 2026, user's call).** The Sales by day table gives the printed sales **one row** for the
+days they cover ("Days 2–3, Sat 7 Nov to Sun 8 Nov"): the total, how many days the printout took (2) and about how
+many bags a day, with a Total row at the foot. **The race chart** gives that span **one point** ("2–3" on the
+launch-day axis, a yellow dot labelled "Sat 7–Sun 8 Nov: 374 bags, printed over 2 days"); every line is read at the
+end of the span (day 3), so the comparison stays like for like. The axis shows short day numbers; the hover gives
+the dates and the printed-sales span.
+- **Opening waterfall: "Opening sales vs the best opening" (9 Nov 2026, user's call):** under the race chart, in the
+  style of the other waterfalls. A shop's **opening** = what it sold over the days it took to record its opening sales
+  (`openingDays` in the config: **Nyeri 3, Rongai 1, Kisii 3, KTDA Shop 1**; usually 2 to 3 days, the time it takes to
+  key in the opening sales). **First bar** = the best opening (Kisii, 656) or the shop picked with **Start from**;
+  **one bar per opening day** = this shop's day minus the other shop's same opening day (a day past a shop's opening
+  counts 0), printed sales one bar for the days they cover ("Days 2–3", marked "printed"); **last bar** = this shop's
+  opening (Nyeri 436). The biggest step is boxed "biggest change"; the axis starts below the lowest level; the hover
+  gives both shops' bags for that day; the note gives each opening's days and bags a day.
+**Other pages:** `lib/sales_date_fix.py` reads the same `salesDateFix` for the **Why did we move?** waterfall
+(`lib/why_moved.py`, Current Performance / Product Performance / New Products). It has only a day per till, so it
+moves whole days: the window's first day up to the day before it ends (Nyeri: 7 and 8 Nov → Sat 7 Nov; 9 Nov stays).
+Under the waterfall a **Printed sales** line names the shop, the bags, the span and the day they count on, whenever
+that day is in a period shown.
+
+## Race lines, sales by day, product performance, folding (9 Nov 2026, user's call)
+
+- **More launches on the race chart:** `alsoCompare` in the config (`[{"shop", "till"}]`) draws extra dotted lines
+  beside the main `benchmark`: Nyeri races **Rongai** (main, used by the KPI cards), **Kisii** (day 1 = 27 Nov 2025)
+  and **KTDA Shop** (day 1 = 30 Jan 2026), each from its own first sale. The note under the chart gives each one's
+  bags on today's day number and whether the shop is ahead or behind. Chart labels carry the date ("Day 2 Sat 7 Nov").
+- **Sales by day:** a table under the race chart, one row per launch day (date, bags, KES). A day carrying a
+  `salesDateFix` says which span it really covers ("Sales from Sat 7 Nov morning to Mon 9 Nov morning … all counted
+  as Saturday 7 Nov"); a day those sales were moved off reads "No sales of its own: counted in Saturday 7 Nov".
+- **Product performance at {shop}:** which bags, categories and colours carry the shop's sales, from the same till
+  lines (`SL.perf` = `[launch day, bag, colour family, category, units, KES]`; category from `product_catalog.csv`,
+  colours folded with `lib/colours.family`). Controls: **Since launch** or any single launch day (a fixed day is marked
+  `*` with its span on hover), **Share by** Units / Revenue. Cards: bags sold, top bag, top category, top colour.
+  Tables: top-selling bags (top 15, "Show all"), categories (bags stocked), colour families, each with share bars;
+  **sell-through** (sold ÷ opening) for Since launch only.
+- **Every bag in the opening stock folds:** the panel starts **collapsed** (its heading shows bags, opening, sold);
+  tap the heading to open it. **Expand all colours** / **Collapse all colours** open or close every listed bag's
+  colour row (they follow the filters and search).
+
 ## Launch day
 
 **Day 1 = the first day the till sells a bag** (by the sales rules below; a test or non-bag line doesn't count).

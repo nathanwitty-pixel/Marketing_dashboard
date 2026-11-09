@@ -198,6 +198,25 @@ def _day_expr(fixes):
     return f"(CASE {' '.join(whens)} ELSE {_LOCAL_TS}::date END)", params
 
 
+def title_case(s):
+    return " ".join(w.capitalize() for w in str(s or "").split())
+
+
+def load_categories():
+    """{BAG TYPE: CATEGORY} from product_catalog.csv (the category a bag type is most often given)."""
+    from collections import Counter
+    seen = {}
+    try:
+        with open(CATALOG, encoding="utf-8", newline="") as fh:
+            for r in csv.DictReader(fh):
+                b, c = (r.get("BAG TYPE") or "").strip().upper(), (r.get("CATEGORY") or "").strip().upper()
+                if b and c:
+                    seen.setdefault(b, Counter())[c] += 1
+    except OSError:
+        return {}
+    return {b: c.most_common(1)[0][0] for b, c in seen.items()}
+
+
 def till_sales(till, s, e, fixes=None):
     expr, fx_params = _day_expr(fixes)
     try:
@@ -254,6 +273,11 @@ def build():
 
     # Sales since launch, per bag and colour, and per launch day.
     bags, daily, other = {}, {}, {"bags": 0, "kes": 0, "names": {}}
+    # Product performance at this shop (docs/shop-launch.md › Product performance): one line per launch day ×
+    # bag × colour family, with its category, so the page can cut by day / bag / category / colour.
+    from lib import colours as lcolours
+    cats = load_categories()
+    perf = {}
     if opened:
         for r in till_sales(cfg["till"], opened, today, cfg.get("salesDateFix")):
             bag, col = match(r["name"])
@@ -261,6 +285,11 @@ def build():
             daily.setdefault(day, [0, 0])
             daily[day][0] += r["bags"]
             daily[day][1] += r["kes"]
+            fam = lcolours.family(r["name"], "") or (title_case(col) if bag else "")
+            pk = (day, bag or "OTHER", fam or "Other")
+            pv = perf.setdefault(pk, [0, 0])
+            pv[0] += r["bags"]
+            pv[1] += r["kes"]
             if not bag:
                 other["bags"] += r["bags"]
                 other["kes"] += r["kes"]
@@ -323,7 +352,7 @@ def build():
         sent = sorted({d for c in cols for d in c["sent"]})
         arrived = max((c["arrived"] for c in cols if c["arrived"] and c["shop"]), default=None)
         left = tot["shop"] if stock_live else max(opening - s["sold"], 0)
-        rows.append({"bag": bag, "price": prices.get(bag), "opening": opening, "sold": round(s["sold"]), "kes": round(s["kes"]),
+        rows.append({"bag": bag, "category": cats.get(bag, "UNCATEGORISED"), "price": prices.get(bag), "opening": opening, "sold": round(s["sold"]), "kes": round(s["kes"]),
                      "left": left, "shop": tot["shop"], "transit": tot["transit"], "notSent": tot["notSent"],
                      "sent": sent, "arrived": arrived,
                      "inWorkplan": bag in wp, "postsMonth": None if month_posts is None else month_posts.get(bag, 0),
@@ -331,15 +360,25 @@ def build():
     rows.sort(key=lambda r: (-r["sold"], -r["opening"], r["bag"]))
 
     # Benchmark: the earlier launch's first `days` days.
+    def launch_curve(b):
+        """(first-sale date, {launch day: [bags, kes]}) over an earlier launch's first `days` days."""
+        op = first_sale(b["till"]) if b.get("till") else None
+        dl = {}
+        if op:
+            for r in till_sales(b["till"], op, op + datetime.timedelta(days=days - 1)):
+                v = dl.setdefault((r["d"] - op).days + 1, [0, 0])
+                v[0] += r["bags"]
+                v[1] += r["kes"]
+        return op, dl
+
     bm = cfg.get("benchmark") or {}
-    bm_daily = {}
-    bm_open = first_sale(bm["till"]) if bm.get("till") else None
-    if bm_open:
-        for r in till_sales(bm["till"], bm_open, bm_open + datetime.timedelta(days=days - 1)):
-            day = (r["d"] - bm_open).days + 1
-            bm_daily.setdefault(day, [0, 0])
-            bm_daily[day][0] += r["bags"]
-            bm_daily[day][1] += r["kes"]
+    bm_open, bm_daily = launch_curve(bm)
+    # Extra launches drawn on the race chart beside the main benchmark (e.g. Kisii, KTDA Shop).
+    also = []
+    for b in cfg.get("alsoCompare") or []:
+        op, dl = launch_curve(b)
+        also.append({"shop": b.get("shop"), "opened": op.isoformat() if op else None, "openingDays": int(b.get("openingDays") or 1),
+                     "daily": [[d, round(v[0]), round(v[1])] for d, v in sorted(dl.items())]})
 
     day_n = (today - opened).days + 1 if opened else 0
     return {
@@ -347,8 +386,16 @@ def build():
         "opened": opened.isoformat() if opened else None, "day": day_n, "days": days,
         "workplanSource": "bags sold + at shop (all stock received)" if all_received else wp_source, "stockLive": stock_live, "transitLocation": transit_loc, "postsKnown": month_posts is not None,
         "openingTotal": sum(r["opening"] for r in rows if r["inWorkplan"]),
+        "perf": [[d, b, f, cats.get(b, "OTHER" if b == "OTHER" else "UNCATEGORISED"), round(v[0]), round(v[1])]
+                 for (d, b, f), v in sorted(perf.items()) if v[0] or v[1]],
+        # Days whose sales were keyed in later (salesDateFix): shown on that day with the span they really cover.
+        "dateFixes": [{"day": (datetime.date.fromisoformat(f["asDate"]) - opened).days + 1, "asDate": f["asDate"],
+                       "from": f["from"], "to": f["to"]}
+                      for f in (cfg.get("salesDateFix") or []) if opened],
         "daily": [[d, round(v[0]), round(v[1])] for d, v in sorted(daily.items())],
-        "benchmark": {"shop": bm.get("shop"), "opened": bm_open.isoformat() if bm_open else None,
+        "alsoCompare": also,
+        "openingDays": int(cfg.get("openingDays") or 1),
+        "benchmark": {"shop": bm.get("shop"), "openingDays": int(bm.get("openingDays") or 1), "opened": bm_open.isoformat() if bm_open else None,
                       "daily": [[d, round(v[0]), round(v[1])] for d, v in sorted(bm_daily.items())]},
         "rows": rows,
         "other": {"bags": round(other["bags"]), "kes": round(other["kes"]),
