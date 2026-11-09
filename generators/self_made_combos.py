@@ -673,9 +673,10 @@ def _enrich_deals(deals, m_start, m_end, stock_map, combo_bags=None):
     _power_keys, _dow_done = set(_seen), set()
     for _x in deals.get("dealOfWeek", []):
         k = _dn(_x["product"])
-        if k in _power_keys or (k, str(_x.get("tier"))) in _dow_done:
+        _dk = (k, str(_x.get("tier")), _x.get("start"), _x.get("end"))
+        if k in _power_keys or _dk in _dow_done:
             continue
-        _dow_done.add((k, str(_x.get("tier"))))
+        _dow_done.add(_dk)
         e = _seen.setdefault(k, dict(_x, sold=0, revenue=0))
         e["sold"] = e.get("sold", 0) + _x.get("sold", 0)
         e["revenue"] = e.get("revenue", 0) + _x.get("revenue", 0)
@@ -718,7 +719,9 @@ def _enrich_deals(deals, m_start, m_end, stock_map, combo_bags=None):
         units = revenue = discount = 0
         for d in items:
             wk = d.get("weeks", [])
-            wu = sum(wk[i - 1]["sold"] for i in weeks_in_window if 0 < i <= len(wk))
+            # a dated deal (Start / End) counts only its own weeks
+            own = d.get("windowWeeks") if (d.get("start") or d.get("end")) else None
+            wu = sum(wk[i - 1]["sold"] for i in (own if own is not None else weeks_in_window) if 0 < i <= len(wk))
             price = d.get("now") or ((d["revenue"] / d["sold"]) if d.get("sold") else 0)
             units += wu
             revenue += round(wu * price)
@@ -744,13 +747,22 @@ def _enrich_deals(deals, m_start, m_end, stock_map, combo_bags=None):
     _w2 = _tier_window("2", list(range(3, max(_maxwk, 4) + 1)))   # Wk 3 onward, or to its End date
     _t2 = _tier_agg("2", _w2); _t2["label"] = "Tier 2"; _t2["window"] = _wlabel(_w2)
     _tiers = [_t1, _t2]
-    if any(_tdigit(d.get("tier")) == "3" for d in deals.get("dealOfWeek", [])):
-        # Tier 3 = the regional Deals of the Week (one list per region, from 25 Oct 2026)
-        _w3 = _tier_window("3", [])
-        _t3 = _tier_agg("3", _w3); _t3["label"] = "Regional"
-        _st = next((d.get("start") for d in deals["dealOfWeek"] if _tdigit(d.get("tier")) == "3"), None)
-        _t3["window"] = ("From " + _as_day(_st).strftime("%d %b").lstrip("0")) if _st else _wlabel(_w3)
-        _tiers.append(_t3)
+    # Tier 3, 4, … = the regional Deals of the Week, one wave per set of posters (Tier 3 from 25 Oct 2026,
+    # Tier 4 from 8 Nov 2026). Each wave is its own phase, named by its dates.
+    _dd = lambda s: _as_day(s).strftime("%d %b").lstrip("0")   # noqa: E731
+    for _tk in sorted({_tdigit(d.get("tier")) for d in deals.get("dealOfWeek", [])} - {"", "1", "2"}):
+        _its = [d for d in deals["dealOfWeek"] if _tdigit(d.get("tier")) == _tk]
+        _wv = sorted({w for d in _its for w in (d.get("windowWeeks") or [])}) or _tier_window(_tk, [])
+        _tv = _tier_agg(_tk, _wv)
+        _st = min((d["start"] for d in _its if d.get("start")), default=None)
+        _ens = sorted({d["end"] for d in _its if d.get("end")})
+        _open = sorted({d.get("region") or "" for d in _its if not d.get("end")} - {""})
+        _tv["label"] = ("Regional " + _dd(_st)) if _st else "Regional"
+        if _st and _ens:
+            _tv["window"] = _dd(_st) + " to " + _dd(_ens[-1]) + ((", " + " and ".join(r.replace(" Region", "") for r in _open) + " still on") if _open else "")
+        else:
+            _tv["window"] = ("From " + _dd(_st)) if _st else _wlabel(_wv)
+        _tiers.append(_tv)
     deals["tierCompare"] = {"maxWk": _maxwk, "tiers": _tiers}
 
     # Cross-sell: which Power Deals are ALSO run as a Deal of the Week (same bag).
@@ -792,7 +804,9 @@ def _local_deal_rows(month_name):
         st, en = _as_day(r[10]), _as_day(r[11])
         if not st or not _mi:
             return r[1].strip().lower() == month_name.lower()
-        y = st.year if _mi >= st.month else st.year + 1
+        # the month's year: the start's year, unless the month is well before the start month (then next year),
+        # so a row starting 8 Nov 2026 is not "in October 2027"
+        y = st.year if (_mi >= st.month or st.month - _mi <= 6) else st.year + 1
         ms = datetime.date(y, _mi, 1)
         me = datetime.date(y, _mi, _cal.monthrange(y, _mi)[1])
         return st <= me and (en is None or en >= ms)
@@ -850,7 +864,9 @@ def _read_deals(month_name):
             power.append(item)
         elif typ.lower().startswith("deal"):
             dow_rows += 1
-            k = (prod.upper(), tier.upper())
+            # one deal per bag per wave AND per date range (a region that kept its list, e.g. Coastal after
+            # 8 Nov 2026, stays a separate deal from the regions whose rows ended)
+            k = (prod.upper(), tier.upper(), st, en)
             e = dow.setdefault(k, {"product": prod, "tier": tier, "orig": item["orig"],
                                    "now": item["now"], "disc": item["disc"], "locations": [],
                                    "start": st.isoformat() if st else None,
@@ -2210,7 +2226,9 @@ def build_payload(m_start, m_end):
     sm_by_shop = None
     try:
         _sm_names = {r["name"] for r in self_made}
-        _run_names = {r["name"] for r in running}
+        # every Odoo product behind a running card (cards merge several products under the sheet's label,
+        # so matching on card names alone dropped e.g. 28 Amaya/Elyse combos from the shops, 9 Nov 2026)
+        _run_names = {r["name"] for r in running} | {r["name"] for r in running_products}
         _sm_anchor = m_start - datetime.timedelta(days=(m_start.weekday() + 1) % 7)   # Sunday on/before month start
         _sdf = db.run_query(SM_BY_SHOP_SQL.replace("__WK__", _WK_EXPR),
                             {"start_date": m_start.isoformat(), "end_date": m_end.isoformat(), "anchor": _sm_anchor})

@@ -29,5 +29,5 @@ def test_month_not_in_csv_has_no_deals_and_no_sheet_read(monkeypatch):
     def boom():
         raise AssertionError("the deals sheet must not be read")
     monkeypatch.setattr(google_auth, "get_gspread_client", boom)
-    assert smc._local_deal_rows("March") is None
-    assert smc._read_deals("March") is None
+    assert smc._local_deal_rows("September") is None   # March would now carry the open-ended Coastal list
+    assert smc._read_deals("September") is None
