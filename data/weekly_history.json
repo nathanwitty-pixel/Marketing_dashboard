@@ -17,14 +17,14 @@
       "weekStart": "2026-11-08",
       "label": "Wk 2",
       "month": "Nov",
-      "salesPct": 14.19,
-      "salesBags": 4726,
+      "salesPct": 17.26,
+      "salesBags": 5750,
       "prevSalesPct": 12.66,
       "prevSalesBags": 4216,
-      "weeklySales": 510,
-      "posBags": 510,
-      "corporateBags": 0,
-      "declinedBy": -7818
+      "weeklySales": 1534,
+      "posBags": 1531,
+      "corporateBags": 3,
+      "declinedBy": -6794
     }
   ]
 }

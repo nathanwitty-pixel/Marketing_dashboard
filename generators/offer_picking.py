@@ -617,7 +617,8 @@ def _monthly_bag_sales(catalog, cost, offers, months=5):
         if not (b.get("valueNow") or b.get("valueWas")) or not_bag.search(b["name"]):   # real, priced bags only
             continue
         out.append({"bag": b["name"], "category": b.get("category", ""), "stock": int(b.get("stock") or 0),
-                    "monthly": m, "was": b.get("valueWas"), "now": b.get("valueNow"), "cost": b.get("cost")})
+                    "monthly": m, "was": b.get("valueWas"), "now": b.get("valueNow"), "cost": b.get("cost"),
+                    "alts": b.get("valueAlts") or []})   # other allowed offer prices (offers_prices.json offerAlts)
     return {"keys": keys, "months": [_dt.date.fromisoformat(k + "-01").strftime("%b") for k in keys], "bags": out}
 
 

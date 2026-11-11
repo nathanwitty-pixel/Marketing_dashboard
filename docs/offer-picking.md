@@ -95,12 +95,27 @@ A card right after **Power deal choosing**: the single bags worth selling once t
 - **Filters** (row above the table): search by bag name, Call (Sell now / Needs a push / Low stock), Category, In a combo
   or not; "Clear" resets filters and sort. "Showing X of Y" when a filter is on. The sell/push/low summary counts stay
   for the whole list.
+- **Top / Bottom N** (10 Nov 2026, user's call, like Excel's Top 10 AutoFilter): "Show [All bags | Top | Bottom] [N]
+  [Items | Percent] by [Stock | Avg a month | Last month | Months of stock | Price now | Margin]". It runs after the
+  other filters and keeps the N bags (or N% of them, rounded up) with the highest / lowest value in that column; ties at
+  the cut-off stay in, and bags with no value there (no sales for Months of stock, no cost for Margin) are left out,
+  as Excel skips blanks. The kept rows keep the table's sort; Export CSV follows it. "All bags" (the default) turns it
+  off, and "Clear" resets it.
 - **Sort:** click a column heading (▼/▲ shows which). Numbers start biggest first, Bag and Call A→Z; a second click
   flips it, a third goes back to the default order. "No sales" sorts as the most months of stock.
 - **Export CSV** (button beside the month buttons): every bag that passes the filters, not just the first 15, in the
   on-screen order, for the chosen 3/5-month window and the current power-deal picks. Columns: Bag, Category, In a combo, Stock, one column per
   month's sales, Avg a month, Last month, Change vs avg %, Months of stock, Price was, Price now, Margin %, Call.
   File: `bags_not_on_offer_<last month>_<N>mo.csv`.
+- **Bags with several offer prices** (10 Nov 2026, user's call): a bag whose `offerAlts` in `data/offers_prices.json`
+  lists more than one price (Jumbo 3,200 / 2,400 / 2,000; Amaya, Safiri Travel, Travel, Zuri, Bonita) gets a
+  **Price now dropdown** (the sheet price marked "default"). The price picked drives Margin, the sort, the Top /
+  Bottom filter and both exports; remembered per browser (`nb-price`). Margin % = (Price now − BOM cost) ÷ Price now.
+- **Export Excel** (`.xlsx`, built in the browser with ExcelJS 4.4.0 from jsdelivr, loaded on click): the same rows as
+  the CSV plus Price options, Cost and Profit per bag. **Price now (pick)** is a dropdown (yellow cell) on bags with
+  several prices, set to the price picked on the page; **Avg a month, Change vs avg %, Months of stock, Profit per bag
+  and Margin %** are formulas, so changing the price in Excel recalculates the margin. Header filters, top row frozen.
+  The CSV gains Price options and Cost columns (values only; a CSV can't hold a dropdown).
 - **Collapse / Expand** (button in the card title): folds the whole card down to its title; remembered per browser.
   The rows themselves still have "Show all ▾ / Show fewer ▴".
 
