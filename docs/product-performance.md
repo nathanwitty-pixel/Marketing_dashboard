@@ -205,3 +205,9 @@ is its own sales channel, like a till, and is **never** a bulk order. "Corporate
 A POS line of **10+ units** is a corporate / bulk order. It stays in every total (it was a real sale), is
 listed with ⚠ wherever a change is shown, and the change is also given **without** it. The Biggest mover is
 picked on the without-bulk change.
+
+**Offer days vs normal days** (bag popup, 16 Nov 2026 — `offer_days()` → `PP.offerDays[period][BAG]`). Kenya walk-in units a day on the days the bag was in a **timed offer** (`timed_offers_config.json`) vs the period's other full days ("normal" = no timed offer for that bag; Power Deals / Deal of the Week may still run), with the lift, each offer day (offer, was → now, units), and the **best normal day** next to the **best offer day** (as a % of it), so you can see whether the bag reaches offer-day numbers on its own. Every bag gets it; a bag with no timed offer shows its daily pace and best day only. Bulk / corporate lines (10+ units or a corporate client) are left out of both sides; today is left out until it's over. Shown for All / Kenya only (the timed offers are Kenya's).
+
+**Price now on the bag list** (16 Nov 2026 — `selling_prices()` → `PP.info[bag].price`): next to each bag, the KES it is selling at in Kenya = the most common single-bag till price (to the nearest 10) over the last 7 full days, combo sub-lines and bulk / corporate lines left out; the full price (`bag_original_prices.json`) is struck through beside it when higher. Hover for how many bags it's based on.
+
+**Bulk orders in "Why it moved"** (16 Nov 2026): one line per receipt ("24 × Jumbo Brown, 1 × Jumbo Black — HILTON/102633 …") instead of one per POS line, and the group is **collapsed** — click "Bulk orders (N orders)" to open it.
