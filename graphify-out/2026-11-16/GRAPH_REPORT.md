@@ -1,12 +1,12 @@
 # Graph Report - Marketing_dashboard  (2026-11-16)
 
 ## Corpus Check
-- 250 files · ~1,286,862 words
+- 251 files · ~1,286,430 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 21 file(s) not represented in the graph (top: .csv 14, (none) 2, .toml 1)
 
 ## Summary
-- 2755 nodes · 5385 edges · 210 communities (164 shown, 46 thin omitted)
+- 2756 nodes · 5385 edges · 211 communities (164 shown, 47 thin omitted)
 - Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 196 edges (avg confidence: 0.87)
 - Token cost: 0 input · 0 output
 
@@ -236,7 +236,7 @@
 - **Self-made combos bundle: generator, Sheets auth, DB access, and dependency manifest working together to build the combos page** — export_self_made_combos_bundle_self_made_combos_py, export_self_made_combos_bundle_offer_data_py, export_self_made_combos_bundle_google_auth_py, export_self_made_combos_bundle_lib_db_py, export_self_made_combos_bundle_requirements [EXTRACTED 0.90]
 - **Multiple menus share product-matching.md as the canonical name-matching reference** — docs_product_matching_doc, docs_self_made_combos_doc, docs_new_products_doc, docs_offer_picking_doc [EXTRACTED 0.95]
 
-## Communities (210 total, 46 thin omitted)
+## Communities (211 total, 47 thin omitted)
 
 ### Community 0 - "month_extras.py"
 Cohesion: 0.07
@@ -896,16 +896,16 @@ Nodes (6): main(), month_window(), date, _query_ready(), monthly_sales.py — th
 
 ## Knowledge Gaps
 - **262 isolated node(s):** `PERF`, `graphify`, `Python environment`, `Use in another project`, `Test a skill` (+257 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1135 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **46 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1136 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **47 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `run_query()` connect `run_query` to `month_extras.py`, `lib/receipt_combos.py`, `current_performance.py`, `footfall.py`, `oos_callbacks.py`, `norm`, `lib/db.py`, `check_connection`, `forward_projections.py`, `build_payload`, `shop_requests.py`, `shop_stock_levels.py`, `_combo_button_usage`, `_enrich_deals`, `product_performance.py`, `lib/report_month.py`, `chronos_train.py`, `stock.py`, `build_payload`, `_apply_receipt_offers`, `_enrich_deals`, `get_gspread_client`, `_resolve_bag`, `odoo_month_product_bags`, `runway_bags.py`, `shops_efficiency.py`, `excluded_products`, `weekly_sales.py`, `fetch_new_products_data`, `snapshot.py`, `_combo_button_usage`, `bag_tracking.py`, `bag_quant.py`, `product_targets.py`, `generators/self_made_combos.py`, `fetch_posting_data`, `monthly_sales.py`, `odoo_marketing.py`, `negative_fixes.py`, `offer_picking.py`, `why_moved.py`, `_bags_not_on_offer`, `fetch`?**
-  _High betweenness centrality (0.069) - this node is a cross-community bridge._
+  _High betweenness centrality (0.058) - this node is a cross-community bridge._
 - **Why does `bag_classifier()` connect `bag_classifier` to `_apply_receipt_offers`, `oos_callbacks.py`, `Push Planner (`push_planner.py` → `push_planner.html`, `PP`)`, `push_planner.py`, `generators/self_made_combos.py`, `Bags on offer vs not on offer`, `fetch`, `Product (bag) targets`?**
-  _High betweenness centrality (0.043) - this node is a cross-community bridge._
+  _High betweenness centrality (0.044) - this node is a cross-community bridge._
 - **Why does `Bags on offer vs not on offer` connect `Bags on offer vs not on offer` to `oos_callbacks.py`, `lib/receipt_combos.py`, `_read_offers`, `shop-birthdays.md`?**
   _High betweenness centrality (0.035) - this node is a cross-community bridge._
 - **What connects `PERF`, `graphify`, `Python environment` to the rest of the system?**

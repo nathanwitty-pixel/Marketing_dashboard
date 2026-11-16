@@ -5775,7 +5775,7 @@
       "file_type": "code",
       "norm_label": "_growth_tracking()",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1100"
+      "source_location": "L1101"
     },
     {
       "id": "generators_offer_picking_read_bag_prices",
@@ -6471,7 +6471,7 @@
       "file_type": "code",
       "norm_label": "growthdata()",
       "source_file": "assets/growth_tracking.js",
-      "source_location": "L70"
+      "source_location": "L72"
     },
     {
       "id": "assets_growth_tracking_render",
@@ -6483,7 +6483,7 @@
       "file_type": "code",
       "norm_label": "render()",
       "source_file": "assets/growth_tracking.js",
-      "source_location": "L83"
+      "source_location": "L85"
     },
     {
       "id": "assets_growth_tracking_render_drawgrowth",
@@ -6495,7 +6495,7 @@
       "file_type": "code",
       "norm_label": "drawgrowth()",
       "source_file": "assets/growth_tracking.js",
-      "source_location": "L129"
+      "source_location": "L131"
     },
     {
       "id": "assets_growth_tracking_table",
@@ -9267,7 +9267,7 @@
       "file_type": "code",
       "norm_label": "_bag_stock()",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1324"
+      "source_location": "L1325"
     },
     {
       "id": "generators_monthly_report_cause",
@@ -9291,7 +9291,7 @@
       "file_type": "code",
       "norm_label": "_cell()",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L858"
+      "source_location": "L859"
     },
     {
       "id": "generators_monthly_report_collect_comments",
@@ -9303,7 +9303,7 @@
       "file_type": "code",
       "norm_label": "_collect_comments()",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1765"
+      "source_location": "L1766"
     },
     {
       "id": "generators_monthly_report_collect_comments_section_for",
@@ -9315,7 +9315,7 @@
       "file_type": "code",
       "norm_label": "_section_for()",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1778"
+      "source_location": "L1779"
     },
     {
       "id": "generators_monthly_report_combo_bags",
@@ -9327,7 +9327,7 @@
       "file_type": "code",
       "norm_label": "_combo_bags()",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1338"
+      "source_location": "L1339"
     },
     {
       "id": "generators_monthly_report_esc",
@@ -9411,7 +9411,7 @@
       "file_type": "code",
       "norm_label": "_html_text()",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1757"
+      "source_location": "L1758"
     },
     {
       "id": "generators_monthly_report_ladder_strip",
@@ -9423,7 +9423,7 @@
       "file_type": "code",
       "norm_label": "ladder_strip()",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1058"
+      "source_location": "L1059"
     },
     {
       "id": "generators_monthly_report_nested",
@@ -9447,7 +9447,7 @@
       "file_type": "code",
       "norm_label": "_norm_bag()",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1319"
+      "source_location": "L1320"
     },
     {
       "id": "generators_monthly_report_num",
@@ -9519,7 +9519,7 @@
       "file_type": "code",
       "norm_label": "_pp_txt()",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L779"
+      "source_location": "L780"
     },
     {
       "id": "generators_monthly_report_read_block",
@@ -9567,7 +9567,7 @@
       "file_type": "code",
       "norm_label": "_smc_srow()",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1010"
+      "source_location": "L1011"
     },
     {
       "id": "generators_monthly_report_stock_rows",
@@ -9579,7 +9579,7 @@
       "file_type": "code",
       "norm_label": "_stock_rows()",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L677"
+      "source_location": "L678"
     },
     {
       "id": "generators_monthly_report_timed_offer_snapshots",
@@ -9591,7 +9591,7 @@
       "file_type": "code",
       "norm_label": "_timed_offer_snapshots()",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1814"
+      "source_location": "L1815"
     },
     {
       "id": "generators_monthly_report_ug_stock_for",
@@ -14139,7 +14139,7 @@
       "file_type": "code",
       "norm_label": "fillweeks()",
       "source_file": "assets/why_moved.js",
-      "source_location": "L346"
+      "source_location": "L350"
     },
     {
       "id": "assets_why_moved_getw",
@@ -14175,7 +14175,7 @@
       "file_type": "code",
       "norm_label": "mark()",
       "source_file": "assets/why_moved.js",
-      "source_location": "L367"
+      "source_location": "L371"
     },
     {
       "id": "assets_why_moved_onclick",
@@ -14187,7 +14187,7 @@
       "file_type": "code",
       "norm_label": "onclick()",
       "source_file": "assets/why_moved.js",
-      "source_location": "L380"
+      "source_location": "L384"
     },
     {
       "id": "assets_why_moved_redraw",
@@ -14199,7 +14199,7 @@
       "file_type": "code",
       "norm_label": "redraw()",
       "source_file": "assets/why_moved.js",
-      "source_location": "L374"
+      "source_location": "L378"
     },
     {
       "id": "assets_why_moved_shortmonth",
@@ -22107,7 +22107,7 @@
       "source_location": "L95"
     },
     {
-      "id": "generators_monthly_report_rationale_1101",
+      "id": "generators_monthly_report_rationale_1102",
       "label": "data/growth_tracking.json + the report month: live (so far + projected + this\u2026",
       "_origin": "ast",
       "community": 197,
@@ -22115,7 +22115,7 @@
       "file_type": "rationale",
       "norm_label": "data/growth_tracking.json + the report month: live (so far + projected + this...",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1101"
+      "source_location": "L1102"
     },
     {
       "id": "generators_offer_picking_rationale_188",
@@ -22588,6 +22588,17 @@
       "norm_label": "bags_sold_by_shop.sql",
       "source_file": "sql/bags_sold_by_shop.sql",
       "source_location": null
+    },
+    {
+      "id": "assets_gold_star",
+      "label": "gold_star.js",
+      "_origin": "ast",
+      "community": 202,
+      "community_name": "gold_star.js",
+      "file_type": "code",
+      "norm_label": "gold_star.js",
+      "source_file": "assets/gold_star.js",
+      "source_location": "L1"
     },
     {
       "id": "agent_skills_receipt_combo_detection_skill_combos_from_receipts_running_vs_self_made",
@@ -24074,7 +24085,7 @@
       "source_location": "L113"
     },
     {
-      "id": "generators_monthly_report_rationale_1320",
+      "id": "generators_monthly_report_rationale_1321",
       "label": "Space/punctuation-insensitive key so 'MINIZURI' matches 'MINI ZURI'.",
       "_origin": "ast",
       "community": 34,
@@ -24082,10 +24093,10 @@
       "file_type": "rationale",
       "norm_label": "space/punctuation-insensitive key so 'minizuri' matches 'mini zuri'.",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1320"
+      "source_location": "L1321"
     },
     {
-      "id": "generators_monthly_report_rationale_1339",
+      "id": "generators_monthly_report_rationale_1340",
       "label": "Component bags of an offer, each with its stock, sorted most-stock first.",
       "_origin": "ast",
       "community": 34,
@@ -24093,10 +24104,10 @@
       "file_type": "rationale",
       "norm_label": "component bags of an offer, each with its stock, sorted most-stock first.",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1339"
+      "source_location": "L1340"
     },
     {
-      "id": "generators_monthly_report_rationale_1815",
+      "id": "generators_monthly_report_rationale_1816",
       "label": "This month's timed-offer campaigns, flattened for storage. The live TO payload\u2026",
       "_origin": "ast",
       "community": 34,
@@ -24104,7 +24115,7 @@
       "file_type": "rationale",
       "norm_label": "this month's timed-offer campaigns, flattened for storage. the live to payload...",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1815"
+      "source_location": "L1816"
     },
     {
       "id": "generators_monthly_report_rationale_2",
@@ -34975,7 +34986,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "assets/growth_tracking.js",
-      "source_location": "L119",
+      "source_location": "L121",
       "weight": 1.0
     },
     {
@@ -34987,7 +34998,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "assets/growth_tracking.js",
-      "source_location": "L161",
+      "source_location": "L163",
       "weight": 1.0
     },
     {
@@ -34999,7 +35010,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "assets/growth_tracking.js",
-      "source_location": "L85",
+      "source_location": "L87",
       "weight": 1.0
     },
     {
@@ -35011,7 +35022,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "assets/growth_tracking.js",
-      "source_location": "L141",
+      "source_location": "L143",
       "weight": 1.0
     },
     {
@@ -36319,7 +36330,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "assets/why_moved.js",
-      "source_location": "L347",
+      "source_location": "L351",
       "weight": 1.0
     },
     {
@@ -36331,7 +36342,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "assets/why_moved.js",
-      "source_location": "L352",
+      "source_location": "L356",
       "weight": 1.0
     },
     {
@@ -36343,7 +36354,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "assets/why_moved.js",
-      "source_location": "L352",
+      "source_location": "L356",
       "weight": 1.0
     },
     {
@@ -36379,7 +36390,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "assets/why_moved.js",
-      "source_location": "L386",
+      "source_location": "L390",
       "weight": 1.0
     },
     {
@@ -36391,7 +36402,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "assets/why_moved.js",
-      "source_location": "L375",
+      "source_location": "L379",
       "weight": 1.0
     },
     {
@@ -36403,7 +36414,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "assets/why_moved.js",
-      "source_location": "L376",
+      "source_location": "L380",
       "weight": 1.0
     },
     {
@@ -36415,7 +36426,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "assets/why_moved.js",
-      "source_location": "L377",
+      "source_location": "L381",
       "weight": 1.0
     },
     {
@@ -36427,7 +36438,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "assets/why_moved.js",
-      "source_location": "L378",
+      "source_location": "L382",
       "weight": 1.0
     },
     {
@@ -40039,7 +40050,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1328",
+      "source_location": "L1329",
       "weight": 1.0
     },
     {
@@ -40075,7 +40086,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1770",
+      "source_location": "L1771",
       "weight": 1.0
     },
     {
@@ -40087,7 +40098,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1345",
+      "source_location": "L1346",
       "weight": 1.0
     },
     {
@@ -40123,7 +40134,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1103",
+      "source_location": "L1104",
       "weight": 1.0
     },
     {
@@ -40135,7 +40146,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1112",
+      "source_location": "L1113",
       "weight": 1.0
     },
     {
@@ -40147,7 +40158,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1134",
+      "source_location": "L1135",
       "weight": 1.0
     },
     {
@@ -40159,7 +40170,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1062",
+      "source_location": "L1063",
       "weight": 1.0
     },
     {
@@ -40255,7 +40266,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1012",
+      "source_location": "L1013",
       "weight": 1.0
     },
     {
@@ -40267,7 +40278,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L680",
+      "source_location": "L681",
       "weight": 1.0
     },
     {
@@ -40279,7 +40290,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L681",
+      "source_location": "L682",
       "weight": 1.0
     },
     {
@@ -40291,7 +40302,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L681",
+      "source_location": "L682",
       "weight": 1.0
     },
     {
@@ -40303,7 +40314,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1833",
+      "source_location": "L1834",
       "weight": 1.0
     },
     {
@@ -55567,7 +55578,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "assets/growth_tracking.js",
-      "source_location": "L129",
+      "source_location": "L131",
       "weight": 1.0
     },
     {
@@ -55807,7 +55818,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "assets/why_moved.js",
-      "source_location": "L374",
+      "source_location": "L378",
       "weight": 1.0
     },
     {
@@ -56551,7 +56562,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1778",
+      "source_location": "L1779",
       "weight": 1.0
     },
     {
@@ -63607,7 +63618,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L785",
+      "source_location": "L786",
       "weight": 1.0
     },
     {
@@ -65767,7 +65778,7 @@
       "confidence_score": 1.0,
       "context": "submodule_import",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L785",
+      "source_location": "L786",
       "weight": 1.0
     },
     {
@@ -69764,7 +69775,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "assets/growth_tracking.js",
-      "source_location": "L70",
+      "source_location": "L72",
       "weight": 1.0
     },
     {
@@ -70435,7 +70446,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "assets/why_moved.js",
-      "source_location": "L346",
+      "source_location": "L350",
       "weight": 1.0
     },
     {
@@ -70446,7 +70457,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "assets/why_moved.js",
-      "source_location": "L367",
+      "source_location": "L371",
       "weight": 1.0
     },
     {
@@ -70457,7 +70468,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "assets/why_moved.js",
-      "source_location": "L380",
+      "source_location": "L384",
       "weight": 1.0
     },
     {
@@ -73647,7 +73658,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1010",
+      "source_location": "L1011",
       "weight": 1.0
     },
     {
@@ -73658,7 +73669,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1058",
+      "source_location": "L1059",
       "weight": 1.0
     },
     {
@@ -73669,7 +73680,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1100",
+      "source_location": "L1101",
       "weight": 1.0
     },
     {
@@ -73680,7 +73691,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1319",
+      "source_location": "L1320",
       "weight": 1.0
     },
     {
@@ -73691,7 +73702,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1324",
+      "source_location": "L1325",
       "weight": 1.0
     },
     {
@@ -73702,7 +73713,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1338",
+      "source_location": "L1339",
       "weight": 1.0
     },
     {
@@ -73713,7 +73724,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1757",
+      "source_location": "L1758",
       "weight": 1.0
     },
     {
@@ -73724,7 +73735,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1765",
+      "source_location": "L1766",
       "weight": 1.0
     },
     {
@@ -73735,7 +73746,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1814",
+      "source_location": "L1815",
       "weight": 1.0
     },
     {
@@ -73922,7 +73933,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "generators/monthly_report.py",
-      "source_location": "L677",
+      "source_location": "L678",
       "weight": 1.0
     },
     {
@@ -73966,7 +73977,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "generators/monthly_report.py",
-      "source_location": "L779",
+      "source_location": "L780",
       "weight": 1.0
     },
     {
@@ -73977,7 +73988,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "generators/monthly_report.py",
-      "source_location": "L858",
+      "source_location": "L859",
       "weight": 1.0
     },
     {
@@ -84937,47 +84948,47 @@
       "weight": 1.0
     },
     {
-      "source": "generators_monthly_report_rationale_1101",
+      "source": "generators_monthly_report_rationale_1102",
       "target": "generators_monthly_report_growth_tracking",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1101",
+      "source_location": "L1102",
       "weight": 1.0
     },
     {
-      "source": "generators_monthly_report_rationale_1320",
+      "source": "generators_monthly_report_rationale_1321",
       "target": "generators_monthly_report_norm_bag",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1320",
+      "source_location": "L1321",
       "weight": 1.0
     },
     {
-      "source": "generators_monthly_report_rationale_1339",
+      "source": "generators_monthly_report_rationale_1340",
       "target": "generators_monthly_report_combo_bags",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1339",
+      "source_location": "L1340",
       "weight": 1.0
     },
     {
-      "source": "generators_monthly_report_rationale_1815",
+      "source": "generators_monthly_report_rationale_1816",
       "target": "generators_monthly_report_timed_offer_snapshots",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1815",
+      "source_location": "L1816",
       "weight": 1.0
     },
     {
@@ -90957,7 +90968,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "assets/why_moved.js",
-      "source_location": "L375",
+      "source_location": "L379",
       "weight": 1.0
     },
     {
@@ -91029,7 +91040,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1147",
+      "source_location": "L1148",
       "weight": 1.0
     },
     {
@@ -91581,7 +91592,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "assets/growth_tracking.js",
-      "source_location": "L166",
+      "source_location": "L168",
       "weight": 1.0
     },
     {
@@ -91833,7 +91844,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "generators/monthly_report.py",
-      "source_location": "L1127",
+      "source_location": "L1128",
       "weight": 1.0
     },
     {

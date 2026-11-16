@@ -201,6 +201,7 @@
   "199": "bags_sold_daily.sql",
   "200": "lib",
   "201": "bags_sold_by_shop.sql",
+  "202": "gold_star.js",
   "204": "Combos from receipts — running vs self-made",
   "205": "render",
   "206": "footfall_walkins.sql",
