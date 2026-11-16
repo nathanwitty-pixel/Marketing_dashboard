@@ -822,3 +822,7 @@ python generators/self_made_combos.py        # DENRI_LAUNCHER=1 to skip the brow
 Reads Odoo + the deals/COMBOS sheets; rewrites the `SMC_DATA` and `OFFER_DATA` blocks.
 </content>
 </invoke>
+
+**Coloured singles (16 Nov 2026).** A listed single in `offers_monthly.csv` whose **Name** carries colours ("Jumbo blue", "Elyse black/red", "Lola spice") counts only bags of those colours; a name with no colour ("Nizana", "MINIZURI") counts every colour. Colours are the Name's words beyond the bag type that `lib/colours` knows as colours (bag_names.csv). Two singles of one bag ("Lola beige" / "Lola spice") each get their own colour. `lib/receipt_combos.single_offer` — used by the Singles cards, the on/off-offer split and Bags on Offer's Sinza / Uganda rows. Before, every colour of the bag counted and the second Lola got nothing.
+
+**Till target cards — bags estimated when Odoo has only KSh (16 Nov 2026).** November's Odoo till targets were entered with `target_qty` 0 (money only) for every till. `lib/product_targets.till_targets` then sets bags = the KSh target ÷ that till's KSh per bag last month (≈ 2,000), marked **(est.)** on the card with a hover. Sinza Nov = 805 bags, Uganda 619. Shop Stock Levels' per-shop targets use the same helper.

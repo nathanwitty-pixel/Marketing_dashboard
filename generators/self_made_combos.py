@@ -1493,13 +1493,15 @@ def _till_targets(key, m_start, m_end, summ, currency):
     infer, _ = bag_classifier(set())
     prev_end = m_start - datetime.timedelta(days=1)
     prev_start = prev_end.replace(day=1)
-    df = db.run_query("""
-        SELECT t.start_date, t.target_amount, t.target_qty FROM sales_pos_target t
-        JOIN pos_config pc ON pc.id = t.config_id
-        WHERE t.period = 'month' AND upper(pc."name") = :till AND t.start_date IN (:p, :c)""",
-        {"till": _TILL_OF[key], "p": prev_start.isoformat(), "c": m_start.isoformat()})
-    tg = {} if df is None else {str(r.start_date)[:10]: (float(r.target_amount or 0), float(r.target_qty or 0))
-                                  for r in df.itertuples()}
+    # lib/product_targets.till_targets: a month with only a KES target in Odoo gets its bags estimated
+    # (KES ÷ last month's KES per bag) and flagged, instead of "252 of 0 bags".
+    from lib import product_targets
+    tg, est = {}, {}
+    for ms in (prev_start, m_start):
+        t = product_targets.till_targets(ms).get(_TILL_OF[key])
+        if t:
+            tg[ms.isoformat()] = (t["amt"], t["qty"])
+            est[ms.isoformat()] = t["estimated"]
     rate = FX_PER_KSH.get(currency) or 1
     prev = receipt_combos.market_summary(key, prev_start, prev_end, infer, month_name=m_start.strftime("%B")) or {}
     today = min(datetime.date.today(), m_end)
@@ -1511,7 +1513,7 @@ def _till_targets(key, m_start, m_end, summ, currency):
             continue
         bags, rev_ksh = sm.get("bags", 0), round((sm.get("revenue", 0) or 0) / rate)
         e = {"label": start.strftime("%B"), "targetKes": round(amt), "targetBags": round(qty),
-             "bags": bags, "revenueKsh": rev_ksh,
+             "bags": bags, "revenueKsh": rev_ksh, "bagsEstimated": est.get(start.isoformat(), False),
              "pctBags": round(bags / qty * 100, 1) if qty else None,
              "pctKes": round(rev_ksh / amt * 100, 1) if amt else None}
         if k == "cur":

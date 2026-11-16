@@ -8,8 +8,8 @@ Timed-offer campaign report (Kenya).
              except the Sinza/Dar/Uganda ones), per bag type.
              Combo wrappers / delivery / customisation / straps / samples /
              POS-category lines are excluded (same rules as Total Sales).
-  • Posting: last week's Kenya marketing posting (WEEKLY_MARKETING_POST col E),
-             per bag type — "borrowed" alongside the sales.
+  • Posting: Kenya posts per bag type from marketing's daily posting sheets, over the
+             offer day(s) plus the 3 days before (POST_LEAD_DAYS).
   • Config : timed_offers_config.json (market, startDate, endDate, bags[]).
 
 Injects the campaign payload (const TO) into timed_offers.html between the
@@ -741,15 +741,29 @@ def odoo_bag_daily_value(bags, start, end):
     return out
 
 
-# ── POSTING: last week's Kenya posts (WEEKLY_MARKETING_POST col E) ─
+# ── POSTING: the offer's own Kenya posts (offer days + POST_LEAD_DAYS before) ─
+# User, 16 Nov 2026: count the posts made for the offer — the offer day(s) plus the 3 days before it,
+# when marketing builds up to it — not "last week" (which gave a 6 Nov offer the 8–14 Nov posts).
+POST_LEAD_DAYS = 3
 
-def weekly_kenya_posts(bags):
-    """{BAG_UPPER: kenya_posts} from WEEKLY_MARKETING_POST col D=bag type,
-    col E (idx 4) = Kenya posts."""
+
+def post_window(start, end):
+    """(first, last) date of an offer's posting window: POST_LEAD_DAYS before startDate → endDate."""
+    s, e = date.fromisoformat(start), date.fromisoformat(end)
+    return s - timedelta(days=POST_LEAD_DAYS), e
+
+
+def offer_kenya_posts(bags, start, end):
+    """{BAG_UPPER: kenya_posts} over the offer's posting window, from marketing's daily posting
+    sheets (lib/marketing_posts; col D = bag type, col E = Kenya posts). All zeros if unreadable."""
     out = {b: 0 for b in _BAGS_UP}
-    gc = get_gspread_client()
-    sh = gc.open_by_key(SPREADSHEET_ID)
-    rows = marketing_posts.read(sh, "WEEKLY_MARKETING_POST")
+    ps, pe = post_window(start, end)
+    try:
+        rows = marketing_posts.tab_rows("WEEKLY_MARKETING_POST", ps, pe)
+    except Exception as ex:                                  # noqa: BLE001
+        print(f"  Posting sheets unreadable ({type(ex).__name__}: {ex}) — posts showing 0.")
+        return out
+    print(f"  Posts: Kenya, {ps} → {pe} (offer day(s) + {POST_LEAD_DAYS} days before)")
     for row in rows[1:]:
         if len(row) < 5:
             continue
@@ -1049,9 +1063,9 @@ def build_offer(offer):
     # reject figure; keep gross (qty > 0) for a normal campaign.
     _QTY_SQL = " AND pl.qty <> 0 " if offer.get("nameLike") else " AND pl.qty > 0 "
 
-    print("Fetching timed-offer data (Odoo sales + weekly posting)...")
+    print("Fetching timed-offer data (Odoo sales + offer-window posting)...")
     sales_map, sales_live = odoo_window_sales(BAGS, CFG["startDate"], CFG["endDate"], CFG["market"])
-    posts_map = weekly_kenya_posts(BAGS)
+    posts_map = offer_kenya_posts(BAGS, CFG["startDate"], CFG["endDate"])
 
     # ── LIFT: offer-window bags/day vs the pre-offer month-to-date bags/day ──
     # Baseline = 1st of the offer's month → the day before the offer started
@@ -1451,6 +1465,7 @@ def build_offer(offer):
         "timeLabel":  _time_label,
         "windowLabel": _win_label(CFG["startDate"], CFG["endDate"])
                        + (" &middot; " + _time_label + " daily" if _time_label else ""),
+        "postWindowLabel": _win_label(*(d.isoformat() for d in post_window(CFG["startDate"], CFG["endDate"]))),
         "lift":       lift,
         "bulkLineQty": BULK_LINE_QTY,
         "why":        why,

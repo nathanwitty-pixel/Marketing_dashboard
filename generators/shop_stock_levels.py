@@ -69,13 +69,6 @@ WHERE l.usage = 'internal' AND split_part(l.complete_name, '/', 1) IN (""" + _CO
 GROUP BY 1, 2
 """
 
-SHOP_TARGETS_SQL = """
-SELECT upper(pc."name") AS till, SUM(t.target_qty)::float AS qty
-FROM sales_pos_target t JOIN pos_config pc ON pc.id = t.config_id
-WHERE t.period = 'month' AND t.target_scope = 'pos' AND t.start_date = :m
-GROUP BY 1
-"""
-
 TOTAL_SQL = """
 SELECT SUM(target_qty)::float AS qty FROM sales_pos_target
 WHERE period = 'month' AND start_date = :m AND target_scope IN ('pos', 'corporate')
@@ -237,13 +230,14 @@ def sales(start, end, typ):
 
 
 def shop_targets(month_start):
-    df = db.run_query(SHOP_TARGETS_SQL, {"m": month_start.isoformat()})
+    """{SHOP: bag target} from the Odoo till targets (lib/product_targets.till_targets — bags estimated from the KES
+    target when Odoo has no bag figure, as for Nov 2026)."""
     out = collections.Counter()
-    for r in (df.itertuples() if df is not None else []):
-        s = _shop(r.till)
+    for till, t in product_targets.till_targets(month_start).items():
+        s = _shop(till) if t["scope"] == "pos" else None
         if s:
-            out[s] += _num(r.qty)
-    return dict(out)
+            out[s] += _num(t["qty"])
+    return {s: v for s, v in out.items() if v}
 
 
 def grand_total(month_start):
