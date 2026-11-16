@@ -1680,9 +1680,9 @@
     "semantic_hash": ""
   },
   "html/bag_tracking.html": {
-    "mtime": 1794798015.7534127,
-    "seen": 1794798223.5422602,
-    "ast_hash": "17c593c072e4a72015ab616bc66b4607",
+    "mtime": 1794811451.4706933,
+    "seen": 1794811656.708213,
+    "ast_hash": "5acaa26ad3a5ec530251cc0b531b39ac",
     "semantic_hash": ""
   },
   "sql/bags_sold_daily.sql": {
