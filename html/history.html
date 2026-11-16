@@ -130,6 +130,7 @@
   @media (max-width: 640px) { body { padding: 1rem; } }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="../assets/gold_star.js"></script>
 <script src="../assets/chart_switcher.js"></script>
 <script src="../assets/page_sidebar.js"></script>
 </head>
@@ -39594,8 +39595,13 @@ function buildWmChart(wm, mode){
             if (i === 1) return (deltas[0] >= 0 ? '+' : '') + nf(deltas[0]) + ' from ' + w.now.days + ' selling days vs ' + w.then.days;
             var g = regs[i - 2]; return (g.delta >= 0 ? '+' : '') + nf(g.delta) + ' (' + nf(g.then) + ' → ' + nf(g.now) + ')'; },
           afterLabel:function(c){ var i = c.dataIndex; if (i < 2 || i === bars.length - 1) return '';
-            return (regs[i - 2].shops||[]).slice().sort(function(p, q){ return Math.abs(q.delta) - Math.abs(p.delta); }).slice(0, 6)
-              .map(function(s){ return '  ' + s.shop + ' ' + (s.delta >= 0 ? '+' : '') + nf(s.delta) + ' (' + nf(s.then) + ' → ' + nf(s.now) + ')'; }); } } } },
+            // ★ = the shop improved (assets/gold_star.js paints it gold), same as the Current Performance waterfall.
+            var moved = (regs[i - 2].shops||[]).filter(function(s){ return s.delta; });
+            var out = moved.slice().sort(function(p, q){ return Math.abs(q.delta) - Math.abs(p.delta); }).slice(0, 8)
+              .map(function(s){ return (s.delta > 0 ? '★ ' : '    ') + s.shop + ': ' + (s.delta >= 0 ? '+' : '') + nf(s.delta) + '  (' + nf(s.then) + ' → ' + nf(s.now) + ')'; });
+            if (moved.length > 1) { var ups = moved.filter(function(s){ return s.delta > 0; }).length;
+              out.push(ups ? '★ ' + ups + ' of ' + moved.length + ' shops improved' : 'No shop improved'); }
+            return out; } } } },
       scales:{ x:{ grid:{ display:false }, ticks:{ color:'#94a3b8', maxRotation:30, minRotation:20, autoSkip:false, font:{ size:10 } } },
                y:{ min:yMin, grid:{ color:GRID }, ticks:{ color:'#64748b', callback:function(v){ return nf(v); } } } } },
     plugins:[lbl]
@@ -39664,7 +39670,9 @@ function changeWf(id, headId, thenLbl, nowLbl, items, unit){
   var hd = document.getElementById(headId);
   if (hd) hd.innerHTML = hesc(thenLbl)+' → '+hesc(nowLbl)+': <span style="color:'+(diff>=0?'#34d399':'#f87171')+'">'+(diff>=0?'+':'')+nf(diff)+' '+unit
     + (pc!=null?' ('+(pc>=0?'+':'')+pc.toFixed(1)+'%)':'')+'</span>'
-    + '<div style="font-size:0.72rem;font-weight:400;color:#94a3b8;margin-top:0.1rem">'+nf(t0)+' → '+nf(t1)+' '+unit+(yMin ? '. Axis starts at '+nf(yMin) : '')+'</div>';
+    + '<div style="font-size:0.72rem;font-weight:400;color:#94a3b8;margin-top:0.1rem">'+nf(t0)+' → '+nf(t1)+' '+unit
+    + (items.length > 1 ? '. <span style="color:#fbbf24">★</span> '+items.filter(function(x){ return x.now > x.then; }).length+' of '+items.length+' improved' : '')
+    + (yMin ? '. Axis starts at '+nf(yMin) : '')+'</div>';
   var lbl = { id:'changeWfLabels', afterDatasetsDraw:function(ch){
     var ctx = ch.ctx, meta = ch.getDatasetMeta(0);
     ctx.save(); ctx.textAlign = 'center';
@@ -39692,7 +39700,7 @@ function changeWf(id, headId, thenLbl, nowLbl, items, unit){
         tooltip:{ callbacks:{ label:function(c){ var i = c.dataIndex;
           if (i === 0 || i === bars.length - 1) return nf(bars[i][1]) + ' ' + unit;
           var x = items[i - 1], d = x.now - x.then;
-          return [(d >= 0 ? '+' : '') + nf(d) + ' ' + unit + ' (' + nf(x.then) + ' → ' + nf(x.now) + ')'].concat(x.tip || []); } } } },
+          return [(d > 0 ? '★ Improved ' : '') + (d >= 0 ? '+' : '') + nf(d) + ' ' + unit + ' (' + nf(x.then) + ' → ' + nf(x.now) + ')'].concat(x.tip || []); } } } },
       scales:{ x:{ grid:{ display:false }, ticks:{ color:'#94a3b8', maxRotation:40, minRotation:30, autoSkip:false, font:{ size:10 } } },
                y:{ min:yMin, grid:{ color:GRID }, ticks:{ color:'#64748b', callback:function(v){ return nf(v); } } } } },
     plugins:[lbl]

@@ -100,3 +100,5 @@ python generators/history.py                 # read them back into the page
 ```
 </content>
 </invoke>
+
+**Improved ★ on comparisons** (16 Nov 2026): every then → now comparison chart marks what went up with a gold ★ — the Why did we move? region tooltip (each shop that improved, plus "★ N of M shops improved"), the change waterfalls (bags, shops: "★ Improved" in the tooltip, "★ N of M improved" under the heading) and the growth / month-on-month waterfalls (`assets/growth_tracking.js`: "★ N of M months improved"). `assets/gold_star.js` paints the ★ gold inside chart tooltips.

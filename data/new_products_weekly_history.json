@@ -1,15 +1,6 @@
 {
   "weeks": [
     {
-      "weekStart": "2026-07-26",
-      "label": "Partial",
-      "month": "Aug",
-      "weeklyTotal": 111,
-      "kenyaPosts": 73,
-      "outsidePosts": 146,
-      "pct": 62.36
-    },
-    {
       "weekStart": "2026-08-02",
       "label": "Wk 1",
       "month": "Aug",
@@ -138,11 +129,20 @@
     {
       "weekStart": "2026-11-08",
       "month": "Nov",
-      "weeklyTotal": 18,
+      "weeklyTotal": 67,
+      "kenyaPosts": 245,
+      "outsidePosts": 3,
+      "label": "Wk 2",
+      "pct": 28.51
+    },
+    {
+      "weekStart": "2026-11-15",
+      "month": "Nov",
+      "weeklyTotal": 4,
       "kenyaPosts": 0,
       "outsidePosts": 0,
-      "label": "Wk 2",
-      "pct": 7.66
+      "label": "Wk 3",
+      "pct": 1.7
     }
   ]
 }

@@ -148,7 +148,7 @@ Toggle **Week on week / Month on month** (`#wm-period`, remembered in `localStor
   (`WhyMoved.init(PROJ.whyMoved, …)`), so New Products draws the same waterfall for its bags. The
   y-axis now stretches to the best-week lines, so a best week above every bar still shows its line.
 - **The reason** (amber box) = the biggest bar in the direction of the total move. The line under the chart names
-  its top shops; the tooltip lists every shop's change in that region.
+  its top shops; the tooltip lists every shop's change in that region. A gold ★ marks each shop that improved (sold more than the earlier period), in the tooltip and in "The reason" line; the tooltip ends with "★ N of M shops improved". The tooltip ★ is painted gold by `assets/gold_star.js` (loaded after Chart.js on every page with a comparison chart), which turns any ★ in any chart tooltip gold.
 - The y axis starts below the lowest level (stated in the sub-line), so small moves stay visible.
 - **Bulk filter** (`#wm-mode`, `localStorage` key `cp-wm-mode`): **With bulk orders / Without bulk orders**
   (26 Oct 2026, user's call; data keys `with` / `without`). **Corporate is in both** — it is treated as a shop

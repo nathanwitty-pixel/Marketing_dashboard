@@ -8,8 +8,151 @@
       "shops": [],
       "startDate": "2026-11-06",
       "endDate": "2026-11-06",
-      "bags": ["Aurora", "Avana HB", "Belt Bag", "Big Man Bag", "Code 3", "Double Press", "Fabela", "Gym Bag", "Jumbo", "Kai", "Liam", "Man Bag", "Mini Zuri", "Monah BP", "Moon Bag", "Neo Man", "Pioneer", "Travel", "Trecento", "Zuri"],
+      "bags": [
+        "Aurora",
+        "Avana HB",
+        "Belt Bag",
+        "Big Man Bag",
+        "Code 3",
+        "Double Press",
+        "Fabela",
+        "Gym Bag",
+        "Jumbo",
+        "Kai",
+        "Liam",
+        "Man Bag",
+        "Mini Zuri",
+        "Monah BP",
+        "Moon Bag",
+        "Neo Man",
+        "Pioneer",
+        "Travel",
+        "Trecento",
+        "Zuri"
+      ],
       "prices": {}
+    },
+    {
+      "name": "11 Nov Wednesday Offers (Kenya)",
+      "market": "Kenya",
+      "shops": [],
+      "startDate": "2026-11-11",
+      "endDate": "2026-11-11",
+      "bags": [
+        "Antitheft",
+        "Aurora",
+        "Code 3",
+        "Double Press",
+        "Fabela",
+        "Jumbo",
+        "Liam",
+        "Man Bag",
+        "Sierra",
+        "Zuri"
+      ],
+      "prices": {
+        "Antitheft": {
+          "was": 2600,
+          "now": 2000
+        },
+        "Aurora": {
+          "was": 2100,
+          "now": 1500
+        },
+        "Code 3": {
+          "was": 2100,
+          "now": 1600
+        },
+        "Double Press": {
+          "was": 2600,
+          "now": 2000
+        },
+        "Fabela": {
+          "was": 2400,
+          "now": 2000
+        },
+        "Jumbo": {
+          "was": 3600,
+          "now": 2400
+        },
+        "Liam": {
+          "was": 2100,
+          "now": 1500
+        },
+        "Man Bag": {
+          "was": 1600,
+          "now": 1000
+        },
+        "Sierra": {
+          "was": 2700,
+          "now": 2000
+        },
+        "Zuri": {
+          "was": 3600,
+          "now": 2300
+        }
+      }
+    },
+    {
+      "name": "13 Nov Friday Offers (Kenya)",
+      "market": "Kenya",
+      "shops": [],
+      "startDate": "2026-11-13",
+      "endDate": "2026-11-13",
+      "bags": [
+        "Monah BP",
+        "Code 3",
+        "Double Press",
+        "Jumbo",
+        "Fabela",
+        "Standard Travel",
+        "Nizana",
+        "Big Man Bag",
+        "Mini Zuri",
+        "Neo Man"
+      ],
+      "prices": {
+        "Monah BP": {
+          "was": 2000,
+          "now": 1500
+        },
+        "Code 3": {
+          "was": 2100,
+          "now": 1600
+        },
+        "Double Press": {
+          "was": 2600,
+          "now": 2000
+        },
+        "Jumbo": {
+          "was": 3600,
+          "now": 2400
+        },
+        "Fabela": {
+          "was": 2400,
+          "now": 2000
+        },
+        "Standard Travel": {
+          "was": 2600,
+          "now": 2000
+        },
+        "Nizana": {
+          "was": 1600,
+          "now": 1000
+        },
+        "Big Man Bag": {
+          "was": 2100,
+          "now": 1600
+        },
+        "Mini Zuri": {
+          "was": 2600,
+          "now": 1600
+        },
+        "Neo Man": {
+          "was": 1600,
+          "now": 1000
+        }
+      }
     }
   ]
 }

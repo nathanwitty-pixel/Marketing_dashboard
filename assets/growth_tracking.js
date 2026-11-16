@@ -33,6 +33,7 @@
     var stepR = Math.pow(10, Math.floor(Math.log10(span))), yMin = lo > 0.5 * hi ? Math.max(0, Math.floor((lo - span * 0.6) / stepR) * stepR) : 0;
     var hd = document.getElementById(headId);
     if (hd) hd.innerHTML = cfg.head + '<div style="font-size:0.72rem;font-weight:400;color:#94a3b8;margin-top:0.1rem">' + nf(cfg.start) + ' → ' + nf(end) + ' bags'
+      + (items.length > 1 ? '. <span style="color:#fbbf24">★</span> ' + items.filter(function (x) { return x.delta > 0; }).length + ' of ' + items.length + ' months improved' : '')
       + (yMin ? '. Axis starts at ' + nf(yMin) : '') + (cfg.extra ? '<br>' + cfg.extra : '') + '</div>';
     var lbl = { id: 'gtLabels', afterDatasetsDraw: function (ch) {
       var ctx = ch.ctx, meta = ch.getDatasetMeta(0);
@@ -60,7 +61,8 @@
         plugins: { weekChange: false, legend: { display: false },
           tooltip: { callbacks: { label: function (c) { var i = c.dataIndex;
             if (i === 0 || i === bars.length - 1) return nf(bars[i][1]) + ' bags';
-            var x = items[i - 1]; return [(x.delta >= 0 ? '+' : '') + nf(x.delta) + ' bags'].concat(x.tip || []); } } } },
+            // ★ = this month improved (assets/gold_star.js paints it gold)
+            var x = items[i - 1]; return [(x.delta > 0 ? '★ Improved ' : '') + (x.delta >= 0 ? '+' : '') + nf(x.delta) + ' bags'].concat(x.tip || []); } } } },
         scales: { x: { grid: { display: false }, ticks: { color: '#94a3b8', maxRotation: 30, minRotation: 0, autoSkip: false, font: { size: 10 } } },
                   y: { min: yMin, grid: { color: GRID }, ticks: { color: '#64748b', callback: function (v) { return nf(v); } } } } },
       plugins: [lbl]
