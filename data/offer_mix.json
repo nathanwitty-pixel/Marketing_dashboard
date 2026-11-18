@@ -1,6 +1,6 @@
 {
  "month": "November 2026",
- "generated": "18 Nov 2026 11:41",
+ "generated": "18 Nov 2026 12:45",
  "range": "01 Nov – 30 Nov 2026",
  "rows": [
   {
@@ -8,8 +8,8 @@
    "label": "Not on offer",
    "on": false,
    "where": "Kenya, Tanzania, Uganda",
-   "units": 3518.0,
-   "revenue": 7431608,
+   "units": 3521.0,
+   "revenue": 7438208,
    "bags": [
     {
      "bag": "CODE 3",
@@ -26,18 +26,18 @@
      "revenue": 443687
     },
     {
+     "bag": "MEGA",
+     "category": "BACKPACK",
+     "tier": "Core",
+     "units": 108.0,
+     "revenue": 313567
+    },
+    {
      "bag": "TRAVEL",
      "category": "TRAVEL",
      "tier": "Core",
      "units": 135.0,
      "revenue": 313330
-    },
-    {
-     "bag": "MEGA",
-     "category": "BACKPACK",
-     "tier": "Core",
-     "units": 107.0,
-     "revenue": 310567
     },
     {
      "bag": "JAMELA",
@@ -351,8 +351,8 @@
      "bag": "MONAH BP",
      "category": "BACKPACK",
      "tier": "Entry",
-     "units": 24.0,
-     "revenue": 48000
+     "units": 25.0,
+     "revenue": 50000
     },
     {
      "bag": "TRECENTO",
@@ -418,18 +418,18 @@
      "revenue": 37200
     },
     {
+     "bag": "WASHBAG",
+     "category": "WASHBAG",
+     "tier": "Entry",
+     "units": 23.0,
+     "revenue": 36500
+    },
+    {
      "bag": "MINI SCHOOL",
      "category": "SCHOOL BAG",
      "tier": "Entry",
      "units": 22.0,
      "revenue": 35600
-    },
-    {
-     "bag": "WASHBAG",
-     "category": "WASHBAG",
-     "tier": "Entry",
-     "units": 22.0,
-     "revenue": 34900
     },
     {
      "bag": "LUNCHSET",
@@ -802,15 +802,15 @@
    "label": "Power deals",
    "on": true,
    "where": "Kenya only",
-   "units": 3063.0,
-   "revenue": 6456409,
+   "units": 3064.0,
+   "revenue": 6459209,
    "bags": [
     {
      "bag": "JUMBO",
      "category": "TRAVEL",
      "tier": "Premium",
-     "units": 712.0,
-     "revenue": 1826599
+     "units": 713.0,
+     "revenue": 1829399
     },
     {
      "bag": "ANTITHEFT",
@@ -882,15 +882,15 @@
    "label": "Combos",
    "on": true,
    "where": "Kenya, Tanzania, Uganda",
-   "units": 994.0,
-   "revenue": 2138388,
+   "units": 996.0,
+   "revenue": 2142186,
    "bags": [
     {
      "bag": "TRAVEL",
      "category": "TRAVEL",
      "tier": "Core",
-     "units": 227.0,
-     "revenue": 506385
+     "units": 228.0,
+     "revenue": 508284
     },
     {
      "bag": "SAFIRI TRAVEL",
@@ -921,18 +921,18 @@
      "revenue": 161780
     },
     {
+     "bag": "CODE 3",
+     "category": "BACKPACK",
+     "tier": "Core",
+     "units": 78.0,
+     "revenue": 146030
+    },
+    {
      "bag": "PIONEER",
      "category": "BACKPACK",
      "tier": "Core",
      "units": 57.0,
      "revenue": 145579
-    },
-    {
-     "bag": "CODE 3",
-     "category": "BACKPACK",
-     "tier": "Core",
-     "units": 77.0,
-     "revenue": 144131
     },
     {
      "bag": "ZIPPED LUNCH BAG",
@@ -1088,8 +1088,8 @@
    "label": "Deal of wk",
    "on": true,
    "where": "Kenya only",
-   "units": 1129.0,
-   "revenue": 2037699,
+   "units": 1131.0,
+   "revenue": 2041099,
    "bags": [
     {
      "bag": "FABELA",
@@ -1102,8 +1102,8 @@
      "bag": "BIG MAN BAG",
      "category": "MAN BAG",
      "tier": "Core",
-     "units": 169.0,
-     "revenue": 280499
+     "units": 171.0,
+     "revenue": 283899
     },
     {
      "bag": "KAI",
@@ -1255,15 +1255,15 @@
    "label": "Mid-month offers",
    "on": true,
    "where": "Kenya, Tanzania, Uganda",
-   "units": 1273.0,
-   "revenue": 2211992,
+   "units": 1274.0,
+   "revenue": 2214092,
    "bags": [
     {
      "bag": "CODE 3",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 301.0,
-     "revenue": 482150
+     "units": 302.0,
+     "revenue": 484250
     },
     {
      "bag": "MAN BAG",
@@ -1534,14 +1534,14 @@
   }
  ],
  "unclassified": {
-  "units": 115,
-  "revenue": 46140
+  "units": 116,
+  "revenue": 45840
  },
  "unclassifiedBags": [
   {
    "name": "300.0 KES DISCOUNT ON TOTAL AMOUNT",
-   "units": 97,
-   "revenue": -29100
+   "units": 98,
+   "revenue": -29400
   },
   {
    "name": "PPM(SMALL)",
@@ -1607,16 +1607,16 @@
  "midParts": [
   {
    "part": "Timed offers",
-   "units": 1082,
-   "revenue": 1636220,
+   "units": 1083,
+   "revenue": 1638320,
    "countries": [
     "Kenya"
    ],
    "bags": [
     {
      "bag": "CODE 3",
-     "units": 301,
-     "revenue": 482150
+     "units": 302,
+     "revenue": 484250
     },
     {
      "bag": "MAN BAG",
