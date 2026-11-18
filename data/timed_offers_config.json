@@ -153,6 +153,117 @@
           "now": 1000
         }
       }
+    },
+    {
+      "name": "18 Nov Wednesday Offers (Kenya)",
+      "market": "Kenya",
+      "shops": [],
+      "startDate": "2026-11-18",
+      "endDate": "2026-11-18",
+      "bags": [
+        "Antitheft",
+        "Pioneer",
+        "Avana HB",
+        "Aurora",
+        "Jumbo",
+        "Bonita",
+        "Man Bag",
+        "Neo Man",
+        "Mini Zuri",
+        "Cathy",
+        "Nizana",
+        "Moon Bag",
+        "Prime",
+        "Kai",
+        "School Bag",
+        "Code 3",
+        "Standard Travel",
+        "Fabela",
+        "Zuri",
+        "Sierra"
+      ],
+      "prices": {
+        "Antitheft": {
+          "was": 2600,
+          "now": 2000
+        },
+        "Pioneer": {
+          "was": 2600,
+          "now": 2000
+        },
+        "Avana HB": {
+          "was": 2100,
+          "now": 1500
+        },
+        "Aurora": {
+          "was": 2100,
+          "now": 1500
+        },
+        "Jumbo": {
+          "was": 3900,
+          "now": 2400
+        },
+        "Bonita": {
+          "was": 3900,
+          "now": 2400
+        },
+        "Man Bag": {
+          "was": 1600,
+          "now": 1000
+        },
+        "Neo Man": {
+          "was": 1600,
+          "now": 1000
+        },
+        "Mini Zuri": {
+          "was": 2600,
+          "now": 1600
+        },
+        "Cathy": {
+          "was": 2600,
+          "now": 1600
+        },
+        "Nizana": {
+          "was": 1600,
+          "now": 1000
+        },
+        "Moon Bag": {
+          "was": 1600,
+          "now": 1000
+        },
+        "Prime": {
+          "was": 2800,
+          "now": 2400
+        },
+        "Kai": {
+          "was": 2800,
+          "now": 2400
+        },
+        "School Bag": {
+          "was": 2100,
+          "now": 1600
+        },
+        "Code 3": {
+          "was": 2100,
+          "now": 1600
+        },
+        "Standard Travel": {
+          "was": 2600,
+          "now": 2000
+        },
+        "Fabela": {
+          "was": 2600,
+          "now": 2000
+        },
+        "Zuri": {
+          "was": 3600,
+          "now": 2000
+        },
+        "Sierra": {
+          "was": 3600,
+          "now": 2000
+        }
+      }
     }
   ]
 }

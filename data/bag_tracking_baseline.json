@@ -1,5 +1,5 @@
 {
- "computedAt": "2026-11-16 06:00",
+ "computedAt": "2026-11-18 11:03",
  "start": "2026-11-02 08:00",
  "was": {
   "AMAYA 018 BLACK": 26,
@@ -25,6 +25,7 @@
   "AURORA CRACKED": 19,
   "AURORA DARK BROWN": 1,
   "AURORA GREY": 24,
+  "AURORA MAROON": 0,
   "AURORA RED": 3,
   "AURORA RED.PATTERN": 1,
   "AURORA SPICE": 11,
@@ -130,6 +131,7 @@
   "MOON BAG CRACKED": 7,
   "MOON BAG DARK BROWN": 1,
   "MOON BAG GREY": 41,
+  "MOON BAG MAROON": 0,
   "MOON BAG RED": 1,
   "MOON BAG RED.PATTERN": 0,
   "MOON BAG SPICE": 21,

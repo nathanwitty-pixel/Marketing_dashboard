@@ -622,6 +622,95 @@ def _monthly_bag_sales(catalog, cost, offers, months=5):
     return {"keys": keys, "months": [_dt.date.fromisoformat(k + "-01").strftime("%b") for k in keys], "bags": out}
 
 
+TIMED_CFG = paths.data("timed_offers_config.json")
+TIMED_BASE_DAYS = 28      # normal-day pace: the 28 days before the first timed offer up to yesterday, offer days out
+TIMED_BULK_QTY = 10       # a POS line of 10+ units is a bulk / corporate order, left out (as on Timed Offers)
+
+DAILY_BAG_SALES_SQL = """
+SELECT to_char((p.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date, 'YYYY-MM-DD') AS d,
+       UPPER(pt."name") AS name, SUM(pl.qty) AS units
+FROM pos_order p
+JOIN POS_LINES(p) pl ON pl.order_id = p.id
+JOIN pos_session ps ON ps.id = p.session_id
+JOIN pos_config pc ON pc.id = ps.config_id
+JOIN product_product pp ON pp.id = pl.product_id
+JOIN product_template pt ON pt.id = pp.product_tmpl_id
+WHERE (p.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETWEEN :s AND :e
+  AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0 AND pl.qty < 10
+  AND pt."name" NOT LIKE '%%+%%'
+  AND pt."name" !~* '(delivery|strap|customi[sz]ation|gift bag|kes discount|sample)'
+  AND lower(pc."name") NOT IN ('sinza', 'dar-es-alam', 'uganda')
+GROUP BY 1, 2
+"""
+
+
+def _timed_offer_history(catalog, cost, offers):
+    """{BAG: {"days": [{d, name, was, now, units, today}], "offerDays", "offerUnits", "perDay", "normalPerDay", "lift"}}
+    — every Kenya timed offer (data/timed_offers_config.json) a bag ran in, its Kenya walk-in units on each offer
+    day (bags inside combos count, bulk lines of 10+ left out), against its normal-day pace (docs/offer-picking.md)."""
+    import datetime as _dt
+    from lib import db
+    try:
+        with open(TIMED_CFG, encoding="utf-8") as f:
+            cfg = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    today = _dt.date.today()
+    bomkeys = sorted(cost.keys(), key=len, reverse=True)
+    offer_keys = sorted(offers.keys(), key=len, reverse=True)
+    names = {b["name"] for b in catalog}
+
+    def canon(name):
+        c, _, in_bom = _resolve_bag(name, cost, bomkeys)
+        if not in_bom:
+            c = next((k for k in offer_keys if c == k or c.startswith(k + " ")), c)
+        if c not in names:
+            c = next((n for n in sorted(names, key=len) if n.startswith(c + " ")), c)
+        return c
+
+    runs = {}                                    # BAG -> {iso day: {name, was, now}}
+    for o in cfg.get("offers", []):
+        if str(o.get("market", "Kenya")).lower() != "kenya" or not o.get("startDate"):
+            continue
+        s = _dt.date.fromisoformat(o["startDate"])
+        e = _dt.date.fromisoformat(o.get("endDate") or o["startDate"])
+        for b in o.get("bags", []):
+            p = (o.get("prices") or {}).get(b) or {}
+            d = s
+            while d <= min(e, today):
+                runs.setdefault(canon(b), {})[d.isoformat()] = {"name": o.get("name", ""), "was": p.get("was"), "now": p.get("now")}
+                d += _dt.timedelta(days=1)
+    if not runs:
+        return {}
+    all_days = {d for r in runs.values() for d in r}
+    first = _dt.date.fromisoformat(min(all_days))
+    s = first - _dt.timedelta(days=TIMED_BASE_DAYS)
+    df = db.run_query(DAILY_BAG_SALES_SQL, {"s": s.isoformat(), "e": today.isoformat()})
+    sold = {}                                    # BAG -> {day: units}
+    for r in (df.itertuples(index=False) if df is not None else []):
+        c = canon(r.name)
+        if c in runs:
+            sold.setdefault(c, {})
+            sold[c][r.d] = sold[c].get(r.d, 0) + float(r.units or 0)
+    base_days = []                               # every full day in the window that no timed offer touched
+    d = s
+    while d < today:
+        if d.isoformat() not in all_days:
+            base_days.append(d.isoformat())
+        d += _dt.timedelta(days=1)
+    out = {}
+    for bag, days in runs.items():
+        u = sold.get(bag, {})
+        rows = [{"d": d, **v, "units": round(u.get(d, 0)), "today": d == today.isoformat()} for d, v in sorted(days.items())]
+        full = [r for r in rows if not r["today"]]
+        normal = sum(u.get(d, 0) for d in base_days) / len(base_days) if base_days else 0
+        per = sum(r["units"] for r in full) / len(full) if full else None
+        out[bag] = {"days": rows, "offerDays": len(full), "offerUnits": sum(r["units"] for r in full),
+                    "perDay": None if per is None else round(per, 1), "normalPerDay": round(normal, 1),
+                    "lift": round(per / normal, 1) if per is not None and normal > 0 else None}
+    return out
+
+
 def build():
     smc = _read_smc_payload()
     cost = _read_bom_costs()
@@ -750,6 +839,37 @@ def build():
         not_on_offer = _monthly_bag_sales(catalog, cost, offer_prices)
     except Exception as ex:                                   # noqa: BLE001
         print(f"  Bags-not-on-offer sales skipped: {ex}")
+    if not_on_offer:
+        # This month's Kenya Power Deals — the same list as the Current Performance power-deal cards
+        # (self_made_combos payload deals.powerDeals, from the Kenya deals sheet).
+        try:
+            names = [b["bag"] for b in not_on_offer["bags"]]
+            cur_pd = {}
+            for r in ((smc.get("deals") or {}).get("powerDeals") or []):
+                up = _apply_alias(str(r.get("product", "")).upper().strip())
+                hit = up if up in names else next((n for n in sorted(names, key=len)
+                                                   if n.startswith(up + " ") or up.startswith(n + " ")), None)
+                if hit:
+                    cur_pd[hit] = {"was": r.get("orig"), "now": r.get("now"), "sold": r.get("sold")}
+            not_on_offer["currentPD"] = {"month": smc.get("month", ""), "bags": cur_pd}
+            for b in not_on_offer["bags"]:
+                if b["bag"] in cur_pd:
+                    b["curPD"] = cur_pd[b["bag"]]
+        except Exception as ex:                               # noqa: BLE001
+            print(f"  Current power deals skipped: {ex}")
+        try:
+            timed =_timed_offer_history(catalog, cost, offer_prices)
+            for b in not_on_offer["bags"]:
+                if b["bag"] in timed:
+                    b["timed"] = timed[b["bag"]]
+            seen = {}
+            for t in timed.values():
+                for r in t["days"]:
+                    seen.setdefault(r["d"], {"d": r["d"], "name": r["name"], "today": r["today"]})
+            not_on_offer["timedDates"] = [seen[d] for d in sorted(seen)]
+            not_on_offer["timedUnmatched"] = sorted(k for k in timed if k not in {b["bag"] for b in not_on_offer["bags"]})
+        except Exception as ex:                               # noqa: BLE001
+            print(f"  Timed-offer history skipped: {ex}")
 
     payload = {
         "month": smc.get("month", ""),
