@@ -1,12 +1,12 @@
 # Graph Report - Marketing_dashboard  (2026-11-18)
 
 ## Corpus Check
-- 251 files · ~1,305,309 words
+- 251 files · ~1,312,396 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 21 file(s) not represented in the graph (top: .csv 14, (none) 2, .toml 1)
 
 ## Summary
-- 2775 nodes · 5431 edges · 215 communities (168 shown, 47 thin omitted)
+- 2775 nodes · 5432 edges · 215 communities (168 shown, 47 thin omitted)
 - Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 200 edges (avg confidence: 0.87)
 - Token cost: 0 input · 0 output
 
@@ -567,7 +567,7 @@ Cohesion: 0.13
 Nodes (21): dotenv, fetch_months(), bucket(), inject(), main(), _num(), history.py — build the dashboard History page from Supabase. Reads the…, psycopg2 numerics come back as Decimal — make them JSON-friendly. Whole numbers… (+13 more)
 
 ### Community 86 - "offer_picking.py"
-Cohesion: 0.11
+Cohesion: 0.12
 Nodes (28): _alt_cost(), _apply_alias(), build(), _combo_cost(), _combo_slots(), _monthly_bag_sales(), offer_picking.py…, Save a local, human-editable copy of the offers prices to OFFERS_CACHE. (+20 more)
 
 ### Community 87 - "test_push_planner.py"
@@ -925,9 +925,9 @@ _Questions this graph is uniquely positioned to answer:_
 - **Why does `run_query()` connect `run_query` to `month_extras.py`, `tests/test_receipt_combos.py`, `_enrich_deals`, `forward_projections.py`, `build_payload`, `shop_requests.py`, `shop_stock_levels.py`, `_combo_button_usage`, `_combo_button_usage`, `bag_quant.py`, `_enrich_deals`, `generators/self_made_combos.py`, `build`, `chronos_train.py`, `stock.py`, `build_payload`, `odoo_marketing_audit.py`, `marketing_posts.py`, `odoo_weekly_breakdown`, `type_fn`, `last_week_from_db`, `shops_efficiency.py`, `excluded_products`, `ads_impact.py`, `fetch_new_products_data`, `lib/db.py`, `oos_callbacks.py`, `corporate_clients_from_db`, `live_month_window`, `fetch_posting_data`, `build`, `bag_tracking.py`, `main`, `offer_picking.py`, `test_product_targets.py`, `negative_fixes.py`, `market_summary`, `get_engine`, `why_moved.py`, `_bags_not_on_offer`, `fetch`?**
   _High betweenness centrality (0.055) - this node is a cross-community bridge._
 - **Why does `bag_classifier()` connect `bag_classifier` to `oos_callbacks.py`, `market_summary`, `push_planner.py`, `Push Planner (`push_planner.py` → `push_planner.html`, `PP`)`, `Bags on offer vs not on offer`, `generators/self_made_combos.py`, `fetch`, `Product (bag) targets`?**
-  _High betweenness centrality (0.038) - this node is a cross-community bridge._
+  _High betweenness centrality (0.034) - this node is a cross-community bridge._
 - **Why does `Bags on offer vs not on offer` connect `Bags on offer vs not on offer` to `tests/test_receipt_combos.py`, `oos_callbacks.py`, `shop-birthdays.md`, `build`?**
-  _High betweenness centrality (0.037) - this node is a cross-community bridge._
+  _High betweenness centrality (0.033) - this node is a cross-community bridge._
 - **What connects `PERF`, `graphify`, `Python environment` to the rest of the system?**
   _261 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `month_extras.py` be split into smaller, more focused modules?**

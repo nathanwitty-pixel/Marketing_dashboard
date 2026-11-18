@@ -270,9 +270,9 @@
     "semantic_hash": ""
   },
   "docs/offer-picking.md": {
-    "mtime": 1794988195.1128654,
-    "seen": 1794988205.427156,
-    "ast_hash": "da8fedae9eebcd7fc39357fda9827eff",
+    "mtime": 1794988659.3085253,
+    "seen": 1794988670.1976068,
+    "ast_hash": "e1d98af9bf1e89503d891575b03fef26",
     "semantic_hash": ""
   },
   "docs/posting-yields.md": {
@@ -756,9 +756,9 @@
     "semantic_hash": ""
   },
   "data/bags_offer_source.json": {
-    "mtime": 1794983878.2457483,
-    "seen": 1794984444.8203342,
-    "ast_hash": "c2e772d96654c30b7458d8f9502c0629",
+    "mtime": 1794988433.5113528,
+    "seen": 1794988550.700831,
+    "ast_hash": "f80b14696563e656ec3efede4029caa7",
     "semantic_hash": ""
   },
   "data/bags_offer_source_2026-09.json": {
@@ -792,9 +792,9 @@
     "semantic_hash": ""
   },
   "data/combos_by_shop.json": {
-    "mtime": 1794985064.6154613,
-    "seen": 1794986826.167485,
-    "ast_hash": "e5874f173a4a0ce11d18ea6d530fb3e4",
+    "mtime": 1794988433.5062587,
+    "seen": 1794988550.7008424,
+    "ast_hash": "e461a632a801ab31adbce7e5bd2e161a",
     "semantic_hash": ""
   },
   "data/growth_history.json": {
@@ -972,9 +972,9 @@
     "semantic_hash": ""
   },
   "generators/offer_picking.py": {
-    "mtime": 1794984725.394303,
-    "seen": 1794984817.2628095,
-    "ast_hash": "29071320ff56769f288ba630dd8c9f98",
+    "mtime": 1794988472.5754926,
+    "seen": 1794988550.7009268,
+    "ast_hash": "f959dd0a73232c77525e5872fa6d4088",
     "semantic_hash": ""
   },
   "generators/posting_yields.py": {
@@ -1170,9 +1170,9 @@
     "semantic_hash": ""
   },
   "html/bags_on_offer.html": {
-    "mtime": 1794982953.6542134,
-    "seen": 1794984444.8206675,
-    "ast_hash": "e79860a14495078e2c63407779263d6b",
+    "mtime": 1794988466.3124468,
+    "seen": 1794988550.7011578,
+    "ast_hash": "9d85087a759e86151a3344b66120bb47",
     "semantic_hash": ""
   },
   "html/current_performance.html": {
@@ -1212,9 +1212,9 @@
     "semantic_hash": ""
   },
   "html/offer_picking.html": {
-    "mtime": 1794988174.3623838,
-    "seen": 1794988205.4272027,
-    "ast_hash": "32475f0724a3578100e8cdaafc39e7ec",
+    "mtime": 1794988642.9887612,
+    "seen": 1794988670.197658,
+    "ast_hash": "de6d0da68d586687c5501a92c00f72b9",
     "semantic_hash": ""
   },
   "html/posting_yields.html": {
@@ -1236,9 +1236,9 @@
     "semantic_hash": ""
   },
   "html/self_made_combos.html": {
-    "mtime": 1794983878.2354279,
-    "seen": 1794984444.8206835,
-    "ast_hash": "d8f8d2ecf7b2d420dc2b18ed6e970115",
+    "mtime": 1794988433.4984205,
+    "seen": 1794988550.7011762,
+    "ast_hash": "00f3b7d9c5c0f49542fc75dc1a4d0969",
     "semantic_hash": ""
   },
   "html/shell.html": {
@@ -1356,9 +1356,9 @@
     "semantic_hash": ""
   },
   "html/shop_stock_levels.html": {
-    "mtime": 1794984531.3636692,
-    "seen": 1794984817.263109,
-    "ast_hash": "c60b8740c508f728cf0aa7fa9fc6abaa",
+    "mtime": 1794988351.869774,
+    "seen": 1794988550.70118,
+    "ast_hash": "682634d1b3aa358489482d4b0258fba9",
     "semantic_hash": ""
   },
   "lib/marketing_posts.py": {
@@ -1530,9 +1530,9 @@
     "semantic_hash": ""
   },
   "data/offer_mix.json": {
-    "mtime": 1794982953.6585817,
-    "seen": 1794984444.820358,
-    "ast_hash": "63aba399cb8d636a0360b3b143508ce5",
+    "mtime": 1794988466.3169541,
+    "seen": 1794988550.7008572,
+    "ast_hash": "415c891db2c6293de77dc004f72bc3f8",
     "semantic_hash": ""
   },
   "sql/corporate_bag_lines.sql": {
@@ -1596,9 +1596,9 @@
     "semantic_hash": ""
   },
   "data/bags_offer_source_2026-11.json": {
-    "mtime": 1794983878.247883,
-    "seen": 1794984444.8203387,
-    "ast_hash": "c2e772d96654c30b7458d8f9502c0629",
+    "mtime": 1794988433.51479,
+    "seen": 1794988550.7008367,
+    "ast_hash": "f80b14696563e656ec3efede4029caa7",
     "semantic_hash": ""
   },
   "scripts/odoo_marketing_audit.py": {
@@ -1650,9 +1650,9 @@
     "semantic_hash": ""
   },
   "data/marketing_posts_backup.json": {
-    "mtime": 1794985057.4876454,
-    "seen": 1794986826.1674917,
-    "ast_hash": "a3d4eea9c9d948ca7a5e5728f03b7651",
+    "mtime": 1794988645.0734868,
+    "seen": 1794988670.1973171,
+    "ast_hash": "a6615464bf688f292cf7b1c60950c77f",
     "semantic_hash": ""
   },
   "data/bag_tracking.json": {

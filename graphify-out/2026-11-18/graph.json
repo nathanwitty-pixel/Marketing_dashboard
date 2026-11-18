@@ -41343,6 +41343,18 @@
     },
     {
       "source": "generators_offer_picking_build",
+      "target": "generators_offer_picking_apply_alias",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "generators/offer_picking.py",
+      "source_location": "L849",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_offer_picking_build",
       "target": "generators_offer_picking_timed_offer_history",
       "relation": "calls",
       "_origin": "ast",
@@ -41350,7 +41362,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "generators/offer_picking.py",
-      "source_location": "L844",
+      "source_location": "L861",
       "weight": 1.0
     },
     {
