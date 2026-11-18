@@ -901,7 +901,7 @@ print(f"  OOS call-backs        : {sum(v['total'] for v in np_oos.get('lifetime'
 SHOP_CODES = [("STR", "starmall"), ("MSA", "mombasa"), ("NAK", "nakuru"), ("ELD", "eldoret"), ("KSM", "kisumu"),
               ("MER", "meru"), ("THK", "thika"), ("HAZ", "hazina"), ("KIT", "kitengela"), ("WEB", "website sales"),
               ("NAN", "nanyuki"), ("KAK", "kakamega"), ("HTN", "hilton"), ("SNZ", "sinza"), ("UGD", "uganda"),
-              ("KSII", "kisii"), ("KTD", "ktda shop"), ("BSA", "busia"), ("RGI", "rongai")]
+              ("KSII", "kisii"), ("KTD", "ktda shop"), ("BSA", "busia"), ("RGI", "rongai"), ("NYR", "nyeri")]
 _TILL_CODE = {t: c for c, t in SHOP_CODES}
 _TILL_CODE.update({"dar-es-alam": "SNZ", "ktda": "KTD", "website": "WEB"})
 SHOP_SALES_SQL = """

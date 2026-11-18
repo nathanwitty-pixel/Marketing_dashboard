@@ -241,7 +241,7 @@ per region**, from **25 Oct 2026 until new posters replace it** (posters "Hot De
 |---|---|
 | Nairobi Region | Starmall, Hilton, KTDA, Hazina |
 | Nairobi Metropolitan Region | Thika, Kitengela, Rongai |
-| Central Region | Meru, Nanyuki |
+| Central Region | Meru, Nanyuki, Nyeri (from 8 Nov) |
 | Rift Valley Region | Eldoret, Nakuru |
 | Western and Nyanza Region | Busia, Kakamega, Kisumu, Kisii |
 | Coastal Region | Mombasa |
@@ -256,7 +256,14 @@ per region**, from **25 Oct 2026 until new posters replace it** (posters "Hot De
   own weeks up to the End date. Used for the deal sales, the phase panel and Bags on Offer's `dowRuns`.
 - The phase panel (`tierGauge`) shows every phase with deals that month (Tier 1, Tier 2, Regional), each on its own
   weeks. The Deal of the Week table has a **Regional** button. It opens on the live phase, so Regional from 25 Oct.
-- New posters: add rows as Tier 3 with their Start, and give the old regional rows an End the day before.
+- **Each new set of posters is a new wave with the next tier number**, so the same bag in two waves stays two deals
+  on their own weeks: Tier 3 = **Regional 25 Oct** (25 Oct to 7 Nov), Tier 4 = **Regional 8 Nov** (from Sun 8 Nov
+  2026, Month November, no End). The phase panel and the Deal of the Week buttons get one entry per wave.
+- **8 Nov posters** (Nairobi, Nairobi Metropolitan, Rift Valley, Western and Nyanza, Central incl. **Nyeri**): the
+  25 Oct rows of those five regions got End `2026-11-07`. **Coastal (Mombasa) had no new poster**, so its 25 Oct list
+  carries on.
+- New posters: add rows with the next tier number and their Start, and give the old rows of those regions an End the
+  day before.
 
 ### Deal of the Week sold = its shops × its tier's weeks (`DEAL_SALES_SHOP_WEEK_SQL`)
 
@@ -815,3 +822,7 @@ python generators/self_made_combos.py        # DENRI_LAUNCHER=1 to skip the brow
 Reads Odoo + the deals/COMBOS sheets; rewrites the `SMC_DATA` and `OFFER_DATA` blocks.
 </content>
 </invoke>
+
+**Coloured singles (16 Nov 2026).** A listed single in `offers_monthly.csv` whose **Name** carries colours ("Jumbo blue", "Elyse black/red", "Lola spice") counts only bags of those colours; a name with no colour ("Nizana", "MINIZURI") counts every colour. Colours are the Name's words beyond the bag type that `lib/colours` knows as colours (bag_names.csv). Two singles of one bag ("Lola beige" / "Lola spice") each get their own colour. `lib/receipt_combos.single_offer` — used by the Singles cards, the on/off-offer split and Bags on Offer's Sinza / Uganda rows. Before, every colour of the bag counted and the second Lola got nothing.
+
+**Till target cards — bags estimated when Odoo has only KSh (16 Nov 2026).** November's Odoo till targets were entered with `target_qty` 0 (money only) for every till. `lib/product_targets.till_targets` then sets bags = the KSh target ÷ that till's KSh per bag last month (≈ 2,000), marked **(est.)** on the card with a hover. Sinza Nov = 805 bags, Uganda 619. Shop Stock Levels' per-shop targets use the same helper.

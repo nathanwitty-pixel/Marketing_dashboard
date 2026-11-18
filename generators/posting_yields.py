@@ -2117,9 +2117,13 @@ def fetch_posting_data():
     _excl = set(_q.excluded_products())
     _NON_BAG = re.compile(r"^GIFT BAG\b|\bWIPES?\b|\bCLEANER\b|\bGET\b.*\bFREE\b|\bSAMPLE\b|\bSTRAP\b", re.I)
     _before = len(sl_rows) - 1
+    # The sheet's own total row ("SUM TOTAL" / "GRAND TOTAL") isn't a bag either — it showed up as a
+    # product with 594 in stock in the in-stock-not-posted lists (user, 16 Nov 2026).
+    _TOTAL = {"SUM TOTAL", "GRAND TOTAL", "TOTAL", "TOTAL SUM"}
     sl_rows = [sl_rows[0]] + [r for r in sl_rows[1:]
                               if not (len(r) > 2 and (str(r[2]).strip().lower() in _excl
-                                                      or _NON_BAG.search(str(r[2]))))]
+                                                      or _NON_BAG.search(str(r[2]))
+                                                      or any(str(c).strip().upper() in _TOTAL for c in r[:5])))]
     print(f"  STOCK_LEVELS non-bags dropped: {_before - (len(sl_rows) - 1)}")
     # Bags marketing posts per BAG only (no colour — Sep 2026+): fold their colour rows into one
     # "<BAG> (all colours)" row in every table, so posts meet sales and stock per bag (_fold_bag_level).

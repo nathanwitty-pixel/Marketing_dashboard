@@ -67,12 +67,15 @@ def _till_days(start, end, regions, match=None):
     win = {"start_date": start.isoformat(), "end_date": end.isoformat(), "excluded": queries.excluded_products()}
     sql = queries.BAGS_SOLD_BY_SHOP if match is None else queries.BAGS_SOLD_BY_SHOP_PRODUCT
     df = db.run_query(sql, win)
+    from lib import sales_date_fix
+    fixes = sales_date_fix.load()               # late-keyed sales go back to their real day (Nyeri, 7 Nov 2026)
     rows = []
     for _, row in (df.iterrows() if df is not None else []):
         if match is not None and not match(_product(row["product"])):
             continue
         shop = _REGION_ALIAS.get(str(row["shop"]).upper(), str(row["shop"]).upper())
         day = row["day"].date() if hasattr(row["day"], "hour") else row["day"]
+        day = sales_date_fix.day_for(shop, day, fixes)
         rows.append((day, regions.get(shop, "Other"), _shop_label(shop),
                      float(row["bags"] or 0), float(row["bulk_bags"] or 0)))
     return rows
@@ -198,6 +201,19 @@ def build(match=None):
             s = e + timedelta(days=1)
         ws += timedelta(days=7)
     tills = _till_days(first, last_day, regions, match) if segs else []
+    # Late-keyed sales moved back (lib/sales_date_fix): the page notes them under the waterfall.
+    from lib import sales_date_fix
+    notes = []
+    for f in sales_date_fix.load():
+        if not (first <= f["asDate"] <= last_day):
+            continue
+        label = _shop_label(f["till"])
+        bags = sum(b for d, _r, s, b, _k in tills if s == label and d == f["asDate"])
+        notes.append({"shop": f["shop"], "asDate": f["asDate"].isoformat(), "from": f["from"].strftime("%Y-%m-%d %H:%M"),
+                      "to": f["to"].strftime("%Y-%m-%d %H:%M"), "days": (f["to"] - f["from"]).days,
+                      "bags": round(bags)})
+    if notes:
+        out["dateFixes"] = notes
     if len(segs) >= 2:
         out["weeks"] = []
         for s, e, cur in segs:

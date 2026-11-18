@@ -589,5 +589,295 @@
     "sold": 80
    }
   }
+ },
+ {
+  "week": "2026-11-01",
+  "bags": {
+   "NEO MAN": {
+    "posts": 22,
+    "sold": 78
+   },
+   "JUMBO": {
+    "posts": 17,
+    "sold": 304
+   },
+   "MOON BAG": {
+    "posts": 32,
+    "sold": 109
+   },
+   "LOLA": {
+    "posts": 14,
+    "sold": 104
+   },
+   "LAFEMME": {
+    "posts": 83,
+    "sold": 11
+   },
+   "MANDY HB": {
+    "posts": 15,
+    "sold": 3
+   },
+   "GYM BAG": {
+    "posts": 15,
+    "sold": 36
+   },
+   "MINI SCHOOL": {
+    "posts": 37,
+    "sold": 9
+   },
+   "PIONEER": {
+    "posts": 19,
+    "sold": 50
+   },
+   "PRIME": {
+    "posts": 14,
+    "sold": 111
+   },
+   "MAN BAG": {
+    "posts": 14,
+    "sold": 161
+   },
+   "BONITA": {
+    "posts": 17,
+    "sold": 8
+   },
+   "MEGA": {
+    "posts": 18,
+    "sold": 51
+   },
+   "FAYOLA": {
+    "posts": 12,
+    "sold": 32
+   },
+   "KATE": {
+    "posts": 17,
+    "sold": 40
+   },
+   "OVAL HANDBAG": {
+    "posts": 36,
+    "sold": 64
+   },
+   "MINI ZURI": {
+    "posts": 28,
+    "sold": 57
+   },
+   "CODE 3": {
+    "posts": 14,
+    "sold": 273
+   },
+   "TRECENTO": {
+    "posts": 17,
+    "sold": 28
+   },
+   "NALA": {
+    "posts": 65,
+    "sold": 2
+   },
+   "KARINA": {
+    "posts": 20,
+    "sold": 11
+   },
+   "SKYE HB": {
+    "posts": 18,
+    "sold": 1
+   },
+   "LAMORA": {
+    "posts": 68,
+    "sold": 9
+   },
+   "ZANE MAN": {
+    "posts": 25,
+    "sold": 83
+   },
+   "LIAM": {
+    "posts": 15,
+    "sold": 44
+   },
+   "MINI UMBRA": {
+    "posts": 21,
+    "sold": 89
+   },
+   "NIZANA": {
+    "posts": 32,
+    "sold": 81
+   },
+   "BUTTERFLY SLING": {
+    "posts": 12,
+    "sold": 12
+   },
+   "MINI MAYA": {
+    "posts": 43,
+    "sold": 136
+   },
+   "ZURI": {
+    "posts": 22,
+    "sold": 13
+   },
+   "IMANI": {
+    "posts": 14,
+    "sold": 1
+   }
+  }
+ },
+ {
+  "week": "2026-11-08",
+  "bags": {
+   "BIG MAN BAG": {
+    "posts": 30,
+    "sold": 135
+   },
+   "SKYE HB": {
+    "posts": 0,
+    "sold": 0
+   },
+   "PRIME": {
+    "posts": 0,
+    "sold": 111
+   },
+   "KATE": {
+    "posts": 0,
+    "sold": 26
+   },
+   "GYM BAG": {
+    "posts": 31,
+    "sold": 45
+   },
+   "MINI ZURI": {
+    "posts": 19,
+    "sold": 57
+   },
+   "JUMBO": {
+    "posts": 0,
+    "sold": 383
+   },
+   "IMANI": {
+    "posts": 17,
+    "sold": 1
+   },
+   "ELYSE": {
+    "posts": 14,
+    "sold": 43
+   },
+   "MINI MANBAG": {
+    "posts": 16,
+    "sold": 11
+   },
+   "MINI SCHOOL": {
+    "posts": 0,
+    "sold": 12
+   },
+   "FABELA": {
+    "posts": 15,
+    "sold": 167
+   },
+   "NEO MAN": {
+    "posts": 0,
+    "sold": 83
+   },
+   "LAMORA": {
+    "posts": 73,
+    "sold": 10
+   },
+   "PIONEER": {
+    "posts": 0,
+    "sold": 42
+   },
+   "BUTTERFLY SLING": {
+    "posts": 14,
+    "sold": 14
+   },
+   "BELT BAG": {
+    "posts": 15,
+    "sold": 26
+   },
+   "LIAM": {
+    "posts": 0,
+    "sold": 49
+   },
+   "TRECENTO": {
+    "posts": 17,
+    "sold": 13
+   },
+   "OVAL HANDBAG": {
+    "posts": 0,
+    "sold": 26
+   },
+   "MINI MAYA": {
+    "posts": 0,
+    "sold": 136
+   },
+   "MOON BAG": {
+    "posts": 0,
+    "sold": 25
+   },
+   "NIZANA": {
+    "posts": 0,
+    "sold": 217
+   },
+   "CLAIRE HANDBAG": {
+    "posts": 33,
+    "sold": 45
+   },
+   "MANDY HB": {
+    "posts": 19,
+    "sold": 4
+   },
+   "MAN BAG": {
+    "posts": 0,
+    "sold": 275
+   },
+   "CODE 3": {
+    "posts": 0,
+    "sold": 296
+   },
+   "BONITA": {
+    "posts": 31,
+    "sold": 11
+   },
+   "KARINA": {
+    "posts": 24,
+    "sold": 9
+   },
+   "LOLA": {
+    "posts": 0,
+    "sold": 124
+   },
+   "ZANE MAN": {
+    "posts": 0,
+    "sold": 90
+   },
+   "MEGA": {
+    "posts": 0,
+    "sold": 36
+   },
+   "LAFEMME": {
+    "posts": 89,
+    "sold": 7
+   },
+   "FAYOLA": {
+    "posts": 0,
+    "sold": 28
+   },
+   "MINI UMBRA": {
+    "posts": 18,
+    "sold": 66
+   },
+   "BRIEF CASE": {
+    "posts": 16,
+    "sold": 5
+   },
+   "NALA": {
+    "posts": 66,
+    "sold": 5
+   },
+   "CESS": {
+    "posts": 28,
+    "sold": 6
+   },
+   "ZURI": {
+    "posts": 30,
+    "sold": 14
+   }
+  }
  }
 ]

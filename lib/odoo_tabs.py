@@ -49,9 +49,14 @@ SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 TABS = ("WEEKLY_SALES", "MONTHLY_SALES", "STOCK_LEVELS", "WEEKLY_DISPATCH", "MONTHLY_DISPATCH")
 
 # The 19 shop columns, in sheet order (E..W on the weekly/stock/dispatch tabs, D..V on MONTHLY_SALES).
-SHOPS = ["STARMALL", "MOMBASA", "NAKURU", "ELDORET", "KISUMU", "MERU", "THIKA", "HAZINA",
-         "KITENGELA", "WEBSITE", "NANYUKI", "KAKAMEGA", "HILTON", "SINZA", "UGANDA",
-         "KISII", "KTDA", "BUSIA", "RONGAI"]
+SHEET_SHOPS = ["STARMALL", "MOMBASA", "NAKURU", "ELDORET", "KISUMU", "MERU", "THIKA", "HAZINA",
+               "KITENGELA", "WEBSITE", "NANYUKI", "KAKAMEGA", "HILTON", "SINZA", "UGANDA",
+               "KISII", "KTDA", "BUSIA", "RONGAI"]
+# Shops opened after the sheet layout was fixed (Nyeri, Nov 2026). Their sales/stock count in every TOTAL / KENYA
+# figure, but their column goes at the END of each row, so the positional reads (row[23] = col X etc.) don't move;
+# pages that find shops by header name (shops_efficiency) still see them.
+EXTRA_SHOPS = ["NYERI"]
+SHOPS = SHEET_SHOPS + EXTRA_SHOPS
 OUTSIDE = ("SINZA", "UGANDA")
 
 # Odoo stock-location top code → sheet shop column (see lib/stock.py for why an allow-list).
@@ -59,7 +64,7 @@ STOCK_CODE_TO_SHOP = {"STAR": "STARMALL", "MSA": "MOMBASA", "NAKS": "NAKURU", "E
                       "KSM": "KISUMU", "MERU": "MERU", "THK": "THIKA", "HAZ": "HAZINA",
                       "KITE": "KITENGELA", "NAN": "NANYUKI", "KAK": "KAKAMEGA", "HTN": "HILTON",
                       "KSI": "KISII", "KTDA": "KTDA", "BUSIA": "BUSIA", "RONG": "RONGAI",
-                      "DAR": "SINZA", "UG": "UGANDA"}
+                      "NYERI": "NYERI", "DAR": "SINZA", "UG": "UGANDA"}
 
 TICK, CROSS = "✅️", "x"
 
@@ -303,21 +308,23 @@ def build_rows(tab, values, catalog, flags):
         by = dict(zip(SHOPS, q))
         total = sum(q)
         kenya = total - by["SINZA"] - by["UGANDA"]
+        extra = [_fmt(by[x]) for x in EXTRA_SHOPS]
+        q = q[:len(SHEET_SHOPS)]                 # the sheet's shop block; extras go at the end of the row
         if tab == "WEEKLY_SALES":
             cells = ([p["colour"], p["category"], p["name"], p["bag"]] + [_fmt(x) for x in q]
-                     + [_fmt(total)] + _flag_cells(p["bag"], flags) + [_fmt(kenya)])
+                     + [_fmt(total)] + _flag_cells(p["bag"], flags) + [_fmt(kenya)] + extra)
         elif tab == "MONTHLY_SALES":
             cells = ([p["colour"], p["name"], p["bag"]] + [_fmt(x) for x in q]
                      + [_fmt(total), _fmt(kenya), _fmt(by["SINZA"]), _fmt(by["UGANDA"]),
-                        _fmt(by["SINZA"] + by["UGANDA"])] + _flag_cells(p["bag"], flags))
+                        _fmt(by["SINZA"] + by["UGANDA"])] + _flag_cells(p["bag"], flags) + extra)
         elif tab == "STOCK_LEVELS":
             kenya_shops = kenya - by["WEBSITE"]
             cells = ([p["colour"], p["category"], p["name"], p["bag"]] + [_fmt(x) for x in q]
                      + ["", _fmt(kenya_shops), _fmt(by["SINZA"] + by["UGANDA"]), ""]
-                     + _flag_cells(p["bag"], flags))
+                     + _flag_cells(p["bag"], flags) + extra)
         else:  # WEEKLY_DISPATCH / MONTHLY_DISPATCH — col X is "TOTAL ( KENYA )"
             cells = ([p["colour"], p["category"], p["name"], p["bag"]] + [_fmt(x) for x in q]
-                     + [_fmt(kenya)])
+                     + [_fmt(kenya)] + extra)
         body.append(cells)
         for s, x in by.items():
             totals[s] += x
@@ -327,24 +334,26 @@ def build_rows(tab, values, catalog, flags):
     header = HEADERS[tab]
     rows = [header] + body
     if tab != "MONTHLY_SALES":                   # the sheet's MONTHLY_SALES has no SUM TOTAL row
-        t = ["", "", "SUM TOTAL", ""] + [_fmt(totals[s]) for s in SHOPS]
+        t = ["", "", "SUM TOTAL", ""] + [_fmt(totals[s]) for s in SHEET_SHOPS]
         if tab == "WEEKLY_SALES":
             t += [_fmt(totals["_total"]), "", "", "", _fmt(totals["_kenya"])]
         elif tab.endswith("DISPATCH"):
             t += [_fmt(totals["_kenya"])]
+        if tab in ("WEEKLY_SALES",) or tab.endswith("DISPATCH"):
+            t += [_fmt(totals[x]) for x in EXTRA_SHOPS]
         rows.append(t)
     return rows
 
 
 HEADERS = {
-    "WEEKLY_SALES": ["COLOUR", "CATEGORY", "PRODUCT NAME", "BAG TYPE"] + SHOPS
-                    + ["TOTAL", "KENYA", "SINZA", "UGANDA", "KENYA"],
-    "MONTHLY_SALES": ["COLOUR", "PRODUCT NAME", "BAG TYPE"] + SHOPS
-                     + ["TOTAL", "KENYA", "SINZA", "UGANDA", "OUTSIDE KENYA ", "KENYA", "SINZA", "UGANDA"],
-    "STOCK_LEVELS": ["COLOUR", "CATEGORY", "PRODUCT NAME", "BAG TYPE"] + SHOPS
-                    + ["KTDA MAIN STORE", "KENYA", "OUTSIDE KENYA", "SAFETY NET", "KENYA", "SINZA", "UGANDA"],
-    "WEEKLY_DISPATCH": ["COLOUR", "CATEGORY", "PRODUCT NAME", "BAG TYPE"] + SHOPS + ["TOTAL ( KENYA )"],
-    "MONTHLY_DISPATCH": ["COLOUR", "CATEGORY", "PRODUCT NAME", "BAG TYPE"] + SHOPS + ["TOTAL ( KENYA )"],
+    "WEEKLY_SALES": ["COLOUR", "CATEGORY", "PRODUCT NAME", "BAG TYPE"] + SHEET_SHOPS
+                    + ["TOTAL", "KENYA", "SINZA", "UGANDA", "KENYA"] + EXTRA_SHOPS,
+    "MONTHLY_SALES": ["COLOUR", "PRODUCT NAME", "BAG TYPE"] + SHEET_SHOPS
+                     + ["TOTAL", "KENYA", "SINZA", "UGANDA", "OUTSIDE KENYA ", "KENYA", "SINZA", "UGANDA"] + EXTRA_SHOPS,
+    "STOCK_LEVELS": ["COLOUR", "CATEGORY", "PRODUCT NAME", "BAG TYPE"] + SHEET_SHOPS
+                    + ["KTDA MAIN STORE", "KENYA", "OUTSIDE KENYA", "SAFETY NET", "KENYA", "SINZA", "UGANDA"] + EXTRA_SHOPS,
+    "WEEKLY_DISPATCH": ["COLOUR", "CATEGORY", "PRODUCT NAME", "BAG TYPE"] + SHEET_SHOPS + ["TOTAL ( KENYA )"] + EXTRA_SHOPS,
+    "MONTHLY_DISPATCH": ["COLOUR", "CATEGORY", "PRODUCT NAME", "BAG TYPE"] + SHEET_SHOPS + ["TOTAL ( KENYA )"] + EXTRA_SHOPS,
 }
 
 

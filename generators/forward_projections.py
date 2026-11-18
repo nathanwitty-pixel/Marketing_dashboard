@@ -276,9 +276,16 @@ total_value = (bag_rev["single_kes"] + bag_rev["combo_kes"] + bag_rev["gift_kes"
 perfect_weeks = count_complete_weeks_in_month()
 
 
-# ── PACE (docs/current-performance.md › Forward Projections — the pace) ──
-# Days 1–7: the average day of days 1–7 of the last 3 months (one slow first day can't set the pace).
-# From the 8th: this month's complete days only (sales up to yesterday ÷ days up to yesterday).
+# ── PACE (docs/current-performance.md › Forward Projections — the pace, 6 Nov 2026) ──
+# Month end = sales so far (complete days) + the days left, each at its WEEKDAY's average over the
+# 8 weeks before the month, scaled by how this month is running against those same weekdays. The
+# scale is eased in (d ÷ (d + 7), d = complete days) so two slow or busy days can't swing the month.
+# Backtest Jun–Oct 2026, average miss on the month total: days 1–6 5.2% (old rule 6.6%), days 7–13
+# 6.1% (6.9%), after that about the same (~4% / ~2%), and no jump on the 8th.
+PACE_WEEKS = 8      # weekday baseline: the 8 full weeks before the 1st
+PACE_EASE  = 7      # how fast this month's own run takes over: weight = d ÷ (d + 7)
+
+
 def _range_totals(s, e):
     """{bags, kes, corpBags, corpKes} for s..e — POS bags (bags_sold_total), POS bag revenue (bag_revenue),
     Corporate-app bags / KES paid (corporate_bags). None if Postgres is down."""
@@ -299,35 +306,64 @@ def _range_totals(s, e):
         return None
 
 
+def _weekday_base(s, e):
+    """Average POS bags per weekday (0 = Mon) over s..e (bags_sold_daily.sql). None if Postgres is down."""
+    try:
+        from lib import db, queries
+        df = db.run_query(queries.BAGS_SOLD_DAILY, {"start_date": s.isoformat(), "end_date": e.isoformat(),
+                                                    "excluded": queries.excluded_products()})
+        if df is None:
+            return None
+        by_day = {r["day"]: float(r["bags"] or 0) for _, r in df.iterrows()}
+        sums, counts = [0.0] * 7, [0] * 7
+        x = s
+        while x <= e:                                        # a day with no sales counts as 0
+            sums[x.weekday()] += by_day.get(x, 0.0)
+            counts[x.weekday()] += 1
+            x += timedelta(days=1)
+        return [sums[i] / counts[i] if counts[i] else 0.0 for i in range(7)]
+    except Exception as _e:                                  # noqa: BLE001
+        print(f"  WARNING: weekday baseline {s}–{e} skipped: {_e}")
+        return None
+
+
 pace = None                       # {"mode", per-day bags / kes / corp, note…}; None → the old sales × velocity
 if sales_is_live and not report_month.is_pinned():
     _today = report_month.live_anchor()
     _ms = _today.replace(day=1)
+    _me = _ms.replace(day=calendar.monthrange(_ms.year, _ms.month)[1])
     _done = (_today - _ms).days                              # complete days so far (0 on the 1st)
     _sofar = _range_totals(_ms, _today - timedelta(days=1)) if _done else {"bags": 0, "kes": 0, "corpBags": 0, "corpKes": 0}
-    if _today.day <= 7:
-        _hist, _same, _mon = [], [], []
-        _m = _ms
-        for _ in range(3):
-            _m = (_m - timedelta(days=1)).replace(day=1)       # 1st of each of the 3 months before
-            _t = _range_totals(_m, _m + timedelta(days=6))
-            _s = _range_totals(_m, _m + timedelta(days=_done - 1)) if _done else None
-            if _t:
-                _hist.append(_t)
-                _mon.append(_m.strftime("%b"))
-            if _s:
-                _same.append(_s)
-        if len(_hist) == 3 and _sofar is not None:
-            _avg = {k: sum(h[k] for h in _hist) / 21 for k in ("bags", "kes", "corpBags", "corpKes")}
-            pace = dict(_avg, mode="week1", months=list(reversed(_mon)), done=_done, soFar=_sofar,
-                        sameDays=(sum(x["bags"] for x in _same) / len(_same)) if _same else None,
-                        switchOn=f"{(_ms + timedelta(days=7)).day} {_ms:%b}")
-    elif _done and _sofar is not None:
-        pace = {k: _sofar[k] / _done for k in ("bags", "kes", "corpBags", "corpKes")}
-        pace.update(mode="normal", done=_done, soFar=_sofar)
+    _bs, _be = _ms - timedelta(days=7 * PACE_WEEKS), _ms - timedelta(days=1)
+    _wd = _weekday_base(_bs, _be)
+    _base = _range_totals(_bs, _be)                          # baseline KES per bag + corporate per day
+    if _sofar is not None and _wd and _base and sum(_wd):
+        _days = [_ms + timedelta(days=i) for i in range((_me - _ms).days + 1)]
+        _exp_sofar = sum(_wd[x.weekday()] for x in _days[:_done])        # what the baseline expected so far
+        _exp_rest  = sum(_wd[x.weekday()] for x in _days[_done:])        # …and for the days left (today in)
+        _raw   = (_sofar["bags"] / _exp_sofar) if _exp_sofar else 1.0    # this month vs its weekdays
+        _w     = _done / (_done + PACE_EASE)
+        _ratio = 1 + (_raw - 1) * _w
+        _rest_bags = _exp_rest * _ratio
+        _ppb = (_sofar["kes"] / _sofar["bags"]) if _sofar["bags"] else (_base["kes"] / _base["bags"] if _base["bags"] else 0)
+        _ndays, _left, _bdays = len(_days), len(_days) - _done, (_be - _bs).days + 1
+        # Corporate is lumpy (one invoice can be 250 bags), so it isn't scaled: paid so far + the
+        # baseline's corporate per day for the days left.
+        _proj = {"bags":     _sofar["bags"] + _rest_bags,
+                 "kes":      _sofar["kes"] + _rest_bags * _ppb,
+                 "corpBags": _sofar["corpBags"] + _base["corpBags"] / _bdays * _left,
+                 "corpKes":  _sofar["corpKes"] + _base["corpKes"] / _bdays * _left}
+        pace = {k: v / _ndays for k, v in _proj.items()}     # per-day equivalent: × days in month = month end
+        pace.update(mode="weekday", done=_done, soFar=_sofar, left=_left,
+                    projBags=round(_proj["bags"]), restBags=round(_rest_bags),
+                    expSoFar=round(_exp_sofar), expRest=round(_exp_rest),
+                    rawRatio=round(_raw, 3), ratio=round(_ratio, 3), weight=round(_w, 2),
+                    baseFrom=f"{_bs.day} {_bs:%b}", baseTo=f"{_be.day} {_be:%b}", baseWeeks=PACE_WEEKS,
+                    weekdays=[round(v) for v in _wd])
 if pace:
-    print(f"  Pace ({pace['mode']})      : {pace['bags']:.0f} bags/day, KES {pace['kes']:,.0f}/day"
-          + (f" — avg of 1–7 {', '.join(pace['months'])}" if pace['mode'] == 'week1' else f" over {pace['done']} complete days"))
+    print(f"  Pace (weekday)     : {pace['projBags']:,} bags at month end — {pace['soFar']['bags']:,.0f} so far "
+          f"({pace['done']} days, {pace['rawRatio']:.0%} of the weekday baseline, counted at {pace['ratio']:.0%}) "
+          f"+ {pace['restBags']:,} for the {pace['left']} days left")
 
 
 # ── CALCULATIONS ──────────────────────────────────────────────

@@ -13,6 +13,16 @@ Rules for editing:
 - Add a row per shop. Remove a shop's row and it falls back to being its own region.
 - If this file is missing or unreadable, the code falls back to a built-in default.
 
+**Adding a new shop (Nyeri, 9 Nov 2026, user's call).** Besides this table, a shop must be in the per-page shop
+lists, or its sales, stock and dispatches drop out of the per-shop and per-region views (the headline Kenya totals
+count every till, so they already include it). Nyeri (till `NYERI`, stock code `NYERI`, Central Region) was added to:
+`lib/odoo_tabs.py` (`EXTRA_SHOPS`: counted in every TOTAL / KENYA figure, its column at the **end** of each row so
+the positional reads such as col X don't move), `sql/combined_distribution.sql` (dispatch column),
+`generators/shops_efficiency.py` + `shops_dispatch.py` (`KENYA_SHOPS`, region map, stock code),
+`generators/self_made_combos.py` (till, region default, stock code), `generators/shop_stock_levels.py` (till and
+stock code), `generators/new_products.py` + `html/new_products.html` (shop code `NYR`), `lib/footfall.py`.
+The next new shop needs the same list.
+
 ## Shop → Region
 
 | Shop | Region |
@@ -31,6 +41,7 @@ Rules for editing:
 | Busia | Western & Nyanza |
 | Meru | Central Region |
 | Nanyuki | Central Region |
+| Nyeri | Central Region |
 | Thika | Central Region |
 | Eldoret | Rift Valley |
 | Nakuru | Rift Valley |

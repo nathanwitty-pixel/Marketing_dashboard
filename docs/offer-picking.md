@@ -87,22 +87,72 @@ A card right after **Power deal choosing**: the single bags worth selling once t
   bags / samples out — `OP.notOnOffer`, monthly units per bag type, oldest first).
 - Per bag: stock, average a month over the window, last month (with its change vs the average), **months of stock**
   (stock ÷ average a month), price was → now, margin at the offer price, and a call:
-  - **Low stock — skip** — under 1 month of stock, or under 10 bags.
+  - **Produce more** (18 Nov 2026, user's call: low stock on a bag that moves is not a skip) — under 1 month of
+    stock or under 10 bags, **and** sells ≥ 15 a month: proven demand, so ask production for more and keep promoting it.
+  - **Low stock, slow seller** — under 1 month of stock or under 10 bags, and sells < 15 a month: no need to produce.
   - **Sell now** — sells ≥ 15 a month with 1–4 months of stock: steady demand with stock behind it.
   - **Needs a push** — the rest: 4+ months of stock, no sales, or slow (< 15 a month): stock sitting.
+  Hover a call for its reason in words. Stock is Kenya shops only (CBD/Stock not counted).
   Only priced bags are listed (no wipes, cleaners, gift bags or "buy X get Y free" promo items).
-  Sorted Sell now (busiest first), then Needs a push (most stock first), then Low stock; first 15 shown, "Show all".
-- **Filters** (row above the table): search by bag name, Call (Sell now / Needs a push / Low stock), Category, In a combo
+  Sorted Sell now (busiest first), Produce more (busiest first), Needs a push (most stock first), then Low stock, slow
+  seller; first 15 shown, "Show all".
+- **Filters** (row above the table): search by bag name, Call (Sell now / Produce more / Needs a push / Low stock, slow seller), Category, In a combo
   or not; "Clear" resets filters and sort. "Showing X of Y" when a filter is on. The sell/push/low summary counts stay
   for the whole list.
+- **Top / Bottom N** (10 Nov 2026, user's call, like Excel's Top 10 AutoFilter): "Show [All bags | Top | Bottom] [N]
+  [Items | Percent] by [Stock | Avg a month | Last month | Months of stock | Price now | Margin]". It runs after the
+  other filters and keeps the N bags (or N% of them, rounded up) with the highest / lowest value in that column; ties at
+  the cut-off stay in, and bags with no value there (no sales for Months of stock, no cost for Margin) are left out,
+  as Excel skips blanks. The kept rows keep the table's sort; Export CSV follows it. "All bags" (the default) turns it
+  off, and "Clear" resets it.
 - **Sort:** click a column heading (▼/▲ shows which). Numbers start biggest first, Bag and Call A→Z; a second click
   flips it, a third goes back to the default order. "No sales" sorts as the most months of stock.
 - **Export CSV** (button beside the month buttons): every bag that passes the filters, not just the first 15, in the
   on-screen order, for the chosen 3/5-month window and the current power-deal picks. Columns: Bag, Category, In a combo, Stock, one column per
   month's sales, Avg a month, Last month, Change vs avg %, Months of stock, Price was, Price now, Margin %, Call.
   File: `bags_not_on_offer_<last month>_<N>mo.csv`.
+- **Bags with several offer prices** (10 Nov 2026, user's call): a bag whose `offerAlts` in `data/offers_prices.json`
+  lists more than one price (Jumbo 3,200 / 2,400 / 2,000; Amaya, Safiri Travel, Travel, Zuri, Bonita) gets a
+  **Price now dropdown** (the sheet price marked "default"). The price picked drives Margin, the sort, the Top /
+  Bottom filter and both exports; remembered per browser (`nb-price`). Margin % = (Price now − BOM cost) ÷ Price now.
+- **Export Excel** (`.xlsx`, built in the browser with ExcelJS 4.4.0 from jsdelivr, loaded on click): the same rows as
+  the CSV plus Price options, Cost and Profit per bag. **Price now (pick)** is a dropdown (yellow cell) on bags with
+  several prices, set to the price picked on the page; **Avg a month, Change vs avg %, Months of stock, Profit per bag
+  and Margin %** are formulas, so changing the price in Excel recalculates the margin. Header filters, top row frozen.
+  The CSV gains Price options and Cost columns (values only; a CSV can't hold a dropdown).
 - **Collapse / Expand** (button in the card title): folds the whole card down to its title; remembered per browser.
   The rows themselves still have "Show all ▾ / Show fewer ▴".
+- **Timed offers column + filter** (18 Nov 2026, user's call: "see if we can do it again"): every Kenya one-day offer
+  in `data/timed_offers_config.json` a bag ran in (`_timed_offer_history`). **Lift ×** = units a timed-offer day ÷ units
+  a normal day. A normal day is any day from 28 days before the first timed offer up to yesterday that no timed offer
+  touched. Both sides count Kenya tills only, with bags inside combos included and bulk lines of 10+ units left out.
+  Today's offer is shown ("running today") but is not counted until the day is over. Colour: green ×2+, amber ×1.3–2,
+  red under ×1.3. Hover for each offer day with units and price. Filter: Ran on a timed offer / Offer worked (2× normal
+  or more) / Offer weak (under 2×) / Never on a timed offer. Sortable, in Top/Bottom "by", and in both exports
+  (Timed offer days, Sold a timed offer day, Sold a normal day, Lift ×, the day list). Config names map to catalogue
+  bags through the same name resolution as the monthly sales (Standard Travel → TRAVEL, Cathy → CATHY HANDBAG).
+- **Power deal bags filter** (18 Nov 2026, user's call: "so that I can opt out of it"): next to "In a combo or not".
+  **Power deal bags left out** (default, as before) / **Include power deal bags** / **Only power deal bags**. Power-deal
+  bags carry a "power deal" tag; the summary line says left out / included / only. Clear resets it.
+- **Price picker on every bag** (18 Nov 2026, user's call: "the price, so I can pick too"): the Price now dropdown is no
+  longer only for bags with several sheet prices. Options = the sheet offer price ("default") + its other sheet prices
+  (`offerAlts`) + this month's power-deal price ("power deal") + every timed-offer price it ran at ("timed 11, 13 Nov")
+  + the full price ("full price"), highest first, each labelled. A bag with just one price (full-price bags) shows it
+  plain. The pick drives Margin, sort, Top/Bottom and both exports; Excel's "Price options" column and the Price now
+  (pick) cell note carry the labels, and the cell is a dropdown of the same prices.
+- **This month's power deals** (18 Nov 2026, user's call): the bags on this month's Kenya Power Deals list, the same
+  list as the Current Performance power-deal cards (`smc.deals.powerDeals`, from the Kenya deals sheet;
+  `notOnOffer.currentPD`), get a green "Nov power deal" tag (hover: price now / was and units sold so far). Filter
+  "On / Not on <Month> power deals". Separate from the planner's power-deal slots above, which are next month's picks.
+- **Tick bags to export** (18 Nov 2026, user's call): a tick box on every row (header box ticks / unticks every bag in
+  the list as filtered). With any bags ticked, **Export Excel / Export CSV take only the ticked bags** (buttons read
+  "Export Excel (N ticked)"), including ticked bags a filter is hiding; with none ticked they export the filtered list
+  as before. "N bags ticked" + "Untick all" next to the buttons; ticked rows are tinted; remembered per browser (`nb-sel`).
+- **Timed offer day chips** (18 Nov 2026, user's call: "show the dates, 6 Nov what was done, 11th…"): one chip per
+  offer date (`notOnOffer.timedDates`; 6, 11, 13, 18 Nov so far). Each picked chip adds a column after Margin with the
+  units that bag sold that day (and "at <offer price>"), "—" if the bag wasn't on that day's offer, "so far" for today.
+  The "Ran on a timed offer" filter follows the picked days. Day columns sort and export (CSV + Excel "<day> sold").
+  Picks remembered per browser (`nb-days`); all days on by default.
 
 ## Pricing — WAS vs NOW, from the offers sheet
 

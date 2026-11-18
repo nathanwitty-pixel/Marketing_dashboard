@@ -6,11 +6,14 @@ price (rounded to 10) = a combo per price; the bags left over = one more combo i
 splits a combo's price unevenly), a single if one. A combo
 whose bag types fill a listed combo's slots (offers_monthly.csv; same count, any order, alternatives)
 is RUNNING, otherwise SELF-MADE. Spec: docs/self-made-combos.md › Sinza & Uganda.
+A listed SINGLE whose name carries colours ("Jumbo blue", "Elyse black/red") counts only bags of those colours
+(16 Nov 2026); a name with no colour ("Nizana", "MINIZURI") counts every colour of the bag.
 """
 import csv
 import datetime
 import itertools
 import os
+import re
 
 from . import db
 
@@ -59,8 +62,41 @@ def load_offers(month_name, market):
                                                    for s in r["Bags"].split("+")],
              "was": num(r["Was"]), "now": num(r["Now"]), "disc": num(r["Disc"]), "currency": r["Currency"],
              "wasKsh": num(r["Was KSH"]), "nowKsh": num(r["Now KSH"])}
+        o["colours"] = _name_colours(o["name"], o["slots"])
         out["combos" if r["Type"].strip().lower() == "combo" else "singles"].append(o)
     return out
+
+
+def _words(s):
+    return {w for w in re.split(r"[^A-Z0-9]+", str(s).upper()) if w}
+
+
+def _name_colours(name, slots):
+    """Colour words in an offer's name beyond its bag types: "Elyse black/red" → {BLACK, RED}; "Nizana" → set()
+    (= every colour). Only words lib/colours knows as colours (bag_names.csv), so "MINIZURI" / "man" never count."""
+    from . import colours
+    colours._load()
+    bag_words = set().union(*[_words(b) for slot in slots for b in slot]) if slots else set()
+    return {w for w in _words(name) - bag_words if w in (colours._WORDS or {})}
+
+
+def single_offer(bag, rec, singles):
+    """The listed single offer a receipt's single `bag` belongs to, or None. A coloured offer takes a bag of its
+    colour (the product names on the receipt, rec["names"][bag], each used once); a colourless one takes any."""
+    cands = [o for o in singles if bag in o["slots"][0]]
+    if not cands:
+        return None
+    pool = rec.get("names", {}).get(bag, [])
+    for i, nm in enumerate(pool):
+        w = _words(nm)
+        o = next((o for o in cands if o.get("colours") and o["colours"] & w), None)
+        if o:
+            pool.pop(i)
+            return o
+    o = next((o for o in cands if not o.get("colours")), None)
+    if o and pool:
+        pool.pop(0)
+    return o
 
 
 def bag_key(name, infer):
@@ -100,6 +136,7 @@ def _receipts(lines, infer):
             continue
         unit = int(round(float(ln["amount"] or 0) / q, -1))     # to the nearest 10: 40,000 = 40,001
         rec["bags"] += [(k, unit)] * q
+        rec.setdefault("names", {}).setdefault(k, []).extend([str(ln["product"])] * q)
     for r, ws in wraps.items():
         bags = by_r[r]["bags"]
         zeros = [i for i, (_k, u) in enumerate(bags) if u == 0]
@@ -138,7 +175,7 @@ def offer_split(lines, offers, infer):
     {…}}, onSingles: {bag: {units, revenue}}, offSingles: {bag: {units, revenue, comboBag}}, bulk: {receipts,
     bags, revenue}, comboBags: {bag: units in self-made combos}, bags, revenue}."""
     recs, _ = _receipts(lines, infer)
-    listed_singles = {b for o in (offers or {}).get("singles", []) for slot in o["slots"] for b in slot}
+    singles = (offers or {}).get("singles", [])
     listed_combo_bags = {b for o in (offers or {}).get("combos", []) for slot in o["slots"] for b in slot}
     out = {"combos": {"running": {"count": 0, "bags": 0, "revenue": 0}, "selfMade": {"count": 0, "bags": 0, "revenue": 0}},
            "onSingles": {}, "offSingles": {}, "bulk": {"receipts": 0, "bags": 0, "revenue": 0}, "comboBags": {},
@@ -161,7 +198,7 @@ def offer_split(lines, offers, infer):
                 for b in bags:
                     out["comboBags"][b.lstrip("*")] = out["comboBags"].get(b.lstrip("*"), 0) + 1
         for b, unit in left:
-            side = out["onSingles"] if b in listed_singles else out["offSingles"]
+            side = out["onSingles"] if single_offer(b, rec, singles) else out["offSingles"]
             e = side.setdefault(b.lstrip("*"), {"units": 0, "revenue": 0})
             e["units"] += 1
             e["revenue"] += unit
@@ -210,9 +247,9 @@ def classify(lines, offers, infer, month_start):
                 bump(out["selfMade"], label, sorted(bags), rev, wk, d.isoformat())
         for b, unit in left:
             bump(out["singles"], b.lstrip("*"), None, unit, wk)
-            offer = next((o["name"] for o in (offers or {}).get("singles", []) if b in o["slots"][0]), None)
-            if offer:
-                bump(out["singlesOffer"], offer, None, unit, wk)
+            o = single_offer(b, rec, (offers or {}).get("singles", []))
+            if o:
+                bump(out["singlesOffer"], o["name"], None, unit, wk)
         out["comboReceipts"] += bool(combos)
     return out
 

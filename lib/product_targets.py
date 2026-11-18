@@ -119,6 +119,43 @@ def total_for(month_start):
                                    "from": prev.strftime("%B %Y")}
 
 
+TILL_TARGETS_SQL = """
+SELECT upper(COALESCE(pc."name", t.target_scope)) AS till, t.target_scope AS scope, t.start_date AS m,
+       COALESCE(t.target_qty, 0)::float AS qty, COALESCE(t.target_amount, 0)::float AS amt
+FROM sales_pos_target t LEFT JOIN pos_config pc ON pc.id = t.config_id
+WHERE t.period = 'month' AND t.start_date IN (:m, :p)
+"""
+
+
+def till_targets(month_start):
+    """{TILL: {"qty", "amt", "scope", "estimated", "kesPerBag"}} — each till's Odoo monthly target (Corporate under
+    its scope name, "CORPORATE"). When Odoo has the KES target but no bag target (Nov 2026: every till entered 3 Nov
+    with target_qty 0), bags = KES ÷ that till's KES per bag last month (all tills' rate if it had none) and
+    estimated = True. Empty dict when the DB is unreachable."""
+    prev = (month_start - datetime.timedelta(days=1)).replace(day=1)
+    df = db.run_query(TILL_TARGETS_SQL, {"m": month_start.isoformat(), "p": prev.isoformat()})
+    if df is None:
+        return {}
+    cur, last = {}, {}
+    for r in df.itertuples():
+        d = cur if str(r.m)[:10] == month_start.isoformat() else last
+        e = d.setdefault(r.till, {"qty": 0.0, "amt": 0.0, "scope": r.scope})
+        e["qty"] += float(r.qty or 0)
+        e["amt"] += float(r.amt or 0)
+    lq, la = sum(e["qty"] for e in last.values()), sum(e["amt"] for e in last.values())
+    all_kpb = la / lq if lq > 0 and la > 0 else None
+    out = {}
+    for till, e in cur.items():
+        x = {"qty": e["qty"], "amt": e["amt"], "scope": e["scope"], "estimated": False, "kesPerBag": None}
+        if e["qty"] <= 0 < e["amt"]:
+            p = last.get(till) or {}
+            kpb = p["amt"] / p["qty"] if p.get("qty", 0) > 0 and p.get("amt", 0) > 0 else all_kpb
+            if kpb:
+                x.update(qty=float(round(e["amt"] / kpb)), estimated=True, kesPerBag=round(kpb, 2))
+        out[till] = x
+    return out
+
+
 def bag_key_fn():
     """Product name → catalogue bag (colours folded); sleeves and not-yet-catalogued new products by name."""
     import sys

@@ -394,6 +394,78 @@ class Offers:
         return out
 
 
+# ── offer days vs normal days (user, 16 Nov 2026) ──────────────
+def offer_days(lines, P, offers, today):
+    """{period: {BAG: {...}}} — for EVERY bag sold in Kenya in the period: Kenya walk-in units a day on its timed-offer
+    days (none → offer None) vs the period's other full days, plus its best normal day and best offer day ("normal" = no timed offer; Power Deals / Deal of the Week
+    may still run). Bulk / corporate lines (BULK_LINE_QTY+ or a corporate client) left out of both sides; today is
+    left out (not a full day). offer: {days, units, perDay}; normal: {...}; liftPct; bulkOut; list: per offer day."""
+    out = {}
+    for per, (s1, e1, _s0, _e0, _lbl) in P.items():
+        end = min(e1, today - datetime.timedelta(days=1))
+        if end < s1:
+            continue
+        days = [s1 + datetime.timedelta(days=i) for i in range((end - s1).days + 1)]
+        on = collections.defaultdict(dict)                 # BAG → {day: offer}
+        for o in offers.timed:
+            for d in days:
+                if o["s"] <= d <= o["e"]:
+                    for b in o["bags"]:
+                        on[b].setdefault(d, o)
+        units, bulk_out = collections.defaultdict(collections.Counter), collections.Counter()
+        for x in lines:
+            if x["mkt"] != "KE" or not (s1 <= x["d"] <= end):
+                continue
+            if not x["sub"] and (x["units"] >= BULK_LINE_QTY or x.get("corp")):
+                bulk_out[x["bag"]] += x["units"]
+                continue
+            units[x["bag"]][x["d"]] += x["units"]
+        res = {}
+        best = lambda u, ds: (lambda d: {"d": d.strftime("%a %d %b"), "units": int(round(u[d]))} if d and u[d] > 0 else None)(  # noqa: E731
+            max(ds, key=lambda d: u[d], default=None))
+        for b in set(units) | set(on):
+            u, od = units[b], on.get(b, {})
+            normal = [d for d in days if d not in od]
+            ou, nu = sum(u[d] for d in od), sum(u[d] for d in normal)
+            if not od and nu <= 0:
+                continue
+            opd = ou / len(od) if od else None
+            npd = nu / len(normal) if normal else None
+            res[b] = {"offer": {"days": len(od), "units": int(round(ou)), "perDay": round(opd, 1)} if od else None,
+                      "bestNormal": best(u, normal), "bestOffer": best(u, list(od)),
+                      "normal": {"days": len(normal), "units": int(round(nu)), "perDay": None if npd is None else round(npd, 1)},
+                      "liftPct": round((opd / npd - 1) * 100) if npd and opd is not None else None,
+                      "bulkOut": int(round(bulk_out[b])), "range": f"{_fmt_d(s1)} – {_fmt_d(end)}",
+                      "list": [{"d": d.strftime("%a %d %b"), "name": o["name"], "units": int(round(u[d])),
+                                "was": (o["prices"].get(b) or {}).get("was"), "now": (o["prices"].get(b) or {}).get("now")}
+                               for d, o in sorted(od.items())]}
+        out[per] = res
+    return out
+
+
+# ── price it's selling at now (user, 16 Nov 2026) ──────────────
+PRICE_DAYS = 7
+
+
+def selling_prices(lines, today):
+    """{BAG: {"now", "full", "lines", "days"}} — the Kenya price a bag is selling at: the most common unit price
+    (to the nearest 10) on single-bag till lines over the last PRICE_DAYS full days. Combo sub-lines and bulk /
+    corporate lines are left out. full = its full price (bag_original_prices.json)."""
+    s, e = today - datetime.timedelta(days=PRICE_DAYS), today - datetime.timedelta(days=1)
+    full = {k.upper(): v for k, v in _load_json(PRICES, {}).items() if isinstance(v, (int, float))}
+    seen = collections.defaultdict(collections.Counter)
+    for x in lines:
+        if (x["mkt"] != "KE" or x["sub"] or x["units"] <= 0 or x["units"] >= BULK_LINE_QTY or x.get("corp")
+                or not (s <= x["d"] <= e) or x["rev"] <= 0):
+            continue
+        seen[x["bag"]][int(round(x["rev"] / x["units"], -1))] += x["units"]
+    out = {}
+    for b, c in seen.items():
+        top = max(c.items(), key=lambda kv: (kv[1], kv[0]))[0]       # most units; a tie → the higher price
+        out[b] = {"now": top, "full": full.get(b), "lines": int(sum(c.values())), "days": PRICE_DAYS}
+    return out
+
+
 # ── posts ─────────────────────────────────────────────────────
 def load_posts(typ):
     """({BAG: [kenya, outside]} last week, {BAG: [kenya, outside]} this month) from the two MARKETING_POST tabs."""
@@ -591,12 +663,20 @@ def explain(b, mkt, w, ctx):
     elif w["key"] == "lastmonth" and pb is None:
         lines.append(["Marketing", "info", "Posting sheets couldn't be read — no posting comparison"])
 
-    # Bulk
-    for x in sorted(bulk, key=lambda x: -x["units"]):
+    # Bulk — one line per receipt (a corporate order rung as 40 single lines was 40 identical rows; 16 Nov 2026):
+    # "26 × Jumbo Brown, 3 × Jumbo Black — HILTON/102633, Hilton, 6 Nov (…)".
+    by_ref = {}
+    for x in bulk:
         if s1 <= x["d"] <= e1 or s0 <= x["d"] <= e0:
-            lines.append(["Bulk", "warn", f"{int(x['units']):,} × {x['product']} — {x['ref']}, {x['till'].title()}, {_fmt_d(x['d'])}"
-                          + (f" ({C})" if s1 <= x["d"] <= e1 else f" ({P})")
-                          + (f" — Corporate lead ({x['corp']}), credited to {x['till'].title()}" if x.get("corp") else "")])
+            g = by_ref.setdefault(x["ref"], {"x": x, "units": 0, "prod": collections.Counter()})
+            g["units"] += x["units"]
+            g["prod"][x["product"]] += x["units"]
+    for g in sorted(by_ref.values(), key=lambda g: -g["units"]):
+        x = g["x"]
+        what = ", ".join(f"{int(u):,} × {p}" for p, u in g["prod"].most_common())
+        lines.append(["Bulk", "warn", f"{what} — {x['ref']}, {x['till'].title()}, {_fmt_d(x['d'])}"
+                      + (f" ({C})" if s1 <= x["d"] <= e1 else f" ({P})")
+                      + (f" — Corporate lead ({x['corp']}), credited to {x['till'].title()}" if x.get("corp") else "")])
 
     delta = lw_nb - pw_nb
     want = "up" if delta > 0 else "down" if delta < 0 else None
@@ -827,11 +907,12 @@ def build(today=None):
                               "moverMin": mover_min, "cur": words[per][0], "prev": words[per][1]}
 
     bags = {x["bag"] for x in lines}
+    price_now = selling_prices(lines, today)
     info = {}
     for b in bags:
         pw_, pm_ = (posts_w or {}).get(b, [0, 0]), (posts_m or {}).get(b, [0, 0])
         info[b] = {"cat": cats.get(b, "OTHER"), "stock": [stock_now[m].get(b, 0) for m in MARKETS],
-                   "tags": offers.tags_now(b, today), "postsW": pw_, "postsM": pm_}
+                   "tags": offers.tags_now(b, today), "postsW": pw_, "postsM": pm_, "price": price_now.get(b)}
 
     try:                                                  # the Why did we move? waterfall (docs/product-performance.md)
         from lib import why_moved
@@ -842,7 +923,8 @@ def build(today=None):
     return {"generated": datetime.datetime.now().strftime("%d %b %Y %H:%M"), "topN": TOP_N, "whyMoved": wm,
             "bulkQty": BULK_LINE_QTY, "moverMin": MOVER_MIN,
             "week": {"cur": f"{_fmt_d(s1)} – {_fmt_d(e1)}", "prev": f"{_fmt_d(s0)} – {_fmt_d(e0)}"},
-            "periods": out_periods, "botw": botw, "why": why, "info": info, "shops": shops_out}
+            "periods": out_periods, "botw": botw, "why": why, "info": info, "shops": shops_out,
+            "offerDays": offer_days(lines, P, offers, today)}
 
 
 def inject(payload):

@@ -193,9 +193,34 @@ window.WhyMoved = {
           '<strong style="color:' + (reason.delta < 0 ? '#f87171' : '#34d399') + '">' + sgn(reason.delta) + ' bags</strong>' +
           ' (' + fmt(reason.row.then) + ' → ' + fmt(reason.row.now) + ')' +
           (shops.length ? ' — ' + shops.map(function (s) {
-            return s.shop + ' <span style="color:' + (s.delta < 0 ? '#f87171' : '#34d399') + '">' + sgn(s.delta) + '</span>';
+            return (s.delta > 0 ? '<span style="color:#fbbf24" title="Improved">★</span> ' : '') +
+              s.shop + ' <span style="color:' + (s.delta < 0 ? '#f87171' : '#34d399') + '">' + sgn(s.delta) + '</span>';
           }).join(', ') : '') + '.' +
           (bulkNote(reason.row) ? ' <span style="color:#fbbf24">' + bulkNote(reason.row) + '</span> — check <em>Without bulk orders</em>.' : '');
+      }
+      // Late-keyed sales moved back to their real day (lib/sales_date_fix, docs/shop-launch.md): say so when the
+      // day they were moved to is in either period shown (the month view: in either month).
+      var inPeriod = function (iso) {
+        if (key === 'wow') {
+          return [WEEKS[selA], WEEKS[selB]].some(function (wk) {
+            if (!wk) return false;
+            var s = new Date(wk.start + 'T00:00:00'), e = new Date(s); e.setDate(e.getDate() + wk.days - 1);
+            var d = new Date(iso + 'T00:00:00'); return d >= s && d <= e;
+          });
+        }
+        return true;
+      };
+      var fixDay = function (s, long) {
+        return new Date(s.replace(' ', 'T')).toLocaleDateString('en-GB', long ? { weekday: 'long', day: 'numeric', month: 'short' } : { weekday: 'short', day: 'numeric', month: 'short' });
+      };
+      var fixes = ((WM && WM.dateFixes) || []).filter(function (f) { return inPeriod(f.asDate); });
+      if (fixes.length) {
+        rEl.innerHTML += fixes.map(function (f) {
+          return '<div style="margin-top:0.35rem;color:#94a3b8;font-size:0.82rem"><strong style="color:#fbbf24">Printed sales:</strong> '
+            + f.shop + '’s <strong style="color:#e2e8f0">' + fmt(f.bags) + ' bags</strong> from ' + fixDay(f.from) + ' morning to '
+            + fixDay(f.to) + ' morning (' + f.days + ' days, keyed in late) are counted on <strong style="color:#e2e8f0">'
+            + fixDay(f.asDate + ' 00:00', true) + '</strong>.</div>';
+        }).join('');
       }
 
       // Value labels, connector lines and the "the reason" box.
@@ -292,9 +317,14 @@ window.WhyMoved = {
                     ' (the rest of the gap is in the Selling days bar)');
                   if (bulkNote(r)) out.push(' ' + bulkNote(r));
                   if (sc !== 1) out.push(' Shops, earlier week scaled to ' + now.days + ' days:');
-                  (r.shops || []).filter(function (s) { return s.delta; })
-                    .sort(function (a, z) { return Math.abs(z.delta) - Math.abs(a.delta); }).slice(0, 6)
-                    .forEach(function (s) { out.push('   ' + s.shop + ': ' + sgn(s.delta) + '  (' + fmt(Math.round(s.then * sc)) + ' → ' + fmt(s.now) + ')'); });
+                  var moved = (r.shops || []).filter(function (s) { return s.delta; });
+                  moved.slice().sort(function (a, z) { return Math.abs(z.delta) - Math.abs(a.delta); }).slice(0, 8)
+                    // ★ = the shop improved (sold more than in the earlier period); assets/gold_star.js paints it gold.
+                    .forEach(function (s) { out.push((s.delta > 0 ? ' ★ ' : '    ') + s.shop + ': ' + sgn(s.delta) + '  (' + fmt(Math.round(s.then * sc)) + ' → ' + fmt(s.now) + ')'); });
+                  if (moved.length > 1) {
+                    var ups = moved.filter(function (s) { return s.delta > 0; }).length;
+                    out.push(ups ? ' ★ ' + ups + ' of ' + moved.length + ' shops improved' : ' No shop improved');
+                  }
                   return out;
                 }
               }

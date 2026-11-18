@@ -134,3 +134,27 @@ def test_offer_split_bulk_is_others_and_refund_dropped():
     assert out["bulk"] == {"receipts": 1, "bags": 5, "revenue": 150000}
     assert not out["onSingles"]                                   # the refunded single is gone
     assert out["bags"] == 5 and out["revenue"] == 150000           # every bag = on + off + bulk
+
+
+def test_coloured_single_offer_counts_only_its_colours():
+    # "Elyse black/red" and "Remi beige" vs "Remi spice": each listed single takes only bags of its colours.
+    offers = {"combos": [], "singles": [
+        {"name": "Elyse black/red", "slots": [{"ELYSE"}], "colours": {"BLACK", "RED"}},
+        {"name": "Remi beige", "slots": [{"REMI"}], "colours": {"BEIGE"}},
+        {"name": "Remi spice", "slots": [{"REMI"}], "colours": {"SPICE"}},
+        {"name": "Fabela", "slots": [{"FABELA"}], "colours": set()}]}
+    out = rc.classify([L(1, "Elyse Red", 85000), L(2, "Elyse Grey", 85000), L(3, "Remi Spice", 55000),
+                       L(4, "Remi Beige", 55000), L(5, "Remi Maroon", 55000), L(6, "Fabela Navy", 60000)],
+                      offers, infer, M)
+    so = out["singlesOffer"]
+    assert so["Elyse black/red"]["count"] == 1            # the grey Elyse is not on offer
+    assert so["Remi beige"]["count"] == 1 and so["Remi spice"]["count"] == 1   # each Remi to its own colour
+    assert so["Fabela"]["count"] == 1                     # no colour in the name = every colour
+    split = rc.offer_split([L(2, "Elyse Grey", 85000), L(1, "Elyse Black", 85000)], offers, infer)
+    assert split["onSingles"]["ELYSE"]["units"] == 1 and split["offSingles"]["ELYSE"]["units"] == 1
+
+
+def test_offer_name_colours_ignore_bag_words():
+    assert rc._name_colours("Code 3 blue", [{"CODE 3"}]) == {"BLUE"}
+    assert rc._name_colours("MINIZURI", [{"MINI ZURI"}]) == set()
+    assert rc._name_colours("Zane man", [{"ZANE MAN"}]) == set()

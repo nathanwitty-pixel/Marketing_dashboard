@@ -40,8 +40,9 @@ several offers coexist without id clashes).
   inclusive), Kenya market (every till except Sinza/Dar/Uganda), per bag type. Excludes
   combo wrappers / delivery / customisation / straps / samples / POS-category lines (same
   rules as the Total Sales figure).
-- **Posting:** last week's Kenya marketing posting (WEEKLY_MARKETING_POST col E) per bag
-  type, borrowed alongside the sales.
+- **Posting:** Kenya posts per bag type from marketing's daily posting sheets (`lib/marketing_posts`) over the
+  **offer day(s) plus the 3 days before** (`POST_LEAD_DAYS`, user 16 Nov 2026), shown as `postWindowLabel`. It used to be
+  "last week", which gave an offer the posts of whatever week had just closed (a 6 Nov offer got 8–14 Nov's posts).
 - **Config** (`timed_offers_config.json`): `{"month": "YYYY-MM", "offers": [offer, …]}`.
   Each **offer**: `name`, `market`, `shops[]` (limit sales to those POS tills — e.g. Nairobi
   CBD = Hazina/Hilton/Starmall/KTDA Shop; empty = whole market), `startDate`, `endDate`,

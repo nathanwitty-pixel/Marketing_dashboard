@@ -30,11 +30,11 @@ WAREHOUSE = stock_lib.RESTOCK_LOCATION   # CBD/Stock — restocks the Kenya shop
 TILL_SHOP = {"STARMALL": "Starmall", "MOMBASA": "Mombasa", "NAKURU": "Nakuru", "ELDORET": "Eldoret", "KISUMU": "Kisumu",
              "MERU": "Meru", "THIKA": "Thika", "HAZINA": "Hazina", "KITENGELA": "Kitengela", "NANYUKI": "Nanyuki",
              "KAKAMEGA": "Kakamega", "HILTON": "Hilton", "KISII": "Kisii", "KTDA SHOP": "Ktda", "KTDA": "Ktda",
-             "BUSIA": "Busia", "RONGAI": "Rongai", "DAR-ES-ALAM": "Sinza", "SINZA": "Sinza", "UGANDA": "Uganda",
+             "BUSIA": "Busia", "RONGAI": "Rongai", "NYERI": "Nyeri", "DAR-ES-ALAM": "Sinza", "SINZA": "Sinza", "UGANDA": "Uganda",
              "WEBSITE SALES": "Website", "WEBSITE": "Website", "WEBSITE STORE": "Website"}
 CODE_SHOP = {"STAR": "Starmall", "MSA": "Mombasa", "NAKS": "Nakuru", "ELD": "Eldoret", "KSM": "Kisumu", "MERU": "Meru",
              "THK": "Thika", "HAZ": "Hazina", "KITE": "Kitengela", "NAN": "Nanyuki", "KAK": "Kakamega", "HTN": "Hilton",
-             "KSI": "Kisii", "KTDA": "Ktda", "BUSIA": "Busia", "RONG": "Rongai", "DAR": "Sinza", "UG": "Uganda",
+             "KSI": "Kisii", "KTDA": "Ktda", "BUSIA": "Busia", "RONG": "Rongai", "NYERI": "Nyeri", "DAR": "Sinza", "UG": "Uganda",
              "WEB": "Website"}
 OUTSIDE = {"Sinza", "Uganda"}
 ONLINE = {"Website"}                # no stock of its own — the page shows only who is waiting there
@@ -67,13 +67,6 @@ JOIN product_product pp ON pp.id = q.product_id JOIN product_template pt ON pt.i
 WHERE l.usage = 'internal' AND split_part(l.complete_name, '/', 1) IN (""" + _CODES + """)
   AND pt."name" NOT LIKE '%+%'
 GROUP BY 1, 2
-"""
-
-SHOP_TARGETS_SQL = """
-SELECT upper(pc."name") AS till, SUM(t.target_qty)::float AS qty
-FROM sales_pos_target t JOIN pos_config pc ON pc.id = t.config_id
-WHERE t.period = 'month' AND t.target_scope = 'pos' AND t.start_date = :m
-GROUP BY 1
 """
 
 TOTAL_SQL = """
@@ -237,13 +230,14 @@ def sales(start, end, typ):
 
 
 def shop_targets(month_start):
-    df = db.run_query(SHOP_TARGETS_SQL, {"m": month_start.isoformat()})
+    """{SHOP: bag target} from the Odoo till targets (lib/product_targets.till_targets — bags estimated from the KES
+    target when Odoo has no bag figure, as for Nov 2026)."""
     out = collections.Counter()
-    for r in (df.itertuples() if df is not None else []):
-        s = _shop(r.till)
+    for till, t in product_targets.till_targets(month_start).items():
+        s = _shop(till) if t["scope"] == "pos" else None
         if s:
-            out[s] += _num(r.qty)
-    return dict(out)
+            out[s] += _num(t["qty"])
+    return {s: v for s, v in out.items() if v}
 
 
 def grand_total(month_start):

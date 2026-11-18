@@ -21,7 +21,7 @@ SHOPS = {
     "HAZINA": ("Hazina", "KENYA"), "HILTON": ("Hilton", "KENYA"), "KAKAMEGA": ("Kakamega", "KENYA"),
     "KISII": ("Kisii", "KENYA"), "KISUMU": ("Kisumu", "KENYA"), "KITENGELA": ("Kitengela", "KENYA"),
     "KTDA Shop": ("Ktda", "KENYA"), "MERU": ("Meru", "KENYA"), "MOMBASA": ("Mombasa", "KENYA"),
-    "NAKURU": ("Nakuru", "KENYA"), "NANYUKI": ("Nanyuki", "KENYA"), "RONGAI": ("Rongai", "KENYA"),
+    "NAKURU": ("Nakuru", "KENYA"), "NANYUKI": ("Nanyuki", "KENYA"), "RONGAI": ("Rongai", "KENYA"), "NYERI": ("Nyeri", "KENYA"),
     "STARMALL": ("Starmall", "KENYA"), "THIKA": ("Thika", "KENYA"), "UGANDA": ("Uganda", "UGANDA"),
 }
 LABEL = {k: v[0] for k, v in SHOPS.items()}          # display name = the WhatsApp shop name

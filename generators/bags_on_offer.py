@@ -430,7 +430,7 @@ def _market_records(lo, hi, infer, new_of, new_names):
             mn = d.strftime("%B")
             if mn not in listed:
                 offers = rc.load_offers(mn, mk) or {}
-                listed[mn] = {b for o in offers.get("singles", []) for slot in o["slots"] for b in slot}
+                listed[mn] = offers.get("singles", [])          # colour-aware: rc.single_offer
                 running[mn] = [o["slots"] for o in offers.get("combos", [])]
             if len(rec["bags"]) >= rc.BULK_MIN:
                 for b, unit in rec["bags"]:
@@ -444,7 +444,7 @@ def _market_records(lo, hi, infer, new_of, new_names):
                 else:                                        # self-made → each bag judged like a single
                     left += [(b, rev / len(bs)) for b in bs]
             for b, unit in left:
-                row = "MID" if b in listed[mn] or b in new_set else "OFF"
+                row = "MID" if b in new_set or rc.single_offer(b, rec, listed[mn]) else "OFF"
                 add(d, label, row, 1, unit / fx, 1, ((bag(b), 1.0),),
                     ("New products" if b in new_set else "Listed singles") if row == "MID" else None)
         for ln in lines:                                     # gift bags (bag_key skips them), refunds netted

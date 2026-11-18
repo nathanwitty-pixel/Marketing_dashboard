@@ -1,5 +1,269 @@
 {
   "_help": "Timed offers for the month. Add each new offer as an item in 'offers'; all run live and stack on the page. At month rollover the generator archives these to Supabase and clears the list. Each offer: name, market, shops (list; empty=whole market), startDate/endDate (YYYY-MM-DD), bags (list), prices {BAG:{was,now}}.",
   "month": "2026-11",
-  "offers": []
+  "offers": [
+    {
+      "name": "6 Nov Friday Offers (Kenya)",
+      "market": "Kenya",
+      "shops": [],
+      "startDate": "2026-11-06",
+      "endDate": "2026-11-06",
+      "bags": [
+        "Aurora",
+        "Avana HB",
+        "Belt Bag",
+        "Big Man Bag",
+        "Code 3",
+        "Double Press",
+        "Fabela",
+        "Gym Bag",
+        "Jumbo",
+        "Kai",
+        "Liam",
+        "Man Bag",
+        "Mini Zuri",
+        "Monah BP",
+        "Moon Bag",
+        "Neo Man",
+        "Pioneer",
+        "Travel",
+        "Trecento",
+        "Zuri"
+      ],
+      "prices": {}
+    },
+    {
+      "name": "11 Nov Wednesday Offers (Kenya)",
+      "market": "Kenya",
+      "shops": [],
+      "startDate": "2026-11-11",
+      "endDate": "2026-11-11",
+      "bags": [
+        "Antitheft",
+        "Aurora",
+        "Code 3",
+        "Double Press",
+        "Fabela",
+        "Jumbo",
+        "Liam",
+        "Man Bag",
+        "Sierra",
+        "Zuri"
+      ],
+      "prices": {
+        "Antitheft": {
+          "was": 2600,
+          "now": 2000
+        },
+        "Aurora": {
+          "was": 2100,
+          "now": 1500
+        },
+        "Code 3": {
+          "was": 2100,
+          "now": 1600
+        },
+        "Double Press": {
+          "was": 2600,
+          "now": 2000
+        },
+        "Fabela": {
+          "was": 2400,
+          "now": 2000
+        },
+        "Jumbo": {
+          "was": 3600,
+          "now": 2400
+        },
+        "Liam": {
+          "was": 2100,
+          "now": 1500
+        },
+        "Man Bag": {
+          "was": 1600,
+          "now": 1000
+        },
+        "Sierra": {
+          "was": 2700,
+          "now": 2000
+        },
+        "Zuri": {
+          "was": 3600,
+          "now": 2300
+        }
+      }
+    },
+    {
+      "name": "13 Nov Friday Offers (Kenya)",
+      "market": "Kenya",
+      "shops": [],
+      "startDate": "2026-11-13",
+      "endDate": "2026-11-13",
+      "bags": [
+        "Monah BP",
+        "Code 3",
+        "Double Press",
+        "Jumbo",
+        "Fabela",
+        "Standard Travel",
+        "Nizana",
+        "Big Man Bag",
+        "Mini Zuri",
+        "Neo Man"
+      ],
+      "prices": {
+        "Monah BP": {
+          "was": 2000,
+          "now": 1500
+        },
+        "Code 3": {
+          "was": 2100,
+          "now": 1600
+        },
+        "Double Press": {
+          "was": 2600,
+          "now": 2000
+        },
+        "Jumbo": {
+          "was": 3600,
+          "now": 2400
+        },
+        "Fabela": {
+          "was": 2400,
+          "now": 2000
+        },
+        "Standard Travel": {
+          "was": 2600,
+          "now": 2000
+        },
+        "Nizana": {
+          "was": 1600,
+          "now": 1000
+        },
+        "Big Man Bag": {
+          "was": 2100,
+          "now": 1600
+        },
+        "Mini Zuri": {
+          "was": 2600,
+          "now": 1600
+        },
+        "Neo Man": {
+          "was": 1600,
+          "now": 1000
+        }
+      }
+    },
+    {
+      "name": "18 Nov Wednesday Offers (Kenya)",
+      "market": "Kenya",
+      "shops": [],
+      "startDate": "2026-11-18",
+      "endDate": "2026-11-18",
+      "bags": [
+        "Antitheft",
+        "Pioneer",
+        "Avana HB",
+        "Aurora",
+        "Jumbo",
+        "Bonita",
+        "Man Bag",
+        "Neo Man",
+        "Mini Zuri",
+        "Cathy",
+        "Nizana",
+        "Moon Bag",
+        "Prime",
+        "Kai",
+        "School Bag",
+        "Code 3",
+        "Standard Travel",
+        "Fabela",
+        "Zuri",
+        "Sierra"
+      ],
+      "prices": {
+        "Antitheft": {
+          "was": 2600,
+          "now": 2000
+        },
+        "Pioneer": {
+          "was": 2600,
+          "now": 2000
+        },
+        "Avana HB": {
+          "was": 2100,
+          "now": 1500
+        },
+        "Aurora": {
+          "was": 2100,
+          "now": 1500
+        },
+        "Jumbo": {
+          "was": 3900,
+          "now": 2400
+        },
+        "Bonita": {
+          "was": 3900,
+          "now": 2400
+        },
+        "Man Bag": {
+          "was": 1600,
+          "now": 1000
+        },
+        "Neo Man": {
+          "was": 1600,
+          "now": 1000
+        },
+        "Mini Zuri": {
+          "was": 2600,
+          "now": 1600
+        },
+        "Cathy": {
+          "was": 2600,
+          "now": 1600
+        },
+        "Nizana": {
+          "was": 1600,
+          "now": 1000
+        },
+        "Moon Bag": {
+          "was": 1600,
+          "now": 1000
+        },
+        "Prime": {
+          "was": 2800,
+          "now": 2400
+        },
+        "Kai": {
+          "was": 2800,
+          "now": 2400
+        },
+        "School Bag": {
+          "was": 2100,
+          "now": 1600
+        },
+        "Code 3": {
+          "was": 2100,
+          "now": 1600
+        },
+        "Standard Travel": {
+          "was": 2600,
+          "now": 2000
+        },
+        "Fabela": {
+          "was": 2600,
+          "now": 2000
+        },
+        "Zuri": {
+          "was": 3600,
+          "now": 2000
+        },
+        "Sierra": {
+          "was": 3600,
+          "now": 2000
+        }
+      }
+    }
+  ]
 }

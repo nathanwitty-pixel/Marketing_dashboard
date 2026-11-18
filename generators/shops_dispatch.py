@@ -33,7 +33,7 @@ OUT_FILE = paths.data("shops_dispatch_db.json")
 KENYA_SHOPS = [
     "STARMALL", "MOMBASA", "NAKURU", "ELDORET", "KISUMU", "MERU",
     "THIKA", "HAZINA", "KITENGELA", "NANYUKI", "KAKAMEGA", "HILTON",
-    "KISII", "KTDA", "BUSIA", "RONGAI",
+    "KISII", "KTDA", "BUSIA", "RONGAI", "NYERI",
 ]
 
 # How each receipt outcome is credited when scoring a shop (bags-weighted).
