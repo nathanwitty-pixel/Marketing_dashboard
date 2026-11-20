@@ -270,10 +270,8 @@ def prime_offer_flags(mt_rows):
 def offer_flags(sh=None):
     """{BAG TYPE: (kenya, sinza, uganda) on-offer bools} from MONTHLY_TARGET cols F/G/H."""
     if "flags" not in _MT_CACHE:
-        if sh is None:
-            from lib.google_auth import get_gspread_client
-            sh = get_gspread_client().open_by_key(SPREADSHEET_ID)
-        prime_offer_flags(sh.worksheet("MONTHLY_TARGET").get_all_values())
+        from lib import product_targets
+        prime_offer_flags(product_targets.monthly_target_sheet_rows(sh))   # sheet unreadable → no ✅/x cells
     return _MT_CACHE.get("flags", {})
 
 

@@ -158,7 +158,7 @@ WHERE p.date_order::date BETWEEN :start_date AND :end_date
 # Odoo location codes for live-stock fallback (excludes the WIP/production
 # placeholder locations that hold a bogus ~44k/variant).
 _KENYA_SHOP_CODES = ('STAR', 'MSA', 'NAKS', 'ELD', 'KSM', 'MERU', 'THK', 'HAZ',
-                     'KITE', 'NAN', 'KAK', 'HTN', 'KSI', 'KTDA', 'BUSIA', 'RONG')
+                     'KITE', 'NAN', 'KAK', 'HTN', 'KSI', 'KTDA', 'BUSIA', 'RONG', 'NYERI')
 _SINZA_CODES  = ('DAR',)   # Dar-es-Salaam warehouse serves the Sinza region
 _UGANDA_CODES = ('UG',)
 
@@ -2506,8 +2506,7 @@ def inject(payload):
                       lambda _m: oa_block, html, flags=re.DOTALL)
     except Exception:
         pass
-    with open(HTML, "w", encoding="utf-8") as f:
-        f.write(html)
+    paths.write_atomic(HTML, html)
 
 
 def write_bags_offer_source(payload):

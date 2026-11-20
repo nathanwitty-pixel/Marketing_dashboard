@@ -94,7 +94,8 @@ receipts_raw AS (
       ELSE NULL
     END AS dest_name,
     m.qty,
-    m.move_date
+    m.move_date,
+    m.id AS move_id
   FROM moves m
   WHERE m.src_path ILIKE 'FINWH/Goods in Transit/%'
     AND m.state = 'done'
@@ -108,7 +109,8 @@ receipts_raw AS (
     AND m.dest_path NOT ILIKE '%HTN/Stock%'
 ),
 arrivals_dedup AS (
-  SELECT DISTINCT bag_name, dest_name, qty, move_date, 'Direct' AS src, NULL::int AS dedup_key
+  -- keyed by the stock move id, so two real identical same-day receipts both count
+  SELECT DISTINCT bag_name, dest_name, qty, move_date, 'Direct' AS src, move_id AS dedup_key
   FROM receipts_raw
   WHERE dest_name IS NOT NULL
 ),
@@ -198,7 +200,8 @@ v2_finwh AS (
     END AS dest_name,
     m.qty AS qty,
     m.move_date AS move_date,
-    m.is_sunday AS is_sunday
+    m.is_sunday AS is_sunday,
+    m.id AS id
   FROM moves m
   WHERE m.src_path ILIKE '%FINWH%'
     AND m.src_path NOT ILIKE '%Goods in Transit%'
@@ -216,7 +219,8 @@ v2_transit AS (
     END AS dest_name,
     l.qty_dispatched AS qty,
     DATE(t.dispatch_date) AS move_date,
-    EXTRACT(DOW FROM t.dispatch_date) = 0 AS is_sunday
+    EXTRACT(DOW FROM t.dispatch_date) = 0 AS is_sunday,
+    l.id AS id
   FROM denri_dispatch_transit_line l
   JOIN denri_dispatch_transit t ON l.transit_id = t.id
   JOIN denri_dispatch_shop s ON t.shop_id = s.id
@@ -227,14 +231,21 @@ v2_transit AS (
     AND DATE(t.dispatch_date) BETWEEN p.start_date AND p.end_date
 ),
 v2_arrivals AS (
+  -- The same dispatch shows up in both stock_move (v2_finwh) and the dispatch app (v2_transit); DISTINCT
+  -- collapses that pair. rn numbers identical (bag, shop, qty, day) rows WITHIN each source, so the 2nd
+  -- real identical dispatch of a day pairs with the other source's 2nd and is kept, not swallowed.
   SELECT DISTINCT bag_name, dest_name, qty, move_date,
-         'Direct' AS src, NULL::int AS dedup_key
+         'Direct' AS src, rn::int AS dedup_key
   FROM (
-    SELECT bag_name, dest_name, qty, move_date FROM v2_finwh
+    SELECT bag_name, dest_name, qty, move_date,
+           ROW_NUMBER() OVER (PARTITION BY bag_name, dest_name, qty, move_date ORDER BY id) AS rn
+      FROM v2_finwh
      WHERE dest_name IS NOT NULL
        AND (dest_name = 'HILTON' OR NOT is_sunday)
     UNION ALL
-    SELECT bag_name, dest_name, qty, move_date FROM v2_transit
+    SELECT bag_name, dest_name, qty, move_date,
+           ROW_NUMBER() OVER (PARTITION BY bag_name, dest_name, qty, move_date ORDER BY id) AS rn
+      FROM v2_transit
      WHERE dest_name IS NOT NULL
        AND (dest_name = 'HILTON' OR NOT is_sunday)
   ) z

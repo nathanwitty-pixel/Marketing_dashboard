@@ -1058,6 +1058,9 @@ inline_script = (
     "</script>\n"
     "<!-- NEW_PROD_DATA_END -->"
 )
+# A "</" inside the JSON (e.g. a product name) would close the <script> early — escape it in the data part only.
+_np_head, _np_tail = "<!-- NEW_PROD_DATA_START -->\n<script>\n", "</script>\n<!-- NEW_PROD_DATA_END -->"
+inline_script = _np_head + inline_script[len(_np_head):-len(_np_tail)].replace("</", "<\\/") + _np_tail
 
 html_path = paths.html("new_products.html")
 
@@ -1066,13 +1069,12 @@ with open(html_path, "r", encoding="utf-8") as f:
 
 html = re.sub(
     r"<!-- NEW_PROD_DATA_START -->.*?<!-- NEW_PROD_DATA_END -->",
-    inline_script,
+    lambda _m: inline_script,   # a function, so backslashes in the JSON (\n, \u00e9) are not re-processed
     html,
     flags=re.DOTALL
 )
 
-with open(html_path, "w", encoding="utf-8") as f:
-    f.write(html)
+paths.write_atomic(html_path, html)
 
 if not os.environ.get("DENRI_LAUNCHER"):
     webbrowser.open_new_tab(pathlib.Path(html_path).as_uri())

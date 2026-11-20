@@ -62,7 +62,7 @@ ORDER BY o.id, pl.id
 
 # Shop stock locations by top-level code — the lib/product_targets list (shops + Website, never warehouses).
 SHOP_CODES = ("STAR", "MSA", "NAKS", "ELD", "KSM", "MERU", "THK", "HAZ", "KITE", "NAN", "KAK", "HTN", "KSI",
-              "KTDA", "BUSIA", "RONG", "DAR", "UG", "WEB")
+              "KTDA", "BUSIA", "RONG", "NYERI", "DAR", "UG", "WEB")
 CODE_MKT = {c: ("TZ" if c == "DAR" else "UG" if c == "UG" else "KE") for c in SHOP_CODES}
 _CODES = ", ".join("'%s'" % c for c in SHOP_CODES)
 
@@ -77,7 +77,7 @@ GROUP BY 1, 2
 
 # Done moves touching a shop since :s — source / destination shop code (NULL = not a shop).
 MOVES_SQL = """
-SELECT pt."name" AS product, m.date::date AS d,
+SELECT pt."name" AS product, (m.date AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date AS d,
        CASE WHEN ls.usage = 'internal' AND split_part(ls.complete_name, '/', 1) IN (""" + _CODES + """)
             THEN split_part(ls.complete_name, '/', 1) END AS src,
        CASE WHEN ld.usage = 'internal' AND split_part(ld.complete_name, '/', 1) IN (""" + _CODES + """)
@@ -85,7 +85,7 @@ SELECT pt."name" AS product, m.date::date AS d,
        SUM(m.product_qty) AS qty
 FROM stock_move m JOIN stock_location ls ON ls.id = m.location_id JOIN stock_location ld ON ld.id = m.location_dest_id
 JOIN product_product pp ON pp.id = m.product_id JOIN product_template pt ON pt.id = pp.product_tmpl_id
-WHERE m.state = 'done' AND m.date::date >= :s AND pt."name" NOT LIKE '%+%'
+WHERE m.state = 'done' AND (m.date AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date >= :s AND pt."name" NOT LIKE '%+%'
   AND ((ls.usage = 'internal' AND split_part(ls.complete_name, '/', 1) IN (""" + _CODES + """))
     OR (ld.usage = 'internal' AND split_part(ld.complete_name, '/', 1) IN (""" + _CODES + """)))
 GROUP BY 1, 2, 3, 4
@@ -156,7 +156,7 @@ def load_lines(start, end, typ):
     df = db.run_query(LINES_SQL, {"s": start.isoformat(), "e": end.isoformat(),
                                   "excluded": queries.excluded_products()})
     if df is None:
-        raise RuntimeError("Odoo unreachable")
+        raise RuntimeError("Odoo unreachable" + (f": {db.DRIVER_ERROR}" if db.DRIVER_ERROR else ""))
     prices = {k.upper(): v for k, v in _load_json(PRICES, {}).items() if isinstance(v, (int, float))}
     out = []
     pending = []   # [(rec, weight)] of the bag lines under the current combo wrapper
@@ -934,8 +934,7 @@ def inject(payload):
              + json.dumps(payload, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
              + ";\n</script>\n<!-- PP_DATA_END -->")
     html = re.sub(r"<!-- PP_DATA_START -->.*?<!-- PP_DATA_END -->", lambda _m: block, html, flags=re.S)
-    with open(HTML, "w", encoding="utf-8") as f:
-        f.write(html)
+    paths.write_atomic(HTML, html)
 
 
 if __name__ == "__main__":

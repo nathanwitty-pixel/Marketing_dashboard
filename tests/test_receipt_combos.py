@@ -95,6 +95,39 @@ def test_refunded_receipt_is_dropped():
     assert out["singles"]["BONITA"]["count"] == 1 and out["refunded"] == 1
 
 
+def test_partial_refund_keeps_the_bags_still_sold():
+    # 20 Nov 2026: returning the Bonita takes only the Bonita off; the Gym Bag + Aria Sling combo stays sold.
+    lines = [dict(L(40, "Gym Bag Black", 41000), ref="SINZA/0040"), dict(L(40, "Aria Sling Black", 41000), ref="SINZA/0040"),
+             dict(L(40, "Bonita Black", 85000), ref="SINZA/0040"),
+             dict(L(41, "Bonita Black", -85000, qty=-1), ref="SINZA/0040 REFUND")]
+    out = rc.classify(lines, OFFERS, infer, M)
+    assert out["running"]["GYMBAG + ARI SLING"]["count"] == 1
+    assert not out["singles"] and out["refunded"] == 1
+    assert out["bags"] == 2 and out["revenue"] == 82000
+
+
+def _sub(receipt, product, parent):
+    return dict(L(receipt, product, 0), parent=parent)
+
+
+def test_two_combo_lines_on_one_receipt_are_two_combos():
+    # 20 Nov 2026: each combo line's KES 0 sub-lines (parent_id = its product) are that combo's bags only.
+    same = [dict(L(50, "Gym Bag + Aria Sling", 82000), product_id=900), dict(L(50, "Gym Bag + Aria Sling", 82000), product_id=900),
+            _sub(50, "Gym Bag Black", 900), _sub(50, "Aria Sling Black", 900),
+            _sub(50, "Gym Bag Grey", 900), _sub(50, "Aria Sling Grey", 900)]
+    out = rc.classify(same, OFFERS, infer, M)
+    assert out["running"]["GYMBAG + ARI SLING"]["count"] == 2 and not out["selfMade"]
+    assert out["running"]["GYMBAG + ARI SLING"]["revenue"] == 164000
+    two = [dict(L(51, "Gym Bag + Aria Sling", 82000), product_id=900), dict(L(51, "Safiri + Code 3", 120000), product_id=901),
+           _sub(51, "Gym Bag Black", 900), _sub(51, "Aria Sling Black", 900),
+           _sub(51, "Safiri Travel Black", 901), _sub(51, "Code 3 Black", 901)]
+    out = rc.classify(two, OFFERS, infer, M)
+    assert out["running"]["GYMBAG + ARI SLING"]["count"] == 1 and out["running"]["SAFIRI + CODE 3"]["count"] == 1
+    assert out["running"]["SAFIRI + CODE 3"]["revenue"] == 120000 and not out["selfMade"]
+    split = rc.offer_split(two, OFFERS, infer)
+    assert split["combos"]["running"] == {"count": 2, "bags": 4, "revenue": 202000}
+
+
 def test_pair_plus_one_at_other_price_is_combo_plus_single():
     out = rc.classify([L(15, "Elyse Black", 75000), L(15, "Elyse Grey", 75001), L(15, "Bonita Black", 110000)],
                       OFFERS, infer, M)

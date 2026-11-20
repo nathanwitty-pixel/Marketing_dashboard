@@ -24,11 +24,11 @@ from . import db
 # Kenya retail shop location codes. Deliberately EXCLUDES every non-retail
 # location: the bulk warehouses / placeholders (WRKWH, PURCH, PROD, WIP, FINWH),
 # the non-shop stores (VLD, CBD, CBS, MRKT, WEB, RJW, JUMIA, CORP, STF, SHT), and
-# the non-Kenya markets (DAR→Sinza, UG→Uganda). Only the 16 codes below count as
+# the non-Kenya markets (DAR→Sinza, UG→Uganda). Only the 17 codes below count as
 # Kenya shop on-hand (~14k bags); adding any of the excluded codes reintroduces
-# millions of bogus warehouse/placeholder units.
+# millions of bogus warehouse/placeholder units. NYERI = the Nyeri shop (opened Nov 2026).
 KENYA_SHOP_CODES = ("STAR", "MSA", "NAKS", "ELD", "KSM", "MERU", "THK", "HAZ",
-                    "KITE", "NAN", "KAK", "HTN", "KSI", "KTDA", "BUSIA", "RONG")
+                    "KITE", "NAN", "KAK", "HTN", "KSI", "KTDA", "BUSIA", "RONG", "NYERI")
 SINZA_CODES  = ("DAR",)    # Dar-es-Salaam warehouse serves the Sinza region
 UGANDA_CODES = ("UG",)
 OUTSIDE_CODES = SINZA_CODES + UGANDA_CODES   # non-Kenya markets

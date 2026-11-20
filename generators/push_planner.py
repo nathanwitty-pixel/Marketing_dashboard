@@ -42,7 +42,7 @@ LEFT JOIN pos_session ps ON p.session_id=ps.id
 LEFT JOIN pos_config pc ON ps.config_id=pc.id
 LEFT JOIN product_product pp ON pl.product_id=pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id=pt.id
-WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
+WHERE (p.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
   AND NOT COALESCE(pl.sub_product_line, false)
   AND lower(COALESCE(pc."name",'')) NOT IN ('sinza','dar-es-alam','uganda')
   AND pt."name" NOT LIKE '%+%'
@@ -359,8 +359,7 @@ def inject(pp):
     new, n = re.subn(re.escape(START) + r".*?" + re.escape(END), lambda _m: block, html, flags=re.DOTALL)
     if n != 1:
         raise SystemExit(f"expected one {START}…{END} pair in push_planner.html, found {n}")
-    with open(HTML_FILE, "w", encoding="utf-8") as f:
-        f.write(new)
+    paths.write_atomic(HTML_FILE, new)
 
 
 LAYA_BUDGET = 80   # model calls per run (~1.2 s each); answers are cached, so repeat runs are faster

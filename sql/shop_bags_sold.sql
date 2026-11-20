@@ -23,14 +23,14 @@ LEFT JOIN product_product pp ON pl.product_id = pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
 CROSS JOIN params dr
-WHERE p.date_order::date BETWEEN dr.start_date AND dr.end_date
+WHERE (p.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETWEEN dr.start_date AND dr.end_date   -- Nairobi days (date_order is UTC)
   AND p.state IN ('done', 'invoiced', 'paid')
   AND COALESCE(pt."name", '') NOT LIKE '%+%'
   AND COALESCE(pt."name", '') NOT ILIKE '%Delivery Fee%'
   AND COALESCE(pt."name", '') NOT ILIKE '%Gift Bag%'
   AND COALESCE(pt."name", '') NOT ILIKE '%KES discount%'
   AND COALESCE(pcat."name", '') NOT ILIKE '%Pos%'
-  AND pl.qty > 0
+  AND pl.qty <> 0                                         -- refunds net (a returned bag subtracts), as bags_sold_total.sql
   AND (p.session_id IS NULL OR COALESCE(pc."name", '') <> '')
   AND (p.session_id IS NULL OR pc."name" NOT ILIKE '%Flash Sale%')
   AND (p.session_id IS NULL OR pc."name" NOT ILIKE '%Staff%')

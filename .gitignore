@@ -34,6 +34,11 @@ data/laya_cache.json
 .claude/ralph-loop.local.md
 .rebuild_times.json
 
+# Password-locked pages: live prices / stock. The app builds them itself — never push them.
+html/offer_picking.html
+html/push_planner.html
+html/bag_signals.html
+
 # Excel lock files (open workbooks)
 ~$*
 

@@ -767,8 +767,16 @@ def apply_odoo(period, disp_period, bags_target, buffer_stock):
 
 
 if dispatch:
-    apply_odoo(weekly,  dispatch.get("weekly"),  WK_BAGS_TARGET, WK_BUFFER_STOCK)
-    apply_odoo(monthly, dispatch.get("monthly"), MO_BAGS_TARGET, MO_BUFFER_STOCK)
+    # shops_dispatch.py leaves the old JSON in place when Postgres is down — only use a period whose
+    # stored window is THIS week / month; a stale one is dropped (the page then hides its dispatch section).
+    for _key, _per, _win, _tgt, _buf in (("weekly",  weekly,  _wk_win, WK_BAGS_TARGET, WK_BUFFER_STOCK),
+                                         ("monthly", monthly, _mo_win, MO_BAGS_TARGET, MO_BUFFER_STOCK)):
+        _dp = dispatch.get(_key)
+        if _dp and (_dp.get("start"), _dp.get("end")) != (_win[0].isoformat(), _win[1].isoformat()):
+            print(f"  Odoo dispatch    : {_key} file is for {_dp.get('start')} → {_dp.get('end')}, not "
+                  f"{_win[0]} → {_win[1]} (shops_dispatch couldn't reach Odoo) — not applied")
+            dispatch[_key] = _dp = None
+        apply_odoo(_per, _dp, _tgt, _buf)
 
 
 # ── WALK-IN CONVERSION (Odoo walk-in counts vs in-shop receipts) ──
@@ -907,7 +915,7 @@ SE = {
 inline = (
     "<!-- SHOPS_DATA_START -->\n"
     "<script>\n"
-    "const SE = " + json.dumps(SE, ensure_ascii=False, separators=(",", ":")) + ";\n"
+    "const SE = " + json.dumps(SE, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/") + ";\n"
     "</script>\n"
     "<!-- SHOPS_DATA_END -->"
 )
@@ -918,8 +926,7 @@ with open(html_path, "r", encoding="utf-8") as f:
     html = f.read()
 html = re.sub(r"<!-- SHOPS_DATA_START -->.*?<!-- SHOPS_DATA_END -->",
               lambda _m: inline, html, flags=re.DOTALL)
-with open(html_path, "w", encoding="utf-8") as f:
-    f.write(html)
+paths.write_atomic(html_path, html)
 
 if not os.environ.get("DENRI_LAUNCHER"):
     import webbrowser, pathlib

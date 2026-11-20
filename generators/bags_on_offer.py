@@ -99,12 +99,18 @@ WITH inv AS (
 ), pay AS (
     SELECT inv.id, inv.bags, inv.agreed, GREATEST(p.date, inv.date_invoice)::date AS d, SUM(p.amount) AS paid
     FROM inv JOIN denri_corporate_payment p ON p.invoice_id = inv.id
-    WHERE GREATEST(p.date, inv.date_invoice) BETWEEN :s AND :e
+    WHERE GREATEST(p.date, inv.date_invoice) <= :e
     GROUP BY 1, 2, 3, 4
+), cum AS (
+    -- bags paid for by the end of each payment day minus those paid for before it, so instalments
+    -- don't each round a bag away (11 bags paid half + half = 5 + 6, not 5 + 5)
+    SELECT pay.*, SUM(paid) OVER (PARTITION BY id ORDER BY d) AS upto FROM pay
 )
-SELECT d, COALESCE(SUM(FLOOR((bags * LEAST(paid / NULLIF(agreed, 0), 1))::numeric + 0.000001)), 0)::int AS units,
+SELECT d, COALESCE(SUM(FLOOR((bags * LEAST(upto / NULLIF(agreed, 0), 1))::numeric + 0.000001)
+                     - FLOOR((bags * LEAST((upto - paid) / NULLIF(agreed, 0), 1))::numeric + 0.000001)), 0)::int AS units,
        ROUND(COALESCE(SUM(LEAST(paid, agreed)), 0))::bigint AS revenue
-FROM pay
+FROM cum
+WHERE d BETWEEN :s AND :e
 GROUP BY d
 """
 
@@ -436,7 +442,7 @@ def _market_records(lo, hi, infer, new_of, new_names):
                 for b, unit in rec["bags"]:
                     add(d, label, "OFF", 1, unit / fx, 1, ((bag(b), 1.0),))
                 continue
-            combos, left = rc._groups(rec["bags"])
+            combos, left = rc._groups(rec["bags"], rec.get("fixed"))
             for bs, rev in combos:
                 if any(rc._fits(bs, sl) for sl in running[mn]):  # running combo → Combos, one unit per bag
                     add(d, label, "COMBOS", len(bs), rev / fx, len(bs),
@@ -1246,12 +1252,11 @@ def inject(payload):
     with open(HTML, "r", encoding="utf-8") as f:
         html = f.read()
     block = ("<!-- BOO_DATA_START -->\n<script>\nconst BOO = "
-             + json.dumps(payload, ensure_ascii=False, separators=(",", ":"), default=str)
+             + json.dumps(payload, ensure_ascii=False, separators=(",", ":"), default=str).replace("</", "<\\/")
              + ";\n</script>\n<!-- BOO_DATA_END -->")
     html = re.sub(r"<!-- BOO_DATA_START -->.*?<!-- BOO_DATA_END -->", lambda _m: block, html,
                   flags=re.DOTALL)
-    with open(HTML, "w", encoding="utf-8") as f:
-        f.write(html)
+    paths.write_atomic(HTML, html)
 
 
 # The month's on / off offer split, for the Price per Bag card (forward_projections.py reads it).

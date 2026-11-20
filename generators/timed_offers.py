@@ -1109,15 +1109,17 @@ def build_offer(offer):
                                          name_sql=" AND COALESCE(pt.\"name\",'') NOT ILIKE '%[REJECT]%' ") \
             if _NAME_SQL else {}
         if _daily:
-            offer_days = (_oe_eff - _split).days + 1
-            base_days  = (_split - _mstart).days          # days before the clearance/offer
+            # An offer that hasn't started yet (start after today) has no offer days and no lift (n/a on the
+            # page, like _offer_compare's None) — it showed -100%. Base days stop at today (20 Nov 2026).
+            offer_days = max((_oe_eff - _split).days + 1, 0)
+            base_days  = (min(_split, date.today()) - _mstart).days   # days before the clearance/offer
             def _sum(a, b):
                 return sum(v for k, v in _daily.items() if a <= k <= b)
             base_total  = _sum(_mstart.isoformat(), (_split - timedelta(days=1)).isoformat())
             offer_total = _sum(_split.isoformat(), _oe_eff.isoformat())
             base_per_day  = round(base_total / base_days, 1) if base_days else 0.0
             offer_per_day = round(offer_total / offer_days, 1) if offer_days else 0.0
-            lift_pct = round((offer_per_day - base_per_day) / base_per_day * 100) if base_per_day else None
+            lift_pct = round((offer_per_day - base_per_day) / base_per_day * 100) if base_per_day and offer_days else None
             # daily series for the chart (month start → elapsed end; clearance/offer days flagged)
             _series = []
             _d = _mstart
@@ -1171,7 +1173,7 @@ def build_offer(offer):
                 _opd = round((offer_total - _bo) / offer_days, 1) if offer_days else 0.0
                 lift.update({"bulkBase": _bb, "bulkOffer": _bo,
                              "basePerDayExBulk": _bpd, "offerPerDayExBulk": _opd,
-                             "liftPctExBulk": round((_opd - _bpd) / _bpd * 100) if _bpd else None})
+                             "liftPctExBulk": round((_opd - _bpd) / _bpd * 100) if _bpd and offer_days else None})
             # Normal (full-price) vs clearance (reject) over the whole month-to-date window
             # (e.g. 1st→21st), per day — the comparison the reject panel shows.
             if _NAME_SQL:
@@ -1510,7 +1512,7 @@ if __name__ == "__main__":
     inline_script = (
         "<!-- TIMED_DATA_START -->\n"
         "<script>\n"
-        "const TO_DATA = " + json.dumps(payload, ensure_ascii=False) + ";\n"
+        "const TO_DATA = " + json.dumps(payload, ensure_ascii=False).replace("</", "<\\/") + ";\n"
         "const TO_LIST = TO_DATA.offers;\n"
         "const TO = TO_LIST[0] || null;\n"      # back-compat: first offer
         "</script>\n"
@@ -1522,8 +1524,7 @@ if __name__ == "__main__":
         html = f.read()
     html = re.sub(r"<!-- TIMED_DATA_START -->.*?<!-- TIMED_DATA_END -->",
                   lambda _m: inline_script, html, flags=re.DOTALL)
-    with open(html_path, "w", encoding="utf-8") as f:
-        f.write(html)
+    paths.write_atomic(html_path, html)
 
     if not os.environ.get("DENRI_LAUNCHER"):
         webbrowser.open_new_tab(pathlib.Path(html_path).as_uri())
