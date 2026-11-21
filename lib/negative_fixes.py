@@ -33,7 +33,7 @@ LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id
 LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
-WHERE p.date_order::date BETWEEN :s AND :e
+WHERE (p.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETWEEN :s AND :e   -- Nairobi days
   AND p.state IN ('done', 'invoiced', 'paid')
   AND pl.qty <> 0
   AND COALESCE(pt."name", '') NOT LIKE '%+%'

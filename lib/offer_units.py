@@ -18,21 +18,35 @@ import csv
 
 from lib import db, paths, receipt_combos
 
+# One row per (receipt, combo product, bag): the combo lines summed per order + product (two lines of one combo =
+# qty 2; a return is its own order with negative qty, POS_LINES gives it bags), the sub-lines summed per order +
+# parent + bag — as generators/bags_on_offer.py COMBO_LINES_SQL (20 Nov 2026: the old line × sub-line join
+# cross-joined two lines of one combo and counted refunded combos).
 COMBO_LINES_SQL = """
-SELECT p.id AS receipt, w.product_id AS combo, w.qty AS combo_qty, pt."name" AS product, s.qty AS qty
-FROM pos_order p
-JOIN pos_session ps ON ps.id = p.session_id
-JOIN pos_config pc ON pc.id = ps.config_id
-JOIN pos_order_line w ON w.order_id = p.id
-JOIN product_product wp ON wp.id = w.product_id
-JOIN product_template wt ON wt.id = wp.product_tmpl_id
-JOIN pos_order_line s ON s.order_id = p.id AND s.parent_id = w.product_id AND COALESCE(s.sub_product_line, false)
-JOIN product_product pp ON pp.id = s.product_id
-JOIN product_template pt ON pt.id = pp.product_tmpl_id
-WHERE p.date_order::date BETWEEN :s AND :e
-  AND p.state IN ('done', 'invoiced', 'paid')
-  AND w.qty > 0 AND wt."name" LIKE '%%+%%'
-  AND lower(pc."name") NOT IN ('sinza', 'dar-es-alam', 'uganda')
+WITH c AS (
+    SELECT pl.order_id, pl.product_id, SUM(pl.qty) AS combo_qty
+    FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
+    JOIN pos_session ps ON ps.id = p.session_id
+    JOIN pos_config pc ON pc.id = ps.config_id
+    JOIN product_product wp ON wp.id = pl.product_id
+    JOIN product_template wt ON wt.id = wp.product_tmpl_id
+    WHERE p.date_order::date BETWEEN :s AND :e
+      AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
+      AND NOT COALESCE(pl.sub_product_line, false) AND wt."name" LIKE '%%+%%'
+      AND lower(pc."name") NOT IN ('sinza', 'dar-es-alam', 'uganda')
+    GROUP BY 1, 2
+), s AS (
+    SELECT sl.order_id, sl.parent_id, pt."name" AS product, SUM(sl.qty) AS qty
+    FROM (SELECT DISTINCT order_id FROM c) co JOIN pos_order po ON po.id = co.order_id
+    JOIN POS_LINES(po) sl ON sl.order_id = po.id
+    JOIN c ON c.order_id = sl.order_id AND c.product_id = sl.parent_id
+    JOIN product_product pp ON pp.id = sl.product_id
+    JOIN product_template pt ON pt.id = pp.product_tmpl_id
+    WHERE COALESCE(sl.sub_product_line, false)
+    GROUP BY 1, 2, 3
+)
+SELECT c.order_id AS receipt, c.product_id AS combo, c.combo_qty, s.product, s.qty
+FROM c JOIN s ON s.order_id = c.order_id AND s.parent_id = c.product_id
 """
 
 SINGLES_SQL = """
@@ -78,16 +92,21 @@ def units(month_start, month_end):
     ke = (receipt_combos.load_offers(month, "kenya") or {}).get("combos", [])
     if ke:
         df = db.run_query(COMBO_LINES_SQL, p)
-        groups = collections.defaultdict(lambda: {"qty": 1, "bags": []})
+        groups = collections.defaultdict(lambda: {"qty": 0, "bags": collections.Counter()})
         for r in (df.itertuples(index=False) if df is not None else []):
             g = groups[(r.receipt, r.combo)]
-            g["qty"] = max(int(r.combo_qty or 1), 1)
+            g["qty"] = int(round(float(r.combo_qty or 0)))
             b = key(r.product)
             if b:
-                g["bags"] += [b] * max(int(round(float(r.qty or 0))), 0)
+                g["bags"][b] += int(round(float(r.qty or 0)))
         for g in groups.values():
-            n = g["qty"]
-            per = g["bags"][:len(g["bags"]) // n] if n > 1 and len(g["bags"]) % n == 0 else g["bags"]
+            n = g["qty"]                                     # < 0 = a return: its bags are negative too
+            if n == 0:
+                continue
+            if all(c % n == 0 and c // n >= 0 for c in g["bags"].values()):
+                per = [b for b, c in g["bags"].items() for _ in range(c // n)]       # one combo's bags
+            else:
+                per = [b for b, c in g["bags"].items() for _ in range(abs(c))]
             hit = next((o["name"] for o in ke if receipt_combos._fits(per, o["slots"])), None)
             if hit:
                 out["kenya"][hit] = out["kenya"].get(hit, 0) + n

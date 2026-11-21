@@ -9,6 +9,7 @@ is RUNNING, otherwise SELF-MADE. Spec: docs/self-made-combos.md › Sinza & Ugan
 A listed SINGLE whose name carries colours ("Jumbo blue", "Elyse black/red") counts only bags of those colours
 (16 Nov 2026); a name with no colour ("Nizana", "MINIZURI") counts every colour of the bag.
 """
+import collections
 import csv
 import datetime
 import itertools
@@ -26,7 +27,7 @@ _SKIP = ("DELIVERY", "GIFT BAG", "DISCOUNT", "CUSTOMIZATION", "STRAP")
 
 RECEIPT_LINES_SQL = """
 SELECT o.id AS receipt, o."name" AS ref, o.date_order::date AS d, pt."name" AS product, pl.qty AS qty,
-       pl.price_subtotal_incl AS amount
+       pl.price_subtotal_incl AS amount, pl.product_id AS product_id, pl.parent_id AS parent
 FROM pos_order o
 JOIN pos_order_line pl ON pl.order_id = o.id
 JOIN pos_session ps ON ps.id = o.session_id
@@ -116,47 +117,122 @@ def _fits(bags, slots):
     return any(all(b in slots[i] for b, i in zip(bags, perm)) for perm in itertools.permutations(range(len(slots))))
 
 
+def _id(v):
+    """A nullable id column (NaN / None → None)."""
+    try:
+        return None if v is None or v != v else int(v)
+    except (TypeError, ValueError):
+        return None
+
+
 def _receipts(lines, infer):
-    """Receipt lines → {receipt: {d, bags: [(bag, unit)], ref}} with refunded receipts dropped; also the refund count.
+    """Receipt lines → {receipt: {d, bags: [(bag, unit)], ref}} with refunds netted off; also the refunded refs.
     A combo product line ('A + B') isn't a bag: its bags are its KES 0 sub-lines on the same receipt, which share
-    its price evenly (25 Oct 2026 — it was counted as one extra bag). With no KES 0 bags it counts as before."""
-    by_r, refunded, wraps = {}, set(), {}
+    its price evenly (25 Oct 2026 — it was counted as one extra bag). With no KES 0 bags it counts as before.
+    Sub-lines whose parent_id is a combo line's product on the receipt belong to that combo only, one combo per
+    unit of its qty (rec["fixed"]: [[(bag, unit)]], each a combo of its own — 20 Nov 2026, two combos on one
+    receipt were one 4-bag combo). A "<ref> REFUND" receipt takes its bags off the original receipt, which is
+    dropped only when nothing is left (a refund with a combo line still drops the whole receipt)."""
+    by_r, refunds, wraps = {}, {}, {}
     for ln in lines:
         k = bag_key(ln["product"], infer)
         ref = str(ln.get("ref") or "")
         if ref.upper().endswith(" REFUND"):
-            refunded.add(ref[:-len(" REFUND")].strip())          # cancels its original receipt
+            refunds.setdefault(ref[:-len(" REFUND")].strip(), []).append((k, ln))   # netted off its receipt below
             continue
         q = int(round(float(ln["qty"] or 0)))
-        if not k or q <= 0:
-            continue
+        pid = _id(ln.get("product_id"))
+        if q <= 0 or not (k or ("+" in str(ln["product"]) and pid is not None)):
+            continue                                             # a '+' line with no bag name may still own sub-lines
         rec = by_r.setdefault(ln["receipt"], {"d": ln["d"], "bags": [], "ref": ref})
         if "+" in str(ln["product"]):
-            wraps.setdefault(ln["receipt"], []).append((k, q, float(ln["amount"] or 0)))
+            wraps.setdefault(ln["receipt"], []).append((k, q, float(ln["amount"] or 0), pid))
             continue
         unit = int(round(float(ln["amount"] or 0) / q, -1))     # to the nearest 10: 40,000 = 40,001
-        rec["bags"] += [(k, unit)] * q
         rec.setdefault("names", {}).setdefault(k, []).extend([str(ln["product"])] * q)
-    for r, ws in wraps.items():
-        bags = by_r[r]["bags"]
-        zeros = [i for i, (_k, u) in enumerate(bags) if u == 0]
+        par = _id(ln.get("parent"))
+        if unit == 0 and par is not None:                        # a combo's sub-line: placed with its combo below
+            rec.setdefault("kids", {}).setdefault(par, collections.Counter())[k] += q
+            continue
+        rec["bags"] += [(k, unit)] * q
+    for r, rec in by_r.items():
+        kids, ws = rec.pop("kids", {}), wraps.get(r, [])
+        own = {}                                                 # combo product → [qty, amount]
+        for k, q, a, pid in ws:
+            if pid is not None and pid in kids:
+                e = own.setdefault(pid, [0, 0.0])
+                e[0] += q
+                e[1] += a
+        for pid, (n, a) in own.items():
+            cnt = kids.pop(pid)
+            split = n > 1 and all(c % n == 0 for c in cnt.values())
+            per = {b: c // n for b, c in cnt.items()} if split else dict(cnt)
+            groups = n if split else 1
+            unit = int(round(a / groups / max(sum(per.values()), 1), -1))
+            for _ in range(groups):
+                g = [(b, unit) for b, c in per.items() for _ in range(c)]
+                rec["bags"] += g
+                if len(g) >= 2:                                  # one bag alone is judged by price, as before
+                    rec.setdefault("fixed", []).append(g)
+        for cnt in kids.values():                                # parent matched no combo line: plain KES 0 bags
+            for b, c in cnt.items():
+                rec["bags"] += [(b, 0)] * c
+        ws = [w for w in ws if w[3] not in own and w[0]]
+        if not ws:
+            continue
+        bags = rec["bags"]
+        fixed = {id(t) for g in rec.get("fixed", []) for t in g}
+        zeros = [i for i, t in enumerate(bags) if t[1] == 0 and id(t) not in fixed]
         if zeros:
-            unit = int(round(sum(a for _k, _q, a in ws) / len(zeros), -1))
+            unit = int(round(sum(a for _k, _q, a, _p in ws) / len(zeros), -1))
             for i in zeros:
                 bags[i] = (bags[i][0], unit)
         else:
-            for k, q, a in ws:
+            for k, q, a, _p in ws:
                 bags += [(k, int(round(a / q, -1)))] * q
-    return {k: v for k, v in by_r.items() if (v["bags"]) and (not v["ref"] or v["ref"] not in refunded)}, refunded
+    for ref, rls in refunds.items():
+        for rec in (v for v in by_r.values() if v["ref"] == ref):
+            if any("+" in str(ln["product"]) for _k, ln in rls):
+                rec["bags"] = []                                 # a combo came back: drop the receipt as before
+                continue
+            for k, ln in rls:
+                q = -int(round(float(ln["qty"] or 0)))
+                if not k or q <= 0:
+                    continue
+                unit = int(round(-float(ln["amount"] or 0) / q, -1))
+                for _ in range(q):
+                    bags = rec["bags"]
+                    i = next((i for i, t in enumerate(bags) if t == (k, unit)), None)
+                    if i is None:
+                        i = next((i for i, t in enumerate(bags) if t[0] == k), None)
+                    if i is None:
+                        break
+                    t = bags.pop(i)
+                    pool = rec.get("names", {}).get(k, [])
+                    if str(ln["product"]) in pool:
+                        pool.remove(str(ln["product"]))
+                    elif pool:
+                        pool.pop()
+                    for g in rec.get("fixed", []):
+                        if t in g:                               # its combo is broken: the rest judged by price
+                            rec["fixed"].remove(g)
+                            break
+    return {k: v for k, v in by_r.items() if v["bags"]}, set(refunds)
 
 
-def _groups(bags):
-    """One receipt's [(bag, unit)] → ([(bags, revenue)] combos, [(bag, unit)] singles): same unit price = a
-    combo per price; two or more leftover bags at different prices = one more combo; one leftover = a single."""
+def _groups(bags, fixed=None):
+    """One receipt's [(bag, unit)] → ([(bags, revenue)] combos, [(bag, unit)] singles): each fixed group (a combo
+    line's own bags, rec["fixed"]) = one combo; of the rest, same unit price = a combo per price; two or more
+    leftover bags at different prices = one more combo; one leftover = a single."""
+    bags, combos = list(bags), []
+    for g in fixed or ():
+        for t in g:
+            bags.remove(t)
+        combos.append(([b for b, _ in g], sum(u for _, u in g)))
     groups = {}
     for k, unit in bags:
         groups.setdefault(unit, []).append(k)
-    combos, left = [], []
+    left = []
     for unit, bs in groups.items():
         if len(bs) >= 2:
             combos.append((bs, unit * len(bs)))
@@ -187,7 +263,7 @@ def offer_split(lines, offers, infer):
             out["bulk"]["bags"] += len(rec["bags"])
             out["bulk"]["revenue"] += sum(u for _, u in rec["bags"])
             continue
-        combos, left = _groups(rec["bags"])
+        combos, left = _groups(rec["bags"], rec.get("fixed"))
         for bags, rev in combos:
             running = any(_fits(bags, o["slots"]) for o in (offers or {}).get("combos", []))
             c = out["combos"]["running" if running else "selfMade"]
@@ -237,7 +313,7 @@ def classify(lines, offers, infer, month_start):
             out["bulk"]["bags"] += len(rec["bags"])
             out["bulk"]["revenue"] += sum(u for _, u in rec["bags"])
             continue
-        combos, left = _groups(rec["bags"])     # [(bags, revenue)], [(bag, price)]
+        combos, left = _groups(rec["bags"], rec.get("fixed"))     # [(bags, revenue)], [(bag, price)]
         for bags, rev in combos:
             offer = next((o["name"] for o in (offers or {}).get("combos", []) if _fits(bags, o["slots"])), None)
             if offer:
@@ -264,8 +340,8 @@ def market_lines(market, start, end):
         return None
     if df is None:
         return None
-    return [{"receipt": r.receipt, "ref": r.ref, "d": r.d, "product": r.product, "qty": r.qty, "amount": r.amount}
-            for r in df.itertuples(index=False)]
+    return [{"receipt": r.receipt, "ref": r.ref, "d": r.d, "product": r.product, "qty": r.qty, "amount": r.amount,
+             "product_id": r.product_id, "parent": r.parent} for r in df.itertuples(index=False)]
 
 
 def market_summary(market, month_start, month_end, infer, month_name=None):
@@ -279,6 +355,6 @@ def market_summary(market, month_start, month_end, infer, month_name=None):
         return None
     if df is None:
         return None
-    lines = [{"receipt": r.receipt, "ref": r.ref, "d": r.d, "product": r.product, "qty": r.qty, "amount": r.amount}
-             for r in df.itertuples(index=False)]
+    lines = [{"receipt": r.receipt, "ref": r.ref, "d": r.d, "product": r.product, "qty": r.qty, "amount": r.amount,
+              "product_id": r.product_id, "parent": r.parent} for r in df.itertuples(index=False)]
     return {"offers": offers, **classify(lines, offers, infer, month_start)}

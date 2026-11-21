@@ -177,9 +177,10 @@ def inject(payload):
     with open(HTML, "r", encoding="utf-8") as f:
         html = f.read()
 
+    _json = json.dumps(payload, ensure_ascii=False, indent=0).replace("</", "<\\/")   # text can't close the <script>
     block = (f"{START}\n"
              f'<script id="history-data" type="application/json">\n'
-             f"{json.dumps(payload, ensure_ascii=False, indent=0)}\n"
+             f"{_json}\n"
              f"</script>\n{END}")
 
     if START in html and END in html:
@@ -201,8 +202,7 @@ def inject(payload):
               + ";</script>\n<!-- GROWTH_DATA_END -->")
     if "<!-- GROWTH_DATA_START -->" in html:
         html = re.sub(r"<!-- GROWTH_DATA_START -->.*?<!-- GROWTH_DATA_END -->", lambda _m: gblock, html, flags=re.DOTALL)
-    with open(HTML, "w", encoding="utf-8") as f:
-        f.write(html)
+    paths.write_atomic(HTML, html)
 
 
 def main():

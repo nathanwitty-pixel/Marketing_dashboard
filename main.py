@@ -50,8 +50,13 @@ SCRIPTS = [
     ("Bag Signals",            "bag_signals.py"),
     # Reads bags_offer_source_<month>.json (Self Made Combos) and bag_posts_history.json (Bag Signals) — keep after both.
     ("Product Performance",    "product_performance.py"),
+    # Pages added after this list was written (they were never built at startup before).
+    ("Offer Picking",          "offer_picking.py"),
+    ("Bag Tracking",           "bag_tracking.py"),
+    ("Reject Sale",            "reject_sales.py"),
+    ("Footfall and Marketing", "footfall_marketing.py"),
+    ("Shop Launch",            "shop_launch.py"),
     # These read the data the scripts above injected — keep them LAST.
-    # ("Dashboard Insights", "generate_insights.py") — Insights menu removed (Oct 2026); script kept.
     ("Monthly Report",         "monthly_report.py"),
     # Always back the freshly-written snapshot up to Supabase, then read it back
     # for History — so History is never behind the local data. Both no-op safely
@@ -190,36 +195,11 @@ def start_daily_snapshot():
         last_date = today
 
 
-# Scripts to run when the Refresh button is used on each page.
-# current_performance.html holds BOTH the PERF and PROJ data blocks, so its
-# refresh also re-runs forward_projections.py — this picks up manual edits
-# to corporate_bags / bare_minimum at the top of that script. bags_on_offer.py
-# runs before it so the On offer table's offer_mix.json is as fresh as Sales.
-SCRIPT_MAP = {
-    "current_performance.html":                             ["weekly_sales.py",
-                                                             "monthly_sales.py",
-                                                             "current_performance.py",
-                                                             "self_made_combos.py",
-                                                             "bags_on_offer.py",
-                                                             "forward_projections.py"],
-    "forward_projections.html":                             ["forward_projections.py"],
-    "product_performance.html":                             ["product_performance.py"],
-    "new_products.html":                                    ["new_products.py"],
-    "timed_offers.html":                                    ["timed_offers.py"],
-    "self_made_combos.html":                                ["self_made_combos.py"],
-    "bags_on_offer.html":                                   ["self_made_combos.py",
-                                                             "bags_on_offer.py"],
-    "shop_stock_levels.html":                               ["shop_stock_levels.py"],
-    "posting_yields.html":                                  ["posting_yields.py"],
-    "shops_efficiency.html":                                ["shops_dispatch.py",
-                                                             "shops_efficiency.py"],
-    "push_planner.html":                                    ["push_planner.py"],
-    "insights.html":                                        ["generate_insights.py"],
-    "monthly_report.html":                                  ["monthly_report.py",
-                                                             "push_to_supabase.py"],
-    "history.html":                                         ["push_to_supabase.py",
-                                                             "history.py"],
-}
+# Scripts to run when the Refresh button is used on each page — from dashboard_pages.json, the ONE
+# page list (streamlit_app.py and shell.html read the same file). History also re-pushes to Supabase first.
+with open(os.path.join(BASE_DIR, "dashboard_pages.json"), encoding="utf-8") as _mf:
+    SCRIPT_MAP = {p["html"]: list(p["scripts"]) for p in json.load(_mf)["pages"]}
+SCRIPT_MAP["history.html"] = ["push_to_supabase.py"] + SCRIPT_MAP.get("history.html", ["history.py"])
 
 
 def start_server():
@@ -264,8 +244,10 @@ def start_server():
                 self._handle_refresh(parse_qs(parsed.query))
             elif parsed.path == "/api/timed-offers-config":
                 self._handle_to_config(parse_qs(parsed.query))
-            else:
+            elif parsed.path.startswith(("/html/", "/assets/")) or parsed.path == "/dashboard_pages.json":
                 super().do_GET()
+            else:
+                self.send_error(404)   # secrets (.env, service_account.json, tokens, .git) live in the root
 
         def _handle_to_config(self, params):
             """GET (no params) → return the current timed-offer config.

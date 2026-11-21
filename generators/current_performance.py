@@ -186,23 +186,14 @@ def update_month_boundary(weekly_total):
     return None, "", prev
 
 
-# ── GOOGLE SHEETS AUTH ────────────────────────────────────────
-
-# Shared auth: service account (permanent) or self-healing OAuth — see google_auth.py
-from lib.google_auth import get_gspread_client
-
-
 # ── AUTO-READ: totals from MONTHLY_TARGET sheet ───────────────
 
 def fetch_monthly_target():
-    gc = get_gspread_client()
-    sh = gc.open_by_key(SPREADSHEET_ID)
-
     # ── MONTHLY_TARGET ────────────────────────────────────────
     # Column C = the month's bag targets from Odoo (lib/product_targets — docs/product-targets.md),
-    # not the sheet's hand-set column C; E recomputed as target − sales.
+    # not the sheet's hand-set column C; E recomputed as target − sales. Works without a Google login.
     from lib import product_targets
-    mt_rows = product_targets.monthly_target_rows(sh.worksheet("MONTHLY_TARGET").get_all_values())
+    mt_rows = product_targets.monthly_target_rows(product_targets.monthly_target_sheet_rows())
     col_c_raw = [r[2] if len(r) > 2 else "" for r in mt_rows]   # column C — TARGET
     col_d_raw = [r[3] if len(r) > 3 else "" for r in mt_rows]   # column D — SALES
     col_e_raw = [r[4] if len(r) > 4 else "" for r in mt_rows]   # column E — DEFICIT
@@ -225,7 +216,7 @@ def fetch_monthly_target():
     # CURRENT Sun–Sat week (lib/odoo_tabs; the sheet tab only if Postgres is down).
     from lib import odoo_tabs
     from weekly_sales import week_window
-    ws_rows = odoo_tabs.get_rows(sh, "WEEKLY_SALES", window=week_window())
+    ws_rows = odoo_tabs.get_rows(None, "WEEKLY_SALES", window=week_window())
 
     weekly_total = 0
     for row in ws_rows:
@@ -283,10 +274,7 @@ def corporate_from_db():
         ok, _ = db.check_connection()
         if not ok:
             return 0
-        today   = datetime.date.today()
-        m_start = today.replace(day=1)
-        import calendar as _cal
-        m_end   = today.replace(day=_cal.monthrange(today.year, today.month)[1])
+        m_start, m_end = report_month.live_month_window()   # honours a DENRI_REPORT_MONTH pin
         df = db.run_query(queries.CORPORATE_BAGS,
                           {"start_date": m_start.isoformat(),
                            "end_date":   m_end.isoformat()})
@@ -302,7 +290,7 @@ def _txt(v):
 
 def _months(v):
     """'2026-09,2026-10' → [{"m": "Sep", "cur": False}, {"m": "Oct", "cur": True}], oldest first."""
-    this = datetime.date.today().strftime("%Y-%m")
+    this = report_month.live_month_key()
     return [{"m": datetime.date(int(k[:4]), int(k[5:7]), 1).strftime("%b"), "cur": k == this}
             for k in sorted(set(_txt(v).split(","))) if k]
 
@@ -311,11 +299,10 @@ def corporate_clients_from_db():
     the Sales card's "Corporate by client" list. [] when the DB isn't reachable."""
     try:
         from lib import db, queries
-        today   = datetime.date.today()
-        import calendar as _cal
+        m_start, m_end = report_month.live_month_window()   # honours a DENRI_REPORT_MONTH pin
         df = db.run_query(queries.CORPORATE_CLIENTS,
-                          {"start_date": today.replace(day=1).isoformat(),
-                           "end_date":   today.replace(day=_cal.monthrange(today.year, today.month)[1]).isoformat()})
+                          {"start_date": m_start.isoformat(),
+                           "end_date":   m_end.isoformat()})
         if df is not None and not df.empty:
             return [{"client": str(r["client"]), "quoted": int(r["quoted"] or 0),
                      "invoiced": int(r["invoiced"] or 0), "agreedKes": int(r["agreed_kes"] or 0),
@@ -340,7 +327,7 @@ def corporate_target_from_db():
     or None when there is no row / no DB — the "Corporate by client" target strip then stays hidden."""
     try:
         from lib import db
-        today = datetime.date.today()
+        today = report_month.live_anchor()   # last day of a pinned month, else today
         df = db.run_query("""
             SELECT target_qty::float AS bags, target_amount::float AS kes FROM sales_pos_target
             WHERE target_scope = 'corporate' AND period = 'month'
@@ -490,7 +477,7 @@ remaining_target = max(total_target - total_sales, 0)
 # 2. Sales % Achieved
 #    How much of the target has been sold so far, as a percentage.
 #    Formula: total_sales ÷ total_target × 100
-sales_pct_achieved = (total_sales / total_target) * 100
+sales_pct_achieved = (total_sales / total_target) * 100 if total_target else 0
 
 # 3. Sales
 #    The raw count of bags sold — straight from column D sum.
@@ -498,8 +485,10 @@ sales = total_sales
 
 # 4. Previous Sales % Achieved
 #    (Sales - Weekly Sales) / (Remaining Target + Sales) × 100
-previous_sales_pct = ((total_sales - weekly_sales_total) / (remaining_target + total_sales)) * 100 if (remaining_target + total_sales) else 0
-previous_achieved_bags = total_sales - weekly_sales_total     # the bags behind Previous Sales % (sold before this week)
+#    Weekly Sales here = THIS month's part of the week only (weekly_this_month): in a
+#    Sun–Sat week spanning two months, last month's days are not in total_sales.
+previous_sales_pct = ((total_sales - weekly_this_month) / (remaining_target + total_sales)) * 100 if (remaining_target + total_sales) else 0
+previous_achieved_bags = total_sales - weekly_this_month      # the bags behind Previous Sales % (sold before this week)
 
 # 5. Week-over-Week Sales
 #    Growth of this week vs last week: (this week - last week) / last week × 100.
@@ -656,8 +645,7 @@ html = re.sub(
     flags=re.DOTALL
 )
 
-with open(html_path, "w", encoding="utf-8") as f:
-    f.write(html)
+paths.write_atomic(html_path, html)
 
 save_snapshot(weekly_sales_total, previous_sales_bags)
 print("current_performance.html updated.")

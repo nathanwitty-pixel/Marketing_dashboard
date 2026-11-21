@@ -150,8 +150,8 @@ Rules:
   so light theme recolours the sidebar with everything else.
 - **Exports.** The aside carries `data-export-hide`; the shell's Word/PDF export and
   `@media print` leave it out.
-- **Whole-file generators.** `generate_insights.py` and `monthly_report.py` write their
-  page in full, so the sidebar snippet lives in their templates (`PAGE_SIDEBAR` in
+- **Whole-file generators.** `monthly_report.py` writes its
+  page in full, so the sidebar snippet lives in its template (`PAGE_SIDEBAR` in
   `monthly_report.py`); every other page keeps it in the `.html` render layer.
 - **Scroll-spy** is bound straight to `scroll` (no `requestAnimationFrame`).
 - **Embedded mode (Streamlit).** When the page's frame is stretched to full height (the page
@@ -250,7 +250,7 @@ component and draws into the Streamlit page (same origin).
 
 **Stale copies (not used by the dashboard; kept for the owner to decide):**
 - `shell_preview.html` — the design preview; its look now lives in `streamlit_app.py`.
-- `export/self_made_combos_bundle/` (+ `.zip`) — a portable snapshot from 2026-09-10; 9 of its
+- `export/self_made_combos_bundle.zip` — a portable snapshot (unzipped copy deleted 2026-11-20) from 2026-09-10; 9 of its
   files differ from the live ones (`self_made_combos.py/.html`, `offer_data.py`, `lib/db.py`,
   `google_auth.py`, `requirements.txt`, `README.md`, `.env.example`,
   `docs/self-made-combos.md`).
@@ -276,7 +276,6 @@ Reject Sale); this table is the per-menu spec index.
 | 7 | Shops Efficiency Tracking | [shops-efficiency.md](shops-efficiency.md) | `shops_dispatch.py` → `shops_efficiency.py` | `shops_efficiency.html` |
 | 7a | Shop Launch (a new shop from its first sale · Nyeri, Oct 2026) | [shop-launch.md](shop-launch.md) | `shop_launch.py` (config `shop_launch_config.json`) | `shop_launch.html` |
 | 7b | Push Planner (what to push, where, why bags aren't moving · Laya second opinion) | [push-planner.md](push-planner.md) | `push_planner.py` | `push_planner.html` |
-| — | ~~Dashboard Insights~~ (menu removed Oct 2026; `generate_insights.py` kept, not run) | [dashboard-insights.md](dashboard-insights.md) | `generate_insights.py` | `insights.html` |
 | 9 | Monthly Report | [monthly-report.md](monthly-report.md) | `monthly_report.py` | `monthly_report.html` |
 | 10 | Reporting History (Supabase) | [reporting-history.md](reporting-history.md) | `push_to_supabase.py` → `history.py` | `history.html` |
 
@@ -301,7 +300,7 @@ Report, History) **must run last**. The ordered list:
 6. `posting_yields.py`
 7. `shops_dispatch.py` → `shops_efficiency.py`
 7c. `bag_signals.py` → `product_performance.py` (reads Self-made Combos' offer source + Bag Signals' posts history)
-8. ~~`generate_insights.py`~~ — not run any more (Insights menu removed Oct 2026)
+8. ~~`generate_insights.py`~~ — deleted 2026-11-20 (Insights menu removed Oct 2026)
 9. `monthly_report.py` (reads the pages above)
 10. `push_to_supabase.py` → `history.py`
 

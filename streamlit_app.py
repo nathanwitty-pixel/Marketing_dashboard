@@ -22,7 +22,10 @@ from urllib.parse import quote
 # Run this file directly — `python streamlit_app.py`, VS Code's Run button or a double-click —
 # and it re-launches itself via `streamlit run`. If the Python that opened it has no Streamlit
 # (e.g. the Windows Store python), it hands over to the Anaconda Python the .bat used.
-_FALLBACK_PYTHON = r"C:\ProgramData\anaconda3\python.exe"
+# The project's Python (CLAUDE.md, .vscode/settings.json). Running this file directly re-launches the app under it,
+# so the app and every page script it starts use the same installed packages. Anaconda base is the fallback.
+_PROJECT_PYTHON = r"C:\Users\User\.conda\envs\denri\python.exe"
+_FALLBACK_PYTHON = _PROJECT_PYTHON if os.path.exists(_PROJECT_PYTHON) else r"C:\ProgramData\anaconda3\python.exe"
 try:
     import streamlit as st
 except ImportError:
@@ -49,8 +52,8 @@ def _under_streamlit():
             return False
 
 if not _under_streamlit():
-    subprocess.run([sys.executable, "-m", "streamlit", "run",
-                    os.path.abspath(__file__), *sys.argv[1:]])
+    _py = _FALLBACK_PYTHON if os.path.exists(_FALLBACK_PYTHON) else sys.executable
+    subprocess.run([_py, "-m", "streamlit", "run", os.path.abspath(__file__), *sys.argv[1:]])
     sys.exit(0)
 
 BASE = os.path.dirname(os.path.abspath(__file__))
@@ -124,6 +127,12 @@ def _load_secrets_into_env():
 
     os.environ.setdefault("DENRI_LAUNCHER", "1")
     os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+    # The SQL counts days in Nairobi time; make Python's "today" agree (Streamlit Cloud's clock is UTC, so from
+    # 00:00 to 03:00 Nairobi it was still yesterday). Linux only: Windows doesn't understand TZ=Africa/Nairobi,
+    # and a Windows PC in Kenya is already on Nairobi time.
+    if hasattr(time, "tzset"):
+        os.environ.setdefault("TZ", "Africa/Nairobi")
+        time.tzset()
 
 _load_secrets_into_env()
 
@@ -202,6 +211,19 @@ st.set_page_config(page_title="Denri · Marketing Dashboard",
                    # "auto": open on desktop, closed on phones — where an open sidebar
                    # covers the page (and the phone icon bar is the nav instead).
                    initial_sidebar_state="collapsed")
+
+# A Python without the project's packages can't refresh pages (each page script runs on this same Python):
+# say so once, at the top, with the exact command — instead of one odd error per page.
+_missing = []
+for _m in ("gspread", "psycopg2", "sqlalchemy", "google.oauth2"):
+    try:
+        __import__(_m)
+    except ImportError:
+        _missing.append(_m)
+if _missing:
+    st.error(f"This Python ({sys.executable}) is missing {', '.join(_missing)}, so pages can't refresh from "
+             f"Odoo / Google Sheets. Fix: `& \"{sys.executable}\" -m pip install -r requirements.txt`, then restart "
+             "the app.", icon=":material/error:")
 
 # ── Theme: "Dashboard V5" — light by default, dark on request ──
 # Kept in session state and mirrored to ?theme= so a reload / shared link keeps it.
@@ -683,13 +705,15 @@ def _save_rebuild_secs(lbl, kind, secs):
 @st.cache_resource
 def _bg_jobs():
     """Background rebuilds shared by every session: label → job (see _bg_rebuild)."""
-    return {"lock": threading.Lock(), "jobs": {}}
+    return {"lock": threading.Lock(), "jobs": {}, "run": threading.Lock()}
 
 
 def _bg_rebuild(lbl, script_list, kind="auto", title=""):
     """Rebuild `lbl` in the background. kind: "auto" (skipped if a rebuild was tried this
     interval), "manual" (Refresh — bypasses the Odoo cache) or "range" (custom period Apply /
     Clear). While one is running, a manual / range request is queued to run straight after it."""
+    if _month_end_running(_prev_month_key()):
+        return                                   # month-end owns the pages until it finishes (banner says so)
     reg = _bg_jobs()
     with reg["lock"]:
         job = reg["jobs"].get(lbl)
@@ -716,8 +740,12 @@ def _bg_rebuild(lbl, script_list, kind="auto", title=""):
                 sl, k, t = nxt
                 job.update(kind=k, title=t, steps=len(sl), step=0, pass_started=time.time(),
                            expected=_rebuild_secs(lbl, k))
-                job["logs"] = run_scripts(sl, force_fresh=(k == "manual"),
-                                          on_step=lambda i: job.update(step=i))
+                # One rebuild runs at a time across all pages: pages share generators (self_made_combos.py is
+                # in three pages' lists) and each generator rewrites its own page, so two at once could blank it.
+                with reg.setdefault("run", threading.Lock()):
+                    job.update(pass_started=time.time())
+                    job["logs"] = run_scripts(sl, force_fresh=(k == "manual"),
+                                              on_step=lambda i: job.update(step=i))
                 if all(rc == 0 for _, rc, _ in job["logs"]):
                     _save_rebuild_secs(lbl, k, time.time() - job["pass_started"])
         finally:
@@ -937,6 +965,13 @@ if _qp_cr:
 
 # Hourly auto-refresh: a stale page starts a background rebuild (no-op if one is running).
 if not NO_AUTOREFRESH and os.path.exists(html_path) and _page_age_secs(html_path) >= _AUTO_SECS:
+    # The range file is shared by every viewer, so a custom period only lasts until this hourly rebuild.
+    for _rf, _rs in CUSTOM_RANGE_KEYS.values():
+        if set(_rs) & set(scripts) and not _month_end_running(_prev_month_key()):
+            try:
+                os.remove(paths.data(_rf))
+            except OSError:
+                pass
     _bg_rebuild(label, scripts)
 
 
@@ -1102,24 +1137,14 @@ if os.path.exists(html_path):
         _v5_mtimes.append(int(os.path.getmtime(paths.asset("kpi_drag.js"))))
     except OSError:
         pass
-    # Ads impact panel (ads_panel.js) on every page, with this page's section of data/ads_impact.json
-    # (generators/ads_impact.py — spec docs/ads-impact.md). No file / no section → nothing shown.
-    # Hidden on every page since 26 Oct 2026 (user's call) — set SHOW_ADS_IMPACT = True to bring it back.
-    SHOW_ADS_IMPACT = False
+    # KPI tiles fade up and their numbers count up (Anime.js 4, MIT, vendored — no CDN; kpi_anim.js).
     try:
-        _ads_sec = None
-        if SHOW_ADS_IMPACT:
-            with open(paths.data("ads_impact.json"), encoding="utf-8") as _fh:
-                _ads_all = _json.load(_fh).get("pages", {})
-            _ads_sec = _ads_all.get(os.path.basename(html_path)) or _ads_all.get("_default")
-        if _ads_sec:
-            with open(paths.asset("ads_panel.js"), encoding="utf-8") as _fh:
-                _ads_js = _fh.read().replace("</script", "<\\/script")
-            _v5_block += ('<script>window.ADS_IMPACT=' + _json.dumps(_ads_sec).replace("</", "<\\/") + ';</script>'
-                          '<script>/* ads_panel.js */\n' + _ads_js + '\n</script>')
-            _v5_mtimes += [int(os.path.getmtime(paths.data("ads_impact.json"))),
-                           int(os.path.getmtime(paths.asset("ads_panel.js")))]
-    except (OSError, ValueError):
+        _anim_files = ("vendor/anime.umd.min.js", "kpi_anim.js")
+        for _f in _anim_files:
+            with open(paths.asset(*_f.split("/")), encoding="utf-8") as _fh:
+                _v5_block += "<script>/* " + _f + " */\n" + _fh.read().replace("</script", "<\\/script") + "\n</script>"
+        _v5_mtimes += [int(os.path.getmtime(paths.asset(*_f.split("/")))) for _f in _anim_files]
+    except OSError:
         pass
     if "</body>" in html:
         html = html.replace("</body>", _v5_block + EMBED_FIX + "</body>", 1)

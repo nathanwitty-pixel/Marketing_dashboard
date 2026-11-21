@@ -88,8 +88,7 @@ def inject(payload):
              + json.dumps(payload, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
              + ";\n</script>\n<!-- BAGQ_DATA_END -->")
     html = re.sub(r"<!-- BAGQ_DATA_START -->.*?<!-- BAGQ_DATA_END -->", lambda _m: block, html, flags=re.S)
-    with open(HTML, "w", encoding="utf-8") as f:
-        f.write(html)
+    paths.write_atomic(HTML, html)
 
 
 if __name__ == "__main__":

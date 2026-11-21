@@ -99,12 +99,12 @@ def posting_beta(history, bag, min_weeks=6):
 # ── Odoo loaders ─────────────────────────────────────────────────────────
 
 DAILY_SQL = """
-SELECT pt."name" AS product, p.date_order::date AS d, SUM(pl.qty) AS q
+SELECT pt."name" AS product, (p.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date AS d, SUM(pl.qty) AS q
 FROM pos_order p JOIN POS_LINES(p) pl ON pl.order_id = p.id
 LEFT JOIN pos_session ps ON p.session_id = ps.id LEFT JOIN pos_config pc ON ps.config_id = pc.id
 LEFT JOIN product_product pp ON pl.product_id = pp.id LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
 LEFT JOIN product_category pcat ON pcat.id = pt.categ_id
-WHERE p.date_order::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
+WHERE (p.date_order AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi')::date BETWEEN :s AND :e AND p.state IN ('done', 'invoiced', 'paid') AND pl.qty <> 0
   AND COALESCE(pt."name", '') NOT LIKE '%+%' AND COALESCE(pt."name", '') NOT ILIKE '%delivery%'
   AND COALESCE(pt."name", '') NOT ILIKE '%customization%' AND COALESCE(pt."name", '') NOT ILIKE '%strap%'
   AND COALESCE(pt."name", '') NOT ILIKE '%KES discount%' AND COALESCE(pt."name", '') NOT ILIKE '%sample%'

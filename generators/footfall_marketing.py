@@ -248,8 +248,7 @@ def build():
         block = ("<!-- FOOT_DATA_START -->\n<script>\nconst FOOT = " +
                  json.dumps(out, ensure_ascii=False).replace("</", "<\\/") + ";\n</script>\n<!-- FOOT_DATA_END -->")
         html = re.sub(r"<!-- FOOT_DATA_START -->.*?<!-- FOOT_DATA_END -->", lambda _m: block, html, flags=re.DOTALL)
-        with open(page, "w", encoding="utf-8") as f:
-            f.write(html)
+        paths.write_atomic(page, html)
     print(f"Footfall and Marketing: {len(shops)} shops, {WEEKS} weeks ({wk_label(weeks[0])} to {wk_label(weeks[-1])}), "
           f"{len(out['actions'])} actions.")
     return out

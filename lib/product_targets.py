@@ -56,7 +56,7 @@ GROUP BY 1
 
 # Shop stock locations (top-level codes) — the shops + Website, never warehouses (lib/stock.py rule).
 SHOP_CODES = ("STAR", "MSA", "NAKS", "ELD", "KSM", "MERU", "THK", "HAZ", "KITE", "NAN", "KAK", "HTN", "KSI",
-              "KTDA", "BUSIA", "RONG", "DAR", "UG", "WEB")
+              "KTDA", "BUSIA", "RONG", "NYERI", "DAR", "UG", "WEB")
 _IN_SHOPS = "(l.usage = 'internal' AND split_part(l.complete_name, '/', 1) IN (%s))" % ", ".join("'%s'" % c for c in SHOP_CODES)
 
 ONHAND_SQL = """
@@ -292,6 +292,10 @@ def write_csv(month_start=None, sheet_targets=None):
     rows, total, start, end, months = build(month_start)
     month_start = month_start or report_month.live_month_window()[0]
     path = paths.data("product_targets_%s.csv" % month_start.strftime("%Y-%m"))
+    if not rows:
+        # No target / no DB → write nothing, so load_targets tries again on the next run
+        # (a header-only file would stop it ever rebuilding this month).
+        return path, [], total
     with open(path, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["Bag", "Launch (first sale)", "Days available"]
@@ -360,11 +364,29 @@ def monthly_target_rows(rows, month_start=None, targets=None, key=None):
     return out
 
 
+SHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"   # the main spreadsheet (MONTHLY_TARGET tab)
+MT_HEADER = ["BAG TYPE", "CATEGORY", "TARGET", "SALES", "DEFICIT", "KENYA", "SINZA", "UGANDA"]
+
+
+def monthly_target_sheet_rows(sh=None):
+    """MONTHLY_TARGET rows from the sheet — or, when Google can't be read (no login on this PC, Google down), just
+    the header: monthly_target_rows() then lists every Odoo target bag, so target totals come out the same.
+    The sheet only adds the bag order, its category and the on-offer ✅/x columns F/G/H."""
+    try:
+        if sh is None:
+            from lib.google_auth import get_gspread_client
+            sh = get_gspread_client().open_by_key(SHEET_ID)
+        return sh.worksheet("MONTHLY_TARGET").get_all_values()
+    except Exception as e:                                   # noqa: BLE001
+        print(f"  MONTHLY_TARGET sheet unreadable ({type(e).__name__}) — bag list from the Odoo targets only.")
+        return [list(MT_HEADER)]
+
+
 def _sheet_targets():
     """{BAG: col C} from MONTHLY_TARGET — for the comparison column only."""
     try:
         from lib.google_auth import get_gspread_client
-        mt = get_gspread_client().open_by_key("1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0").worksheet("MONTHLY_TARGET").get_all_values()
+        mt = get_gspread_client().open_by_key(SHEET_ID).worksheet("MONTHLY_TARGET").get_all_values()
         return {re.sub(r"\s+", " ", r[0].strip().upper()): r[2] for r in mt[1:] if r and r[0].strip() and len(r) > 2}
     except Exception:                                        # noqa: BLE001
         return {}

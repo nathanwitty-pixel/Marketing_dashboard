@@ -2096,18 +2096,28 @@ def _fetch_uganda_monthly(ms_rows, mmp_rows):
 # ── FETCH ─────────────────────────────────────────────────────
 
 def fetch_posting_data():
-    gc = get_gspread_client()
-    sh = gc.open_by_key(SPREADSHEET_ID)
+    try:
+        sh = get_gspread_client().open_by_key(SPREADSHEET_ID)
+    except Exception as e:                                   # noqa: BLE001
+        print(f"  Google Sheets unreadable ({type(e).__name__}) — posts from the posting backup, "
+              "on-offer flags from the Self-made Combos page.")
+        sh = None
 
     print("  Reading sheets (one connection)...")
-    mmp_rows = marketing_posts.read(sh, "MONTHLY_MARKETING_POST")
     # Column C = the month's bag targets from Odoo (lib/product_targets — docs/product-targets.md).
     from lib import product_targets
-    mt_rows  = product_targets.monthly_target_rows(sh.worksheet("MONTHLY_TARGET").get_all_values())
+    mt_rows  = product_targets.monthly_target_rows(product_targets.monthly_target_sheet_rows(sh))
+    if not any(_is_checked(r, c) or _is_x(r, c) for r in mt_rows[1:] for c in (5, 6, 7)):
+        # No sheet ✅/x flags (Google unreadable): take on-offer per region from the Self-made Combos page,
+        # already the source of truth for on / not-on offer below (_offer_bagtypes_by_region).
+        _reg = _offer_bagtypes_by_region()
+        for r in mt_rows[1:]:
+            r[5:8] = ["✅" if str(r[0]).strip().upper() in _reg[k] else "x" for k in ("kenya", "sinza", "uganda")]
     # MONTHLY_SALES (reporting month) and STOCK_LEVELS (live on-hand) are rebuilt from Odoo
     # in the sheet's exact layout (lib/odoo_tabs); ✅/x flags = MONTHLY_TARGET cols F/G/H.
     # The sheet tabs are only read if Postgres is down.
     odoo_tabs.prime_offer_flags(mt_rows)
+    mmp_rows = marketing_posts.read(sh, "MONTHLY_MARKETING_POST")   # after the flags: its rows carry ✅/x cells
     ms_rows  = odoo_tabs.get_rows(sh, "MONTHLY_SALES")
     sl_rows  = odoo_tabs.get_rows(sh, "STOCK_LEVELS")
     # Only BAGS are posted, so non-bag stock must not count as "in stock, never posted":
@@ -2796,6 +2806,7 @@ inline_script = (
     "<!-- POST_DATA_START -->\n"
     "<script>\n"
     "const PA = {\n"
+    + (                                # "</" escaped so a name can't close the <script>
     # ── Kenya top-level ──
     f'  weeklyPostsMade:  {wk_posts},\n'
     f'  weeklySalesTotal: "{fmt_int(offer_posted_wk_count)}",\n'   # WS col AB for ✅-posted (on-offer) names — Kenya
@@ -2874,6 +2885,7 @@ inline_script = (
     f'  sinza:            {json.dumps(sinza,   ensure_ascii=False)},\n'
     # ── Uganda nested ──
     f'  uganda:           {json.dumps(uganda,  ensure_ascii=False)}\n'
+    ).replace("</", "<\\/") +
     "};\n"
     "</script>\n"
     "<!-- POST_DATA_END -->"
@@ -2891,8 +2903,7 @@ html = re.sub(
     flags=re.DOTALL
 )
 
-with open(html_path, "w", encoding="utf-8") as f:
-    f.write(html)
+paths.write_atomic(html_path, html)
 
 
 
@@ -2937,8 +2948,7 @@ _block = ("<!-- ODOO_POSTS_START -->\n<script>\nconst OPC = "
 with open(html_path, "r", encoding="utf-8") as f:
     html = f.read()
 html = re.sub(r"<!-- ODOO_POSTS_START -->.*?<!-- ODOO_POSTS_END -->", lambda _m: _block, html, flags=re.DOTALL)
-with open(html_path, "w", encoding="utf-8") as f:
-    f.write(html)
+paths.write_atomic(html_path, html)
 for w in _opc:
     print(f"  Posting check {w['start']}: Odoo {w['odooPosts']} posts, {w['odooTagged']} tagged; "
           f"sheet {sum(w['sheet'].values())} bag-posts on {len(w['sheet'])} bags, Odoo {len(w['odoo'])} bags")

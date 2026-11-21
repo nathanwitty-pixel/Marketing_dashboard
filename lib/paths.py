@@ -54,3 +54,12 @@ def doc(*parts):
 
 def script(*parts):
     return os.path.join(SCRIPTS, *parts)
+
+
+def write_atomic(path, text):
+    """Write text to path so a reader never sees a half-written file: write a temp file next to it,
+    then swap it in with os.replace (atomic on the same drive)."""
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write(text)
+    os.replace(tmp, path)

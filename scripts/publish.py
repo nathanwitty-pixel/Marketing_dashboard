@@ -23,7 +23,9 @@ except Exception:
     pass
 
 SECRET_PATTERNS = [".env", ".env.*", "*.env", "google_credentials.json", "google_token.json",
-                   "service_account*.json", "secrets*.json", "*.pem", "*.key", ".streamlit/secrets.toml"]
+                   "service_account*.json", "secrets*.json", "*.pem", "*.key", ".streamlit/secrets.toml",
+                   # the password-locked pages carry live prices / stock — the app builds them itself
+                   "html/offer_picking.html", "html/push_planner.html", "html/bag_signals.html"]
 SKIP_DIRS = ("graphify-out/", "export/", ".git/")
 
 
@@ -111,7 +113,15 @@ def run_checks(repo):
             if a != 1 or b != 1:
                 problems.append(f"{f}: {name} markers START×{a} END×{b} (must be exactly 1 each)")
 
-    # 4) the page list loads and every page it names exists
+    # 4) the tests pass (tests that need Odoo skip themselves when it can't be reached)
+    t = subprocess.run([sys.executable, "-m", "pytest", "tests", "-q", "-p", "no:cacheprovider"],
+                       cwd=repo, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if t.returncode == 5 or "No module named pytest" in (t.stderr or ""):
+        notes.append("pytest not installed for this Python — tests skipped (pip install pytest)")
+    elif t.returncode:
+        problems.append("tests failed — " + ((t.stdout or t.stderr).strip().splitlines() or ["?"])[-1][:200])
+
+    # 5) the page list loads and every page it names exists
     mf = os.path.join(repo, "dashboard_pages.json")
     if os.path.exists(mf):
         try:
@@ -145,6 +155,7 @@ def main():
         for p in secrets:
             print("   ", p)
         print("  Keep them out of the repo (they belong in .gitignore / Streamlit Cloud → Secrets).")
+        print("  If git already tracks one, untrack it once (the file stays on disk):  git rm --cached <file>")
         return 2
 
     print("\nChecking…")
@@ -156,7 +167,7 @@ def main():
         for p in problems:
             print("   • " + p)
         return 1
-    print("  ✓ Python compiles · JavaScript syntax · data markers · page list")
+    print("  ✓ Python compiles · JavaScript syntax · data markers · tests · page list")
 
     branch = git(repo, "rev-parse", "--abbrev-ref", "HEAD").strip()
     has_remote = bool(git(repo, "remote", check=False).strip())

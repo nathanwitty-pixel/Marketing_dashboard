@@ -16,6 +16,7 @@ Named params use :name placeholders, e.g.
 from __future__ import annotations
 
 import os
+import sys
 import time
 import json
 import pickle
@@ -27,6 +28,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import URL, Engine
+from sqlalchemy.exc import DataError, ProgrammingError
 
 from lib import paths, pos_lines
 
@@ -37,6 +39,7 @@ load_dotenv()
 # — which, with pool_pre_ping, costs a round-trip PING before every query. On the
 # high-latency Supabase pooler that ping dominates a refresh; reuse cuts ~1s per query.
 _local = threading.local()
+DRIVER_ERROR = None   # set when the Postgres driver (psycopg2) can't be imported — the real reason queries return None
 
 
 def _env(*names: str, default: str | None = None) -> str | None:
@@ -87,13 +90,17 @@ def get_engine() -> Engine | None:
         return create_engine(url, pool_pre_ping=True, future=True,
                              connect_args={"connect_timeout": 20})
     except ImportError as e:   # psycopg2 missing in this Python, etc.
-        print(f"  DB driver not installed ({e}) — falling back to sheet data.")
+        global DRIVER_ERROR
+        DRIVER_ERROR = f"DB driver not installed in {sys.executable} ({e}) — pip install -r requirements.txt"
+        print(f"  {DRIVER_ERROR} — falling back to sheet data.")
         return None
 
 
 def check_connection() -> tuple[bool, str]:
     """(ok, detail). Never raises — the callers show `detail` in the UI."""
     eng = get_engine()
+    if eng is None and DRIVER_ERROR:
+        return False, DRIVER_ERROR
     if eng is None:
         return False, ("No database configured. Set DATABASE_URL (or PGHOST/…) "
                        "in a .env file — see .env.example.")
@@ -155,6 +162,11 @@ def run_query(sql: str, params: dict | None = None) -> pd.DataFrame | None:
             return None
         try:
             return pd.read_sql(text(sql), conn, params=params or {})
+        except (ProgrammingError, DataError):
+            # A broken query (a renamed Odoo column, a bad cast) is not "DB unreachable": fail the
+            # refresh so the page shows the error, instead of quietly serving an old cached copy.
+            _drop_shared_conn()
+            raise
         except Exception as e:                               # noqa: BLE001
             last_err = e
             _drop_shared_conn()                              # maybe stale — reconnect & retry once

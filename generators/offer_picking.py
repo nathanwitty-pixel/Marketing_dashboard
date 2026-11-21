@@ -886,11 +886,10 @@ def build():
     with open(HTML, encoding="utf-8") as f:
         html = f.read()
     block = ("<!-- OP_DATA_START -->\n<script>const OP = "
-             + json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+             + json.dumps(payload, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
              + ";</script>\n<!-- OP_DATA_END -->")
     html = re.sub(r"<!-- OP_DATA_START -->.*?<!-- OP_DATA_END -->", lambda _: block, html, flags=re.S)
-    with open(HTML, "w", encoding="utf-8") as f:
-        f.write(html)
+    paths.write_atomic(HTML, html)
     return payload
 
 

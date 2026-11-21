@@ -1,6 +1,6 @@
 {
  "month": "November 2026",
- "generated": "18 Nov 2026 17:56",
+ "generated": "21 Nov 2026 09:29",
  "range": "01 Nov – 30 Nov 2026",
  "rows": [
   {
@@ -8,253 +8,288 @@
    "label": "Not on offer",
    "on": false,
    "where": "Kenya, Tanzania, Uganda",
-   "units": 3609.0,
-   "revenue": 7629308,
+   "units": 4437.0,
+   "revenue": 9205847,
    "bags": [
     {
      "bag": "CODE 3",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 287.0,
-     "revenue": 550410
+     "units": 399.0,
+     "revenue": 738392
     },
     {
      "bag": "MAN BAG",
      "category": "MAN BAG",
      "tier": "Entry",
-     "units": 350.0,
-     "revenue": 443687
-    },
-    {
-     "bag": "MEGA",
-     "category": "BACKPACK",
-     "tier": "Core",
-     "units": 113.0,
-     "revenue": 328167
+     "units": 433.0,
+     "revenue": 535250
     },
     {
      "bag": "TRAVEL",
      "category": "TRAVEL",
      "tier": "Core",
-     "units": 135.0,
-     "revenue": 313330
+     "units": 177.0,
+     "revenue": 398730
+    },
+    {
+     "bag": "MEGA",
+     "category": "BACKPACK",
+     "tier": "Core",
+     "units": 134.0,
+     "revenue": 391167
     },
     {
      "bag": "AMAYA",
      "category": "HANDBAG",
      "tier": "Premium",
-     "units": 82.0,
-     "revenue": 225921
+     "units": 111.0,
+     "revenue": 303235
     },
     {
      "bag": "JAMELA",
      "category": "HANDBAG",
      "tier": "Premium",
-     "units": 61.0,
-     "revenue": 212000
-    },
-    {
-     "bag": "SAFIRI TRAVEL",
-     "category": "TRAVEL",
-     "tier": "Premium",
-     "units": 61.0,
-     "revenue": 199929
-    },
-    {
-     "bag": "REMI",
-     "category": "BACKPACK",
-     "tier": "Core",
-     "units": 77.0,
-     "revenue": 195000
-    },
-    {
-     "bag": "GYM BAG",
-     "category": "SPORT",
-     "tier": "Core",
-     "units": 76.0,
-     "revenue": 187483
+     "units": 75.0,
+     "revenue": 262100
     },
     {
      "bag": "FABELA",
      "category": "TRAVEL",
      "tier": "Core",
-     "units": 86.0,
-     "revenue": 184817
+     "units": 118.0,
+     "revenue": 251551
+    },
+    {
+     "bag": "SAFIRI TRAVEL",
+     "category": "TRAVEL",
+     "tier": "Premium",
+     "units": 70.0,
+     "revenue": 230129
     },
     {
      "bag": "SCHOOL BAG",
      "category": "SCHOOL BAG",
      "tier": "Core",
-     "units": 89.0,
-     "revenue": 167257
+     "units": 124.0,
+     "revenue": 224057
     },
     {
-     "bag": "CLAIRE HANDBAG",
-     "category": "HANDBAG",
+     "bag": "GYM BAG",
+     "category": "SPORT",
      "tier": "Core",
-     "units": 52.0,
-     "revenue": 152650
+     "units": 90.0,
+     "revenue": 220650
     },
     {
-     "bag": "SIERRA HANDBAG",
-     "category": "HANDBAG",
+     "bag": "REMI",
+     "category": "BACKPACK",
      "tier": "Core",
-     "units": 67.0,
-     "revenue": 150867
-    },
-    {
-     "bag": "BONITA",
-     "category": "TRAVEL",
-     "tier": "Premium",
-     "units": 50.0,
-     "revenue": 149627
+     "units": 85.0,
+     "revenue": 215800
     },
     {
      "bag": "ARIA SLING",
      "category": "SLING",
      "tier": "Entry",
-     "units": 96.0,
-     "revenue": 148410
+     "units": 115.0,
+     "revenue": 177776
     },
     {
      "bag": "BABY BAG",
      "category": "BABY BAG",
      "tier": "Premium",
-     "units": 33.0,
-     "revenue": 147671
-    },
-    {
-     "bag": "KAI",
-     "category": "BACKPACK",
-     "tier": "Core",
-     "units": 51.0,
-     "revenue": 135022
-    },
-    {
-     "bag": "ALPHA TRAVEL",
-     "category": "TRAVEL",
-     "tier": "Premium",
      "units": 39.0,
-     "revenue": 134681
+     "revenue": 175271
     },
     {
-     "bag": "FAYOLA",
-     "category": "MESSENGER",
+     "bag": "SIERRA HANDBAG",
+     "category": "HANDBAG",
      "tier": "Core",
-     "units": 65.0,
-     "revenue": 132823
-    },
-    {
-     "bag": "TRAVOLTA",
-     "category": "TRAVEL",
-     "tier": "Premium",
-     "units": 34.0,
-     "revenue": 130800
-    },
-    {
-     "bag": "PIONEER",
-     "category": "BACKPACK",
-     "tier": "Core",
-     "units": 56.0,
-     "revenue": 130373
+     "units": 74.0,
+     "revenue": 169281
     },
     {
      "bag": "AURORA",
      "category": "HANDBAG",
      "tier": "Core",
-     "units": 67.0,
-     "revenue": 123650
+     "units": 97.0,
+     "revenue": 169250
     },
     {
-     "bag": "NIZANA",
-     "category": "SLING",
-     "tier": "Entry",
-     "units": 90.0,
-     "revenue": 121900
+     "bag": "CLAIRE HANDBAG",
+     "category": "HANDBAG",
+     "tier": "Core",
+     "units": 57.0,
+     "revenue": 167650
+    },
+    {
+     "bag": "BONITA",
+     "category": "TRAVEL",
+     "tier": "Premium",
+     "units": 55.0,
+     "revenue": 165227
+    },
+    {
+     "bag": "KAI",
+     "category": "BACKPACK",
+     "tier": "Core",
+     "units": 63.0,
+     "revenue": 164622
+    },
+    {
+     "bag": "ALPHA TRAVEL",
+     "category": "TRAVEL",
+     "tier": "Premium",
+     "units": 47.0,
+     "revenue": 160881
+    },
+    {
+     "bag": "PIONEER",
+     "category": "BACKPACK",
+     "tier": "Core",
+     "units": 70.0,
+     "revenue": 160473
+    },
+    {
+     "bag": "FAYOLA",
+     "category": "MESSENGER",
+     "tier": "Core",
+     "units": 72.0,
+     "revenue": 147251
     },
     {
      "bag": "POCKET TRAVEL",
      "category": "TRAVEL",
      "tier": "Premium",
-     "units": 36.0,
-     "revenue": 121850
+     "units": 42.0,
+     "revenue": 143450
+    },
+    {
+     "bag": "NIZANA",
+     "category": "SLING",
+     "tier": "Entry",
+     "units": 104.0,
+     "revenue": 136100
+    },
+    {
+     "bag": "TRAVOLTA",
+     "category": "TRAVEL",
+     "tier": "Premium",
+     "units": 35.0,
+     "revenue": 132700
     },
     {
      "bag": "ELYSE",
      "category": "HANDBAG",
      "tier": "Premium",
-     "units": 38.0,
-     "revenue": 115800
+     "units": 42.0,
+     "revenue": 128200
     },
     {
      "bag": "BIG MAN BAG",
      "category": "MAN BAG",
      "tier": "Core",
-     "units": 56.0,
-     "revenue": 110868
-    },
-    {
-     "bag": "MINI ZURI",
-     "category": "HANDBAG",
-     "tier": "Core",
-     "units": 49.0,
-     "revenue": 99600
-    },
-    {
-     "bag": "COSMO",
-     "category": "SCHOOL BAG",
-     "tier": "Entry",
-     "units": 50.0,
-     "revenue": 89700
-    },
-    {
-     "bag": "KATE",
-     "category": "SLING",
-     "tier": "Entry",
-     "units": 59.0,
-     "revenue": 88800
-    },
-    {
-     "bag": "MINI UMBRA",
-     "category": "CHEST BAG",
-     "tier": "Entry",
-     "units": 57.0,
-     "revenue": 85950
-    },
-    {
-     "bag": "MOON BAG",
-     "category": "SLING",
-     "tier": "Entry",
-     "units": 70.0,
-     "revenue": 83916
-    },
-    {
-     "bag": "JADE",
-     "category": "BRIEFCASE",
-     "tier": "Premium",
-     "units": 28.0,
-     "revenue": 82914
+     "units": 60.0,
+     "revenue": 117768
     },
     {
      "bag": "LIAM",
      "category": "TRAVEL",
      "tier": "Core",
-     "units": 43.0,
-     "revenue": 82171
+     "units": 64.0,
+     "revenue": 116071
+    },
+    {
+     "bag": "JADE",
+     "category": "BRIEFCASE",
+     "tier": "Premium",
+     "units": 38.0,
+     "revenue": 113428
+    },
+    {
+     "bag": "COSMO",
+     "category": "SCHOOL BAG",
+     "tier": "Entry",
+     "units": 63.0,
+     "revenue": 113300
+    },
+    {
+     "bag": "MINI ZURI",
+     "category": "HANDBAG",
+     "tier": "Core",
+     "units": 52.0,
+     "revenue": 107400
+    },
+    {
+     "bag": "KATE",
+     "category": "SLING",
+     "tier": "Entry",
+     "units": 71.0,
+     "revenue": 107000
     },
     {
      "bag": "DOUBLE PRESS",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 35.0,
-     "revenue": 80269
+     "units": 44.0,
+     "revenue": 99648
+    },
+    {
+     "bag": "AVANA HB",
+     "category": "SLING",
+     "tier": "Core",
+     "units": 58.0,
+     "revenue": 95114
+    },
+    {
+     "bag": "MINI UMBRA",
+     "category": "CHEST BAG",
+     "tier": "Entry",
+     "units": 65.0,
+     "revenue": 94550
+    },
+    {
+     "bag": "TRECENTO",
+     "category": "SLING",
+     "tier": "Core",
+     "units": 52.0,
+     "revenue": 92100
+    },
+    {
+     "bag": "MOON BAG",
+     "category": "SLING",
+     "tier": "Entry",
+     "units": 75.0,
+     "revenue": 91916
     },
     {
      "bag": "ACE",
      "category": "SLING",
      "tier": "Entry",
-     "units": 49.0,
-     "revenue": 77400
+     "units": 55.0,
+     "revenue": 87000
+    },
+    {
+     "bag": "BELT BAG",
+     "category": "WAIST BAG",
+     "tier": "Entry",
+     "units": 71.0,
+     "revenue": 84934
+    },
+    {
+     "bag": "CAIRO BP",
+     "category": "BACKPACK",
+     "tier": "Entry",
+     "units": 44.0,
+     "revenue": 83150
+    },
+    {
+     "bag": "TYLER",
+     "category": "BACKPACK",
+     "tier": "Core",
+     "units": 31.0,
+     "revenue": 78400
     },
     {
      "bag": "ZURI",
@@ -264,242 +299,214 @@
      "revenue": 77200
     },
     {
-     "bag": "AVANA HB",
-     "category": "SLING",
-     "tier": "Core",
-     "units": 43.0,
-     "revenue": 72614
+     "bag": "OVAL HANDBAG",
+     "category": "HANDBAG",
+     "tier": "Entry",
+     "units": 49.0,
+     "revenue": 76114
     },
     {
      "bag": "LEGACY",
      "category": "BRIEFCASE",
      "tier": "Premium",
-     "units": 20.0,
-     "revenue": 68560
-    },
-    {
-     "bag": "CAIRO BP",
-     "category": "BACKPACK",
-     "tier": "Entry",
-     "units": 37.0,
-     "revenue": 68450
-    },
-    {
-     "bag": "TYLER",
-     "category": "BACKPACK",
-     "tier": "Core",
-     "units": 27.0,
-     "revenue": 68000
-    },
-    {
-     "bag": "OVAL HANDBAG",
-     "category": "HANDBAG",
-     "tier": "Entry",
-     "units": 40.0,
-     "revenue": 61714
-    },
-    {
-     "bag": "BELT BAG",
-     "category": "WAIST BAG",
-     "tier": "Entry",
-     "units": 46.0,
-     "revenue": 59534
+     "units": 22.0,
+     "revenue": 75260
     },
     {
      "bag": "UMBRA",
      "category": "CHEST BAG",
      "tier": "Core",
-     "units": 28.0,
-     "revenue": 59050
-    },
-    {
-     "bag": "KARINA",
-     "category": "HANDBAG",
-     "tier": "Core",
-     "units": 23.0,
-     "revenue": 55300
-    },
-    {
-     "bag": "BRIEF CASE",
-     "category": "BRIEFCASE",
-     "tier": "Core",
-     "units": 20.0,
-     "revenue": 55250
-    },
-    {
-     "bag": "TRECENTO",
-     "category": "SLING",
-     "tier": "Core",
-     "units": 27.0,
-     "revenue": 54200
-    },
-    {
-     "bag": "LUNA",
-     "category": "MAN BAG",
-     "tier": "Entry",
-     "units": 34.0,
-     "revenue": 53196
+     "units": 31.0,
+     "revenue": 65350
     },
     {
      "bag": "MONAH BP",
      "category": "BACKPACK",
      "tier": "Entry",
-     "units": 26.0,
-     "revenue": 52000
-    },
-    {
-     "bag": "ZOEZI",
-     "category": "SPORT",
-     "tier": "Premium",
-     "units": 15.0,
-     "revenue": 51900
-    },
-    {
-     "bag": "ARIA PRO",
-     "category": "SLING",
-     "tier": "Entry",
-     "units": 32.0,
-     "revenue": 51033
+     "units": 34.0,
+     "revenue": 64700
     },
     {
      "bag": "MINI MANBAG",
      "category": "MAN BAG",
      "tier": "Entry",
-     "units": 31.0,
-     "revenue": 46900
+     "units": 42.0,
+     "revenue": 64200
     },
     {
-     "bag": "SPARK",
-     "category": "SCHOOL BAG",
+     "bag": "BRIEF CASE",
+     "category": "BRIEFCASE",
      "tier": "Core",
-     "units": 19.0,
-     "revenue": 46800
+     "units": 23.0,
+     "revenue": 63650
     },
     {
-     "bag": "BUTTERFLY SLING",
+     "bag": "ARIA PRO",
      "category": "SLING",
      "tier": "Entry",
-     "units": 28.0,
-     "revenue": 43250
+     "units": 39.0,
+     "revenue": 62233
     },
     {
-     "bag": "WASHBAG",
-     "category": "WASHBAG",
-     "tier": "Entry",
-     "units": 27.0,
-     "revenue": 42900
-    },
-    {
-     "bag": "LANKA",
+     "bag": "KARINA",
      "category": "HANDBAG",
-     "tier": "Entry",
-     "units": 24.0,
-     "revenue": 42500
+     "tier": "Core",
+     "units": 25.0,
+     "revenue": 60300
     },
     {
-     "bag": "DON",
+     "bag": "LUNA",
      "category": "MAN BAG",
      "tier": "Entry",
-     "units": 26.0,
-     "revenue": 41000
+     "units": 37.0,
+     "revenue": 57996
     },
     {
      "bag": "MINI SCHOOL",
      "category": "SCHOOL BAG",
      "tier": "Entry",
-     "units": 24.0,
-     "revenue": 38900
+     "units": 35.0,
+     "revenue": 55600
+    },
+    {
+     "bag": "ZOEZI",
+     "category": "SPORT",
+     "tier": "Premium",
+     "units": 16.0,
+     "revenue": 55500
+    },
+    {
+     "bag": "WASHBAG",
+     "category": "WASHBAG",
+     "tier": "Entry",
+     "units": 34.0,
+     "revenue": 53700
+    },
+    {
+     "bag": "SPARK",
+     "category": "SCHOOL BAG",
+     "tier": "Core",
+     "units": 20.0,
+     "revenue": 49300
+    },
+    {
+     "bag": "LANKA",
+     "category": "HANDBAG",
+     "tier": "Entry",
+     "units": 27.0,
+     "revenue": 47600
     },
     {
      "bag": "COLLEGE HB",
      "category": "HANDBAG",
      "tier": "Core",
-     "units": 15.0,
-     "revenue": 38600
+     "units": 18.0,
+     "revenue": 46500
     },
     {
-     "bag": "CESS",
-     "category": "HANDBAG",
-     "tier": "Premium",
-     "units": 11.0,
-     "revenue": 38100
+     "bag": "BUTTERFLY SLING",
+     "category": "SLING",
+     "tier": "Entry",
+     "units": 30.0,
+     "revenue": 46450
     },
     {
      "bag": "FEROZ",
      "category": "BRIEFCASE",
      "tier": "Premium",
-     "units": 12.0,
-     "revenue": 37200
+     "units": 15.0,
+     "revenue": 46000
     },
     {
      "bag": "LUNCHSET",
      "category": "LUNCH BAG",
      "tier": "Entry",
-     "units": 23.0,
-     "revenue": 36150
+     "units": 29.0,
+     "revenue": 45450
+    },
+    {
+     "bag": "DON",
+     "category": "MAN BAG",
+     "tier": "Entry",
+     "units": 28.0,
+     "revenue": 44200
+    },
+    {
+     "bag": "CESS",
+     "category": "HANDBAG",
+     "tier": "Premium",
+     "units": 12.0,
+     "revenue": 41600
     },
     {
      "bag": "SARAI",
      "category": "TRAVEL",
      "tier": "Premium",
-     "units": 13.0,
-     "revenue": 33706
+     "units": 16.0,
+     "revenue": 41570
     },
     {
      "bag": "SCOOBY",
      "category": "SCHOOL BAG",
      "tier": "Core",
-     "units": 13.0,
-     "revenue": 32000
+     "units": 15.0,
+     "revenue": 36400
     },
     {
      "bag": "JUMBO",
      "category": "TRAVEL",
      "tier": "Premium",
-     "units": 12.0,
-     "revenue": 28714
-    },
-    {
-     "bag": "KAZ",
-     "category": "TRAVEL",
-     "tier": "Entry",
      "units": 14.0,
-     "revenue": 27700
+     "revenue": 34414
     },
     {
      "bag": "ZIPPED LUNCHSET",
      "category": "SPORT",
      "tier": "Entry",
-     "units": 19.0,
-     "revenue": 27500
+     "units": 23.0,
+     "revenue": 33900
     },
     {
-     "bag": "ZELUS",
-     "category": "BACKPACK",
-     "tier": "Core",
-     "units": 9.0,
-     "revenue": 22700
+     "bag": "KAZ",
+     "category": "TRAVEL",
+     "tier": "Entry",
+     "units": 15.0,
+     "revenue": 29700
     },
     {
      "bag": "FANNY PACK",
      "category": "WAIST BAG",
      "tier": "Entry",
-     "units": 14.0,
-     "revenue": 22400
+     "units": 16.0,
+     "revenue": 25600
+    },
+    {
+     "bag": "ZELUS",
+     "category": "BACKPACK",
+     "tier": "Core",
+     "units": 10.0,
+     "revenue": 25300
     },
     {
      "bag": "ZENO",
      "category": "TRAVEL",
      "tier": "Entry",
-     "units": 11.0,
-     "revenue": 17571
+     "units": 14.0,
+     "revenue": 22371
     },
     {
      "bag": "ESMERALDA",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 6.0,
-     "revenue": 15295
+     "units": 8.0,
+     "revenue": 20195
+    },
+    {
+     "bag": "MANDY HB",
+     "category": "HANDBAG",
+     "tier": "Entry",
+     "units": 11.0,
+     "revenue": 16950
     },
     {
      "bag": "WANDER LUXE",
@@ -516,18 +523,25 @@
      "revenue": 15000
     },
     {
-     "bag": "MANDY HB",
-     "category": "HANDBAG",
-     "tier": "Entry",
-     "units": 9.0,
-     "revenue": 13950
-    },
-    {
      "bag": "SAFIRI BP",
      "category": "BACKPACK",
      "tier": "Core",
      "units": 5.0,
      "revenue": 13250
+    },
+    {
+     "bag": "ATLAS",
+     "category": "BACKPACK",
+     "tier": "Core",
+     "units": 5.0,
+     "revenue": 13000
+    },
+    {
+     "bag": "CODE 9",
+     "category": "BACKPACK",
+     "tier": "Core",
+     "units": 6.0,
+     "revenue": 12600
     },
     {
      "bag": "LEILA",
@@ -544,6 +558,20 @@
      "revenue": 12500
     },
     {
+     "bag": "JAYDEN MAN",
+     "category": "MAN BAG",
+     "tier": "Entry",
+     "units": 8.0,
+     "revenue": 12400
+    },
+    {
+     "bag": "LAPTOP SLEEVE",
+     "category": "BRIEFCASE",
+     "tier": "Entry",
+     "units": 7.0,
+     "revenue": 11171
+    },
+    {
      "bag": "MYSTIQUE",
      "category": "MESSENGER",
      "tier": "Premium",
@@ -551,25 +579,25 @@
      "revenue": 11100
     },
     {
-     "bag": "ATLAS",
-     "category": "BACKPACK",
-     "tier": "Core",
-     "units": 4.0,
-     "revenue": 10400
-    },
-    {
-     "bag": "LAPTOP SLEEVE",
-     "category": "BRIEFCASE",
-     "tier": "Entry",
-     "units": 6.0,
-     "revenue": 9471
-    },
-    {
-     "bag": "JAYDEN MAN",
+     "bag": "ZIARA MAN BAG",
      "category": "MAN BAG",
      "tier": "Entry",
      "units": 6.0,
-     "revenue": 9200
+     "revenue": 9600
+    },
+    {
+     "bag": "SATCHEL",
+     "category": "BRIEFCASE",
+     "tier": "Premium",
+     "units": 3.0,
+     "revenue": 9300
+    },
+    {
+     "bag": "PRIME",
+     "category": "BACKPACK",
+     "tier": "Core",
+     "units": 4.0,
+     "revenue": 9300
     },
     {
      "bag": "MARLEY",
@@ -577,13 +605,6 @@
      "tier": "Core",
      "units": 4.0,
      "revenue": 9200
-    },
-    {
-     "bag": "ZIARA MAN BAG",
-     "category": "MAN BAG",
-     "tier": "Entry",
-     "units": 5.0,
-     "revenue": 8000
     },
     {
      "bag": "LUCA",
@@ -607,13 +628,6 @@
      "revenue": 7200
     },
     {
-     "bag": "PRIME",
-     "category": "BACKPACK",
-     "tier": "Core",
-     "units": 3.0,
-     "revenue": 6700
-    },
-    {
      "bag": "BELLO",
      "category": "BACKPACK",
      "tier": "Core",
@@ -621,25 +635,18 @@
      "revenue": 6600
     },
     {
-     "bag": "CODE 9",
-     "category": "BACKPACK",
-     "tier": "Core",
-     "units": 3.0,
-     "revenue": 6300
-    },
-    {
-     "bag": "SATCHEL",
-     "category": "BRIEFCASE",
-     "tier": "Premium",
-     "units": 2.0,
-     "revenue": 6200
-    },
-    {
      "bag": "LOTUS",
      "category": "BRIEFCASE",
      "tier": "Premium",
      "units": 2.0,
      "revenue": 6200
+    },
+    {
+     "bag": "NEO MAN",
+     "category": "MAN BAG",
+     "tier": "Entry",
+     "units": 3.0,
+     "revenue": 5114
     },
     {
      "bag": "DIAPER BAG",
@@ -675,13 +682,6 @@
      "tier": "Premium",
      "units": 1.0,
      "revenue": 3600
-    },
-    {
-     "bag": "NEO MAN",
-     "category": "MAN BAG",
-     "tier": "Entry",
-     "units": 2.0,
-     "revenue": 3400
     },
     {
      "bag": "ZANE MAN",
@@ -754,6 +754,20 @@
      "revenue": 2000
     },
     {
+     "bag": "MINI MAYA",
+     "category": "HANDBAG",
+     "tier": "Entry",
+     "units": 1.0,
+     "revenue": 2000
+    },
+    {
+     "bag": "KAOS",
+     "category": "BACKPACK",
+     "tier": "Entry",
+     "units": 1.0,
+     "revenue": 1900
+    },
+    {
      "bag": "LADONA",
      "category": "SLING",
      "tier": "Core",
@@ -789,6 +803,13 @@
      "revenue": 1500
     },
     {
+     "bag": "VANITY",
+     "category": "MAKE UP",
+     "tier": "Entry",
+     "units": 1.0,
+     "revenue": 1100
+    },
+    {
      "bag": "SPLASH BACKPACK",
      "category": "SPORT",
      "tier": "Core",
@@ -802,78 +823,78 @@
    "label": "Power deals",
    "on": true,
    "where": "Kenya only",
-   "units": 3149.0,
-   "revenue": 6653409,
+   "units": 3663.0,
+   "revenue": 7693859,
    "bags": [
     {
      "bag": "JUMBO",
      "category": "TRAVEL",
      "tier": "Premium",
-     "units": 732.0,
-     "revenue": 1882599
+     "units": 910.0,
+     "revenue": 2328849
     },
     {
      "bag": "ANTITHEFT",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 614.0,
-     "revenue": 1329660
+     "units": 691.0,
+     "revenue": 1490660
     },
     {
      "bag": "SARAI",
      "category": "TRAVEL",
      "tier": "Premium",
-     "units": 208.0,
-     "revenue": 756100
+     "units": 230.0,
+     "revenue": 837500
     },
     {
      "bag": "PRIME",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 266.0,
-     "revenue": 634681
+     "units": 298.0,
+     "revenue": 711481
     },
     {
      "bag": "REO TRAVEL",
      "category": "TRAVEL",
      "tier": "Core",
-     "units": 219.0,
-     "revenue": 525050
+     "units": 229.0,
+     "revenue": 549050
     },
     {
      "bag": "LOLA",
      "category": "HANDBAG",
      "tier": "Core",
-     "units": 265.0,
-     "revenue": 477500
+     "units": 294.0,
+     "revenue": 529700
     },
     {
      "bag": "MINI MAYA",
      "category": "HANDBAG",
      "tier": "Entry",
-     "units": 333.0,
-     "revenue": 399000
+     "units": 398.0,
+     "revenue": 475800
     },
     {
      "bag": "NEO MAN",
      "category": "MAN BAG",
      "tier": "Entry",
-     "units": 204.0,
-     "revenue": 227899
+     "units": 259.0,
+     "revenue": 286499
     },
     {
      "bag": "ZANE MAN",
      "category": "MAN BAG",
      "tier": "Entry",
-     "units": 183.0,
-     "revenue": 220220
+     "units": 208.0,
+     "revenue": 250020
     },
     {
      "bag": "CATHY HANDBAG",
      "category": "HANDBAG",
      "tier": "Entry",
-     "units": 125.0,
-     "revenue": 200700
+     "units": 146.0,
+     "revenue": 234300
     }
    ]
   },
@@ -882,85 +903,92 @@
    "label": "Combos",
    "on": true,
    "where": "Kenya, Tanzania, Uganda",
-   "units": 1043.0,
-   "revenue": 2241568,
+   "units": 1168.0,
+   "revenue": 2518852,
    "bags": [
     {
      "bag": "TRAVEL",
      "category": "TRAVEL",
      "tier": "Core",
-     "units": 245.0,
-     "revenue": 545776
+     "units": 286.0,
+     "revenue": 639207
     },
     {
      "bag": "SAFIRI TRAVEL",
      "category": "TRAVEL",
      "tier": "Premium",
-     "units": 91.0,
-     "revenue": 227454
-    },
-    {
-     "bag": "AMAYA",
-     "category": "HANDBAG",
-     "tier": "Premium",
      "units": 110.0,
-     "revenue": 208946
+     "revenue": 274579
     },
     {
      "bag": "JUMBO",
      "category": "TRAVEL",
      "tier": "Premium",
-     "units": 88.0,
-     "revenue": 200766
+     "units": 104.0,
+     "revenue": 237209
     },
     {
-     "bag": "SARAI",
-     "category": "TRAVEL",
+     "bag": "AMAYA",
+     "category": "HANDBAG",
      "tier": "Premium",
-     "units": 59.0,
-     "revenue": 161780
+     "units": 115.0,
+     "revenue": 218444
     },
     {
      "bag": "CODE 3",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 84.0,
-     "revenue": 157294
+     "units": 93.0,
+     "revenue": 174624
+    },
+    {
+     "bag": "SARAI",
+     "category": "TRAVEL",
+     "tier": "Premium",
+     "units": 63.0,
+     "revenue": 172799
     },
     {
      "bag": "PIONEER",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 58.0,
-     "revenue": 147579
+     "units": 62.0,
+     "revenue": 157078
     },
     {
      "bag": "ZIPPED LUNCH BAG",
      "category": "LUNCH BAG",
      "tier": "Unassigned",
-     "units": 64.0,
-     "revenue": 121568
+     "units": 67.0,
+     "revenue": 127266
     },
     {
      "bag": "MOON BAG",
      "category": "SLING",
      "tier": "Entry",
-     "units": 44.0,
-     "revenue": 83578
-    },
-    {
-     "bag": "FABELA",
-     "category": "TRAVEL",
-     "tier": "Core",
-     "units": 31.0,
-     "revenue": 56421
+     "units": 46.0,
+     "revenue": 87377
     },
     {
      "bag": "ANTITHEFT",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 22.0,
-     "revenue": 53621
+     "units": 25.0,
+     "revenue": 60821
+    },
+    {
+     "bag": "FABELA",
+     "category": "TRAVEL",
+     "tier": "Core",
+     "units": 33.0,
+     "revenue": 60120
+    },
+    {
+     "bag": "DOUBLE PRESS",
+     "category": "BACKPACK",
+     "tier": "Core",
+     "units": 15.0,
+     "revenue": 41400
     },
     {
      "bag": "GYM BAG",
@@ -970,11 +998,11 @@
      "revenue": 37600
     },
     {
-     "bag": "DOUBLE PRESS",
-     "category": "BACKPACK",
-     "tier": "Core",
-     "units": 13.0,
-     "revenue": 35880
+     "bag": "MAN BAG",
+     "category": "MAN BAG",
+     "tier": "Entry",
+     "units": 18.0,
+     "revenue": 31840
     },
     {
      "bag": "LUNA",
@@ -984,53 +1012,46 @@
      "revenue": 30028
     },
     {
-     "bag": "MAN BAG",
-     "category": "MAN BAG",
-     "tier": "Entry",
-     "units": 16.0,
-     "revenue": 27957
-    },
-    {
      "bag": "PRIME",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 15.0,
-     "revenue": 26242
+     "units": 16.0,
+     "revenue": 27992
     },
     {
      "bag": "FAYOLA",
      "category": "MESSENGER",
      "tier": "Core",
-     "units": 13.0,
-     "revenue": 24044
+     "units": 15.0,
+     "revenue": 27742
     },
     {
      "bag": "NIZANA",
      "category": "SLING",
      "tier": "Entry",
-     "units": 14.0,
-     "revenue": 23344
+     "units": 16.0,
+     "revenue": 26642
     },
     {
      "bag": "SIERRA HANDBAG",
      "category": "HANDBAG",
      "tier": "Core",
-     "units": 13.0,
-     "revenue": 21444
+     "units": 15.0,
+     "revenue": 24742
     },
     {
      "bag": "LOLA",
      "category": "HANDBAG",
      "tier": "Core",
-     "units": 9.0,
-     "revenue": 16646
+     "units": 12.0,
+     "revenue": 22194
     },
     {
      "bag": "TRECENTO",
      "category": "SLING",
      "tier": "Core",
-     "units": 9.0,
-     "revenue": 16646
+     "units": 12.0,
+     "revenue": 22194
     },
     {
      "bag": "BIG MAN BAG",
@@ -1088,85 +1109,99 @@
    "label": "Deal of wk",
    "on": true,
    "where": "Kenya only",
-   "units": 1176.0,
-   "revenue": 2127499,
+   "units": 1380.0,
+   "revenue": 2468866,
    "bags": [
     {
      "bag": "FABELA",
      "category": "TRAVEL",
      "tier": "Core",
-     "units": 243.0,
-     "revenue": 486166
+     "units": 271.0,
+     "revenue": 542166
     },
     {
      "bag": "BIG MAN BAG",
      "category": "MAN BAG",
      "tier": "Core",
-     "units": 180.0,
-     "revenue": 299199
+     "units": 211.0,
+     "revenue": 349299
     },
     {
      "bag": "KAI",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 105.0,
-     "revenue": 252950
+     "units": 116.0,
+     "revenue": 279350
     },
     {
      "bag": "NIZANA",
      "category": "SLING",
      "tier": "Entry",
-     "units": 146.0,
-     "revenue": 159067
+     "units": 184.0,
+     "revenue": 199467
     },
     {
      "bag": "MINI UMBRA",
      "category": "CHEST BAG",
      "tier": "Entry",
-     "units": 122.0,
-     "revenue": 148667
-    },
-    {
-     "bag": "SAFIRI TRAVEL",
-     "category": "TRAVEL",
-     "tier": "Premium",
-     "units": 45.0,
-     "revenue": 141500
+     "units": 147.0,
+     "revenue": 175667
     },
     {
      "bag": "REMI",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 58.0,
-     "revenue": 134200
+     "units": 76.0,
+     "revenue": 175600
     },
     {
      "bag": "CLAIRE HANDBAG",
      "category": "HANDBAG",
      "tier": "Core",
-     "units": 48.0,
-     "revenue": 125050
+     "units": 58.0,
+     "revenue": 151050
+    },
+    {
+     "bag": "SAFIRI TRAVEL",
+     "category": "TRAVEL",
+     "tier": "Premium",
+     "units": 47.0,
+     "revenue": 147900
     },
     {
      "bag": "OVAL HANDBAG",
      "category": "HANDBAG",
      "tier": "Entry",
-     "units": 62.0,
-     "revenue": 75700
-    },
-    {
-     "bag": "PIONEER",
-     "category": "BACKPACK",
-     "tier": "Core",
-     "units": 28.0,
-     "revenue": 61000
+     "units": 64.0,
+     "revenue": 78900
     },
     {
      "bag": "LIAM",
      "category": "TRAVEL",
      "tier": "Core",
-     "units": 30.0,
-     "revenue": 49900
+     "units": 46.0,
+     "revenue": 75967
+    },
+    {
+     "bag": "PIONEER",
+     "category": "BACKPACK",
+     "tier": "Core",
+     "units": 31.0,
+     "revenue": 67600
+    },
+    {
+     "bag": "GYM BAG",
+     "category": "SPORT",
+     "tier": "Core",
+     "units": 23.0,
+     "revenue": 50600
+    },
+    {
+     "bag": "SIERRA HANDBAG",
+     "category": "HANDBAG",
+     "tier": "Core",
+     "units": 20.0,
+     "revenue": 43900
     },
     {
      "bag": "ELYSE",
@@ -1176,32 +1211,18 @@
      "revenue": 40800
     },
     {
-     "bag": "SIERRA HANDBAG",
-     "category": "HANDBAG",
-     "tier": "Core",
-     "units": 18.0,
-     "revenue": 39300
-    },
-    {
-     "bag": "GYM BAG",
-     "category": "SPORT",
-     "tier": "Core",
-     "units": 17.0,
-     "revenue": 37800
-    },
-    {
      "bag": "MOON BAG",
      "category": "SLING",
      "tier": "Entry",
-     "units": 20.0,
-     "revenue": 22000
+     "units": 28.0,
+     "revenue": 31400
     },
     {
      "bag": "AURORA",
      "category": "HANDBAG",
      "tier": "Core",
-     "units": 12.0,
-     "revenue": 19800
+     "units": 14.0,
+     "revenue": 22800
     },
     {
      "bag": "KATE",
@@ -1214,8 +1235,8 @@
      "bag": "BELT BAG",
      "category": "WAIST BAG",
      "tier": "Entry",
-     "units": 7.0,
-     "revenue": 7400
+     "units": 9.0,
+     "revenue": 9400
     },
     {
      "bag": "JADE",
@@ -1238,15 +1259,15 @@
    "label": "Corporate",
    "on": false,
    "where": "Kenya only",
-   "units": 104.0,
-   "revenue": 278634,
+   "units": 126.0,
+   "revenue": 335434,
    "bags": [
     {
      "bag": "Unassigned",
      "category": "UNASSIGNED",
      "tier": "Unassigned",
-     "units": 104.0,
-     "revenue": 278634
+     "units": 126.0,
+     "revenue": 335434
     }
    ]
   },
@@ -1255,29 +1276,36 @@
    "label": "Mid-month offers",
    "on": true,
    "where": "Kenya, Tanzania, Uganda",
-   "units": 1323.0,
-   "revenue": 2320192,
+   "units": 1378.0,
+   "revenue": 2467806,
    "bags": [
     {
      "bag": "CODE 3",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 309.0,
-     "revenue": 498950
+     "units": 312.0,
+     "revenue": 504721
     },
     {
      "bag": "MAN BAG",
      "category": "MAN BAG",
      "tier": "Entry",
-     "units": 179.0,
-     "revenue": 193967
+     "units": 183.0,
+     "revenue": 200367
     },
     {
      "bag": "TRAVEL",
      "category": "TRAVEL",
      "tier": "Core",
-     "units": 83.0,
-     "revenue": 169170
+     "units": 86.0,
+     "revenue": 176670
+    },
+    {
+     "bag": "LAFEMME",
+     "category": "HANDBAG",
+     "tier": "Premium",
+     "units": 24.0,
+     "revenue": 132000
     },
     {
      "bag": "MINI ZURI",
@@ -1294,39 +1322,39 @@
      "revenue": 124400
     },
     {
-     "bag": "LAFEMME",
-     "category": "HANDBAG",
-     "tier": "Premium",
-     "units": 21.0,
-     "revenue": 115500
-    },
-    {
-     "bag": "ZULA",
-     "category": "MAN BAG",
+     "bag": "TAJI",
+     "category": "TRAVEL",
      "tier": "Core",
-     "units": 44.0,
-     "revenue": 91200
+     "units": 36.0,
+     "revenue": 107700
     },
     {
      "bag": "LAMORA",
      "category": "SLING",
      "tier": "Premium",
-     "units": 23.0,
-     "revenue": 89300
+     "units": 27.0,
+     "revenue": 105300
+    },
+    {
+     "bag": "ZULA",
+     "category": "MAN BAG",
+     "tier": "Core",
+     "units": 47.0,
+     "revenue": 97800
     },
     {
      "bag": "FABELA",
      "category": "TRAVEL",
      "tier": "Core",
-     "units": 40.0,
-     "revenue": 82000
+     "units": 42.0,
+     "revenue": 86800
     },
     {
-     "bag": "TAJI",
-     "category": "TRAVEL",
+     "bag": "LOOP BP",
+     "category": "BACKPACK",
      "tier": "Core",
-     "units": 26.0,
-     "revenue": 77700
+     "units": 30.0,
+     "revenue": 77072
     },
     {
      "bag": "MOON BAG",
@@ -1334,13 +1362,6 @@
      "tier": "Entry",
      "units": 72.0,
      "revenue": 73000
-    },
-    {
-     "bag": "LOOP BP",
-     "category": "BACKPACK",
-     "tier": "Core",
-     "units": 28.0,
-     "revenue": 72872
     },
     {
      "bag": "BIG MAN BAG",
@@ -1357,6 +1378,27 @@
      "revenue": 56000
     },
     {
+     "bag": "NALA",
+     "category": "HANDBAG",
+     "tier": "Premium",
+     "units": 11.0,
+     "revenue": 55286
+    },
+    {
+     "bag": "NIZANA",
+     "category": "SLING",
+     "tier": "Entry",
+     "units": 48.0,
+     "revenue": 52714
+    },
+    {
+     "bag": "ZURI",
+     "category": "HANDBAG",
+     "tier": "Premium",
+     "units": 21.0,
+     "revenue": 52400
+    },
+    {
      "bag": "DOUBLE PRESS",
      "category": "BACKPACK",
      "tier": "Core",
@@ -1364,32 +1406,18 @@
      "revenue": 52000
     },
     {
-     "bag": "NIZANA",
-     "category": "SLING",
-     "tier": "Entry",
-     "units": 47.0,
-     "revenue": 51000
-    },
-    {
-     "bag": "NALA",
-     "category": "HANDBAG",
-     "tier": "Premium",
-     "units": 10.0,
-     "revenue": 50286
-    },
-    {
-     "bag": "ZURI",
-     "category": "HANDBAG",
-     "tier": "Premium",
-     "units": 20.0,
-     "revenue": 48800
-    },
-    {
      "bag": "PIONEER",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 19.0,
-     "revenue": 44000
+     "units": 21.0,
+     "revenue": 49200
+    },
+    {
+     "bag": "AVANA HB",
+     "category": "SLING",
+     "tier": "Core",
+     "units": 27.0,
+     "revenue": 42300
     },
     {
      "bag": "MONAH BP",
@@ -1399,18 +1427,11 @@
      "revenue": 40800
     },
     {
-     "bag": "AVANA HB",
-     "category": "SLING",
-     "tier": "Core",
-     "units": 25.0,
-     "revenue": 38100
-    },
-    {
      "bag": "ANTITHEFT",
      "category": "BACKPACK",
      "tier": "Core",
-     "units": 18.0,
-     "revenue": 38077
+     "units": 19.0,
+     "revenue": 40477
     },
     {
      "bag": "TRECENTO",
@@ -1427,6 +1448,13 @@
      "revenue": 17600
     },
     {
+     "bag": "KAI",
+     "category": "BACKPACK",
+     "tier": "Core",
+     "units": 6.0,
+     "revenue": 14800
+    },
+    {
      "bag": "BELT BAG",
      "category": "WAIST BAG",
      "tier": "Entry",
@@ -1434,11 +1462,18 @@
      "revenue": 14000
     },
     {
-     "bag": "KAI",
-     "category": "BACKPACK",
-     "tier": "Core",
-     "units": 5.0,
-     "revenue": 12000
+     "bag": "MINI UMBRA",
+     "category": "CHEST BAG",
+     "tier": "Entry",
+     "units": 8.0,
+     "revenue": 11717
+    },
+    {
+     "bag": "BONITA",
+     "category": "TRAVEL",
+     "tier": "Premium",
+     "units": 4.0,
+     "revenue": 11100
     },
     {
      "bag": "JAMELA",
@@ -1446,13 +1481,6 @@
      "tier": "Premium",
      "units": 4.0,
      "revenue": 10856
-    },
-    {
-     "bag": "MINI UMBRA",
-     "category": "CHEST BAG",
-     "tier": "Entry",
-     "units": 7.0,
-     "revenue": 10417
     },
     {
      "bag": "SCHOOL BAG",
@@ -1467,6 +1495,20 @@
      "tier": "Core",
      "units": 2.0,
      "revenue": 6000
+    },
+    {
+     "bag": "ELYSE",
+     "category": "HANDBAG",
+     "tier": "Premium",
+     "units": 2.0,
+     "revenue": 4800
+    },
+    {
+     "bag": "WASHBAG",
+     "category": "WASHBAG",
+     "tier": "Entry",
+     "units": 3.0,
+     "revenue": 4100
     },
     {
      "bag": "MINI SCHOOL",
@@ -1490,6 +1532,13 @@
      "revenue": 2957
     },
     {
+     "bag": "JADE",
+     "category": "BRIEFCASE",
+     "tier": "Premium",
+     "units": 1.0,
+     "revenue": 2200
+    },
+    {
      "bag": "ESMERALDA",
      "category": "BACKPACK",
      "tier": "Core",
@@ -1502,6 +1551,13 @@
      "tier": "Core",
      "units": 1.0,
      "revenue": 1571
+    },
+    {
+     "bag": "ZANE MAN",
+     "category": "MAN BAG",
+     "tier": "Entry",
+     "units": 1.0,
+     "revenue": 1429
     }
    ]
   },
@@ -1527,28 +1583,28 @@
    "label": "Gift bags",
    "on": false,
    "where": "Kenya only",
-   "units": 130.0,
-   "revenue": 25700,
+   "units": 154.0,
+   "revenue": 30300,
    "bags": [
     {
      "bag": "GIFT BAG",
      "category": "GIFT BAG",
      "tier": "Entry",
-     "units": 130.0,
-     "revenue": 25700
+     "units": 154.0,
+     "revenue": 30300
     }
    ]
   }
  ],
  "unclassified": {
-  "units": 121,
-  "revenue": 44340
+  "units": 135,
+  "revenue": 45440
  },
  "unclassifiedBags": [
   {
    "name": "300.0 KES DISCOUNT ON TOTAL AMOUNT",
-   "units": 103,
-   "revenue": -30900
+   "units": 116,
+   "revenue": -34800
   },
   {
    "name": "PPM(SMALL)",
@@ -1562,6 +1618,11 @@
   },
   {
    "name": "AVEN MAROON",
+   "units": 1,
+   "revenue": 5000
+  },
+  {
+   "name": "NORIA MAROON",
    "units": 1,
    "revenue": 5000
   },
@@ -1614,26 +1675,26 @@
  "midParts": [
   {
    "part": "Timed offers",
-   "units": 1127,
-   "revenue": 1731920,
+   "units": 1148,
+   "revenue": 1781720,
    "countries": [
     "Kenya"
    ],
    "bags": [
     {
      "bag": "CODE 3",
-     "units": 309,
-     "revenue": 498950
+     "units": 311,
+     "revenue": 503150
     },
     {
      "bag": "MAN BAG",
-     "units": 176,
-     "revenue": 189200
+     "units": 180,
+     "revenue": 195600
     },
     {
      "bag": "TRAVEL",
-     "units": 83,
-     "revenue": 169170
+     "units": 86,
+     "revenue": 176670
     },
     {
      "bag": "MINI ZURI",
@@ -1647,8 +1708,8 @@
     },
     {
      "bag": "FABELA",
-     "units": 40,
-     "revenue": 82000
+     "units": 42,
+     "revenue": 86800
     },
     {
      "bag": "MOON BAG",
@@ -1666,9 +1727,19 @@
      "revenue": 56000
     },
     {
+     "bag": "ZURI",
+     "units": 21,
+     "revenue": 52400
+    },
+    {
      "bag": "DOUBLE PRESS",
      "units": 26,
      "revenue": 52000
+    },
+    {
+     "bag": "PIONEER",
+     "units": 21,
+     "revenue": 49200
     },
     {
      "bag": "NIZANA",
@@ -1676,24 +1747,14 @@
      "revenue": 49000
     },
     {
-     "bag": "ZURI",
-     "units": 20,
-     "revenue": 48800
-    },
-    {
-     "bag": "PIONEER",
-     "units": 19,
-     "revenue": 44000
+     "bag": "AVANA HB",
+     "units": 27,
+     "revenue": 42300
     },
     {
      "bag": "MONAH BP",
      "units": 28,
      "revenue": 40800
-    },
-    {
-     "bag": "AVANA HB",
-     "units": 25,
-     "revenue": 38100
     },
     {
      "bag": "TRECENTO",
@@ -1706,14 +1767,19 @@
      "revenue": 17600
     },
     {
+     "bag": "KAI",
+     "units": 6,
+     "revenue": 14800
+    },
+    {
      "bag": "BELT BAG",
      "units": 14,
      "revenue": 14000
     },
     {
-     "bag": "KAI",
-     "units": 5,
-     "revenue": 12000
+     "bag": "BONITA",
+     "units": 4,
+     "revenue": 11100
     },
     {
      "bag": "SCHOOL BAG",
@@ -1724,8 +1790,8 @@
   },
   {
    "part": "New products",
-   "units": 155,
-   "revenue": 506758,
+   "units": 178,
+   "revenue": 585058,
    "countries": [
     "Kenya",
     "Tanzania",
@@ -1734,33 +1800,33 @@
    "bags": [
     {
      "bag": "LAFEMME",
-     "units": 21,
-     "revenue": 115500
-    },
-    {
-     "bag": "ZULA",
-     "units": 44,
-     "revenue": 91200
-    },
-    {
-     "bag": "LAMORA",
-     "units": 23,
-     "revenue": 89300
+     "units": 24,
+     "revenue": 132000
     },
     {
      "bag": "TAJI",
-     "units": 26,
-     "revenue": 77700
+     "units": 36,
+     "revenue": 107700
+    },
+    {
+     "bag": "LAMORA",
+     "units": 27,
+     "revenue": 105300
+    },
+    {
+     "bag": "ZULA",
+     "units": 47,
+     "revenue": 97800
     },
     {
      "bag": "LOOP BP",
-     "units": 28,
-     "revenue": 72872
+     "units": 30,
+     "revenue": 77072
     },
     {
      "bag": "NALA",
-     "units": 10,
-     "revenue": 50286
+     "units": 11,
+     "revenue": 55286
     },
     {
      "bag": "IMANI",
@@ -1776,8 +1842,8 @@
   },
   {
    "part": "Listed singles",
-   "units": 41,
-   "revenue": 81514,
+   "units": 52,
+   "revenue": 101028,
    "countries": [
     "Tanzania",
     "Uganda"
@@ -1785,8 +1851,13 @@
    "bags": [
     {
      "bag": "ANTITHEFT",
-     "units": 18,
-     "revenue": 38077
+     "units": 19,
+     "revenue": 40477
+    },
+    {
+     "bag": "MINI UMBRA",
+     "units": 8,
+     "revenue": 11717
     },
     {
      "bag": "JAMELA",
@@ -1794,9 +1865,9 @@
      "revenue": 10856
     },
     {
-     "bag": "MINI UMBRA",
-     "units": 7,
-     "revenue": 10417
+     "bag": "ELYSE",
+     "units": 2,
+     "revenue": 4800
     },
     {
      "bag": "MAN BAG",
@@ -1804,9 +1875,19 @@
      "revenue": 4767
     },
     {
+     "bag": "WASHBAG",
+     "units": 3,
+     "revenue": 4100
+    },
+    {
      "bag": "MINI SCHOOL",
      "units": 2,
      "revenue": 4000
+    },
+    {
+     "bag": "NIZANA",
+     "units": 2,
+     "revenue": 3714
     },
     {
      "bag": "AURORA",
@@ -1819,9 +1900,9 @@
      "revenue": 2957
     },
     {
-     "bag": "NIZANA",
+     "bag": "JADE",
      "units": 1,
-     "revenue": 2000
+     "revenue": 2200
     },
     {
      "bag": "ESMERALDA",
@@ -1834,9 +1915,19 @@
      "revenue": 1740
     },
     {
+     "bag": "CODE 3",
+     "units": 1,
+     "revenue": 1571
+    },
+    {
      "bag": "LOLA",
      "units": 1,
      "revenue": 1571
+    },
+    {
+     "bag": "ZANE MAN",
+     "units": 1,
+     "revenue": 1429
     }
    ]
   }

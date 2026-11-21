@@ -155,16 +155,22 @@ gap          = max(total_target - total_sales, 0)
 bare_min     = num(gstr(proj, "bareMinimum"))
 forecast     = gstr(proj, "forecastedProjection")
 
-# Average weekly output for the report month (from weekly_history.json)
-avg_weekly = 0
-try:
-    weeks = json.load(open(paths.data("weekly_history.json"))).get("weeks", [])
-    m3 = month[:3]
-    ws = [w.get("weeklySales", 0) for w in weeks if str(w.get("month", "")).startswith(m3)]
-    if ws:
-        avg_weekly = sum(ws) / len(ws)
-except (ValueError, OSError):
-    avg_weekly = 0
+# Average weekly output for the report month, on the SAME weeks as the bare minimum
+# (target ÷ full weeks = Sun–Sat weeks with >=5 days in the month, as
+# forward_projections.count_complete_weeks_in_month), so the two compare like for like.
+# A running month counts only the share of the month done so far (PROJ currentDay).
+_dim = _cal_fin.monthrange(year, _fin_num)[1]
+_wk = datetime.date(year, _fin_num, 1)
+_wk -= datetime.timedelta(days=(_wk.weekday() + 1) % 7)         # the Sunday starting week 1
+_full_weeks = 0
+while _wk <= datetime.date(year, _fin_num, _dim):
+    if sum(1 for i in range(7) if (_wk + datetime.timedelta(days=i)).month == _fin_num) >= 5:
+        _full_weeks += 1
+    _wk += datetime.timedelta(days=7)
+_full_weeks = max(_full_weeks, 1)
+_cday = gnum(proj, "currentDay")
+_done = (_cday / (gnum(proj, "daysInMonth") or _dim)) if _cday else 1.0   # 1.0 = a finished month
+avg_weekly = total_sales / (_full_weeks * _done) if _done else 0
 weekly_short = max(bare_min - avg_weekly, 0)
 
 # ── In-progress vs completed month → tense/phrasing ───────────
@@ -1369,7 +1375,7 @@ _rpt = {
              "keNotOffer": ke_notoffer_stock, "szNotOffer": sz_notoffer_stock, "ugNotOffer": ug_notoffer_stock},
     "timed": timed_offers,
 }
-chart_data = "<script>const RPT = " + json.dumps(_rpt, separators=(",", ":")) + ";</script>\n"
+chart_data = "<script>const RPT = " + json.dumps(_rpt, separators=(",", ":")).replace("</", "<\\/") + ";</script>\n"
 
 chart_js = r"""<script>
 (function(){
@@ -1744,8 +1750,7 @@ PAGE_SIDEBAR = r"""
 _full = head + body + chart_data + chart_js + PAGE_SIDEBAR + "\n</body>\n</html>\n"
 
 out = paths.html("monthly_report.html")
-with open(out, "w", encoding="utf-8") as f:
-    f.write(_full)
+paths.write_atomic(out, _full)
 
 # The live monthly_report.html always shows only the latest month. Past months
 # are preserved in the History page (backed by Supabase) — including the comments
@@ -1922,16 +1927,19 @@ _archived = report_month.is_pinned()
 _hist = {}
 if _archived:
     if os.path.exists(HISTORY_FILE):
+        # A history file we can't read must NOT be replaced by one holding only this month
+        # (every archived month would be lost) — stop and let a person fix or restore it.
         try:
             with open(HISTORY_FILE, encoding="utf-8") as f:
                 _hist = json.load(f)
-        except (ValueError, OSError):
-            _hist = {}
-    if not isinstance(_hist, dict):
-        _hist = {}
+        except (ValueError, OSError) as e:
+            raise SystemExit(f"monthly_report: {HISTORY_FILE} exists but can't be read ({e}) — "
+                             "not archiving, so the stored months aren't overwritten. Fix or restore it and re-run.")
+        if not isinstance(_hist, dict):
+            raise SystemExit(f"monthly_report: {HISTORY_FILE} is not a JSON object — not archiving, "
+                             "so the stored months aren't overwritten. Fix or restore it and re-run.")
     _hist[_key] = _snapshot
-    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-        json.dump(_hist, f, indent=2, ensure_ascii=False)
+    paths.write_atomic(HISTORY_FILE, json.dumps(_hist, indent=2, ensure_ascii=False))
 
 print(f"monthly_report.html built for {month} {year}.")
 print(f"  Target achieved : {pct(achieved)}  ({fmt(total_sales)}/{fmt(total_target)})")

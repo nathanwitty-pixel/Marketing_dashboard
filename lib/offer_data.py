@@ -372,7 +372,7 @@ def build():
 
     # One field per line, arrays inline — the format the Monthly Report's
     # line-based readers (gstr / gnum / garr) expect.
-    lines = "".join(f'  {k}: {json.dumps(v, ensure_ascii=False)},\n' for k, v in oa.items())
+    lines = "".join(f'  {k}: {json.dumps(v, ensure_ascii=False)},\n' for k, v in oa.items()).replace("</", "<\\/")
     block = ("<!-- OFFER_DATA_START -->\n<script>\nconst OA = {\n"
              + lines + "};\n</script>\n<!-- OFFER_DATA_END -->")
 

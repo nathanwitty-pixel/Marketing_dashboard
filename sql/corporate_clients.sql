@@ -16,7 +16,8 @@
 --   earlier_paid_on  latest date in the period money came in on those older invoices, e.g. '1 Oct'
 --   inv_months month(s) the counted invoices were raised, 'YYYY-MM' comma-joined, e.g. '2026-09,2026-10'
 --              (NULL for a quote-only client) — the "converted in" badges
---   sold       bags counted as sold in the period = whole bags of bags × (paid in the period ÷ agreed),
+--   sold       bags counted as sold in the period = whole bags of bags × (paid by the period end ÷ agreed)
+--              minus whole bags of bags × (paid before the period ÷ agreed),
 --              over ANY of the client's invoices (a balance cleared this month for last
 --              month's invoice lands here) — this is what goes into Sales
 -- Params :start_date / :end_date.
@@ -36,6 +37,9 @@ inv_pay AS (
            (SELECT COALESCE(SUM(p.amount), 0) FROM denri_corporate_payment p
              WHERE p.invoice_id = inv.id
                AND GREATEST(p.date, inv.date_invoice) BETWEEN :start_date AND :end_date) AS paid_in_period,
+           (SELECT COALESCE(SUM(p.amount), 0) FROM denri_corporate_payment p
+             WHERE p.invoice_id = inv.id
+               AND GREATEST(p.date, inv.date_invoice) < :start_date) AS paid_before,
            (SELECT MAX(GREATEST(p.date, inv.date_invoice)) FROM denri_corporate_payment p
              WHERE p.invoice_id = inv.id
                AND GREATEST(p.date, inv.date_invoice) BETWEEN :start_date AND :end_date) AS last_paid_in_period
@@ -45,8 +49,10 @@ inv_rows AS (       -- invoices raised in the period, plus earlier invoices that
     SELECT company, date_invoice AS dated,
            0::numeric AS quoted,
            bags AS invoiced, agreed, paid_to_date AS paid, paid_in_period AS received,
-           -- whole bags paid for, rounded down per invoice (same rule as corporate_bags.sql)
-           COALESCE(FLOOR((bags * LEAST(paid_in_period / NULLIF(agreed, 0), 1))::numeric + 0.000001), 0) AS sold,
+           -- whole bags paid for by the period end minus those already paid for before it, per invoice
+           -- (same rule as corporate_bags.sql), so instalments don't each round down
+           COALESCE(FLOOR((bags * LEAST((paid_before + paid_in_period) / NULLIF(agreed, 0), 1))::numeric + 0.000001)
+                    - FLOOR((bags * LEAST(paid_before / NULLIF(agreed, 0), 1))::numeric + 0.000001), 0) AS sold,
            CASE WHEN date_invoice < :start_date THEN date_invoice END AS earlier_on,
            CASE WHEN date_invoice < :start_date THEN last_paid_in_period END AS earlier_paid,
            NULL::text AS quote_info

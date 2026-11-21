@@ -121,7 +121,7 @@ def _revenue_target(year, month):
 # Sun–Sat, so weeks are counted from Sunday.
 
 def count_complete_weeks_in_month(ref=None):
-    today = ref or date.today()
+    today = ref or report_month.live_anchor()   # today's month, or the DENRI_REPORT_MONTH pin
     year, month = today.year, today.month
     month_start = date(year, month, 1)
     if month == 12:
@@ -143,18 +143,9 @@ def count_complete_weeks_in_month(ref=None):
     return max(complete, 1)
 
 
-# ── GOOGLE SHEETS AUTH ────────────────────────────────────────
-
-# Shared auth: service account (permanent) or self-healing OAuth — see google_auth.py
-from lib.google_auth import get_gspread_client
-
-
 # ── AUTO-READ: all figures from Google Sheets ─────────────────
 
 def fetch_sheet_data():
-    gc = get_gspread_client()
-    sh = gc.open_by_key(SPREADSHEET_ID)
-
     # ── MONTHLY_TARGET ────────────────────────────────────────
     # Row 1 = header: COLOUR | CATEGORY | PRODUCT NAME | BAG TYPE | TARGET | SALES | DEFICIT | ...
     # Wait — actual header: BAG TYPE | CATEGORY | TARGET(C) | SALES(D) | DEFICIT(E)
@@ -162,7 +153,7 @@ def fetch_sheet_data():
 
     # Column C = the month's bag targets from Odoo (lib/product_targets — docs/product-targets.md).
     from lib import product_targets
-    mt_rows = product_targets.monthly_target_rows(sh.worksheet("MONTHLY_TARGET").get_all_values())
+    mt_rows = product_targets.monthly_target_rows(product_targets.monthly_target_sheet_rows())
     col_c_raw = [r[2] if len(r) > 2 else "" for r in mt_rows]   # column C — TARGET
     col_d_raw = [r[3] if len(r) > 3 else "" for r in mt_rows]   # column D — SALES
 
@@ -184,7 +175,7 @@ def fetch_sheet_data():
     # the CURRENT Sun–Sat week (lib/odoo_tabs; the sheet tab only if Postgres is down).
     from lib import odoo_tabs
     from weekly_sales import week_window
-    ws_rows = odoo_tabs.get_rows(sh, "WEEKLY_SALES", window=week_window())
+    ws_rows = odoo_tabs.get_rows(None, "WEEKLY_SALES", window=week_window())
 
     weekly_total = 0
     for row in ws_rows:
@@ -371,13 +362,14 @@ if pace:
 # 1. Standard Projection
 #    Step 1: total_sales × (days_in_month ÷ current_day)  → projected end-of-month bags
 #    Step 2: ÷ total_target × 100                         → as % of target
-standard_projection_pct = ((pace["bags"] * days_in_month) if pace else (total_sales * velocity_factor)) / total_target * 100
+standard_projection_pct = (((pace["bags"] * days_in_month) if pace else (total_sales * velocity_factor)) / total_target * 100
+                           if total_target else 0)
 
 # 2. Forecasted Projection
 #    Step 1: (total_sales + corporate_bags) × (days_in_month ÷ current_day)
 #    Step 2: ÷ total_target × 100                         → as % of target
 forecasted_projection_pct = (((pace["bags"] + pace["corpBags"]) * days_in_month) if pace
-                             else ((total_sales + corporate_bags) * velocity_factor)) / total_target * 100
+                             else ((total_sales + corporate_bags) * velocity_factor)) / total_target * 100 if total_target else 0
 
 # 2b. Projected revenue (KES) — same pace as the bags projections, so the two read together.
 #     Standard = POS revenue × velocity; Forecasted = (POS revenue + corporate KES) × velocity.
@@ -834,6 +826,8 @@ def fmt_opt_pct(p):
 
 # ── INJECT INTO HTML ──────────────────────────────────────────
 
+_price_mix_js = json.dumps(price_mix).replace("</", "<\\/")        # names can't close the <script>
+_why_moved_js  = json.dumps(why_moved_data).replace("</", "<\\/")
 inline_script = (
     "<!-- PROJ_DATA_START -->\n"
     "<script>\n"
@@ -854,13 +848,13 @@ inline_script = (
     f'  revenueTarget:            "{fmt_kes(revenue_target) if revenue_target else ""}",\n'
     f'  standardRevenuePct:       "{fmt_opt_pct(standard_revenue_pct)}",\n'
     f'  forecastedRevenuePct:     "{fmt_opt_pct(forecasted_revenue_pct)}",\n'
-    f'  priceMix:                 {json.dumps(price_mix)},\n'
+    f'  priceMix:                 {_price_mix_js},\n'
     f'  bareMinimum:              "{fmt_int(bare_minimum_value) if bare_minimum_value else ""}",\n'
     f'  bareMinimumGrowthPct:     "{fmt_pct(bare_minimum_growth_pct)}",\n'
-    f'  declinedBy:               "{("-" + fmt_int(abs(declined_by))) if bare_minimum_value else ""}",\n'
+    f'  declinedBy:               "{f"{weekly_sales_total - bare_minimum_value:+,}" if bare_minimum_value else ""}",\n'  # +over / -under
     f'  weeklySalesTotal:         "{fmt_int(weekly_sales_total)}",\n'
     f'  weeklyHistory:            {json.dumps(weekly_history)},\n'
-    f'  whyMoved:                 {json.dumps(why_moved_data)},\n'
+    f'  whyMoved:                 {_why_moved_js},\n'
     f'  followers:                {json.dumps(followers_data)},\n'
     f'  beats:                    {json.dumps(beats_data)}\n'
     "};\n"
@@ -880,8 +874,7 @@ def _inject(path):
         content,
         flags=re.DOTALL
     )
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(content)
+    paths.write_atomic(path, content)
 
 _inject(proj_html_path)   # keep standalone file up to date
 _inject(combined_path)    # inject into the combined dashboard
@@ -911,4 +904,4 @@ print(f"  Perfect weeks / month : {perfect_weeks}")
 print(f"  Bare Minimum          : {fmt_int(bare_minimum_value)}  (= {fmt_int(total_target)} / {perfect_weeks})")
 print(f"  Bare Min Growth %     : {fmt_pct(bare_minimum_growth_pct)}")
 print(f"  Weekly Sales (col X)  : {fmt_int(weekly_sales_total)}")
-print(f"  Declined By           : {'-' + fmt_int(abs(declined_by)) if bare_minimum_value else '(bare minimum not set)'}")
+print(f"  Declined By           : {f'{weekly_sales_total - bare_minimum_value:+,}' if bare_minimum_value else '(bare minimum not set)'}")
