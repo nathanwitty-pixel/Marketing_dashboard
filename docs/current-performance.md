@@ -18,6 +18,39 @@ week-over-week movement, and a **current-vs-previous-month weekly comparison cha
 month solid, previous month dashed — `cpPrevWeekly` from `monthly_report_history.json`; the
 month names are dynamic, from `PERF.cpCurLabel` / `PERF.cpPrevLabel`), plus forward projections.
 
+## Three beats (18 Nov 2026, user's call)
+
+No card opens with "this chart shows…". Each card hits three beats:
+**1. Headline** (the takeaway, as a sentence with its number), **2. Evidence** (the chart already there,
+unchanged), **3. Recommendation** (one amber "Do next" line that starts with a verb). The card's old title stays
+as its small label. The sentences are written each build by `lib/beats.py` (pure functions, no DB) from figures
+the generators already have, so they move with the numbers. No calculation changed.
+
+- **Summary strip** (top of the page, `#beat-summary`, `PROJ.beats.summary`): where the month lands
+  (Forecasted projection in bags, % of target), then sold so far, % of the month gone (complete days),
+  bags left and days left. The recommendation depends on the projection:
+  under **90%** = decide on a push or reset the expectation (bags a day needed vs so far);
+  **90–100%** = push to close it (the extra bags a day); **100%+** = hold the pace. Thresholds:
+  `OUT_OF_REACH` / `ON_TRACK` in `lib/beats.py`. It covers the Sales, Weekly Sales and Remaining cards.
+- **Weekly Performance** (`PROJ.beats.weekly`): the last complete week vs the one before, **per day**
+  (first and last weeks are short). Recommendation: hold the rate if it is at or above the bags a day the
+  target needs, else lift it (pointing to Why Did We Move?). Adds the current week's gap to the weekly floor
+  (bare minimum) when it is short.
+- **Why Did We Move?**: the existing head line is the headline. `assets/why_moved.js` adds `#wm-rec` from the
+  reason: fewer selling days → compare like for like; bulk order behind it → check Without bulk orders;
+  a region fell → check stock, staff and offers at its top two falling shops; a region rose → copy what its top
+  shops did. It follows the week picker and toggles. Pages without `#wm-rec` (New Products) are unchanged.
+- **Followers chart**: the existing head line is the headline. `#folc-rec` (Week on week only) points at the
+  biggest day: repeat what went out that day, or check what was missing.
+- **Forward Projections** (`PROJ.beats.projections`): month-end bags % and revenue %. Revenue more than
+  2 points ahead of bags → push volume, not discounts; more than 2 behind → check discounts and the offer mix;
+  else → the gap is volume.
+- **Price per Bag** (`PROJ.beats.price`): actual vs target price per bag. Recommendation names the On offer row
+  (or Mid-month part) with the most negative Effect at month end; none negative → keep the mix.
+- **Corporate by Client** (`PERF.corporateBeat`, `current_performance.py`): sold vs the corporate target
+  (green when the % is at or above the % of the month gone), plus bags quoted and not invoiced. Recommendation:
+  chase the biggest open quote (number, bags, KES, valid until) and collect the biggest balance owed.
+
 ## Followers & reach (1 Nov 2026, user's call)
 
 A row of three cards under the Sales / Weekly Sales / Remaining cards, from Odoo's Meta sync

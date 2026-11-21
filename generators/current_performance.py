@@ -581,6 +581,18 @@ except (ValueError, OSError, KeyError, TypeError):
 
 # ── INJECT INTO HTML ──────────────────────────────────────────
 
+# Corporate by Client's headline + recommendation (docs/current-performance.md › Three beats)
+try:
+    import calendar as _bcal
+    from lib import beats as _beats
+    _anchor = report_month.live_anchor()
+    _gone = (_anchor.day - 1) / _bcal.monthrange(_anchor.year, _anchor.month)[1] * 100
+    corporate_beat = _beats.corporate(corporate_bags, corporate_target, corporate_clients, _gone)
+except Exception as _e:                          # noqa: BLE001
+    print(f"  WARNING: corporate beat skipped: {_e}")
+    corporate_beat = None
+_corp_beat_js = json.dumps(corporate_beat).replace("</", "<\\/")
+
 _corp_clients_js = json.dumps(corporate_clients).replace("</", "<\\/")   # client names can't close the <script>
 _shop_corp_js    = json.dumps(shop_corporate, default=str).replace("</", "<\\/")
 
@@ -598,6 +610,7 @@ inline_script = (
     f'  corporateBags:      "{fmt_int(corporate_bags)}",\n'
     f'  corporateClients:   {_corp_clients_js},\n'
     f'  corporateTarget:    {json.dumps(corporate_target)},\n'
+    f'  corporateBeat:      {_corp_beat_js},\n'
     f'  shopCorporate:      {_shop_corp_js},\n'
     f'  rejectBags:        "{fmt_int(reject_bags)}",\n'
     f'  rejectPct:          "{fmt_pct(reject_pct)}",\n'

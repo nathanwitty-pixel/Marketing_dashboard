@@ -795,6 +795,25 @@ except Exception as _e:                          # noqa: BLE001
     followers_data = []
 
 
+# Three beats per card (docs/current-performance.md › Three beats): headline + recommendation,
+# written from the figures above. Sales card = tills + corporate paid; projection = Forecasted.
+try:
+    from lib import beats as _beats
+    _sales_card = total_sales + corporate_bags
+    _proj_bags  = forecasted_projection_pct * total_target / 100
+    _done       = pace["done"] if pace else current_day
+    beats_data = {
+        "summary":     _beats.summary(proj_month, _sales_card, total_target, _proj_bags, _done, days_in_month),
+        "weekly":      _beats.weekly(weekly_history, report_month.live_anchor(), total_target, _sales_card,
+                                     bare_minimum_value),
+        "projections": _beats.projections(_proj_bags, total_target, forecasted_revenue_pct),
+        "price":       _beats.price(price_mix),
+    }
+except Exception as _e:                          # noqa: BLE001 — never let the beats break the page build
+    print(f"  WARNING: beats skipped: {_e}")
+    beats_data = None
+
+
 # ── FORMAT HELPERS ────────────────────────────────────────────
 
 def fmt_int(n):
@@ -842,7 +861,8 @@ inline_script = (
     f'  weeklySalesTotal:         "{fmt_int(weekly_sales_total)}",\n'
     f'  weeklyHistory:            {json.dumps(weekly_history)},\n'
     f'  whyMoved:                 {json.dumps(why_moved_data)},\n'
-    f'  followers:                {json.dumps(followers_data)}\n'
+    f'  followers:                {json.dumps(followers_data)},\n'
+    f'  beats:                    {json.dumps(beats_data)}\n'
     "};\n"
     "</script>\n"
     "<!-- PROJ_DATA_END -->"

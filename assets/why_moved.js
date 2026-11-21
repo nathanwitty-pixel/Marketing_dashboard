@@ -198,6 +198,25 @@ window.WhyMoved = {
           }).join(', ') : '') + '.' +
           (bulkNote(reason.row) ? ' <span style="color:#fbbf24">' + bulkNote(reason.row) + '</span> — check <em>Without bulk orders</em>.' : '');
       }
+      // Beat 3, the recommendation (docs/current-performance.md › Three beats). Only where the page has the slot.
+      var recEl = document.getElementById('wm-rec');
+      if (recEl) {
+        var rec = '';
+        if (reason && reason.days) {
+          rec = down ? 'Compare like for like: the drop is fewer selling days (' + now.days + ' vs ' + then.days + '), not slower selling.'
+                     : 'Watch the daily rate, not the total: the rise is extra selling days (' + now.days + ' vs ' + then.days + ').';
+        } else if (reason && bulkNote(reason.row)) {
+          rec = 'Check <strong>Without bulk orders</strong> before acting: a bulk order is behind ' + reason.label + '’s move.';
+        } else if (reason) {
+          var top = (reason.row.shops || []).filter(function (s) { return down ? s.delta < 0 : s.delta > 0; })
+            .sort(function (a, b) { return down ? a.delta - b.delta : b.delta - a.delta; }).slice(0, 2)
+            .map(function (s) { return s.shop; });
+          var who = top.length ? top.join(' and ') + ' in ' + reason.label : reason.label;
+          rec = down ? 'Check stock, staff and offers at <strong>' + who + '</strong>: that is where the ' + fmt(Math.abs(delta)) + ' bags went.'
+                     : 'Copy what <strong>' + who + '</strong> did across the other shops: it carried the rise.';
+        }
+        recEl.innerHTML = rec ? '<span class="beat-n">Do next</span>' + rec : '';
+      }
       // Late-keyed sales moved back to their real day (lib/sales_date_fix, docs/shop-launch.md): say so when the
       // day they were moved to is in either period shown (the month view: in either month).
       var inPeriod = function (iso) {
