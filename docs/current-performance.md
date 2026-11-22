@@ -388,6 +388,45 @@ and the bags % differ, so the reader can judge it:
   - **Corporate (Odoo invoices)** = the offer page's Corporate row: paid customer invoices in Odoo Accounting
     (Sales orders, S-numbers), not the Corporate app. Hidden when 0.
 
+## Acting on the page (21 Nov 2026, user's call)
+
+The page stops being read-only: people can act on what it says, and see their action straight away.
+Actions are kept in **Supabase** (`SUPABASE_DB_URL`, next to `denri_mkt_monthly`), in tables of our own.
+**Odoo is never written to.** Code: `lib/actions.py` (the tables), `lib/actions_ui.py` (the Streamlit panel
+under the page), the What-if card in `html/current_performance.html`.
+
+**Who:** the panel asks for your name once (kept for the session) and every save records it. Each change
+is also written to `denri_mkt_audit` (who, when, what, before → after). Real sign-in is a later step.
+
+### 1. Do next → tasks (`denri_mkt_actions`)
+Each card's amber "Do next" line (`PROJ.beats.summary / weekly / projections / price`, `PERF.corporateBeat`)
+is listed in the **Actions** panel under the page, one row per card, with: **owner**, **status**
+(To do · Doing · Done) and a **note**. A row is one card in one month (`page`, `month_key`, `beat`), so the
+recommendation text can change with the numbers while the task (owner, status, note) stays. The text
+it was saved against is kept (`rec`) and shown when it has since changed. Last month's open tasks show under
+"Carried over" until they're marked Done.
+
+### 2. Weekly minimum box (`denri_mkt_settings`)
+The weekly floor ("bare minimum", `PROJ.bareMinimum`) is worked out as the month's target ÷ its perfect
+weeks. The panel shows it and lets you **override it for the current week** (Sun–Sat, `cp.weekly_minimum`
+→ `{week_start, bags}`). Save → Current Performance rebuilds in the background (`_bg_rebuild`, kind
+`settings`), and the Weekly beat, Declined By and the weekly floor use the override. Clear → back to the
+worked-out figure. An override only applies to the week it was set for. `current_performance.py`'s old
+`bare_minimum = 0` constant now reads the same override.
+
+### 3. What-if (in the page, nothing saved)
+A card under the two projection cards: **extra bags a day** (slider, 0–1,000) for the days left, and
+**lift on the days left** (−30% to +50%). It shows the new month end (Forecasted bags + extra × days left +
+lift × the days-left bags from `PROJ.pace.restBags`), its % of the bag target, the revenue it would bring
+(extra bags × this month's actual price per bag, `priceMix.actualPpb`) and its % of the revenue target, and
+**what reaching 100% would take**: bags a day on top of the current pace. Nothing is saved; reload = reset.
+
+### 4. Corporate quote follow-ups (`denri_mkt_quote_followups`)
+Every open corporate quote (not invoiced, from `PERF.corporateClients[].quotes`) gets a row: client, quote
+number, bags, KES, valid until, plus **last chased**, **next follow-up**, **outcome** (Open · Chased · Won ·
+Lost) and a note. Rows due today or overdue come first and are marked. Won / Lost here is our own note:
+the quote in Odoo is unchanged (Won only shows in the Sales figures once Odoo invoices it).
+
 ## Data sources
 
 - **MONTHLY_TARGET** sheet: col C target, D sales, E deficit (summed).
@@ -410,7 +449,8 @@ and the bags % differ, so the reader can judge it:
 
 ## Manual inputs
 
-- `bare_minimum` in `current_performance.py` — the week's minimum bags target (0 = unset).
+- The week's minimum bags target: set it in the **Actions** panel under the page (see "Acting on the page").
+  `bare_minimum` in `current_performance.py` is only the fallback when Supabase can't be read.
 - `forward_projections.py` holds the projection assumptions (re-run to pick up edits).
 
 ## Month scope

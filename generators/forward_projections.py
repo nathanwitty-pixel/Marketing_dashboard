@@ -577,7 +577,22 @@ if bag_rev and bag_rev["bags"] and revenue_target and total_target:
 
 # 3. Bare Minimum = monthly target ÷ perfect weeks in the month
 bare_minimum       = round(total_target / perfect_weeks) if perfect_weeks else 0
-bare_minimum_value = bare_minimum
+# …unless someone set this week's minimum on the page (Actions panel, Supabase). It applies
+# to the current week only: earlier weeks keep the worked-out floor.
+# Spec: docs/current-performance.md › Acting on the page › 2.
+try:
+    from lib import actions as _actions
+    _bm_override = _actions.weekly_minimum_override()
+except Exception:                                   # noqa: BLE001 — no Supabase: the worked-out floor
+    _actions, _bm_override = None, None
+bare_minimum_value = _bm_override or bare_minimum
+
+
+def _floor_for(seg_start):
+    """The weekly floor for the week starting `seg_start`: the override for its week, else the worked-out one."""
+    if _bm_override and _actions and _actions.week_start(seg_start) == _actions.week_start():
+        return _bm_override
+    return bare_minimum
 
 # 3b. Bare Minimum Growth %
 bare_minimum_growth_pct = (bare_minimum / total_target) * 100 if total_target else 0
@@ -680,7 +695,7 @@ def odoo_weekly_breakdown():
             "weeklySales":  bags,
             "posBags":      pos,
             "corporateBags": corp,
-            "declinedBy":   bags - bare_minimum,
+            "declinedBy":   bags - _floor_for(seg_start),
         })
     return entries or None
 
@@ -720,7 +735,7 @@ def update_weekly_history():
         "prevSalesPct": round(prev_pct, 2),       # Previous Sales % Achieved
         "prevSalesBags": prev_bags,               # bags behind that %
         "weeklySales":  weekly_sales_total,       # bags sold this week (reference)
-        "declinedBy":   weekly_sales_total - bare_minimum,  # +over / -under minimum
+        "declinedBy":   weekly_sales_total - bare_minimum_value,  # +over / -under minimum (this week's floor)
     }
     weeks = []
     if os.path.exists(WEEKLY_HISTORY_FILE):
@@ -850,6 +865,8 @@ inline_script = (
     f'  forecastedRevenuePct:     "{fmt_opt_pct(forecasted_revenue_pct)}",\n'
     f'  priceMix:                 {_price_mix_js},\n'
     f'  bareMinimum:              "{fmt_int(bare_minimum_value) if bare_minimum_value else ""}",\n'
+    f'  bareMinimumAuto:          {bare_minimum or 0},\n'          # the worked-out floor (target ÷ perfect weeks)
+    f'  bareMinimumSet:           {_bm_override or "null"},\n'     # this week's override from the page, or null
     f'  bareMinimumGrowthPct:     "{fmt_pct(bare_minimum_growth_pct)}",\n'
     f'  declinedBy:               "{f"{weekly_sales_total - bare_minimum_value:+,}" if bare_minimum_value else ""}",\n'  # +over / -under
     f'  weeklySalesTotal:         "{fmt_int(weekly_sales_total)}",\n'
@@ -901,7 +918,9 @@ print(f"  Revenue target        : {fmt_kes(revenue_target) if revenue_target els
 if price_mix:
     print(f"  Price per bag         : {fmt_kes(price_mix['actualPpb'])} actual vs {fmt_kes(price_mix['targetPpb'])} target ({price_mix['gapPct']:+.1f}%)")
 print(f"  Perfect weeks / month : {perfect_weeks}")
-print(f"  Bare Minimum          : {fmt_int(bare_minimum_value)}  (= {fmt_int(total_target)} / {perfect_weeks})")
+print(f"  Bare Minimum          : {fmt_int(bare_minimum_value)}  " +
+      (f"(set on the page for this week; worked out {fmt_int(bare_minimum)})" if _bm_override
+       else f"(= {fmt_int(total_target)} / {perfect_weeks})"))
 print(f"  Bare Min Growth %     : {fmt_pct(bare_minimum_growth_pct)}")
 print(f"  Weekly Sales (col X)  : {fmt_int(weekly_sales_total)}")
 print(f"  Declined By           : {f'{weekly_sales_total - bare_minimum_value:+,}' if bare_minimum_value else '(bare minimum not set)'}")

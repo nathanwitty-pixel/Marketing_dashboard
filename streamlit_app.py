@@ -1180,6 +1180,14 @@ if os.path.exists(html_path):
         _ver = 0
     _ver = max([_ver] + _inlined_mtimes + _v5_mtimes)   # an edited shared script also refreshes the frame
     html += "\n<!-- v:" + str(_ver) + " theme:" + THEME + " -->"   # switching theme rebuilds the frame
+    # Data-app panel: act on what the page says (tasks, weekly minimum, quote follow-ups), saved to
+    # Supabase. Current Performance only for now. Spec: docs/current-performance.md › Acting on the page.
+    if label == "Current Performance":
+        try:
+            from lib import actions_ui
+            actions_ui.render(html, lambda: _bg_rebuild(label, ["current_performance.py", "forward_projections.py"], "settings"))
+        except Exception as _ae:                                     # noqa: BLE001 — never block the page
+            st.caption(f"Actions panel unavailable: {_ae.__class__.__name__}: {_ae}")
     # Initial height is a fallback only; the script sizes the frame to the EXACT content
     # height so the scroll ends at the last info, with no endless empty space.
     st.iframe(html, height=700)

@@ -26,7 +26,12 @@ SPREADSHEET_ID = "1Zb8Ly6vGrEHbxiYz0Dwd3aS8suUe86G66IDAWRdBKt0"
 
 # ── MANUAL INPUTS — fill these in yourself ────────────────────
 
-bare_minimum = 0   # minimum bags target for the week (0 = not set)
+bare_minimum = 0   # fallback only: the week's minimum is set on the page (Actions panel → Supabase)
+try:               # docs/current-performance.md › Acting on the page › 2
+    from lib import actions as _actions
+    bare_minimum = _actions.weekly_minimum_override() or bare_minimum
+except Exception:  # noqa: BLE001 — no Supabase: keep the fallback
+    pass
 
 
 # ── SNAPSHOT: auto-load previous period values ────────────────
