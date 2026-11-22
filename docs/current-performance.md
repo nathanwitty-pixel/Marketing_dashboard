@@ -64,8 +64,16 @@ read by `lib/odoo_marketing.followers_daily()` into `PROJ.followers`:
   A % change shows only when the platform has all 7 days before (Instagram's history starts 20 Oct).
 
 **Market buttons (1 Nov 2026, user's call): Kenya · Sinza · Uganda** above the cards, and each card label names the
-market. Kenya shows the figures. Sinza and Uganda show "—" and say their pages aren't connected to Odoo yet (the Meta
-sync holds only Kenya's page and account); they fill in once Odoo syncs those pages. No data at all → the row is hidden.
+market. No data at all → the row is hidden.
+
+**One market at a time (22 Nov 2026 fix).** Since 10–11 Nov 2026 the sync holds **three** Facebook pages and three
+Instagram accounts, one per market, told apart by `denri_meta_account_day.market` (`KE` / `TZ` / `UG`).
+`followers_daily()` returns `market` on every row (a blank market counts as `KE`, the only one before 10 Nov) and the
+cards and the chart use only the chosen market's rows: Kenya = `KE`, Sinza = `TZ`, Uganda = `UG`. Before this fix the
+cards added the three markets' new follows together and showed whichever account came last as "Kenya" (on 22 Nov:
+"Kenya Instagram 270,613" was Tanzania's account; Kenya's was 253,604). A market with no rows still shows "—" and
+"not in Odoo yet". Sinza and Uganda's history starts 10–11 Nov, so their week-on-week % shows once they have
+14 full days. History (`lib/month_extras.py`) keeps Kenya only.
 
 **Followers chart (1 Nov 2026, user's call):** a card just below the three cards, styled like "Why Did We Move?"
 (same card head and segmented buttons), from the same `PROJ.followers`:
@@ -81,7 +89,8 @@ sync holds only Kenya's page and account); they fill in once Odoo syncs those pa
   leaves it out and says so; picked alone it shows "no full week before yet". **Every day** — each day since the sync
   started, Instagram vs Facebook (bars for new follows / reach / views, lines for followers).
 - A note under the chart gives the 7-day totals and the change. Facebook has no reach (Facebook line left out).
-- It follows the Kenya / Sinza / Uganda buttons: Sinza and Uganda show "not in Odoo yet" instead of a chart.
+- It follows the Kenya / Sinza / Uganda buttons and draws that market's rows only; a market with no rows shows
+  "not in Odoo yet" instead of a chart.
 - The choices are remembered per viewer (`fol-chart-metric`, `fol-chart-view`).
 
 ## Weekly Performance — corporate in each week (26 Oct 2026, user's call)

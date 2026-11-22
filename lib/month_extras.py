@@ -190,7 +190,7 @@ def cp_more_month(month_name: str, year: int, warn=print):
     except Exception as ex:                                  # noqa: BLE001
         warn(f"  extras: why-moved skipped ({ex})")
     try:
-        days = [d for d in odoo_marketing.followers_daily() if first.isoformat() <= d["date"] <= last.isoformat()]
+        days = [d for d in odoo_marketing.followers_daily("KE") if first.isoformat() <= d["date"] <= last.isoformat()]
         if days:
             fol = {}
             for plat in ("instagram", "facebook"):

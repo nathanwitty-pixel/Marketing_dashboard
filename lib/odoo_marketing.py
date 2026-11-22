@@ -83,15 +83,19 @@ def wa_clicks_by_bag(start, end, key=None):
     return out, combos, unmatched
 
 
-def followers_daily():
-    """[{platform, date, followers, newFollows, reach, views}] oldest first (from 18 Oct 2026)."""
-    df = _q("SELECT platform, date, followers, new_follows, reach, views FROM denri_meta_account_day ORDER BY date, platform")
+def followers_daily(market=None):
+    """[{market, platform, date, followers, newFollows, reach, views}] oldest first (from 18 Oct 2026).
+    One row per market (KE / TZ / UG; blank = KE) per platform per day — never add markets together.
+    market='KE' etc. keeps that market only."""
+    df = _q("SELECT COALESCE(NULLIF(market, ''), 'KE') AS market, platform, date, followers, new_follows, reach, views "
+            "FROM denri_meta_account_day ORDER BY date, platform, market")
     if df is None:
         return []
     num = lambda v: None if v != v or v is None else int(v)   # noqa: E731 — NaN → None
-    return [{"platform": r["platform"], "date": r["date"].isoformat(), "followers": num(r["followers"]),
-             "newFollows": num(r["new_follows"]), "reach": num(r["reach"]), "views": num(r["views"])}
-            for _, r in df.iterrows()]
+    return [{"market": r["market"], "platform": r["platform"], "date": r["date"].isoformat(),
+             "followers": num(r["followers"]), "newFollows": num(r["new_follows"]),
+             "reach": num(r["reach"]), "views": num(r["views"])}
+            for _, r in df.iterrows() if market is None or r["market"] == market]
 
 
 def website_weekly(country="KE"):

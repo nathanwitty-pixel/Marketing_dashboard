@@ -58,6 +58,8 @@ SCRIPTS = [
     ("Shop Launch",            "shop_launch.py"),
     # These read the data the scripts above injected — keep them LAST.
     ("Monthly Report",         "monthly_report.py"),
+    # Reads the built current_performance.html (docs/weekly-report.md).
+    ("Weekly Report",          "weekly_report.py"),
     # Always back the freshly-written snapshot up to Supabase, then read it back
     # for History — so History is never behind the local data. Both no-op safely
     # if Supabase is unreachable (they need SUPABASE_DB_URL + psycopg2).

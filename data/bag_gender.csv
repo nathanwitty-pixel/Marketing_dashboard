@@ -1,0 +1,22 @@
+# Who each bag is for: Male, Female or Unisex. Used by the Weekly Report's "Male vs female bags" slides
+# (docs/weekly-report.md > D). KIND = category (default for every bag in that Product Performance category) or
+# bag (one bag type, overrides its category). A category not listed here is Unisex. Gift bags are left out.
+# Starting list written 23 Nov 2026 from the categories: check it and change any row, no code change needed.
+KIND,NAME,GENDER
+category,MAN BAG,Male
+category,BRIEFCASE,Male
+category,HANDBAG,Female
+category,SLING,Female
+category,MESSENGER,Female
+category,BABY BAG,Female
+category,MAKE UP,Female
+category,THIGH BAG,Female
+category,TRAVEL,Unisex
+category,BACKPACK,Unisex
+category,SCHOOL BAG,Unisex
+category,CHEST BAG,Unisex
+category,SPORT,Unisex
+category,WAIST BAG,Unisex
+category,LUNCH BAG,Unisex
+category,WASHBAG,Unisex
+category,TOILETRIES BAG,Unisex

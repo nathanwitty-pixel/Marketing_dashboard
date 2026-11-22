@@ -62,6 +62,9 @@ def daily(start: _dt.date, end: _dt.date) -> pd.DataFrame:
     for c in ("orders", "kes", "bulk_orders", "bulk_kes", "bulk_units", "bulk_max_line"):
         df[c] = pd.to_numeric(df[c]).fillna(0)
     df["visitors"] = pd.to_numeric(df["visitors"])
+    # A count of 0 beside walk-in purchases is a count nobody entered, not an empty shop: treat it as
+    # not counted (the Denri dashboard's Foot Traffic page, lib/footfall.py, uses the same rule).
+    df.loc[(df["visitors"] == 0) & (df["orders"] > 0), "visitors"] = float("nan")
     df["counted"] = df["visitors"].notna()
     df["week"] = df["day"].map(week_start)
     return df

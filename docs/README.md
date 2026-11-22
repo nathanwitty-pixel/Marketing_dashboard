@@ -265,6 +265,7 @@ Reject Sale); this table is the per-menu spec index.
 | # | Menu | Doc | Generator | HTML |
 |---|------|-----|-----------|------|
 | 1 | Current Performance | [current-performance.md](current-performance.md) | `current_performance.py` (+ `weekly_sales.py`, `monthly_sales.py`, `forward_projections.py`) | `current_performance.html` |
+| 1b | Weekly Report (the weekly marketing report as slides: Headline, Graph, Insight, Biz Rec; print to PDF) | [weekly-report.md](weekly-report.md) | `weekly_report.py` (reads the built `current_performance.html`) | `weekly_report.html` |
 | 1a | Product Performance (top bags / categories / colours by share · Bag of the Week + why it moved) | [product-performance.md](product-performance.md) | `product_performance.py` (reads `bags_offer_source_<month>.json`, `bag_posts_history.json`) | `product_performance.html` |
 | 2 | New Products Analytics | [new-products.md](new-products.md) | `new_products.py` | `new_products.html` |
 | 3 | Timed Offers Analytics | [timed-offers.md](timed-offers.md) | `timed_offers.py` | `timed_offers.html` |
@@ -301,7 +302,7 @@ Report, History) **must run last**. The ordered list:
 7. `shops_dispatch.py` → `shops_efficiency.py`
 7c. `bag_signals.py` → `product_performance.py` (reads Self-made Combos' offer source + Bag Signals' posts history)
 8. ~~`generate_insights.py`~~ — deleted 2026-11-20 (Insights menu removed Oct 2026)
-9. `monthly_report.py` (reads the pages above)
+9. `monthly_report.py` (reads the pages above), `weekly_report.py` (reads `current_performance.html`)
 10. `push_to_supabase.py` → `history.py`
 
 Regenerate everything headlessly: `python scripts/build_all.py`

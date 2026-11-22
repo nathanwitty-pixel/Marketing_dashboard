@@ -28,6 +28,19 @@
     },
     {
       "order": 2,
+      "section": "Performance",
+      "label": "Weekly Report",
+      "html": "weekly_report.html",
+      "title": "Weekly Report",
+      "scripts": [
+        "weekly_report.py"
+      ],
+      "icon": "slideshow",
+      "purpose": "The weekly marketing report as slides: headline, graph, insight and recommendation; print to PDF to hand in",
+      "short": "Weekly Report"
+    },
+    {
+      "order": 3,
       "section": "Products",
       "label": "Product Performance",
       "html": "product_performance.html",
@@ -40,7 +53,7 @@
       "short": "Product Perf"
     },
     {
-      "order": 3,
+      "order": 4,
       "section": "Products",
       "label": "New Products",
       "html": "new_products.html",
@@ -53,7 +66,7 @@
       "short": "New Products"
     },
     {
-      "order": 4,
+      "order": 5,
       "section": "Products",
       "label": "Timed Offers",
       "html": "timed_offers.html",
@@ -66,7 +79,7 @@
       "short": "Timed Offers"
     },
     {
-      "order": 5,
+      "order": 6,
       "section": "Products",
       "label": "Self-made vs Running Combos",
       "html": "self_made_combos.html",
@@ -79,7 +92,7 @@
       "short": "Combos"
     },
     {
-      "order": 6,
+      "order": 7,
       "section": "Products",
       "label": "Bags On vs Off Offer",
       "html": "bags_on_offer.html",
@@ -93,7 +106,7 @@
       "short": "Bags on Offer"
     },
     {
-      "order": 7,
+      "order": 8,
       "section": "Products",
       "label": "Shop Stock Levels",
       "html": "shop_stock_levels.html",
@@ -106,7 +119,7 @@
       "short": "Stock Levels"
     },
     {
-      "order": 8,
+      "order": 9,
       "section": "Products",
       "label": "Offer Picking",
       "html": "offer_picking.html",
@@ -121,7 +134,7 @@
       "password_secret": "PICKING_PASSWORD"
     },
     {
-      "order": 9,
+      "order": 10,
       "section": "Products",
       "label": "Bag Tracking",
       "html": "bag_tracking.html",
@@ -134,7 +147,7 @@
       "short": "Tracking"
     },
     {
-      "order": 10,
+      "order": 11,
       "section": "Products",
       "label": "Reject Sale",
       "html": "reject_sales.html",
@@ -147,7 +160,7 @@
       "short": "Rejects"
     },
     {
-      "order": 11,
+      "order": 12,
       "section": "Marketing",
       "label": "Posting Yields",
       "html": "posting_yields.html",
@@ -160,7 +173,7 @@
       "short": "Posting"
     },
     {
-      "order": 12,
+      "order": 13,
       "section": "Marketing",
       "label": "Shops Efficiency",
       "html": "shops_efficiency.html",
@@ -174,7 +187,7 @@
       "short": "Shops"
     },
     {
-      "order": 13,
+      "order": 14,
       "section": "Marketing",
       "label": "Footfall and Marketing",
       "html": "footfall_marketing.html",
@@ -187,7 +200,7 @@
       "short": "Footfall"
     },
     {
-      "order": 14,
+      "order": 15,
       "section": "Marketing",
       "label": "Shop Launch",
       "html": "shop_launch.html",
@@ -200,7 +213,7 @@
       "short": "Launch"
     },
     {
-      "order": 15,
+      "order": 16,
       "section": "Marketing",
       "label": "Push Planner",
       "html": "push_planner.html",
@@ -214,7 +227,7 @@
       "password_secret": "PUSH_PLANNER_PASSWORD"
     },
     {
-      "order": 16,
+      "order": 17,
       "section": "Marketing",
       "label": "Bag Signals",
       "html": "bag_signals.html",
@@ -228,7 +241,7 @@
       "password_secret": "BAG_SIGNALS_PASSWORD"
     },
     {
-      "order": 17,
+      "order": 18,
       "section": "Intelligence",
       "label": "Monthly Report",
       "html": "monthly_report.html",
@@ -241,7 +254,7 @@
       "short": "Monthly Report"
     },
     {
-      "order": 18,
+      "order": 19,
       "section": "Intelligence",
       "label": "History",
       "html": "history.html",
