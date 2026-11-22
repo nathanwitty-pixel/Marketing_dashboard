@@ -7,6 +7,65 @@
   Odoo (daily till bags, Kenya's Meta account sync, WhatsApp chats, footfall)
 - **Menu:** Performance › Weekly Report (`dashboard_pages.json`)
 
+## Two reports in one page: Marketing and Sales (23 Nov 2026, user's call)
+
+A toggle at the top of the page, **Marketing report | Sales report**, switches between two decks built from the same
+slides. Each deck has its own cover ("Weekly Marketing Report" / "Weekly Sales Report", the report week, the owner,
+its own contents list) and its own slide numbers; **Print / Save as PDF prints the deck on screen**. The choice is
+remembered per browser (`localStorage`, key `wr-deck`) and can be opened directly with `#sales` / `#marketing`.
+`WR.decks = {marketing: [slide ids], sales: [slide ids]}` (built by `generators/weekly_report.py`); a slide in both
+decks is drawn once and moved into place.
+
+**Marketing deck:** as before (Sales this month, followers slides, follower test, Product Performance, New Products,
+combos, offer types).
+
+**Sales deck**, in order (`lib/weekly_sales.py` builds the sales-only slides from the built Current Performance page,
+`PERF` / `PROJ`, so the figures match it; no extra Odoo query):
+1. **Current Performance: Sales (Odoo, this month) and Sales vs Monthly Target**: the shared Sales slide.
+2. **Weekly Performance, Week 1 to latest** (`PROJ.weeklyHistory`, this month's weeks to the report week): bars of
+   each week's bags (shop tills + corporate, stacked) against the weekly floor (`PROJ.bareMinimum`, line); table:
+   week, bags, corporate, % of the target that week, cumulative %, vs the floor, last month's same week
+   (`PERF.cpPrevWeekly`, % of last month's target). Headline / Do next: `PROJ.beats.weekly`.
+3. **Why Did We Move? Week on week vs month on month** (`PROJ.whyMoved`): two charts side by side, the change in bags
+   per region (green up, red down): **week on week** = the report week vs the week before (`weeks[]`, shop rows summed
+   to regions; a selling-days bar when the weeks differ in length), **month on month** = the same days last month vs this
+   month (`mom.with`: then, now, days effect, regions). Insight: the shops behind the biggest moves. Do next: the
+   page's rule (a region fell → check stock, staff and offers at its top two falling shops; a region rose → copy what
+   its top shops did).
+4. **What if…** (the page's What-if card as fixed scenarios): the month end at the current pace (`PROJ` forecast) and
+   with **+100, +200, +300, +500 bags a day** for the days left, each with its % of the bag target and the revenue at
+   this month's price per bag (`priceMix.actualPpb`), plus **what 100% takes** (bags a day on top of the pace).
+   Graph: one bar per scenario against the target line.
+5. **Price per Bag: operating above the target price** (`PROJ.priceMix`): target price (revenue target ÷ bag target),
+   actual price (single bags and combos, after discounts), the gap, bags still to sell for the revenue target at the
+   actual price, bags % vs revenue % of target. Graph: price per bag per offer type (`priceMix.offerMix.rows`) against
+   the target price (green above, red below), labelled with the price and its gap; gift bags and samples left out (not
+   sold at the target price). Insight: the biggest lift and drag
+   (`effectKes` by month end). Do next: `PROJ.beats.price.rec`.
+6. **Corporate by Client** (`PERF.corporateClients`, `corporateTarget`, `corporateBeat`): totals strip (bags sold,
+   KES received, % of the corporate KES target, bags quoted and not invoiced); graph: the top clients by bags sold this
+   month plus open quotes (bar = sold, light = quoted, not invoiced); Insight: biggest clients, open quotes, balances owed (agreed −
+   received). Headline / Do next: `PERF.corporateBeat`.
+7. Then the shared slides, the marketing way: **Product Performance** (Kenya, Uganda, Tanzania), **New Products**,
+   **Combos and offers** (power deals included) and **Offer types, all of Denri** (the Bags On vs Off Offer list).
+
+**Sales deck refinements (23 Nov 2026, user's call):**
+- **Why Did We Move?:** the week-on-week side shows **every week of the month** (Wk 1, Wk 2, Wk 3, Wk 4 when it has
+  days): bags per region per week (grouped bars), each bar labelled with its bags and its growth on the week before
+  (Wk 1 against the last week of the month before), green up / red down. The month-on-month side is unchanged.
+- **What if…:** says what the extra is added to: the forecast's own pace for the days left (forecast bags − bags so
+  far, ÷ days left; the weekday pattern), e.g. "+100 a day (580 → 680 a day)", next to the pace so far (bags so far ÷
+  days done).
+- **Price per Bag:** **offers working** = the offer types the committee runs (Power deals, Combos, Deal of wk,
+  Mid-month offers) selling at or above the target price, "2 of 4 (50%)", and the individual offers inside them
+  (`offerMix.rows[].items`, each with its own gap) at or above the target price, "35 of 58 (60%)". Each offer type's
+  bar ends with its "n of m working". Do next: review the offer types below the target price.
+- **Corporate by Client:** two panels, **Corporate app** (as before) and **paid at the shops** (`PERF.shopCorporate`:
+  Corporate-team clients paying at a shop till, their bags paid and quoted, the shop, balances), each with its own
+  totals strip; Insight adds the shop side and its balances owed.
+- **Male vs female bags (both decks):** the headline counts **every bag by who bought it**, unisex included ("Women
+  bought 68% of Kenya's bags last week: 2,825 vs 1,312 by men"), then the bag-type comparison.
+
 ## What it is (22 Nov 2026, user's call)
 
 The marketing report handed in every week, built as slides. Every slide hits three beats, the business-strategy
@@ -286,6 +345,14 @@ Which side tops: bags for men vs bags for women, per market.
   (Travel, Backpack, School Bag, Chest Bag, Sport, Waist Bag, Lunch Bag, Washbag…). Read by `lib/bag_gender.py`.
 - **Graph:** units per Sun–Sat week of the month (Wk 1, Wk 2, Wk 3) for Male, Female and Unisex, side by side, with
   each week's share on the bar.
+- **Who bought them (23 Nov 2026, user's call):** each bag type's bar is **split by the buyer's gender in Odoo**
+  (`res_partner.gender` of the order's customer, the Who buys slide's lines: female = pink, male = blue, corporate and
+  blank left out, so the stacks can be a little under the bag totals). "Unisex" describes the bag, not the buyer: Odoo
+  knows who bought every unisex bag (Kenya, November 2026: 63% women). Each part carries its own % **inside** it
+  (women's % in the pink part, men's % in the blue part; left out when the part is too small to hold it), and the
+  bar's total bags sit on top. Insight adds one line per bag type: bought by women vs men, last week and month to date.
+  Biz Rec: male bags bought 50%+ by women → show them to women as gifts; female bags bought 40%+ by men → show them
+  to men too.
 - **Headline:** last week, "Female bags outsold male bags in Kenya last week: 1,520 vs 610 (36% vs 15% of units)"
   (or the other way round), with the change in each side's share vs the week before.
 - **Insight:** each side's units and share last week vs the week before; its top 3 bags last week (units); the month
@@ -318,6 +385,39 @@ Corporate and blank are left out. Only counts leave Odoo: no customer name goes 
 Uganda and Tanzania sell far fewer bags, so a week can hold a single sale per bag: the slides say so when the market
 sold under 100 bags in the week.
 
+## Combos and offers slides (23 Nov 2026, user's call)
+
+After the New Products slides. Built by `lib/weekly_combos.py`. Weeks = Sun–Sat weeks of the month (Wk 1 starts on the
+1st, as on the combos and offer pages); **week on week** = the report week vs the week before; **month to date** = the
+1st to the report Saturday. KES everywhere (Sinza ÷ 25, Uganda ÷ 29).
+
+**One slide per market, Kenya, then Sinza, then Uganda: running combos vs self-made combos vs power deals.**
+- **Kenya combos:** every combo line on the Kenya tills (`product_performance.LINES_SQL`, wrapper lines = the combo
+  product, one per combo sold; refunds netted). **Self-made** = the product is in the Self-made Combos page's list for
+  the month (`SMC.selfMade`, the page's offer-list matching), else **running**. Checked 23 Nov 2026: running per week
+  = the page's running cards (188, 193, 142), running + self-made = `combosGoal.weeklyDetail.cur` (238, 231, 166).
+- **Kenya power deals:** the Bags On vs Off Offer page's **Power deals** row per week (`BOO.periods.monthly
+  .offerTypesByWeek`, Kenya single sales counted as Power Deal), bags and KES.
+- **Sinza and Uganda:** combos counted from receipts (`lib/receipt_combos.market_summary`, the combos page's method:
+  bags sharing one unit price on a receipt = a combo; on the month's list = running, else self-made). They have **no
+  power deals**, so the third measure is their **listed single offers** (`singlesOffer`).
+- **Graph:** per week, running and self-made combos (bars, left axis) and power deals / listed singles (line, right
+  axis), with a table under it: measure, Wk 1, Wk 2, Wk 3, month to date, KES month to date, week on week.
+- **Headline:** combos last week and the change, running vs self-made, then power deals (or listed singles).
+- **Insight:** self-made share of combos; top running and top self-made combo last week; power deals' top deal last
+  week (Kenya); revenue month to date.
+- **Biz Rec:** running down 15% or more week on week → push the running list (the one that fell most); a self-made pairing
+  sold 5+ times this month (Kenya; 3+ Sinza / Uganda) → consider making it an official combo; power deals down 15% or
+  more → check their stock and display.
+
+**Then one slide for the whole of Denri (Kenya + Sinza + Uganda): offer types.** The Bags On vs Off Offer page's offer
+type rows (Not on offer, Power deals, Combos, Deal of wk, Corporate, Mid-month offers, Samples, Gift bags, Total) per
+week of the month (`offerTypesByWeek`, all three countries). Graph (23 Nov 2026, user's call: was one stacked revenue bar per week, hard to compare): **two charts side by side, money (KES) and bags sold**, one row per offer type with one bar per week (Wk 1 lightest, the report week darkest); **every** week's bar is labelled with its value and its growth on the week before ("3.1M +2%", "2.5M -12%"; green up, red down; Wk 1 has no growth). Shares and month totals are in the headline and Insight. No table under them (the charts need the room); shares are in the Insight. Table:
+offer type, Wk 1…, month to date bags and KES, share of revenue, week on week (KES). Headline: what share of revenue
+came on offer vs not on offer month to date, and last week's change. Insight: biggest rise and fall last week; the
+on-offer share week by week. Biz Rec: the offer type that fell most → check it; not on offer under 40% of revenue →
+watch the discount cost.
+
 ## New Products slides (23 Nov 2026, user's call)
 
 After the Product Performance slides, five slides from the New Products Analytics menu (docs/new-products.md), all
@@ -340,8 +440,14 @@ included) up to the report Saturday; the Corporate app's bags (CORP) come from `
    (to the report Saturday), **last week**, **the week before**, **since created**, created date and stock now (Kenya
    shops, Sinza + Uganda), from `runway_bags.sold_by_type()` / `stock_by_type()`. Graph: this month per style (bars),
    last week vs the week before at the end. Headline: what last month's styles sold this month and the leader.
-   Biz Rec (the page's rules): no stock and never sold → dispatch; sold out → restock; in the shops, nothing sold this
-   month → post it; else keep posting.
+   **Stock check (23 Nov 2026, user's call):** each style is one of
+   - **Cleared**: sold, and no stock left in the shops: marketing and sales did a good job; decide whether to reorder.
+   - **In stock, selling**: still in the shops and sold this month.
+   - **In stock, not selling**: in the shops, nothing sold this month.
+   The bar is coloured by it (green cleared, blue selling, amber not selling) and the end label says "cleared" or the
+   stock. Biz Rec: name the cleared styles (good job, reorder?); for **every** style still in stock, marketing shoots at
+   least a short video and shows it online in a **Runway** segment (a regular "new on the runway" slot), so the one
+   buyer who wants it sees it; the ones not selling first.
 3. **Sales by Shop, week to week and month to date.** Graph: new-product bags per shop, last week vs the week before
    (grouped bars), month to date at the bar end; shop codes as on the page (STR, MSA, HTN…, SNZ = Sinza, UGD = Uganda,
    CORP = Corporate app). Insight: top 3 shops month to date, the biggest rise and fall, shops with no new-bag sale
@@ -354,6 +460,15 @@ included) up to the report Saturday; the Corporate app's bags (CORP) come from `
    **least performers** = the 5 with the most weeks of cover (stock ÷ this month's sales, none sold counts as 1).
    Graph: two bar charts (stock vs sold). Biz Rec: push and post the movers; for the least, the page's rule (< 3 posts
    this month → post it; else offer or combo with its bag's best colour).
+
+## Colours for up and down, totals strips (23 Nov 2026, user's call)
+
+Everywhere in the report: **green = up / sold better, red = down**. Chart labels that carry a change ("(+24%)",
+"-12%", "9 (was 14)") are drawn green or red; changes written inside bars use the same colours (light shades on dark
+bars); in the week-by-week tables (combos, new products) each week's figure is green when it beat the week before and
+red when it fell. Charts that compare items (runway styles, shops) carry a **totals strip** above them: the label,
+this month, last week, the week before and the week-on-week % (green / red chip), plus since created and stock for the
+runway styles.
 
 ## Data sources
 

@@ -128,7 +128,8 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
                     "bags": wk_tot, "target": round(wtarget) if wtarget else None,
                     "posts": [(hist.get(s.isoformat()) or {}).get("kenyaPosts") for _, s, _ in weeks],
                     "table": {"title": "Bags sold per new product", "rows": rows,
-                              "cols": ["Product"] + [k for k, _, _ in weeks] + ["Month", "Target", "% of target"]}}}
+                              "cols": ["Product"] + [k for k, _, _ in weeks] + ["Month", "Target", "% of target"],
+                              "trend": [1, len(weeks)]}}}
     s1["headline"] = (f"New products sold {_fmt(tot_m)} of their {_fmt(tot_t)} target ({tot_m / tot_t * 100:.0f}%) by "
                       f"{_d(week_end)}, with {gone * 100:.0f}% of the month gone; last week {_fmt(tot_lw)} bags "
                       f"({_signed(_pct(tot_lw, tot_pw))} on the week before)" + (f" against a weekly target of {_fmt(wtarget)}." if wtarget else "."))
@@ -201,7 +202,13 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
           "graph": {"ok": bool(order), "kind": "runway", "rows": [
               {"style": _t(s), "month": styles[s]["month"], "last": styles[s]["last"], "prev": styles[s]["prev"],
                "life": styles[s]["life"], "stock": styles[s]["stock"], "created": styles[s]["created"],
-               "age": (week_end - dt.date.fromisoformat(styles[s]["created"])).days} for s in order[:14]]}}
+               "age": (week_end - dt.date.fromisoformat(styles[s]["created"])).days,
+               "state": ("cleared" if styles[s]["stock"] <= 0 else "selling" if styles[s]["month"] > 0 else "idle")}
+              for s in order[:14]]}}
+    if order:                                        # the styles together: what they sold this month and last week
+        s2["graph"]["total"] = {"label": f"All {p_start:%B} styles", "month": sum(v["month"] for v in styles.values()),
+                                "last": sum(v["last"] for v in styles.values()), "prev": sum(v["prev"] for v in styles.values()),
+                                "life": sum(v["life"] for v in styles.values()), "stock": sum(v["stock"] for v in styles.values())}
     if order:
         tot = sum(v["month"] for v in styles.values())
         tl, tp = sum(v["last"] for v in styles.values()), sum(v["prev"] for v in styles.values())
@@ -215,21 +222,24 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
         if moved:
             s2["insight"].append("Last week vs the week before: " + ", ".join(
                 f"{_t(s)} {_fmt(styles[s]['prev'])} → {_fmt(styles[s]['last'])}" for s in moved[:5]) + ".")
-        groups = collections.OrderedDict()
-        for s in order:
-            v = styles[s]
-            if v["stock"] <= 0 and v["life"] == 0:
-                g = "Dispatch to the shops (no stock, never sold)"
-            elif v["stock"] <= 0:
-                g = "Restock (sold out)"
-            elif v["month"] == 0:
-                g = "Post them (in the shops, nothing sold this month)"
-            else:
-                g = "Keep posting (selling)"
-            groups.setdefault(g, []).append(s)
-        for g, ss in groups.items():
-            txt = f"{g}: " + ", ".join(_t(s) for s in ss[:6]) + (f" and {len(ss) - 6} more" if len(ss) > 6 else "") + "."
-            (s2["insight"] if g.startswith("Keep") else s2["rec"]).append(txt)
+        # stock check: cleared (sold, none left) vs still in the shops (selling / not selling)
+        cleared = [s for s in order if styles[s]["stock"] <= 0]
+        idle = sorted((s for s in order if styles[s]["stock"] > 0 and styles[s]["month"] == 0), key=lambda s: -styles[s]["stock"])
+        selling = [s for s in order if styles[s]["stock"] > 0 and styles[s]["month"] > 0]
+        in_stock = idle + selling
+        listed = lambda ss: ", ".join(_t(s) for s in ss[:6]) + (f" and {len(ss) - 6} more" if len(ss) > 6 else "")   # noqa: E731
+        s2["insight"].append(f"Stock check: <b>{len(cleared)}</b> cleared (sold, none left), <b>{len(selling)}</b> still in the "
+                             f"shops and selling, <b>{len(idle)}</b> in the shops and not selling this month "
+                             f"({_fmt(sum(styles[s]['stock'] for s in in_stock))} bags left).")
+        if cleared:
+            s2["rec"].append(f"Cleared: {listed(cleared)}. Marketing and sales did a good job; decide whether to reorder them.")
+        if in_stock:
+            s2["rec"].append("Shoot at least a short video of each runway style still in stock and show it online in a regular "
+                             "Runway segment, to reach the one buyer who wants it (in the shops now): "
+                             + ", ".join(f"{_t(s)} {_fmt(styles[s]['stock'])}" for s in in_stock[:8])
+                             + (f" and {len(in_stock) - 8} more" if len(in_stock) > 8 else "") + ".")
+        if idle:
+            s2["rec"].append(f"Start with the ones not selling: {listed(idle)}.")
         if unproven:
             s2["insight"].append(f"Not shown: {len(unproven)} other {p_start:%B} styles were created in Odoo but never stocked "
                                  f"or sold ({', '.join(_t(s) for s in unproven[:5])}{' and more' if len(unproven) > 5 else ''}).")
@@ -249,7 +259,9 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
           "insight": [], "rec": [], "source": src + " CORP = Corporate app (week before not split by product, left blank).",
           "graph": {"ok": bool(shops), "kind": "npshops", "rows": [
               {"shop": s, "last": round(sh_l[s]), "prev": None if s == "CORP" else round(sh_p[s]), "month": round(sh_m[s])}
-              for s in shops], "curLabel": f"{_d(week_start)} to {_d(week_end)}", "prevLabel": f"{_d(pw_s)} to {_d(pw_e)}"}}
+              for s in shops], "curLabel": f"{_d(week_start)} to {_d(week_end)}", "prevLabel": f"{_d(pw_s)} to {_d(pw_e)}",
+              "total": {"label": "All shops", "month": round(sum(sh_m.values())), "last": round(sum(sh_l.values())),
+                        "prev": round(sum(sh_p.values()))}}}
     if shops:
         top3 = shops[:3]
         s3["headline"] = (f"{top3[0]} sold the most new products this month ({_fmt(sh_m[top3[0]])})"

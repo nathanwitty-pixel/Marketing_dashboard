@@ -183,13 +183,13 @@ def source_change(market):
     fp = next((r for r in rows if r[0] == FOLLOWER_PATH), None)
     big = max(rows, key=lambda r: abs(r[4])) if rows else None
     if fp:
-        line = (f"Follower path: <b>{fmt(fp[2])}</b> bought from chats started on the Instagram / Facebook pages "
-                f"({fp[2] / total * 100:.0f}% of WhatsApp buyers, {'+' if fp[4] >= 0 else ''}{fp[4]} on the week before).")
+        line = (f"Follower path: <b>{fmt(fp[2])}</b> buyers from page chats ({fp[2] / total * 100:.0f}% of WhatsApp buyers, "
+                f"{'+' if fp[4] >= 0 else ''}{fp[4]}).")
     else:
-        line = "Follower path: <b>0</b> chats started on the Instagram / Facebook pages."
+        line = "Follower path: <b>0</b> buyers from page chats."
     if big and big[4]:
         line += (" " if line else "") + (f"Biggest change: {big[0].split(' (')[0].lower()} "
-                                         f"{'+' if big[4] >= 0 else ''}{big[4]} buyers ({fmt(big[3])} → {fmt(big[2])}).")
+                                         f"{fmt(big[3])} → {fmt(big[2])}.")
     worst = min(rows, key=lambda r: r[4]) if rows else None
     rec = None
     if worst and worst[4] <= -5:
@@ -483,7 +483,7 @@ if db_ok:
                            "follows": [round(v) if v is not None else None for v in follows], "bags": [round(v) for v in sold],
                            "visitors": [round(v) if v is not None else None for v in visitors]})
             insight2b.append(
-                f"<b>{name}</b>: {fmt(ig_n)} Instagram and {fmt(fb_n)} Facebook followers; last week <b>+{fmt(f1)}</b> new follows"
+                f"<b>{name}</b>, last week: <b>+{fmt(f1)}</b> new follows"
                 + (f" ({signed(pct(f1, f0))})" if full_prev and f0 else "")
                 + f", <b>{fmt(b1)}</b> bags at the till ({signed(pct(b1, b0))}), {fmt(chats)} WhatsApp chats"
                 + (f", {fmt(sum(wk_vis))} shop visitors ({len(wk_vis)} of 7 days counted)." if wk_vis else "."))
@@ -679,6 +679,28 @@ if db_ok:
         WR["slides"] += weekly_newproducts.slides(week_start, week_end)
     except Exception as e:                                   # noqa: BLE001
         print(f"  WARNING: new products slides skipped: {e}")
+    # Combos and offers slides (docs/weekly-report.md › Combos and offers slides)
+    try:
+        from lib import weekly_combos
+        WR["slides"] += weekly_combos.slides(week_start, week_end)
+    except Exception as e:                                   # noqa: BLE001
+        print(f"  WARNING: combos slides skipped: {e}")
+
+# Sales deck (docs/weekly-report.md › Two reports in one page): its own slides from Current Performance, then the
+# shared ones. The Marketing deck keeps everything but the sales-only slides.
+try:
+    from lib import weekly_sales
+    WR["slides"] += weekly_sales.slides(week_start, week_end)
+except Exception as e:                                       # noqa: BLE001
+    print(f"  WARNING: sales slides skipped: {e}")
+MARKETING_ONLY = {"followers", "followers-tzug", "follower-test"}
+SALES_FIRST = ["sales", "weekly-perf", "why-moved", "what-if", "price", "corporate"]
+ids = [sl["id"] for sl in WR["slides"]]
+sales_only = {sl["id"] for sl in WR["slides"] if sl.get("decks") == ["sales"]}
+WR["decks"] = {
+    "marketing": [i for i in ids if i not in sales_only],
+    "sales": [i for i in SALES_FIRST if i in ids] + [i for i in ids if i not in MARKETING_ONLY and i not in SALES_FIRST],
+}
 
 block =("<!-- WR_DATA_START -->\n<script>\nconst WR = " + json.dumps(WR, ensure_ascii=False, default=str)
          + ";\n</script>\n<!-- WR_DATA_END -->")

@@ -298,13 +298,13 @@ def _market_slides(mkt, name, lines, info, why, week_start, week_end):
             line += f"; its {len(weak)} weakest hold {_fmt(held)} in the shops and sold {_fmt(sold)}"
             weak_all += [(c, w, best) for w in weak]
         slide["insight"].append(line + ".")
-        table.append([c.title(), f"{_title(best)} {_fmt(lw[best])} / {_fmt(stock(best))}",
-                      ", ".join(f"{_title(w)} {_fmt(max(lw[w], 0))}/{_fmt(stock(w))}" for w in weak) or "—"])
+        table.append({"cat": c.title(), "share": round(cw[c] / lw_total * 100) if lw_total else 0,
+                      "best": {"name": _title(best), "sold": round(lw[best]), "stock": stock(best)},
+                      "weak": [{"name": _title(w), "sold": round(max(lw[w], 0)), "stock": stock(w)} for w in weak]})
         if stock(best) < lw[best]:
             slide["rec"].append(f"Restock {_title(best)} ({c.title()}): {_fmt(stock(best))} in the shops, it sold {_fmt(lw[best])} last week.")
     if table:
-        slide["graph"]["table"] = {"title": "Best and weakest bags per category (sold last week / in the shops now)",
-                                   "cols": ["Category", "Best bag", "Weakest bags"], "rows": table, "wrap": True}
+        slide["graph"]["cards"] = table       # drawn as one box per category (best bag, weakest bags)
     if cats:
         c0 = cats[0]
         weak0 = next((w for c, w, _ in weak_all if c == c0), None)
@@ -492,6 +492,62 @@ def _buyer_slide(mkt, name, kname, blines, info, week_start, week_end):
     return slide
 
 
+def _gender_split(slide, mkt, name, blines, info, week_start, week_end):
+    """D + who bought them: each bag type's weekly bar split by the buyer's gender in Odoo (women / men)."""
+    from lib import bag_gender
+    m1 = week_end.replace(day=1)
+    weeks = _weeks(m1, week_end)
+    cat = lambda b: ((info.get(b) or {}).get("cat") or "OTHER").upper()               # noqa: E731
+    side_of = {}
+    split = []
+    for k, s, e in weeks:
+        c = {x: {"female": 0.0, "male": 0.0} for x in ("Male", "Female", "Unisex")}
+        for x in blines:
+            if x["mkt"] == mkt and s <= x["d"] <= e:
+                side = side_of.get(x["bag"])
+                if side is None:
+                    side = side_of[x["bag"]] = bag_gender.gender(x["bag"], cat(x["bag"])) or ""
+                if side:
+                    c[side][x["g"]] += x["units"]
+        split.append({x: {"f": round(v["female"]), "m": round(v["male"])} for x, v in c.items()})
+    slide["graph"]["split"] = split
+    # headline: every bag by who bought it (unisex included), then the bag-type comparison
+    lw_f = sum(v["f"] for v in split[-1].values()) if split else 0
+    lw_m = sum(v["m"] for v in split[-1].values()) if split else 0
+    if lw_f + lw_m:
+        lead_w = lw_f >= lw_m
+        bag_part = slide.get("headline", "")
+        m = re.match(r"(\w+) bags outsold (\w+) bags in [^:]+ last week: ([\d,]+) vs ([\d,]+)", bag_part)
+        slide["headline"] = (f"{'Women' if lead_w else 'Men'} bought {max(lw_f, lw_m) / (lw_f + lw_m) * 100:.0f}% of {name}'s bags "
+                             f"last week, unisex included: {_fmt(lw_f)} by women vs {_fmt(lw_m)} by men"
+                             + (f"; by the bag, {m.group(1).lower()} bags {m.group(3)} vs {m.group(2)} bags {m.group(4)}." if m else "."))
+    # last week = the last week; month = all weeks
+    def share(side, rows):
+        f = sum(r[side]["f"] for r in rows)
+        m = sum(r[side]["m"] for r in rows)
+        return f, m, (f / (f + m) * 100 if f + m else None)
+    lines = []
+    for side in ("Male", "Female", "Unisex"):
+        f1, m1_, p1 = share(side, split[-1:])
+        fm, mm, pm = share(side, split)
+        if p1 is None and pm is None:
+            continue
+        lines.append(f"{side.lower()} bags {_fmt(f1)} by women, {_fmt(m1_)} by men"
+                     + (f" ({p1:.0f}% women; month {pm:.0f}%)" if p1 is not None and pm is not None else ""))
+    if lines:
+        slide["insight"].insert(len(slide["insight"]) - 1 if slide["insight"] else 0,
+                                "Who bought them last week (Odoo's buyer gender): " + "; ".join(lines) + ".")
+    _, _, pm_male = share("Male", split)
+    _, _, pm_fem = share("Female", split)
+    recs = []
+    if pm_male is not None and pm_male >= 50:
+        recs.append(f"Show the male bags to women too: {pm_male:.0f}% of them were bought by women this month (gifts).")
+    if pm_fem is not None and 100 - pm_fem >= 40:
+        recs.append(f"Show the female bags to men too: {100 - pm_fem:.0f}% of them were bought by men this month.")
+    keep = [r for r in slide["rec"] if not r.startswith("Keep the mix")]
+    slide["rec"] = (keep + recs)[:3] or slide["rec"]
+
+
 def slides(week_start: dt.date, week_end: dt.date) -> list:
     m1 = week_end.replace(day=1)
     p1 = (m1 - dt.timedelta(days=1)).replace(day=1)
@@ -507,7 +563,12 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
     out = []
     for mkt, name in MARKETS:
         try:
-            out += _market_slides(mkt, name, lines, info, why, week_start, week_end)
+            ms = _market_slides(mkt, name, lines, info, why, week_start, week_end)
+            if blines:
+                for sl in ms:
+                    if sl["id"] == f"gender-{mkt}":
+                        _gender_split(sl, mkt, name, blines, info, week_start, week_end)
+            out += ms
             if blines:
                 out.append(_buyer_slide(mkt, name, KICKER_NAME.get(mkt, name), blines, info, week_start, week_end))
         except Exception as e:                                # noqa: BLE001
