@@ -473,11 +473,13 @@ def _buyer_slide(mkt, name, kname, blines, info, week_start, week_end):
     if even:
         slide["insight"].append("Closest to 50/50: " + ", ".join(f"{_title(b)} ({share_f(b):.0f}% women)" for b in even) + ".")
     if top_f:
-        slide["rec"].append("Aim " + ", ".join(_title(b) for b in top_f[:3]) + " posts and ads at women: women buy "
-                            + f"{share_f(top_f[0]):.0f}% or so of them.")
+        lo, hi = min(share_f(b) for b in top_f[:3]), max(share_f(b) for b in top_f[:3])
+        slide["rec"].append("Aim " + ", ".join(_title(b) for b in top_f[:3]) + " posts and ads at women: "
+                            + (f"{lo:.0f}–{hi:.0f}%" if round(lo) != round(hi) else f"{hi:.0f}%") + " of their buyers are women.")
     if top_m:
-        slide["rec"].append("Aim " + ", ".join(_title(b) for b in top_m[:3]) + " posts and ads at men: they lean most "
-                            + f"to men ({100 - share_f(top_m[0]):.0f}% men for {_title(top_m[0])}).")
+        lo, hi = min(100 - share_f(b) for b in top_m[:3]), max(100 - share_f(b) for b in top_m[:3])
+        slide["rec"].append("Aim " + ", ".join(_title(b) for b in top_m[:3]) + " posts and ads at men: "
+                            + (f"{lo:.0f}–{hi:.0f}%" if round(lo) != round(hi) else f"{hi:.0f}%") + " of their buyers are men.")
     if cross:
         b, who, p, _ = cross[0]
         slide["rec"].append(f"Show {_title(b)} to {who} too ({p:.0f}% of its buyers), e.g. as a gift.")
