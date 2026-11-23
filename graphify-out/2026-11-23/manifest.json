@@ -1638,27 +1638,27 @@
     "semantic_hash": ""
   },
   "generators/weekly_report.py": {
-    "mtime": 1795390829.6259146,
-    "seen": 1795391460.2741075,
-    "ast_hash": "4bfd1aa1073bb231a8dcbefd85ea9ac5",
+    "mtime": 1795393177.6251922,
+    "seen": 1795393372.0310032,
+    "ast_hash": "ddf46b708c37ae0ac01f8e1e76b0956d",
     "semantic_hash": ""
   },
   "docs/weekly-report.md": {
-    "mtime": 1795392309.1691449,
-    "seen": 1795392507.1285045,
-    "ast_hash": "9c5559824d7e84e7323f973a08b0fcec",
+    "mtime": 1795393323.2558887,
+    "seen": 1795393372.0313334,
+    "ast_hash": "55b310207a69f0a8f1d9d38a3f1fd5a6",
     "semantic_hash": ""
   },
   "html/weekly_report.html": {
-    "mtime": 1795392473.9370453,
-    "seen": 1795392507.1285481,
-    "ast_hash": "63f6a78bd9675b7bc4a55850ba051d7d",
+    "mtime": 1795393323.2532864,
+    "seen": 1795393372.0313745,
+    "ast_hash": "23c88d9ab80127cfcc0640af01c03b3f",
     "semantic_hash": ""
   },
   "lib/weekly_products.py": {
-    "mtime": 1795388313.840139,
-    "seen": 1795388628.9165606,
-    "ast_hash": "ac3910ef7ce9fa7f8a60a63685db9741",
+    "mtime": 1795393162.858201,
+    "seen": 1795393372.0311246,
+    "ast_hash": "0cff3323008fd1bacf8092029c0a5708",
     "semantic_hash": ""
   },
   "lib/bag_gender.py": {
@@ -1674,33 +1674,33 @@
     "semantic_hash": ""
   },
   "lib/follower_test.py": {
-    "mtime": 1795364152.265086,
-    "seen": 1795364554.3971844,
-    "ast_hash": "178e2aeee6323a954cd4fe287c8a73b7",
+    "mtime": 1795393162.859244,
+    "seen": 1795393372.031035,
+    "ast_hash": "cf281426ca1ef7ed71a51011b212b60d",
     "semantic_hash": ""
   },
   "lib/weekly_newproducts.py": {
-    "mtime": 1795392309.166128,
-    "seen": 1795392507.128319,
-    "ast_hash": "02a438e6cfafdee55b7e8a526fc5808d",
+    "mtime": 1795393162.858201,
+    "seen": 1795393372.0311146,
+    "ast_hash": "78703fbfa0ea8144dbb7962bfe214d09",
     "semantic_hash": ""
   },
   "lib/weekly_combos.py": {
-    "mtime": 1795376849.6994073,
-    "seen": 1795377031.6301346,
-    "ast_hash": "afe9ac420a9e358c584e0d8320dce69b",
+    "mtime": 1795392944.112177,
+    "seen": 1795393372.0311115,
+    "ast_hash": "a1372e849a52342de9d39715791e2891",
     "semantic_hash": ""
   },
   "lib/weekly_sales.py": {
-    "mtime": 1795391537.3502765,
-    "seen": 1795391640.9222097,
-    "ast_hash": "c76027a58054e35c9ec131761d3b2427",
+    "mtime": 1795393162.8612669,
+    "seen": 1795393372.0311263,
+    "ast_hash": "489ff86d938a37ea44f7b70da647b53c",
     "semantic_hash": ""
   },
   "lib/weekly_foot.py": {
-    "mtime": 1795386927.6115263,
-    "seen": 1795387071.563198,
-    "ast_hash": "b6f7f93f99da190682d4eb875cca7d3d",
+    "mtime": 1795392967.7839472,
+    "seen": 1795393372.031113,
+    "ast_hash": "b9488a45745f16747ac1ab9850d87fa3",
     "semantic_hash": ""
   }
 }

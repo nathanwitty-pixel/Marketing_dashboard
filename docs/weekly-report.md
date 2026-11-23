@@ -664,3 +664,8 @@ sold 1,051 bags, 8.4% of Kenya's 12,514 bags…"), not a label and a list ("Whol
 said in words (`src_words`: "Sinza's buyers from Instagram ads"). Longer sentences can't overflow: after the deck is
 shown, each Insight / Rec box whose text is taller than the box steps its text size down (to 10px at the least) until
 it fits (`fitBoxes`).
+
+**Exports inside the dashboard (23 Nov 2026, fix):** the page runs in the Streamlit frame (`about:srcdoc`), where
+`history.replaceState` throws; it stopped the script before the export buttons were wired, so Print, PowerPoint and
+infographic did nothing in the dashboard. It is now in a try/catch. Tested in the dashboard: infographic ~45 s,
+PowerPoint ~50 s (the button shows its progress), Print opens the print dialog once.

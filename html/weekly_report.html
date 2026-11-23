@@ -1387,7 +1387,7 @@ const WR = {"built": "Mon 23 Nov 2026, 03:20", "weekStart": "2026-11-15", "weekE
     [].forEach.call(document.querySelectorAll('.dtog button'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-deck') === d)); });
     document.title = d === 'sales' ? 'Weekly Sales Report' : 'Weekly Marketing Report';
     try { localStorage.setItem('wr-deck', d); } catch (e) {}
-    if (location.hash !== '#' + d) history.replaceState(null, '', '#' + d);
+    try { if (location.hash !== '#' + d) history.replaceState(null, '', '#' + d); } catch (e) {}   // not allowed inside the dashboard's frame
     window.dispatchEvent(new Event('resize'));
     fitBoxes();
   }

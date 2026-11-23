@@ -1644,15 +1644,15 @@
     "semantic_hash": ""
   },
   "docs/weekly-report.md": {
-    "mtime": 1795393323.2558887,
-    "seen": 1795393372.0313334,
-    "ast_hash": "55b310207a69f0a8f1d9d38a3f1fd5a6",
+    "mtime": 1795394011.6658516,
+    "seen": 1795394025.2691872,
+    "ast_hash": "7f60db6bc1a2c5c05f3eb680a3eccaaa",
     "semantic_hash": ""
   },
   "html/weekly_report.html": {
-    "mtime": 1795393323.2532864,
-    "seen": 1795393372.0313745,
-    "ast_hash": "23c88d9ab80127cfcc0640af01c03b3f",
+    "mtime": 1795393846.8289669,
+    "seen": 1795394025.2692368,
+    "ast_hash": "3b8e7483ab9d1dae31a30f82b4b983e3",
     "semantic_hash": ""
   },
   "lib/weekly_products.py": {
