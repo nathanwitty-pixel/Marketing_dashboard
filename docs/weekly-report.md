@@ -669,3 +669,18 @@ it fits (`fitBoxes`).
 `history.replaceState` throws; it stopped the script before the export buttons were wired, so Print, PowerPoint and
 infographic did nothing in the dashboard. It is now in a try/catch. Tested in the dashboard: infographic ~45 s,
 PowerPoint ~50 s (the button shows its progress), Print opens the print dialog once.
+
+### Exports: one set of slide pictures, three files (23 Nov 2026, user's call)
+
+**Save as PDF** (replaces Print: printing from the dashboard's frame saved empty, 0 KB files), **Save as PowerPoint**
+and **Save as infographic** all use the same pictures of the slides on screen (html2canvas, scale 2), so the three
+files carry exactly the words of the report. The pictures are taken once per deck and build and reused, so the second
+and third export are quick. PDF: jsPDF 2.5.1 (cdnjs), one landscape 13.333 × 7.5 in page per slide, saved as a file.
+PowerPoint: PptxGenJS, one picture per slide. Infographic: one tall PNG, 1,400 px wide: the black-and-gold title band
+with the logo and key-number tiles, then every slide in order (scaled down if taller than a browser canvas allows).
+A slide that can't be pictured is written as text (kicker, headline, Insight, Business recommendation) so no words are
+lost. Ctrl+P still prints the page with the print styles.
+
+**Kept out of the dashboard's light-mode recolouring (23 Nov 2026, fix):** the page carries `<html data-v5-off>`, and
+`assets/v5_theme.js` leaves such a page alone. The theme was turning the cover's and title band's cream text dark
+brown (dark on dark) and recolouring chart text, on screen and in the exports. The report has its own light design.

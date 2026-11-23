@@ -386,3 +386,5 @@ Pages whose **Period** dropdowns can take any From – To window get a **Custom*
 In `dashboard_pages.json`, Weekly Report is order 1 and Current Performance order 2 (both in Performance), so the
 Weekly Report is the first menu item and the page the dashboard opens on. Refresh rebuilds only the open page's
 scripts, so the Weekly Report still reads the last built Current Performance page.
+
+**Theme opt-out (23 Nov 2026):** a page whose `<html>` has `data-v5-off` is skipped by `assets/v5_theme.js` (no light-mode recolouring). Used by the Weekly Report, which is designed light already.

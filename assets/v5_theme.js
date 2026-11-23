@@ -447,6 +447,8 @@
 
   function apply(doc, mode) {
     if (!doc || !doc.documentElement || !doc.body) return;
+    // a page designed for both themes already (the Weekly Report: dark bands, light slides) opts out: <html data-v5-off>
+    if (doc.documentElement.hasAttribute('data-v5-off')) return;
     mode = mode === 'dark' ? 'dark' : 'light';
     var html = doc.documentElement;
     html.setAttribute('data-v5', mode);
