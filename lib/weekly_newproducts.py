@@ -23,6 +23,7 @@ SHOP_CODE = {"starmall": "STR", "mombasa": "MSA", "nakuru": "NAK", "eldoret": "E
 SKIP_TILLS = {"staff pos"}
 MIN_STOCK = 5          # colours with less stock aren't judged on slide 5
 COVER_OK = 2           # could move well: stock lasts at least this many weeks of last week's pace
+LEAST_N = 8            # least performers listed (23 Nov 2026, user's call: was 5)
 
 
 def _fmt(x):
@@ -135,22 +136,22 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
                       f"({_signed(_pct(tot_lw, tot_pw))} on the week before)" + (f" against a weekly target of {_fmt(wtarget)}." if wtarget else "."))
     if pct_of:
         best, worst = max(pct_of, key=pct_of.get), min(pct_of, key=pct_of.get)
-        s1["insight"].append(f"Best against target: <b>{_t(best)}</b> {pct_of[best]:.0f}% ({_fmt(mtd[best])} of "
-                             f"{_fmt(targets[best]['target'])}); weakest: <b>{_t(worst)}</b> {pct_of[worst]:.0f}% "
+        s1["insight"].append(f"<b>{_t(best)}</b> is closest to its target at {pct_of[best]:.0f}% ({_fmt(mtd[best])} of "
+                             f"{_fmt(targets[best]['target'])}), and <b>{_t(worst)}</b> is furthest at {pct_of[worst]:.0f}% "
                              f"({_fmt(mtd[worst])} of {_fmt(targets[worst]['target'])}).")
     ch = {n: lw[n] - pw[n] for n in names}
     up, dn = max(ch, key=ch.get), min(ch, key=ch.get)
     if ch[up] > 0 or ch[dn] < 0:
-        s1["insight"].append("Last week vs the week before: " + ", ".join(
-            f"{_t(n)} {_fmt(pw[n])} → {_fmt(lw[n])}" for n in dict.fromkeys([up, dn]) if ch[n]) + ".")
+        s1["insight"].append("The biggest moves on the week before were " + " and ".join(
+            f"{_t(n)}, from {_fmt(pw[n])} to {_fmt(lw[n])}" for n in dict.fromkeys([up, dn]) if ch[n]) + ".")
     h1, h0 = hist.get(week_start.isoformat()) or {}, hist.get(pw_s.isoformat()) or {}
     posted = lambda h: (h.get("kenyaPosts") or 0) + (h.get("outsidePosts") or 0)    # noqa: E731
     if h1 and posted(h1):
         s1["insight"].append(f"Posts last week: {_fmt(h1.get('kenyaPosts'))} in Kenya and {_fmt(h1.get('outsidePosts'))} outside"
                              + (f" (the week before: {_fmt(h0.get('kenyaPosts'))} and {_fmt(h0.get('outsidePosts'))})." if h0 else "."))
     elif h0:          # posts reach the sheet a week late (memory: posts are a week in arrears)
-        s1["insight"].append(f"Posts (a week behind, last week's aren't in yet): week of {_d(pw_s)} {_fmt(h0.get('kenyaPosts'))} "
-                             f"in Kenya and {_fmt(h0.get('outsidePosts'))} outside.")
+        s1["insight"].append(f"Posts reach the sheet a week late, so last week's aren't in yet; in the week of {_d(pw_s)} there were "
+                             f"{_fmt(h0.get('kenyaPosts'))} posts in Kenya and {_fmt(h0.get('outsidePosts'))} outside.")
     left = (week_end.replace(day=days_in_month) - week_end).days
     need = max(tot_t - tot_m, 0)
     if left and need:
@@ -216,21 +217,21 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
         s2["headline"] = (f"{p_start:%B}'s {len(styles)} new styles in the shops sold {_fmt(tot)} bags this month"
                           + (f", led by {_t(top)} ({_fmt(styles[top]['month'])})" if styles[top]["month"] else "")
                           + f"; last week {_fmt(tl)} ({_signed(_pct(tl, tp))} on the week before).")
-        s2["insight"].append("Sold since created: " + ", ".join(
-            f"{_t(s)} {_fmt(styles[s]['life'])}" for s in sorted(styles, key=lambda s: -styles[s]["life"])[:6]) + ".")
+        s2["insight"].append("Since they were created, the best sellers have been " + ", ".join(
+            f"{_t(s)} ({_fmt(styles[s]['life'])})" for s in sorted(styles, key=lambda s: -styles[s]["life"])[:6]) + ".")
         moved = [s for s in order if styles[s]["last"] != styles[s]["prev"]]
         if moved:
-            s2["insight"].append("Last week vs the week before: " + ", ".join(
-                f"{_t(s)} {_fmt(styles[s]['prev'])} → {_fmt(styles[s]['last'])}" for s in moved[:5]) + ".")
+            s2["insight"].append("On the week before, these styles moved: " + ", ".join(
+                f"{_t(s)} from {_fmt(styles[s]['prev'])} to {_fmt(styles[s]['last'])}" for s in moved[:5]) + ".")
         # stock check: cleared (sold, none left) vs still in the shops (selling / not selling)
         cleared = [s for s in order if styles[s]["stock"] <= 0]
         idle = sorted((s for s in order if styles[s]["stock"] > 0 and styles[s]["month"] == 0), key=lambda s: -styles[s]["stock"])
         selling = [s for s in order if styles[s]["stock"] > 0 and styles[s]["month"] > 0]
         in_stock = idle + selling
         listed = lambda ss: ", ".join(_t(s) for s in ss[:6]) + (f" and {len(ss) - 6} more" if len(ss) > 6 else "")   # noqa: E731
-        s2["insight"].append(f"Stock check: <b>{len(cleared)}</b> cleared (sold, none left), <b>{len(selling)}</b> still in the "
-                             f"shops and selling, <b>{len(idle)}</b> in the shops and not selling this month "
-                             f"({_fmt(sum(styles[s]['stock'] for s in in_stock))} bags left).")
+        s2["insight"].append(f"<b>{len(cleared)}</b> styles have cleared (sold, none left), <b>{len(selling)}</b> {'is' if len(selling) == 1 else 'are'} still in the "
+                             f"shops and selling, and <b>{len(idle)}</b> {'is' if len(idle) == 1 else 'are'} in the shops but hasn't sold this month; "
+                             f"{_fmt(sum(styles[s]['stock'] for s in in_stock))} bags are left in all.")
         if cleared:
             s2["rec"].append(f"Cleared: {listed(cleared)}. Marketing and sales did a good job; decide whether to reorder them.")
         if in_stock:
@@ -241,8 +242,8 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
         if idle:
             s2["rec"].append(f"Start with the ones not selling: {listed(idle)}.")
         if unproven:
-            s2["insight"].append(f"Not shown: {len(unproven)} other {p_start:%B} styles were created in Odoo but never stocked "
-                                 f"or sold ({', '.join(_t(s) for s in unproven[:5])}{' and more' if len(unproven) > 5 else ''}).")
+            s2["insight"].append(f"The chart leaves out {len(unproven)} other {p_start:%B} styles that were created in Odoo but never "
+                                 f"stocked or sold ({', '.join(_t(s) for s in unproven[:5])}{' and more' if len(unproven) > 5 else ''}).")
         s2["rec"] = s2["rec"][:3] or [f"Keep posting {p_start:%B}'s new styles: they are in the shops and selling."]
     else:
         s2["headline"] = f"No new bag styles were created in Odoo in {p_start:%B}."
@@ -267,35 +268,67 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
         s3["headline"] = (f"{top3[0]} sold the most new products this month ({_fmt(sh_m[top3[0]])})"
                           + (f", then {', '.join(f'{s} {_fmt(sh_m[s])}' for s in top3[1:])}" if len(top3) > 1 else "")
                           + f"; last week all shops sold {_fmt(sum(sh_l.values()))} ({_signed(_pct(sum(sh_l.values()), sum(sh_p.values())))}).")
+        # every shop: dropped, improved or held steady (moved no more than max(1 bag, 10% of the week before))
         d = {s: sh_l[s] - sh_p[s] for s in shops if s != "CORP"}
-        if d:
-            u, w = max(d, key=d.get), min(d, key=d.get)
-            s3["insight"].append(f"Biggest rise last week: {u} {_fmt(sh_p[u])} → {_fmt(sh_l[u])}; biggest fall: {w} {_fmt(sh_p[w])} → {_fmt(sh_l[w])}.")
+        steady = lambda s: abs(d[s]) <= max(1, 0.1 * sh_p[s])                         # noqa: E731
+        dropped = sorted((s for s in d if not steady(s) and d[s] < 0), key=lambda s: d[s])
+        improved = sorted((s for s in d if not steady(s) and d[s] > 0), key=lambda s: -d[s])
+        held = sorted((s for s in d if steady(s)), key=lambda s: -sh_l[s])
+        row = lambda s: {"shop": s, "from": round(sh_p[s]), "to": round(sh_l[s]), "chg": round(d[s])}  # noqa: E731
+        s3["graph"]["groups"] = {"dropped": [row(s) for s in dropped], "improved": [row(s) for s in improved],
+                                 "held": [row(s) for s in held]}
+        arrow = lambda ss: ", ".join(f"{s} {_fmt(sh_p[s])} → {_fmt(sh_l[s])}" for s in ss[:3])        # noqa: E731
+        if dropped:
+            s3["insight"].append(f"{len(dropped)} shop{'s' if len(dropped) != 1 else ''} sold fewer new products than the week before; "
+                                 f"the biggest drops were {arrow(dropped)}.")
+        if improved:
+            s3["insight"].append(f"{len(improved)} shop{'s' if len(improved) != 1 else ''} sold more; the biggest rises were {arrow(improved)}.")
+        if held:
+            s3["insight"].append(f"{len(held)} shops held steady, within 1 bag or 10% of the week before: " + ", ".join(held[:8])
+                                 + (" and more" if len(held) > 8 else "") + ".")
+        if dropped:
+            s3["rec"].append(f"Check new-product stock, staff and display at {', '.join(dropped[:3])}: they dropped most last week.")
+        if improved:
+            s3["rec"].append(f"Copy what {', '.join(improved[:2])} did with the new products: they improved most.")
         best_shop = {}
         for x in lines:
             if week_start <= x["d"] <= week_end and x["till"] not in SKIP_TILLS:
                 best_shop.setdefault(x["bag"], collections.Counter())[SHOP_CODE.get(x["till"], "OTH")] += x["units"]
         tops = sorted(names, key=lambda n: -lw[n])[:4]
-        s3["insight"].append("Best shop last week: " + ", ".join(
+        s3["insight"].append("Last week each top new product sold best at one shop: " + ", ".join(
             f"{_t(n)} at {best_shop[n].most_common(1)[0][0]}" for n in tops if n in best_shop) + ".")
         zero = [c for c in SHOP_CODE.values() if not sh_l[c]]
         zero = list(dict.fromkeys(zero))
         if zero:
-            s3["insight"].append("No new-product sale last week: " + ", ".join(zero) + ".")
+            s3["insight"].append(", ".join(zero) + (" sold" if len(zero) == 1 else " each sold") + " no new products last week.")
             s3["rec"].append(f"Check stock and posts for the new products at {', '.join(zero[:6])}: no sale last week.")
         s3["rec"].append(f"Copy what {top3[0]} does with the new products (display, staff pitch) in the shops that sold none.")
+        s3["rec"] = s3["rec"][:3]
     else:
         s3["headline"] = "No new-product sales by shop this month."
     out.append(s3)
 
     # ── 4. Sold vs Monthly Target ──
+    # each bag's two colours with the most stock (Kenya shops + Sinza and Uganda), e.g. Taji: Black 20, Grey 15
+    by_bag = {}
+    for r in colours:
+        st = (r.get("sKenya") or 0) + (r.get("sOutside") or 0)
+        if st > 0:
+            by_bag.setdefault(str(r.get("bagType") or "").upper(), []).append((str(r.get("productName") or ""), st))
+    def top_colours(bag):
+        out_, pre = [], bag.upper()
+        for nm, st in sorted(by_bag.get(pre, []), key=lambda t: -t[1])[:2]:
+            c = nm[len(pre):].strip(" -") if nm.upper().startswith(pre) else nm
+            out_.append([_t(c) or _t(nm), round(st)])
+        return out_
     rows4 = []
     for n in names:
         tg = (targets.get(n) or {}).get("target", 0)
         if not tg:
             continue
         rows4.append({"name": _t(n), "sold": round(mtd[n]), "target": tg, "expected": round(tg * gone),
-                      "pct": round(mtd[n] / tg * 100), "stock": stock[n], "onPace": mtd[n] >= tg * gone})
+                      "pct": round(mtd[n] / tg * 100), "stock": stock[n], "onPace": mtd[n] >= tg * gone,
+                      "colours": top_colours(n)})
     rows4.sort(key=lambda r: -r["pct"])
     on = [r for r in rows4 if r["onPace"]]
     s4 = {"id": "np-target", "kicker": f"New products: sold vs monthly target ({_d(m1)} to {_d(week_end)})",
@@ -307,10 +340,10 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
                           f"({gone * 100:.0f}% of the month gone)" + (f": {', '.join(r['name'] for r in on)}." if on else "."))
         behind = sorted((r for r in rows4 if not r["onPace"]), key=lambda r: -(r["expected"] - r["sold"]))
         if behind:
-            s4["insight"].append("Furthest behind where it should be by now: " + ", ".join(
-                f"{r['name']} {_fmt(r['sold'])} vs {_fmt(r['expected'])}" for r in behind[:4]) + ".")
+            s4["insight"].append("These are furthest behind where they should be by now: " + ", ".join(
+                f"{r['name']} has sold {_fmt(r['sold'])} against {_fmt(r['expected'])}" for r in behind[:4]) + ".")
         if on:
-            s4["insight"].append("Ahead: " + ", ".join(f"{r['name']} {r['pct']}%" for r in on) + ".")
+            s4["insight"].append("These are ahead of pace: " + ", ".join(f"{r['name']} at {r['pct']}% of its target" for r in on) + ".")
         for r in behind[:3]:
             if r["stock"] <= 0:
                 s4["rec"].append(f"Restock {r['name']} first: none in stock, {_fmt(r['target'] - r['sold'])} still needed.")
@@ -332,7 +365,7 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
         col.append({"name": _t(r["productName"]), "bag": str(r["bagType"]).upper(), "stock": st, "sold": sold,
                     "last": lastwk.get(r["productName"], 0), "posts": (r.get("mpostKenya") or 0) + (r.get("mpostOutside") or 0)})
     movers = sorted((c for c in col if c["sold"] > 0 and c["stock"] >= COVER_OK * max(c["last"], 1)), key=lambda c: -c["sold"])[:5]
-    least = sorted((c for c in col if c not in movers), key=lambda c: (-(c["stock"] / max(c["sold"], 1)), -c["stock"]))[:5]
+    least = sorted((c for c in col if c not in movers), key=lambda c: (-(c["stock"] / max(c["sold"], 1)), -c["stock"]))[:LEAST_N]
     s5 = {"id": "np-stock", "kicker": "New products in stock: could move well vs least performers", "tone": "neutral",
           "insight": [], "rec": [], "source": "The New Products page: colour sales this month, last week, stock (Kenya shops + Sinza and Uganda) and posts.",
           "graph": {"ok": bool(movers or least), "kind": "npstock", "movers": movers, "least": least}}
@@ -341,11 +374,12 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
                            f"{_fmt(movers[0]['stock'])} in stock)" if movers else "No new colour is selling with stock behind it")
                           + (f"; {least[0]['name']} is the slowest: {_fmt(least[0]['sold'])} sold with {_fmt(least[0]['stock'])} in stock." if least else "."))
         if movers:
-            s5["insight"].append("Could move well: " + ", ".join(f"{c['name']} ({_fmt(c['sold'])} sold, {_fmt(c['stock'])} in stock)" for c in movers) + ".")
+            s5["insight"].append("These colours sell and have stock behind them, so they could move well: "
+                                 + ", ".join(f"{c['name']} ({_fmt(c['sold'])} sold, {_fmt(c['stock'])} in stock)" for c in movers) + ".")
             s5["rec"].append("Push " + ", ".join(c["name"] for c in movers[:3]) + ": they sell and the stock is there; feature them in posts and the shop windows.")
         if least:
-            s5["insight"].append("Least performers: " + ", ".join(f"{c['name']} ({_fmt(c['sold'])} sold, {_fmt(c['stock'])} in stock, "
-                                                                 f"{_fmt(c['posts'])} posts)" for c in least) + ".")
+            s5["insight"].append("These colours have stock but sell least: " + ", ".join(
+                f"{c['name']} ({_fmt(c['sold'])} sold, {_fmt(c['stock'])} in stock, {_fmt(c['posts'])} post{'s' if c['posts'] != 1 else ''})" for c in least) + ".")
             few = [c for c in least if c["posts"] < 3]
             if few:
                 s5["rec"].append("Post " + ", ".join(c["name"] for c in few[:4]) + " first: fewer than 3 posts this month.")
@@ -354,8 +388,13 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
                 best = max((x for x in col if x["bag"] == c["bag"]), key=lambda x: x["sold"], default=None)
                 if not best or best["sold"] < 5 or best["name"] == c["name"]:
                     best = movers[0] if movers else None      # the partner must sell: else the top new-product seller
-                pair = f" with {best['name']}" if best else ""
-                s5["rec"].append(f"Put {c['name']} on an offer or in a combo{pair}: it is posted and still slow.")
+                why = (f"{c['name']} sold {_fmt(c['sold'])} this month with {_fmt(c['stock'])} in stock, though it was posted "
+                       f"{_fmt(c['posts'])} times, so being seen isn't the problem")
+                if best and best["sold"] >= max(5, 2 * c["sold"]):     # the partner must really pull buyers
+                    s5["rec"].append(f"Put {c['name']} in a combo with {best['name']}, or on an offer. {why}; {best['name']} "
+                                     f"sold {_fmt(best['sold'])}, so a combo puts {c['name']} in front of its buyers.")
+                else:
+                    s5["rec"].append(f"Put {c['name']} on an offer. {why}; no new colour sells enough to carry it in a combo.")
         s5["rec"] = s5["rec"][:3]
     else:
         s5["headline"] = "No new-product colour holds 5 or more in stock."

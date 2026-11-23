@@ -160,6 +160,7 @@ def summary(start: _dt.date, end: _dt.date) -> dict:
                 "chats": round(chats), "purchased": round(float(w.get("Purchased", 0))),
                 "performance": _pct(float(w.get("Purchased", 0)), chats),
                 "ads": round(ads), "adConversion": _pct(float(w.get("Ad Purchased", 0)), ads),
+                "adPurchased": round(float(w.get("Ad Purchased", 0))),
                 "avgResponse": round(float(w.get("Response Minutes", 0)) / sampled, 1) if sampled else None,
                 "sampled": round(sampled),
             },

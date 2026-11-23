@@ -11,6 +11,19 @@
     {
       "order": 1,
       "section": "Performance",
+      "label": "Weekly Report",
+      "html": "weekly_report.html",
+      "title": "Weekly Report",
+      "scripts": [
+        "weekly_report.py"
+      ],
+      "icon": "slideshow",
+      "purpose": "The weekly marketing report as slides: headline, graph, insight and recommendation; print to PDF to hand in",
+      "short": "Weekly Report"
+    },
+    {
+      "order": 2,
+      "section": "Performance",
       "label": "Current Performance",
       "html": "current_performance.html",
       "title": "Current Performance",
@@ -25,19 +38,6 @@
       "icon": "monitoring",
       "purpose": "Month-to-date sales vs target — live from Odoo POS & Sheets",
       "short": "Performance"
-    },
-    {
-      "order": 2,
-      "section": "Performance",
-      "label": "Weekly Report",
-      "html": "weekly_report.html",
-      "title": "Weekly Report",
-      "scripts": [
-        "weekly_report.py"
-      ],
-      "icon": "slideshow",
-      "purpose": "The weekly marketing report as slides: headline, graph, insight and recommendation; print to PDF to hand in",
-      "short": "Weekly Report"
     },
     {
       "order": 3,

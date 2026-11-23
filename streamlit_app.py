@@ -534,7 +534,29 @@ st.markdown("""<style>
 _run_js("""<script>(function(){var P=window.parent,D;try{D=P.document;}catch(e){return;}
   if(P.__dashNav)return; P.__dashNav=1;                    // once per browser tab; the listener outlives reruns
   var R=D.documentElement,t=null;
-  P.__dashReveal=function(){clearTimeout(t);R.classList.remove('dash-leaving','dash-swapping');};
+  // Saved views of each menu (docs/README.md › Menu clicks show the last view at once)
+  P.__dashSnaps=P.__dashSnaps||{};var db=null;
+  try{var rq=P.indexedDB.open('denri-dash',1);
+    rq.onupgradeneeded=function(){rq.result.createObjectStore('snaps');};
+    rq.onsuccess=function(){db=rq.result;try{var cur=db.transaction('snaps').objectStore('snaps').openCursor();
+      cur.onsuccess=function(e){var c=e.target.result;if(c){if(!P.__dashSnaps[c.key])P.__dashSnaps[c.key]=c.value;c.continue();}};}catch(e){}};
+  }catch(e){}
+  P.__dashSnapSave=function(k,h){P.__dashSnaps[k]=h;try{if(db)db.transaction('snaps','readwrite').objectStore('snaps').put(h,k);}catch(e){}};
+  function hideSnap(){var o=D.getElementById('dash-snap');if(!o)return;o.style.opacity='0';setTimeout(function(){o.remove();},260);}
+  function showSnap(k,frameRect){var h=P.__dashSnaps[k];if(!h)return false;
+    var old=D.getElementById('dash-snap');if(old)old.remove();
+    var bar=D.querySelector('.tn-bar'),top=bar?bar.getBoundingClientRect().bottom:0;
+    var r=frameRect||{left:0,width:P.innerWidth,top:top};
+    var o=D.createElement('div');o.id='dash-snap';
+    o.style.cssText='position:fixed;z-index:999990;bottom:0;transition:opacity .25s ease;opacity:1;overflow:hidden;background:var(--v5-bg,#0b0d14);'
+      +'left:'+r.left+'px;width:'+r.width+'px;top:'+Math.max(r.top,top)+'px;';
+    var f=D.createElement('iframe');f.setAttribute('srcdoc',h);f.setAttribute('aria-hidden','true');f.tabIndex=-1;
+    f.style.cssText='width:100%;height:100%;border:0;pointer-events:none;display:block;';
+    var b=D.createElement('div');b.textContent='Last view, updating\u2026';
+    b.style.cssText='position:absolute;top:8px;right:12px;font:600 12px Segoe UI,system-ui,sans-serif;color:#fff;background:rgba(79,70,229,.92);'
+      +'padding:4px 10px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.25);';
+    o.appendChild(f);o.appendChild(b);D.body.appendChild(o);return true;}
+  P.__dashReveal=function(){clearTimeout(t);R.classList.remove('dash-leaving','dash-swapping');hideSnap();};
   // A dashboard frame gets new content (same iframe, new srcdoc — or a fresh iframe): hide the area until
   // the new page has drawn. Dashboard frames are the ones carrying EMBED_FIX (id st-embed-fix).
   function isPage(n){return n&&n.tagName==='IFRAME'&&(n.getAttribute('srcdoc')||'').indexOf('st-embed-fix')>=0;}
@@ -554,6 +576,12 @@ _run_js("""<script>(function(){var P=window.parent,D;try{D=P.document;}catch(e){
     if(a.classList.contains('on'))return;
     D.querySelectorAll('a.tn-item.on').forEach(function(x){x.classList.remove('on');x.removeAttribute('aria-current');});
     a.classList.add('on');a.setAttribute('aria-current','page');
+    // save the page being left, then show the chosen menu's saved view at once (if there is one)
+    var cf=D.querySelector('iframe[data-dash-page]'),key=null,rect=null;
+    try{if(cf){var cw=cf.contentWindow;cw.__dashSnapSave&&cw.__dashSnapSave();key=cw.__dashKey||null;
+      var rr=cf.getBoundingClientRect();rect={left:rr.left,width:rr.width,top:rr.top};}}catch(err){}
+    var theme=key?String(key).split('|')[1]:(new URL(P.location.href).searchParams.get('theme')||'');
+    showSnap(a.getAttribute('data-nav')+'|'+theme,rect);
     R.classList.remove('dash-swapping');R.classList.add('dash-leaving');
     [D.scrollingElement,D.querySelector('[data-testid="stMain"]'),D.querySelector('[data-testid="stAppViewContainer"]')]
       .forEach(function(el){if(el&&el.scrollTop>0)el.scrollTo({top:0,behavior:'smooth'});});
@@ -1098,6 +1126,28 @@ EMBED_FIX = """
     clearTimeout(sT); sT = setTimeout(function(){ H.classList.remove('st-scrolling'); }, 200); }
   window.addEventListener('wheel', scrolling, {passive:true});
   try { parent.document.addEventListener('scroll', scrolling, {capture:true, passive:true}); } catch(e){}
+  // Saved view (docs/README.md › Menu clicks show the last view at once): the drawn page with every chart turned
+  // into a picture and no scripts, shown at once the next time someone clicks this menu.
+  window.__dashSnap = function(){
+    try{
+      var src = document.documentElement, cl = src.cloneNode(true);
+      var oc = src.querySelectorAll('canvas'), cc = cl.querySelectorAll('canvas');
+      for (var i = 0; i < oc.length && i < cc.length; i++){
+        var c = oc[i], im = document.createElement('img');
+        try { im.src = c.toDataURL('image/webp', 0.82); } catch(e) { continue; }
+        im.style.width = c.clientWidth + 'px'; im.style.height = c.clientHeight + 'px'; im.style.display = 'block';
+        cc[i].parentNode.replaceChild(im, cc[i]);
+      }
+      [].forEach.call(cl.querySelectorAll('script, iframe'), function(n){ n.remove(); });
+      var fx = cl.querySelector('#st-embed-fix'); if (fx) fx.id = 'st-embed-saved';   // not taken for a live page
+      cl.classList.remove('st-scrolling');
+      return '<!doctype html>' + cl.outerHTML;
+    }catch(e){ return null; }
+  };
+  window.__dashSnapSave = function(){
+    try{ if (window.__dashKey && parent.__dashSnapSave){ var h = window.__dashSnap(); if (h) parent.__dashSnapSave(window.__dashKey, h); } }catch(e){}
+  };
+  window.addEventListener('load', function(){ setTimeout(window.__dashSnapSave, 2500); });
 })();
 </script>
 """
@@ -1146,10 +1196,11 @@ if os.path.exists(html_path):
         _v5_mtimes += [int(os.path.getmtime(paths.asset(*_f.split("/")))) for _f in _anim_files]
     except OSError:
         pass
+    _snap_key = '<script>window.__dashKey=' + _json.dumps(f"{_nav_idx.get(label, label)}|{THEME}") + ';</script>'
     if "</body>" in html:
-        html = html.replace("</body>", _v5_block + EMBED_FIX + "</body>", 1)
+        html = html.replace("</body>", _v5_block + _snap_key + EMBED_FIX + "</body>", 1)
     else:
-        html += _v5_block + EMBED_FIX
+        html += _v5_block + _snap_key + EMBED_FIX
     # st.iframe() renders the page in a frame with no URL, so a LOCAL
     # <script src="chart_switcher.js"> has nothing to resolve against (Streamlit answers
     # it with its own index page). Inline every local script file instead.

@@ -155,14 +155,14 @@ def _market_slide(mkt, name, kname, w, kes, weeks, rw, extra):
                          + (f" ({_signed(_pct(last['power'], before['power']))})." if prev and before["power"] else "."))
     tot_c = mtd["running"] + mtd["self"]
     if tot_c:
-        slide["insight"].append(f"Month to date: {_fmt(tot_c)} combos, <b>{mtd['self'] / tot_c * 100:.0f}%</b> self-made; "
-                                f"running KES {_fmt(kes['running'] / fx)}, self-made KES {_fmt(kes['self'] / fx)}.")
+        slide["insight"].append(f"This month {_fmt(tot_c)} combos have sold, <b>{mtd['self'] / tot_c * 100:.0f}%</b> of them self-made; "
+                                f"running combos brought in KES {_fmt(kes['running'] / fx)} and self-made ones KES {_fmt(kes['self'] / fx)}.")
     if extra.get("topRun"):
-        slide["insight"].append("Top running combos last week: " + ", ".join(f"{_t(n)} {_fmt(u)}" for n, u in extra["topRun"]) + ".")
+        slide["insight"].append("The best running combos last week were " + ", ".join(f"{_t(n)} ({_fmt(u)})" for n, u in extra["topRun"]) + ".")
     if extra.get("topSelf"):
-        slide["insight"].append("Top self-made pairings this month: " + ", ".join(f"{_t(n)} {_fmt(u)}" for n, u in extra["topSelf"]) + ".")
+        slide["insight"].append("Buyers' favourite self-made pairings this month were " + ", ".join(f"{_t(n)} ({_fmt(u)})" for n, u in extra["topSelf"]) + ".")
     if extra.get("topDeal"):
-        slide["insight"].append(f"Top power deal last week: {extra['topDeal'][0]} {_fmt(extra['topDeal'][1])} bags.")
+        slide["insight"].append(f"The top power deal last week was {extra['topDeal'][0]}, with {_fmt(extra['topDeal'][1])} bags sold.")
     # recommendations
     pr = _pct(last["running"], before["running"]) if prev else None
     if pr is not None and pr <= FALL:
@@ -219,16 +219,16 @@ def _offer_mix(boo, weeks, rw):
     if prev:
         ch = {k: rev(k, rw) - rev(k, prev) for k in keys}
         up, dn = max(ch, key=ch.get), min(ch, key=ch.get)
-        slide["insight"].append(f"Biggest rise last week: {names[up]} +KES {_fmt(ch[up])}; biggest fall: {names[dn]} "
-                                f"{'-' if ch[dn] < 0 else '+'}KES {_fmt(abs(ch[dn]))}.")
+        slide["insight"].append(f"Last week {names[up]} rose the most (+KES {_fmt(ch[up])} on the week before) and {names[dn]} "
+                                f"{'fell the most' if ch[dn] < 0 else 'rose the least'} ({'-' if ch[dn] < 0 else '+'}KES {_fmt(abs(ch[dn]))}).")
         if ch[dn] < 0:
             slide["rec"].append(f"Check {names[dn].lower()}: KES {_fmt(abs(ch[dn]))} less than the week before.")
     shares = [sum(rev(k, n) for k in on_keys) / tot[n] * 100 for n in wk_nums if tot[n]]
-    slide["insight"].append("On-offer share of revenue week by week: " + ", ".join(
-        f"Wk {n} {p:.0f}%" for n, p in zip(wk_nums, shares)) + ".")
+    slide["insight"].append("The share of revenue that came from offers was " + ", ".join(
+        f"{p:.0f}% in Wk {n}" for n, p in zip(wk_nums, shares)) + ".")
     top = order[0]
-    slide["insight"].append(f"Biggest offer type month to date: {names[top]}, KES {_fmt(mtd_r[top])} ({mtd_r[top] / all_r * 100:.0f}%), "
-                            f"{_fmt(mtd_u[top])} bags.")
+    slide["insight"].append(f"So far this month the biggest offer type is {names[top]}, with KES {_fmt(mtd_r[top])} "
+                            f"({mtd_r[top] / all_r * 100:.0f}% of revenue) from {_fmt(mtd_u[top])} bags.")
     if off < 40:
         slide["rec"].append(f"Watch the discount cost: only {off:.0f}% of revenue came at full price (not on offer).")
     slide["rec"] = slide["rec"][:3] or ["Keep the offer mix: no offer type fell last week."]

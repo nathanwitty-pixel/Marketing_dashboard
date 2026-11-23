@@ -89,6 +89,20 @@ Sunday to Saturday weeks: week 1 is the Sun–Sat week holding 1 January; the la
 the next 1 January count as that year's week 1; N = the year's weeks (52, or 53 in some years). It ticks live, so it turns
 over on Sunday. No dot separators.
 
+## Menu clicks show the last view at once (23 Nov 2026, user's call)
+
+A menu click must never leave the page area blank. Each page leaves a **saved view** of itself: a copy of its drawn
+page with every chart turned into a picture and no scripts (`window.__dashSnap()` in `EMBED_FIX`, `streamlit_app.py`).
+It is saved when the page has finished drawing (2.5 s after it loads) and again the moment someone leaves it for another
+menu, keyed by the menu's tab (`data-nav`) and the colour theme, in the browser: memory for the tab, plus IndexedDB
+(`denri-dash` / `snaps`) so it survives a reload.
+
+On a click, if the chosen menu has a saved view, it shows **at once** in front of the page area (full strength, with a
+small "Last view, updating…" badge) while Streamlit builds the live page; when the live page has drawn
+(`__dashReveal`) the saved view fades out. No saved view yet (first visit on that browser) → the old behaviour: the
+current page dims, then the new one fades in. The saved view isn't clickable (it's a picture of the last state); the
+10-second safety net still removes it.
+
 ## How the dashboard is built
 
 Each menu is a **static HTML page** with a hand-written render layer (JS + CSS). A
@@ -366,3 +380,9 @@ Pages whose **Period** dropdowns can take any From – To window get a **Custom*
   `node --check` on an extracted block catches syntax errors.
 </content>
 </invoke>
+
+## Menu order: Weekly Report first (23 Nov 2026, user's call)
+
+In `dashboard_pages.json`, Weekly Report is order 1 and Current Performance order 2 (both in Performance), so the
+Weekly Report is the first menu item and the page the dashboard opens on. Refresh rebuilds only the open page's
+scripts, so the Weekly Report still reads the last built Current Performance page.

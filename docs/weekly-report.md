@@ -9,6 +9,15 @@
 
 ## Two reports in one page: Marketing and Sales (23 Nov 2026, user's call)
 
+**Cover week pill (23 Nov 2026, user's call):** each cover carries a pill under the report week naming **the report's
+week, not today's**: "Week 47 of 52, Sun 15 Nov to Sat 21 Nov" (green dot), from `WR.weekStart`, with the Title row
+clock's week rule (docs/README.md: Sunday-to-Saturday weeks, week 1 holds 1 January). It doesn't tick.
+
+**Save as PowerPoint (23 Nov 2026, user's call):** a button beside Print / Save as PDF saves the deck on screen as a
+`.pptx` (16:9), one PowerPoint slide per report slide, each a sharp picture of the slide (`html2canvas` at 2× scale, then
+`PptxGenJS`, both from cdnjs / jsdelivr, loaded only when the button is pressed), file name
+`Weekly <Marketing|Sales> Report <week>.pptx`. Pictures, not editable charts: the slides look exactly like the page.
+
 A toggle at the top of the page, **Marketing report | Sales report**, switches between two decks built from the same
 slides. Each deck has its own cover ("Weekly Marketing Report" / "Weekly Sales Report", the report week, the owner,
 its own contents list) and its own slide numbers; **Print / Save as PDF prints the deck on screen**. The choice is
@@ -50,6 +59,18 @@ combos, offer types).
    **Combos and offers** (power deals included) and **Offer types, all of Denri** (the Bags On vs Off Offer list).
 
 **Sales deck refinements (23 Nov 2026, user's call):**
+- **Weekly Performance: October beside November, and next week's forecast (23 Nov 2026, user's call).** Each week of
+  the month gets a bar for **the same days of the month before** (Nov 1–7 → Oct 1–7, …; shop tills from
+  `BAGS_SOLD_DAILY` + Corporate-app bags from `CORPORATE_BAGS`, the Weekly Performance rules), grey, beside it. **Next
+  week's forecast** = the report week's bags × (the month before's same days as next week ÷ its same days as the report
+  week): how the business moved at that point of last month, applied to this month. Drawn as a light dashed bar after
+  the last week ("Wk 4 forecast"), with what it has so far. The table gets an "October same days" column; the Insight
+  says the forecast and the October move behind it; Do next: a forecast fall → push now (name the gap to the floor), a
+  gain → hold the pace. Needs Odoo (left out, with a note, when it can't be reached).
+- **Why Did We Move? spacing:** the week-by-week chart gets more room (1.7 : 1 against the month-on-month side; regions
+  with at least 50 bags a week, long names on two lines; thicker
+  bars, more space between regions), a key above it naming every week with its dates (Wk 1 (1–7 Nov) … the latest
+  week), and each bar's label starts with its week ("Wk 1 1,895 +28%").
 - **Why Did We Move?:** the week-on-week side shows **every week of the month** (Wk 1, Wk 2, Wk 3, Wk 4 when it has
   days): bags per region per week (grouped bars), each bar labelled with its bags and its growth on the week before
   (Wk 1 against the last week of the month before), green up / red down. The month-on-month side is unchanged.
@@ -333,6 +354,17 @@ day of the same days last month to the report Saturday). Stock now, category, of
   the shops."
 - **Biz Rec:** the page's suggestions (docs/product-performance.md › Top 5 categories): best bags with stock below what
   they sold → *restock*; weakest bags with the most stock → the bottom-bag rule above. Two or three lines at most.
+- **Say why (23 Nov 2026, user's call):** each weakest-bag line explains itself: what the bag sold last week and how
+  many are in the shops; for *put it on an offer or in a combo with X*, X is the category's best bag (its sold count
+  shown) — the pair puts the slow bag in front of the buyers already picking X. The line also gives the slow bag's
+  weeks of stock at last week's pace. **A combo is suggested only when X really pulls buyers:** X sold at least the
+  market's mover minimum (Kenya 10, Tanzania and Uganda 3) and at least twice the slow bag; otherwise the line says
+  *put it on an offer* and why a combo won't help. Not posted → *post it first*; already on offer → *check price or
+  design, or clear it*.
+- **Card numbers labelled (23 Nov 2026, user's call):** the five category cards sit in one row, each a small table
+  with columns **Sold** (last week) and **Shops** (in the shops now), the best bag on a green row, the weakest under it;
+  never "N / S". The small-week note goes in the slide's source line so the Insight box doesn't overflow. Same in both
+  decks.
 
 ### D. Male vs female bags (23 Nov 2026, user's call)
 
@@ -350,7 +382,9 @@ Which side tops: bags for men vs bags for women, per market.
   blank left out, so the stacks can be a little under the bag totals). "Unisex" describes the bag, not the buyer: Odoo
   knows who bought every unisex bag (Kenya, November 2026: 63% women). Each part carries its own % **inside** it
   (women's % in the pink part, men's % in the blue part; left out when the part is too small to hold it), and the
-  bar's total bags sit on top. Insight adds one line per bag type: bought by women vs men, last week and month to date.
+  bar's total bags sit on top. **Colours (23 Nov 2026, user's call):** one colour per buyer on every bar (pink =
+  bought by women, blue = bought by men); the legend shows just those two, and the bag type is named on top of each
+  bar with its total ("Male 410"). Insight adds one line per bag type: bought by women vs men, last week and month to date.
   Biz Rec: male bags bought 50%+ by women → show them to women as gifts; female bags bought 40%+ by men → show them
   to men too.
 - **Headline:** last week, "Female bags outsold male bags in Kenya last week: 1,520 vs 610 (36% vs 15% of units)"
@@ -452,12 +486,18 @@ included) up to the report Saturday; the Corporate app's bags (CORP) come from `
    (grouped bars), month to date at the bar end; shop codes as on the page (STR, MSA, HTN…, SNZ = Sinza, UGD = Uganda,
    CORP = Corporate app). Insight: top 3 shops month to date, the biggest rise and fall, shops with no new-bag sale
    last week. Biz Rec: the shops with none → dispatch and post there; copy the top shop.
-4. **Sold vs Monthly Target.** Graph: per product, sold (bar) and still needed (light), % of target at the end, and
+   **Dropped, improved, held steady (23 Nov 2026, user's call; both decks):** every shop (CORP left out: no week before)
+   is sorted by last week vs the week before: **held steady** = moved by no more than max(1 bag, 10% of the week before);
+   the rest **dropped** or **improved**. Three boxes under the chart: dropped most (red, biggest falls first), improved
+   most (green, biggest rises first), held steady (grey), each shop as "HTN 14 → 9". The Insight names the top three of
+   each; Do next: check stock, staff and display at the shops that dropped most, copy the ones that improved most.
+4. **Sold vs Monthly Target.** **Stock levels (23 Nov 2026, user's call; both decks):** each bar's end label adds the product's stock now
+   (Kenya shops + Sinza and Uganda), red when it is below what the product still needs to sell this month. Graph: per product, sold (bar) and still needed (light), % of target at the end, and
    where it should be by now (target × share of the month gone). On pace = sold ≥ that. Headline: how many products
    are on pace. Biz Rec: behind with stock → push and post it; behind without stock → restock first.
 5. **In stock: could move well vs least performers.** Colour level (product + colour), stock ≥ 5:
    **could move well** = the 5 that sold most this month and still hold at least 2 weeks of last week's pace;
-   **least performers** = the 5 with the most weeks of cover (stock ÷ this month's sales, none sold counts as 1).
+   **least performers** = the 8 with the most weeks of cover (23 Nov 2026, user's call: was 5; `LEAST_N`) (stock ÷ this month's sales, none sold counts as 1).
    Graph: two bar charts (stock vs sold). Biz Rec: push and post the movers; for the least, the page's rule (< 3 posts
    this month → post it; else offer or combo with its bag's best colour).
 
@@ -483,3 +523,144 @@ runway styles.
 ## Regenerate
 
 `python generators/weekly_report.py` (after `current_performance.py` and `forward_projections.py`).
+
+## Look and exports (23 Nov 2026, user's call: trial until approved)
+
+- **Colours:** light slides with a navy headline band (white headline, emerald kicker), slate page, light slate chart
+  panel, blue-edged Insight, amber-edged Business Recommendation; covers fully navy. Thin 1px frame and soft shadow
+  instead of thick black rules.
+- **Type and charts:** Inter (Google Fonts) for text and chart labels, even-width digits; faint gridlines, no axis
+  lines or tick marks, rounded bars capped at 64px wide, thin lines without point dots. Charts redraw once Inter loads.
+- **Save as infographic** (green button, next to PowerPoint and PDF): one tall PNG of the deck on screen: title band,
+  key-number tiles (bags at the tills to date, % of target vs % of month gone, projection, vs the same days of last
+  month; Sales deck adds corporate collected and still owed), then a 2-column card per slide: kicker, headline, the
+  slide's graph as a picture and its first recommendation ("Do next"). Built with html2canvas; while capturing,
+  Inter's number features are switched off (`html.cap`) because html2canvas spaces them wrongly; the PowerPoint
+  export does the same.
+
+### Offers working, counted in full (23 Nov 2026)
+
+- **Offer types** = Power deals, Combos, Deal of the week, Mid-month offers (the committee's choices). A type works when
+  its price per bag this month (KES after discounts ÷ bags) is at or above the target price (KES 2,000).
+- **Offers inside them** = every bag or combo sold under those types; one works when its own price per bag is at or
+  above the target price. Mid-month offers' bags sit under their parts (timed offers, new products, listed singles)
+  and are counted too (they were missed before: 23 of 58 became 46 of 103).
+
+### WhatsApp tiles show who they're based on (23 Nov 2026, user's call)
+
+Each WhatsApp tile in the foot traffic band prints its sample under the label: Performance "18 of 170 chats bought",
+Ads "4 bought (3.7%)", Avg response "131 of 170 chats timed" (the response average only counts chats with a timed
+reply in the WhatsApp Monitor). Hover text explains each figure in words.
+
+### Walk-ins and WhatsApp, week by week (23 Nov 2026, user's call)
+
+Slide `foot-weeks` (both decks, after the follower slides; `lib/weekly_foot.py`). The foot traffic band's figures
+(`lib/foot_traffic.summary`, the Foot Traffic page) for each Sun-to-Sat week of the month, Week 1 from the 1st to
+the report week, then **month to date**. One column per market (Kenya, Sinza, Uganda), two bar charts each:
+walk-in conversion (bought ÷ counted) and WhatsApp performance (chats that bought ÷ chats). Month to date is the
+dark bar. Every label: the %, the people behind it ("75.8% (25 of 33)"), and for WhatsApp the average reply time.
+Insight: per market, last week's % with the change in points on the week before, and month to date. Biz Rec:
+conversion down more than 5 points → check the shop floor; reply time up 50% and over 3 min → get first replies
+under 2 minutes; else the lowest WhatsApp performance → review the follow-up. Three lines at most.
+
+### Every offer/combo/post suggestion says what drives it (23 Nov 2026, user's call)
+
+One explainer (`lib/weekly_products._explained_rec`) writes the bottom-bag suggestion on the Top-selling bags slide
+(the stuck bags) and the Top 5 categories slide; the New Products stock slide uses the same reasoning for a colour.
+Each line gives the drivers: sold last week, in the shops, weeks of stock at that pace, posts this month, and:
+- **not posted** → post it first (buyers haven't seen it online);
+- **posted but not on offer** → *combo with X* only when X, the category's best seller, sold at least the mover
+  minimum and twice the slow bag (being seen isn't the problem; X brings the buyers), else *put it on an offer*;
+- **on offer and posted, still slow** → check price or design, or clear it.
+
+**Headline band centred on every slide (23 Nov 2026, user's call):** kicker and headline centred, balanced lines
+(`text-wrap: balance`, max 980px wide), weight 700, as on the Apple trial slides. The rest of the Apple layer
+(hero number, card boxes, quiet charts) is still a trial on the covers, Sales, Bag of the Month Kenya and Price per Bag.
+
+**Sharper charts (23 Nov 2026, user's call):** every chart draws at 2× (or the screen's ratio if higher:
+`Chart.defaults.devicePixelRatio`), so text and edges stay crisp on screen, in print and in the exports. Bag of the
+Month: solid bar colours, bold week labels, a one-row legend (the dotted averages are named on the chart).
+
+**A % on every bar (23 Nov 2026, user's call):** when a bar is too small to hold its % inside, the % joins the bar's
+end label in brackets ("83 (91%)"), on every chart (`fitsIn`, shared by the inText and barText plugins).
+
+**Improved, but the target rose (23 Nov 2026, user's call):** slide 1's Insight adds one line comparing the targets:
+this month's bag target vs last month's (`lib/product_targets.total_for`), the % rise against the % rise in sales
+(same days, tills), each month's % of its own target at the same day, what today's tills would be against last
+month's target, and how last month finished against its target. So the team sees the improvement and why the gap
+to target is still wide.
+
+### Why Did We Move? Shops inside each region (23 Nov 2026, user's call)
+
+Slide `why-shops`, Sales deck, right after Why Did We Move (`lib/weekly_sales._why_shops`). Two segments: the
+regions slide before it, then this one: a card per region (ordered by last week's change; green border up, red
+down), the region's total row on top and its shops under it. Columns: bags in each Sun-Sat week of the month (Wk 1
+to the report week), **WoW** = last week minus the week before, **MoM** = the page's month-on-month change on the
+same days. Online and Corporate have no shops under them. Headline: the region that rose most and the shops that
+drove it, and the one that fell most with its shops. Insight: regions whose total hides shops going the other way;
+the shops that moved most month on month. Biz Rec: the two shops that fell most (check stock, staff and offers),
+and the shop that rose most (share what it did with its region).
+
+**Largest first (23 Nov 2026, user's call):** every slide with a bar chart (3 bars or more) has a small
+"Sort: largest first" button by its caption: it orders the bars from the biggest to the smallest (all bar series added
+up), carrying their labels, colours and % with them; pressed again, the original order. Screen only (hidden in print,
+PowerPoint and infographic captures, which use the order on screen). The weakest bags in the category cards list the
+most stock in the shops first.
+
+**Week cells coloured (23 Nov 2026, user's call):** on the shops slide each week's bags are green when above the week before, red when below (Wk 1 against the last week of the previous month).
+
+**Nothing cut off (23 Nov 2026, user's call):** a table under a chart keeps its full height and the chart shrinks to
+make room (never below 110px). After any layout change, check every slide of both decks for hidden overflow (an
+Insight / Rec box, a graph panel, a card or table taller than its box, or anything past the slide's bottom edge) and
+fix it before handing over: the audit script in the session checks `scrollHeight > clientHeight` on those areas.
+
+### WhatsApp buyers by source, week by week (23 Nov 2026, user's call)
+
+Kenya's table (slide 2) shows the buyers from each source in every Sun-Sat week of the month (Wk 1 from the 1st to
+the report week), green when above the week before and red when below, then last week's chats, the share of them
+that bought, and the change on the week before. Sinza and Uganda (slide 3) show each market's weeks side by side.
+Kenya's Insight adds the month's run for the top sources ("returning customers 360 → 418 → 270").
+
+### Denri brand (23 Nov 2026, user's call)
+
+Black with gold, as on the Denri Odoo login: headline bands and covers near-black `#15130f`, kickers, week-pill dot
+and list numbers gold `#d4af5f` (accent `#c99a3e`), page background warm grey `#ecebe7`. The DR logo (circle, a
+mirrored D against an R, a rule, DENRI) is drawn as vector (inline SVG, Playfair Display) in cream `#f3ead6`: large on
+each cover above the spaced DENRI wordmark, a gold rule and the tagline "Be your own style, taste, reflection.",
+small at the left of every headline band, and in the infographic header. Cover titles in Playfair Display. Chart
+colours are unchanged.
+
+### Kenya Insight explained (23 Nov 2026, user's call)
+
+Slide 2's Insight carries the full explanation, written from the week's figures: Online path (follows with the
+Facebook and Instagram split → chats → buyers, and the WhatsApp buyers gained or lost; chats fall less than follows),
+Why WhatsApp moved (returning customers and Facebook-ad buyers against the week before; the ads' share of chats and
+how few ad chats buy), Shop path (walk-ins → buyers, the buyers gained or lost, who left without buying and what 5
+points of conversion is worth), Follower path (page chats → buyers, their conversion against ad chats, their share of
+WhatsApp buyers) and Net (WhatsApp + shops = the change in buyers, against the change in bags; which sources
+drove it, and chats against follows). The week-by-week runs sit in the source table, not repeated here. The slide gets a wider side column
+(`wideSide`).
+
+**Offer types, month to date (23 Nov 2026, user's call):** under each offer type's name, its month to date (the weeks added up) and its share of the month ("Month KES 9.9M (38%)"); each panel's title carries the month total.
+
+**Offers working, worded plainly (23 Nov 2026, user's call):** the Price per Bag slide names the two counts: offer types whose average price per bag is at or above the target (and which they are), and the bags and combos on offer, bag by bag, at or above it; the chips read "Offer types" and "Bags and combos on offer" under "At or above the target price".
+
+**New products by shop, bigger (23 Nov 2026, user's call):** the Dropped / Improved / Held steady boxes under the chart are off (the Insight lists the same shops), so the chart takes the full height; shop codes 12px bold, labels 11.5px.
+
+**Shops groups beside the chart (23 Nov 2026, user's call):** Dropped most / Improved most / Held steady sit in a column right of the chart, each a small table (Shop, Wk before, Last wk; last week red for drops, green for rises), the top 5 / 5 / 6 shops and "+n more".
+
+**Colours in plenty (23 Nov 2026, user's call):** on Sold vs monthly target, each bag's end label adds its two colours with the most stock (Kenya shops + Sinza and Uganda, from the New Products page's colour rows): "stock 56: Black 20, Grey 15".
+
+**Corporate target on both panels (23 Nov 2026, user's call):** the Corporate app strip shows the target (KES, Odoo's
+corporate target) and the share collected, with the share of the month gone (green when ahead of it, red when
+behind). Corporate-team clients paid at a till have no target of their own in Odoo (their sales count towards the
+shops' targets), so the shops strip shows their share of the same corporate target and the app + shops total
+against it.
+
+### Complete sentences (23 Nov 2026, user's call)
+
+Every Insight and Recommendation line is a complete sentence with a subject and a verb ("Over the month so far Jumbo
+sold 1,051 bags, 8.4% of Kenya's 12,514 bags…"), not a label and a list ("Whole month: 1,051 bags, …"). Sources are
+said in words (`src_words`: "Sinza's buyers from Instagram ads"). Longer sentences can't overflow: after the deck is
+shown, each Insight / Rec box whose text is taller than the box steps its text size down (to 10px at the least) until
+it fits (`fitBoxes`).

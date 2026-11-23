@@ -172,6 +172,36 @@ def wa_sources(market, s, e):
     return out
 
 
+def src_words(market_name, label):
+    """'Sinza's returning customers' / 'Sinza's buyers from Instagram ads' — a source said as words."""
+    lab = label.split(" (")[0]
+    keep = lab.split(" ")[0] in ("Instagram", "Facebook", "Website", "TikTok")
+    lab = lab if keep else lab[0].lower() + lab[1:]
+    return f"{market_name}'s {lab}" if lab.endswith("customers") else f"{market_name}'s buyers from {lab}"
+
+
+def month_weeks():
+    """Sun-to-Sat weeks of the month, Week 1 from the 1st, the last one ending on the report week's Saturday."""
+    s_, out = week_end.replace(day=1), []
+    while s_ <= week_end:
+        e_ = min(s_ + dt.timedelta(days=(5 - s_.weekday()) % 7), week_end)
+        out.append((s_, e_))
+        s_ = e_ + dt.timedelta(days=1)
+    return out
+
+
+def source_weeks(market):
+    """(week labels, {source: [bought per week]}, {source: [chats, bought] last week}) for one market."""
+    wks = month_weeks()
+    per = [wa_sources(market, a_, b_) for a_, b_ in wks]
+    labels = [f"Wk {i + 1} ({a_.day}–{b_.day} {b_:%b})" for i, (a_, b_) in enumerate(wks)]
+    srcs = {}
+    for i, d in enumerate(per):
+        for k, (c, bt) in d.items():
+            srcs.setdefault(k, [0] * len(per))[i] = bt
+    return labels, srcs, per[-1] if per else {}
+
+
 def source_change(market):
     """(rows [[label, chats, bought, bought before, change]], insight line, rec line or None) for last week."""
     cur = wa_sources(market, week_start, week_end)
@@ -247,25 +277,53 @@ if db_ok:
 insight1 = []
 if sales is not None and target:
     gone = round(current_day / days_in_month * 100)
-    insight1.append(f"<b>{fmt(sales)}</b> bags sold so far ({fmt(sales_pos)} at the shop tills + {fmt(corp_bags)} corporate): "
+    insight1.append(f"Denri has sold <b>{fmt(sales)}</b> bags so far ({fmt(sales_pos)} at the shop tills and {fmt(corp_bags)} corporate), "
                     f"<b>{field('salesPctAchieved')}</b> of the {fmt(target)} target, with {gone}% of the month gone.")
 wk = next((w for w in history if w.get("weekStart") == week_start.isoformat()), None)
 if wk:
     add = (wk.get("salesPct") or 0) - (wk.get("prevSalesPct") or 0)
-    insight1.append(f"Last week ({day_label(week_start)} to {day_label(week_end)}) sold <b>{fmt(wk.get('weeklySales'))}</b> bags "
+    insight1.append(f"Last week ({day_label(week_start)} to {day_label(week_end)}) Denri sold <b>{fmt(wk.get('weeklySales'))}</b> bags "
                     f"and took the month from {wk.get('prevSalesPct'):.1f}% to {wk.get('salesPct'):.1f}% of target (+{add:.1f} points).")
 if slide1.get("ok") and slide1.get("samePrev"):
     d = pct(slide1["tillToDate"], slide1["samePrev"])
-    insight1.append(f"At the tills, {fmt(slide1['tillToDate'])} bags by day {slide1['done']} vs {fmt(slide1['samePrev'])} by the same day of "
-                    f"{slide1['prevLabel']} (<b>{signed(d)}</b>).")
+    same_day = (f"At the tills, {fmt(slide1['tillToDate'])} bags by day {slide1['done']} vs {fmt(slide1['samePrev'])} by the same day of "
+                f"{slide1['prevLabel']} (<b>{signed(d)}</b>).")
+    # better than last month, but the target rose more: say both so the team sees the improvement and the gap
+    try:
+        from lib import product_targets
+        prev_t, _ = product_targets.total_for(prev_start)
+    except Exception:                                        # noqa: BLE001
+        prev_t = 0
+    if not (prev_t and target and slide1.get("prev")):
+        insight1.append(same_day)
+    else:
+        t_up = pct(target, prev_t)
+        prev_full = next((v for v in reversed(slide1["prev"]) if v is not None), None)
+        now_pct, then_pct = slide1["tillToDate"] / target * 100, slide1["samePrev"] / prev_t * 100
+        slide1["prevTarget"] = prev_t
+        insight1.append(f"<b>We improved, but the target rose more:</b> this month's target of {fmt(target)} is <b>{signed(t_up)}</b> on "
+                        f"{slide1['prevLabel']}'s {fmt(prev_t)}, while the tills are up only <b>{signed(d)}</b> ({fmt(slide1['tillToDate'])} "
+                        f"against {fmt(slide1['samePrev'])} by day {slide1['done']}). So we are at {now_pct:.0f}% of target, against "
+                        f"{slide1['prevLabel']}'s {then_pct:.0f}% at this point; on {slide1['prevLabel']}'s target we would be at "
+                        f"{slide1['tillToDate'] / prev_t * 100:.0f}%."
+                        + (f" {slide1['prevLabel']} finished at {fmt(prev_full)} bags ({prev_full / prev_t * 100:.0f}% of its target)." if prev_full else ""))
 so_far = pace.get("soFar") or {}
 if so_far.get("kes") is not None and rev_target:
     rev_now = (so_far.get("kes") or 0) + (so_far.get("corpKes") or 0)
     price = (beats.get("price") or {}).get("headline", "")
-    insight1.append(f"Revenue so far: <b>{kes_m(rev_now)}</b> ({rev_now / rev_target * 100:.1f}% of {kes_m(rev_target)}), "
+    insight1.append(f"Revenue so far is <b>{kes_m(rev_now)}</b> ({rev_now / rev_target * 100:.1f}% of {kes_m(rev_target)}), "
                     f"heading for {kes_m(rev_fc)} by month end. {price}")
+_cc = field("corporateClients") or []
+_coll = sum(c.get("receivedKes") or 0 for c in _cc)
+_owed = sum(max((c.get("agreedKes") or 0) - (c.get("receivedKes") or 0), 0) for c in _cc)
+_sc = field("shopCorporate") or {}
+_coll += sum(r.get("paidKes") or 0 for r in _sc.get("rows") or [])
+_owed += sum(r.get("balance") or 0 for r in _sc.get("rows") or [])
 if corp_beat.get("headline"):
-    insight1.append(corp_beat["headline"])
+    _ch = corp_beat["headline"].rstrip(".")
+    _ch = ("On the corporate side, " + _ch[len("Corporate: "):]) if _ch.startswith("Corporate: ") else _ch
+    insight1.append(_ch + (f"; Denri has collected {kes_m(_coll)} and is still owed <b>{kes_m(_owed)}</b>"
+                           " (Corporate app and shops)." if _cc or _sc else "."))
 rec1 = [r for r in (summary.get("rec"), (beats.get("projections") or {}).get("rec"), corp_beat.get("rec")) if r]
 
 # ── Slide 2: Did new followers sell bags? (Kenya) ─────────────────────────────
@@ -397,10 +455,76 @@ if db_ok:
                     rest = [r for r in src_rows if r not in keep]
                     if rest:
                         keep.append(["Other"] + [sum(r[i] for r in rest) for i in (1, 2, 3, 4)])
-                    slide2["table"] = {"title": "WhatsApp buyers by source, Kenya",
-                                       "cols": ["Source", "Chats", "Bought", "Week before", "Change"],
-                                       "rows": [[r[0], fmt(r[1]), fmt(r[2]), fmt(r[3]), f"{'+' if r[4] > 0 else ''}{r[4]}"]
-                                                for r in keep], "mark": FOLLOWER_PATH}
+                    try:
+                        wl, sw, last = source_weeks("KE")
+                        names = [r[0] for r in keep if r[0] != "Other"]
+                        other = [k for k in sw if k not in names]
+                        rows_k = []
+                        for k in names + (["Other"] if other else []):
+                            ks = [k] if k != "Other" else other
+                            wk_b = [sum(sw.get(x, [0] * len(wl))[i] for x in ks) for i in range(len(wl))]
+                            ch = sum(last.get(x, [0, 0])[0] for x in ks)
+                            bt = sum(last.get(x, [0, 0])[1] for x in ks)
+                            d_ = wk_b[-1] - wk_b[-2] if len(wk_b) > 1 else 0
+                            rows_k.append([k] + [fmt(v) for v in wk_b] + [fmt(ch), f"{bt / ch * 100:.0f}%" if ch else "—",
+                                                                          f"{'+' if d_ > 0 else ''}{d_}"])
+                        slide2["table"] = {"title": "WhatsApp buyers by source, Kenya, week by week (green = more than the week before, red = fewer)",
+                                           "cols": ["Source"] + [w.split(" (")[0] for w in wl] + ["Chats last wk", "Bought %", "Change"],
+                                           "rows": rows_k, "mark": FOLLOWER_PATH, "trend": [1, len(wl)]}
+                        # the month's story per source: which ones are climbing or sliding week after week
+                        story = []
+                        moved = sorted((k for k in names if len(sw.get(k) or []) >= 3),        # the two that moved most
+                                       key=lambda k: -(max(sw[k]) - min(sw[k])))[:2]
+                        for k in moved:
+                            story.append(f"{k.split(' (')[0].lower()} {' → '.join(fmt(x) for x in sw[k])}")
+                        if story:
+                            # one bullet: the follower path, then the month's biggest runs (the old "biggest change" repeats it)
+                            fp_i = next((i for i, ln in enumerate(insight2) if ln.startswith("Follower path")), None)
+                            run = "Month so far: " + "; ".join(story) + "."
+                            if fp_i is not None:
+                                head_ = insight2[fp_i].split(" Biggest change:")[0].replace(" of WhatsApp buyers", "")
+                                insight2[fp_i] = head_ + " " + run
+                            else:
+                                insight2.append(run)
+                    except Exception as e_:                      # noqa: BLE001
+                        print(f"  WARNING: week-by-week source table skipped: {e_}")
+                        slide2["table"] = {"title": "WhatsApp buyers by source, Kenya",
+                                           "cols": ["Source", "Chats", "Bought", "Week before", "Change"],
+                                           "rows": [[r[0], fmt(r[1]), fmt(r[2]), fmt(r[3]), f"{'+' if r[4] > 0 else ''}{r[4]}"]
+                                                    for r in keep], "mark": FOLLOWER_PATH}
+                # the full explanation (user's call, 23 Nov 2026): each path with its cause, then the net, written from
+                # the week's figures so it holds every week (docs/weekly-report.md › Kenya Insight explained)
+                if src_rows:
+                    R_ = {r[0]: r for r in src_rows}
+                    sg = lambda v: f"{'+' if v > 0 else ''}{fmt(v)}"                       # noqa: E731
+                    pc_ = lambda x, y: f"{x / y * 100:.0f}%" if y else "—"                 # noqa: E731
+                    ret, fba, fp_ = R_.get("Returning customers"), R_.get("Facebook ads"), R_.get(FOLLOWER_PATH)
+                    wa_b = sum(r[2] for r in src_rows)
+                    lines = [f"<b>Online path</b>: {fmt(a['follows'])} new follows ({signed(pf)}; Facebook {fmt(b['fb'])} → "
+                             f"{fmt(a['fb'])}, Instagram {fmt(b['ig'])} → {fmt(a['ig'])}) → {fmt(c1['chats'])} WhatsApp chats "
+                             f"({signed(pct(c1['chats'], c0['chats']))}) → <b>{fmt(c1['purchased'])}</b> bought "
+                             f"({c1['performance']:.1f}%, was {c0['performance']:.1f}%): <b>{sg(d_wa)} WhatsApp buyers</b>."]
+                    why = [f"returning customers bought {fmt(ret[2])} vs {fmt(ret[3])} ({sg(ret[4])})" for _ in [0] if ret]
+                    why += [f"Facebook-ad buyers {fmt(fba[2])} vs {fmt(fba[3])} ({sg(fba[4])})" for _ in [0] if fba]
+                    if why:
+                        lines.append(f"<b>Why WhatsApp {'fell' if d_wa < 0 else 'moved'}</b>: " + ", ".join(why) + ". "
+                                     + (f"Ads brought {fmt(c1['ads'])} chats ({pc_(c1['ads'], c1['chats'])} of all) but only "
+                                        f"{pc_(fba[2], fba[1])} of Facebook-ad chats bought." if fba else ""))
+                    lines.append(f"<b>Shop path</b>: {fmt(w1['counted'])} walk-ins ({signed(pct(w1['counted'], w0['counted']))}) → "
+                                 f"<b>{fmt(w1['purchased'])}</b> bought ({w1['conversion']:.1f}%, was {w0['conversion']:.1f}%): "
+                                 f"<b>{sg(d_walk)} buyers</b>. {fmt(w1['didntBuy'])} left without buying; 5 points more conversion "
+                                 f"= about {fmt(extra)} more buyers a week.")
+                    if fp_:
+                        lines.append(f"<b>Follower path</b>: {fmt(fp_[1])} page chats → {fmt(fp_[2])} bought "
+                                     f"(<b>{pc_(fp_[2], fp_[1])}</b>, the best rate" + (f"; ad chats {pc_(fba[2], fba[1])}" if fba else "")
+                                     + f"), only {pc_(fp_[2], wa_b)} of WhatsApp buyers ({sg(fp_[4])}).")
+                    falls_ = sorted([r for r in src_rows if r[4] < 0], key=lambda r: r[4])[:2]
+                    lines.append(f"<b>Net</b>: WhatsApp {sg(d_wa)} and shops {sg(d_walk)} = {sg(d_wa + d_walk)} buyers; bags "
+                                 f"{fmt(b['bags'])} → {fmt(a['bags'])} ({signed(pb)}), as some buy more than one. "
+                                 + ("The change comes from " + " and ".join(f"{r[0].split(' (')[0].lower()} ({sg(r[4])})" for r in falls_)
+                                    + f", not from follows: chats moved {signed(pct(c1['chats'], c0['chats']))} while follows moved {signed(pf)}." if falls_ and d_wa < 0 else ""))
+                    insight2[:] = lines
+                    slide2["wideSide"] = True
                 if src_rec:
                     rec2.append(src_rec)
                 elif d_wa < 0 and (pct(c1["purchased"], c0["purchased"]) or 0) <= -10:
@@ -483,10 +607,10 @@ if db_ok:
                            "follows": [round(v) if v is not None else None for v in follows], "bags": [round(v) for v in sold],
                            "visitors": [round(v) if v is not None else None for v in visitors]})
             insight2b.append(
-                f"<b>{name}</b>, last week: <b>+{fmt(f1)}</b> new follows"
+                f"Last week <b>{name}</b> gained <b>{fmt(f1)}</b> new follows"
                 + (f" ({signed(pct(f1, f0))})" if full_prev and f0 else "")
-                + f", <b>{fmt(b1)}</b> bags at the till ({signed(pct(b1, b0))}), {fmt(chats)} WhatsApp chats"
-                + (f", {fmt(sum(wk_vis))} shop visitors ({len(wk_vis)} of 7 days counted)." if wk_vis else "."))
+                + f", sold <b>{fmt(b1)}</b> bags at the till ({signed(pct(b1, b0))} on the week before) and had {fmt(chats)} WhatsApp chats"
+                + (f" and {fmt(sum(wk_vis))} shop visitors ({len(wk_vis)} of 7 days counted)." if wk_vis else "."))
             lines_hl.append((name, f1, b1, sc, n_days))
             ft_daily[code] = pd.DataFrame({"follows": follows, "chats": [wa.get(d, 0.0) for d in days_], "bags": sold},
                                           index=pd.to_datetime(days_))
@@ -520,15 +644,41 @@ if db_ok:
                     rows_t.append(["Other"] + [other(v) for v in srcs.values()])
                 slide2b_table = {"title": "WhatsApp buyers by source last week (change on the week before)",
                                  "cols": ["Source"] + list(srcs), "mark": FOLLOWER_PATH, "rows": rows_t}
+                try:
+                    wk2 = {nm: source_weeks(cd) for cd, nm in (("TZ", "Sinza"), ("UG", "Uganda"))}
+                    nw = len(next(iter(wk2.values()))[0])
+                    rows_w = []
+                    for k in keep + (["Other"] if rest else []):
+                        ks = [k] if k != "Other" else rest
+                        row = [k]
+                        for nm, (wl_, sw_, _) in wk2.items():
+                            row += [fmt(sum(sw_.get(x, [0] * nw)[i] for x in ks)) for i in range(nw)]
+                        if any(c != "0" for c in row[1:]):            # a source with no buyers all month adds nothing
+                            rows_w.append(row)
+                    short = [w.split(" (")[0] for w in next(iter(wk2.values()))[0]]
+                    # each market's biggest run over the month, Wk 1 to last week
+                    runs = []
+                    for nm, (wl_, sw_, _) in wk2.items():
+                        mv = max(sw_.items(), key=lambda kv: abs(kv[1][-1] - kv[1][0]), default=None)
+                        if mv and mv[1][-1] != mv[1][0]:
+                            runs.append(f"{src_words(nm, mv[0])} ({' → '.join(fmt(x) for x in mv[1])})")
+                    if runs:
+                        insight2b.append("Since Wk 1 the biggest shifts in WhatsApp buyers were " + " and ".join(runs) + ".")
+                    slide2b_table = {"title": "WhatsApp buyers by source, week by week (green = more than the week before, red = fewer)",
+                                     "cols": ["Source"] + [f"{nm} {w}" for nm in wk2 for w in short],
+                                     "mark": FOLLOWER_PATH, "rows": rows_w,
+                                     "trend": [[1 + j * nw, nw + j * nw] for j in range(len(wk2))]}
+                except Exception as e_:                          # noqa: BLE001
+                    print(f"  WARNING: Sinza/Uganda week-by-week source table skipped: {e_}")
                 fpb = ", ".join(f"{nm} {fmt(next((r[2] for r in v[0] if r[0] == FOLLOWER_PATH), 0))}" for nm, v in srcs.items())
                 big = []
                 for nm, v in srcs.items():
                     if v[0]:
                         r = max(v[0], key=lambda r: abs(r[4]))
                         if r[4]:
-                            big.append(f"{nm} {r[0].split(' (')[0].lower()} {'+' if r[4] > 0 else ''}{r[4]}")
-                insight2b.append(f"WhatsApp buyers from the follower path: {fpb}."
-                                 + (f" Biggest change: {', '.join(big)}." if big else ""))
+                            big.append(f"{src_words(nm, r[0])} ({'+' if r[4] > 0 else ''}{r[4]})")
+                insight2b.append(f"Buyers who came through the pages (the follower path): {fpb}."
+                                 + (f" The biggest change on the week before was {' and '.join(big)}." if big else ""))
                 for nm, (_, _, rc_) in srcs.items():
                     if rc_:
                         rec2b.append(f"{nm}: {rc_}")
@@ -566,10 +716,14 @@ def _ft_band(name: str, f: dict) -> dict:
             ["Days not counted", fmt(n["daysNotCounted"]), "walk-ins bought, no count"],
             ["Undercounted days", fmt(n["undercounted"]), "more purchases than counted"]]},
         {"label": "WhatsApp", "note": f"chats handled by every {name} shop, from the WhatsApp Monitor", "items": [
-            ["Performance", p(a["performance"]), f"purchased ÷ chats · {fmt(a['purchased'])}/{fmt(a['chats'])}"],
-            ["Ads", fmt(a["ads"]), f"chats from ads · {p(a['adConversion'])} conv" if a["ads"] else "chats from ads · none"],
+            # the 4th field is printed on the tile: the people behind each figure (user's call, 23 Nov 2026)
+            ["Performance", p(a["performance"]), "chats that bought ÷ all chats",
+             f"{fmt(a['purchased'])} of {fmt(a['chats'])} bought"],
+            ["Ads", fmt(a["ads"]), "chats that came from ads",
+             f"{fmt(a.get('adPurchased', 0))} bought" if a["ads"] else "none"],
             ["Avg response", "—" if a["avgResponse"] is None else f"{a['avgResponse']:.1f} min",
-             f"to answer a chat · {fmt(a['sampled'])} sampled"]]},
+             "average time to answer a chat, over the chats with a timed reply",
+             f"{fmt(a['sampled'])} of {fmt(a['chats'])} timed"]]},
     ]}
 
 
@@ -600,15 +754,16 @@ try:
         }.get(ke["code"], f"{ke['name']}: {ke['verdict']}")
         for r in results:
             if r["code"] == "early":
-                ftest_slide["insight"].append(f"<b>{r['name']}</b>: {r['verdict']}")
+                ftest_slide["insight"].append(f"<b>{r['name']}</b> is {r['verdict'][0].lower() + r['verdict'][1:]}")
                 continue
             L = r["links"]
             short = lambda k, nm: (f"{nm} {L[k]['score']:.2f} ({'passed' if L[k]['passed'] else f'chance {L[k][chr(112)] * 100:.0f}%'})"  # noqa: E731
                                    if L[k].get("score") is not None else f"{nm} n/a")
-            ftest_slide["insight"].append(f"<b>{r['name']}</b>, {r['days']} days: " + ", ".join(
-                short(k, nm) for k, nm in (("f2c", "follows → chats"), ("c2b", "chats → bags"), ("f2b", "follows → bags"))) + ".")
-        ftest_slide["insight"].append("Score 0 = no link, 1 = always together; chance = how often shuffled days score as "
-                                      "high, so a high chance means it could be luck. A link passes at 0.3+ and under 5%.")
+            ftest_slide["insight"].append(f"Over {r['days']} days in <b>{r['name']}</b>, the link scores were: " + ", ".join(
+                short(k, nm) for k, nm in (("f2c", "follows to chats"), ("c2b", "chats to bags"), ("f2b", "follows to bags"))) + ".")
+        ftest_slide["insight"].append("A score of 0 means no link and 1 means the two always move together. The chance is how "
+                                      "often shuffled days score as high, so a high chance means the link could be luck. A link "
+                                      "passes at a score of 0.3 or more with a chance under 5%.")
         recs = {"chats": "Grow follows on purpose: they turn into WhatsApp buyers. Point every post to WhatsApp.",
                 "awareness": "Keep growing follows for awareness, and judge them by sales a week later, not by chats.",
                 "leak": "Follows bring chats that don't buy: follow up page chats within the hour and send prices and pictures.",
@@ -665,6 +820,13 @@ WR = {
         ftest_slide,
     ],
 }
+# Walk-ins and WhatsApp, Week 1 to latest and month to date (docs/weekly-report.md), both decks
+if db_ok:
+    try:
+        from lib import weekly_foot
+        WR["slides"].append(weekly_foot.slide(week_start, week_end))
+    except Exception as e:                                   # noqa: BLE001
+        print(f"  WARNING: walk-ins and WhatsApp week-by-week slide skipped: {e}")
 
 # Product Performance slides, Kenya then Uganda then Tanzania (docs/weekly-report.md › Product Performance slides)
 if db_ok:
@@ -694,7 +856,7 @@ try:
 except Exception as e:                                       # noqa: BLE001
     print(f"  WARNING: sales slides skipped: {e}")
 MARKETING_ONLY = {"followers", "followers-tzug", "follower-test"}
-SALES_FIRST = ["sales", "weekly-perf", "why-moved", "what-if", "price", "corporate"]
+SALES_FIRST = ["sales", "weekly-perf", "why-moved", "why-shops", "what-if", "price", "corporate"]
 ids = [sl["id"] for sl in WR["slides"]]
 sales_only = {sl["id"] for sl in WR["slides"] if sl.get("decks") == ["sales"]}
 WR["decks"] = {

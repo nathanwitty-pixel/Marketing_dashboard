@@ -60,7 +60,7 @@ def run(daily: pd.DataFrame, seed: int = 7) -> dict:
     if not out["ok"]:
         ready = start + dt.timedelta(days=MIN_DAYS - 1) if start else None
         out.update(code="early", ready=ready.isoformat() if ready else None,
-                   verdict=f"Too early: {days} days of history; the test runs from {ready:%a} {ready.day} {ready:%b}." if ready
+                   verdict=f"Too early to test: there are only {days} days of history so far, and the test starts on {ready:%a} {ready.day} {ready:%b}." if ready
                    else "No follower data yet.")
         return out
     adj = d / d.groupby(d.index.dayofweek).transform("mean")         # weekday-adjusted
