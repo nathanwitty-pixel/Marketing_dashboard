@@ -692,3 +692,7 @@ The dashboard rebuilds this page every hour. If an Odoo query fails during a reb
 - Odoo marketing reads (`lib/odoo_marketing._q`) retry once after 3 seconds.
 - If a slide still has no graph or headline, the generator keeps that slide from the page already on disk, provided that page is for the **same report week** and had the slide with data. The slide gets a `carried` field (the build time it came from) and the run prints a `NOTE`. A slide missing altogether is put back after the slide it followed.
 - A new report week never takes slides from the old week.
+
+## Kenya Insight: say what each change is against (23 Nov 2026)
+
+Every change in the five Kenya follower lines (Online path, Why WhatsApp fell, Shop path, Follower path, Net) is written in words against the week before, never as a bare sign: "641 new follows last week, 55% fewer than the week before (1,422)", "148 fewer", "3% fewer". Platforms read "Facebook 899 to 242". The headline says "on the week before" too. The "5 more points of conversion" figure lives in the recommendation only, so the Insight fits.

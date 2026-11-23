@@ -431,7 +431,7 @@ if db_ok:
                 parts.sort(key=lambda t: -t[0])
                 linked = sf is not None and sf >= LINK
                 headline2 = (f"Kenya sold {fmt(a['bags'])} bags last week ({signed(pb)}): {parts[0][1]} while {parts[1][1]}; "
-                             f"new follows {up(pf)} {abs(pf):.0f}%"
+                             f"new follows {up(pf)} {abs(pf):.0f}% on the week before"
                              + (" and moved with sales." if linked else " and didn't move sales."))
                 insight2.append(
                     f"<b>Online path</b>: {fmt(a['follows'])} new follows ({signed(pf)}) → {fmt(c1['chats'])} WhatsApp chats "
@@ -500,29 +500,39 @@ if db_ok:
                     pc_ = lambda x, y: f"{x / y * 100:.0f}%" if y else "—"                 # noqa: E731
                     ret, fba, fp_ = R_.get("Returning customers"), R_.get("Facebook ads"), R_.get(FOLLOWER_PATH)
                     wa_b = sum(r[2] for r in src_rows)
-                    lines = [f"<b>Online path</b>: {fmt(a['follows'])} new follows ({signed(pf)}; Facebook {fmt(b['fb'])} → "
-                             f"{fmt(a['fb'])}, Instagram {fmt(b['ig'])} → {fmt(a['ig'])}) → {fmt(c1['chats'])} WhatsApp chats "
-                             f"({signed(pct(c1['chats'], c0['chats']))}) → <b>{fmt(c1['purchased'])}</b> bought "
-                             f"({c1['performance']:.1f}%, was {c0['performance']:.1f}%): <b>{sg(d_wa)} WhatsApp buyers</b>."]
-                    why = [f"returning customers bought {fmt(ret[2])} vs {fmt(ret[3])} ({sg(ret[4])})" for _ in [0] if ret]
-                    why += [f"Facebook-ad buyers {fmt(fba[2])} vs {fmt(fba[3])} ({sg(fba[4])})" for _ in [0] if fba]
+                    def vs_(p_, more="more", less="fewer"):      # "55% fewer than the week before"
+                        return "the same as the week before" if not p_ else f"{abs(p_):.0f}% {more if p_ > 0 else less} than the week before"
+                    def n_(v, unit=""):                        # "148 fewer" / "52 more buyers"
+                        return "no change" if not v else f"{fmt(abs(v))} {'more' if v > 0 else 'fewer'}" + (f" {unit}" if unit else "")
+                    dc_ = pct(c1['chats'], c0['chats'])
+                    lines = [f"<b>Online path</b>: {fmt(a['follows'])} new follows last week, {vs_(pf)} ({fmt(b['follows'])}): "
+                             f"Facebook {fmt(b['fb'])} to {fmt(a['fb'])}, Instagram {fmt(b['ig'])} to {fmt(a['ig'])}. "
+                             f"WhatsApp had {fmt(c1['chats'])} chats ({abs(dc_ or 0):.0f}% {'fewer' if (dc_ or 0) < 0 else 'more'}) and "
+                             f"<b>{fmt(c1['purchased'])}</b> bought, {c1['performance']:.1f}% of chats against {c0['performance']:.1f}%: "
+                             f"<b>{n_(d_wa, 'WhatsApp buyers')}</b>."]
+                    why = [f"{fmt(ret[2])} returning customers bought, against {fmt(ret[3])} the week before ({n_(ret[4])})"
+                           for _ in [0] if ret]
+                    why += [f"Facebook ads brought {fmt(fba[2])} buyers against {fmt(fba[3])} ({n_(fba[4])})" for _ in [0] if fba]
                     if why:
-                        lines.append(f"<b>Why WhatsApp {'fell' if d_wa < 0 else 'moved'}</b>: " + ", ".join(why) + ". "
-                                     + (f"Ads brought {fmt(c1['ads'])} chats ({pc_(c1['ads'], c1['chats'])} of all) but only "
-                                        f"{pc_(fba[2], fba[1])} of Facebook-ad chats bought." if fba else ""))
-                    lines.append(f"<b>Shop path</b>: {fmt(w1['counted'])} walk-ins ({signed(pct(w1['counted'], w0['counted']))}) → "
-                                 f"<b>{fmt(w1['purchased'])}</b> bought ({w1['conversion']:.1f}%, was {w0['conversion']:.1f}%): "
-                                 f"<b>{sg(d_walk)} buyers</b>. {fmt(w1['didntBuy'])} left without buying; 5 points more conversion "
-                                 f"= about {fmt(extra)} more buyers a week.")
+                        lines.append(f"<b>Why WhatsApp {'fell' if d_wa < 0 else 'moved'}</b>: " + ", and ".join(why) + ". "
+                                     + (f"Ads started {pc_(c1['ads'], c1['chats'])} of chats, but only "
+                                        f"{pc_(fba[2], fba[1])} of Facebook-ad chatters bought." if fba else ""))
+                    lines.append(f"<b>Shop path</b>: {fmt(w1['counted'])} walk-ins, {vs_(pct(w1['counted'], w0['counted']))}; "
+                                 f"<b>{fmt(w1['purchased'])}</b> bought, {w1['conversion']:.1f}% of walk-ins against "
+                                 f"{w0['conversion']:.1f}%: <b>{n_(d_walk, 'shop buyers')}</b>. {fmt(w1['didntBuy'])} left without "
+                                 f"buying.")
                     if fp_:
-                        lines.append(f"<b>Follower path</b>: {fmt(fp_[1])} page chats → {fmt(fp_[2])} bought "
-                                     f"(<b>{pc_(fp_[2], fp_[1])}</b>, the best rate" + (f"; ad chats {pc_(fba[2], fba[1])}" if fba else "")
-                                     + f"), only {pc_(fp_[2], wa_b)} of WhatsApp buyers ({sg(fp_[4])}).")
+                        lines.append(f"<b>Follower path</b>: {fmt(fp_[1])} chats came from people who found our pages and "
+                                     f"{fmt(fp_[2])} bought (<b>{pc_(fp_[2], fp_[1])}</b>, the best rate"
+                                     + (f"; ad chats {pc_(fba[2], fba[1])}" if fba else "")
+                                     + f"), but that is only {pc_(fp_[2], wa_b)} of WhatsApp buyers, {n_(fp_[4])} than the week before.")
                     falls_ = sorted([r for r in src_rows if r[4] < 0], key=lambda r: r[4])[:2]
-                    lines.append(f"<b>Net</b>: WhatsApp {sg(d_wa)} and shops {sg(d_walk)} = {sg(d_wa + d_walk)} buyers; bags "
-                                 f"{fmt(b['bags'])} → {fmt(a['bags'])} ({signed(pb)}), as some buy more than one. "
-                                 + ("The change comes from " + " and ".join(f"{r[0].split(' (')[0].lower()} ({sg(r[4])})" for r in falls_)
-                                    + f", not from follows: chats moved {signed(pct(c1['chats'], c0['chats']))} while follows moved {signed(pf)}." if falls_ and d_wa < 0 else ""))
+                    lines.append(f"<b>Net</b>: WhatsApp had {n_(d_wa, 'buyers')} and the shops {n_(d_walk)}: "
+                                 f"{n_(d_wa + d_walk)} in all than the week before. Bags sold went from {fmt(b['bags'])} to "
+                                 f"{fmt(a['bags'])} ({abs(pb or 0):.0f}% {'fewer' if (pb or 0) < 0 else 'more'}), as some buy more than one. "
+                                 + ("The drop comes from " + " and ".join(f"{(lambda t: t if t.startswith('Facebook') else t.lower())(r[0].split(' (')[0])} ({n_(r[4])})" for r in falls_)
+                                    + f", not follows: chats {'fell' if (dc_ or 0) < 0 else 'rose'} {abs(dc_ or 0):.0f}% while "
+                                      f"follows {'fell' if pf < 0 else 'rose'} {abs(pf):.0f}%." if falls_ and d_wa < 0 else ""))
                     insight2[:] = lines
                     slide2["wideSide"] = True
                 if src_rec:

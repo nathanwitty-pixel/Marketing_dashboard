@@ -1,6 +1,6 @@
 {
  "month": "November 2026",
- "generated": "23 Nov 2026 02:37",
+ "generated": "23 Nov 2026 09:09",
  "range": "01 Nov – 30 Nov 2026",
  "rows": [
   {
@@ -910,22 +910,22 @@
    "label": "Combos",
    "on": true,
    "where": "Kenya, Tanzania, Uganda",
-   "units": 1259.0,
-   "revenue": 2719574,
+   "units": 1261.0,
+   "revenue": 2724573,
    "bags": [
     {
      "bag": "TRAVEL",
      "category": "TRAVEL",
      "tier": "Core",
-     "units": 312.0,
-     "revenue": 698945
+     "units": 313.0,
+     "revenue": 701444
     },
     {
      "bag": "SAFIRI TRAVEL",
      "category": "TRAVEL",
      "tier": "Premium",
-     "units": 125.0,
-     "revenue": 311705
+     "units": 126.0,
+     "revenue": 314205
     },
     {
      "bag": "JUMBO",
