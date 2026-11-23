@@ -1650,9 +1650,9 @@
     "semantic_hash": ""
   },
   "html/weekly_report.html": {
-    "mtime": 1795395188.2824452,
-    "seen": 1795395259.9621544,
-    "ast_hash": "138cd8e96c802c6499547cc383f1a8fc",
+    "mtime": 1795401397.677064,
+    "seen": 1795402079.271744,
+    "ast_hash": "6477e350f9d38cf1b69f3b3920710b52",
     "semantic_hash": ""
   },
   "lib/weekly_products.py": {
