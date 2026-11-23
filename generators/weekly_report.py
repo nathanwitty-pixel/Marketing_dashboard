@@ -857,8 +857,32 @@ except Exception as e:                                       # noqa: BLE001
     print(f"  WARNING: sales slides skipped: {e}")
 MARKETING_ONLY = {"followers", "followers-tzug", "follower-test"}
 SALES_FIRST = ["sales", "weekly-perf", "why-moved", "why-shops", "what-if", "price", "corporate"]
+# A slide whose Odoo query failed this run (a blip on the read replica) keeps the last good build of the same
+# week instead of going blank (docs/weekly-report.md › Keep the last good slide).
+try:
+    with open(paths.html("weekly_report.html"), encoding="utf-8") as f:
+        _m = re.search(r"const WR = (\{.*?\});\s*</script>\s*<!-- WR_DATA_END -->", f.read(), flags=re.DOTALL)
+    _old = json.loads(_m.group(1)) if _m else {}
+except Exception:                                            # noqa: BLE001
+    _old = {}
+if _old.get("weekStart") == str(WR.get("weekStart")):
+    _good = {sl.get("id"): sl for sl in _old.get("slides") or [] if (sl.get("graph") or {}).get("ok") and sl.get("headline")}
+    for _i, _sl in enumerate(WR["slides"]):
+        if not ((_sl.get("graph") or {}).get("ok") and _sl.get("headline")) and _sl.get("id") in _good:
+            WR["slides"][_i] = {**_good[_sl["id"]], "carried": _old.get("built")}
+            print(f"  NOTE: slide {_sl['id']} had no data this run; kept the build from {_old.get('built')}")
+    _have = {sl["id"] for sl in WR["slides"]}
+    _prev_id = None
+    for _sl in _old.get("slides") or []:
+        if _sl.get("id") in _good and _sl["id"] not in _have:        # put it back after the slide it followed
+            _at = next((k + 1 for k, x in enumerate(WR["slides"]) if x["id"] == _prev_id), 0)
+            WR["slides"].insert(_at, {**_sl, "carried": _old.get("built")})
+            _have.add(_sl["id"])
+            print(f"  NOTE: slide {_sl['id']} missing this run; kept the build from {_old.get('built')}")
+        _prev_id = _sl.get("id")
+
 ids = [sl["id"] for sl in WR["slides"]]
-sales_only = {sl["id"] for sl in WR["slides"] if sl.get("decks") == ["sales"]}
+sales_only ={sl["id"] for sl in WR["slides"] if sl.get("decks") == ["sales"]}
 WR["decks"] = {
     "marketing": [i for i in ids if i not in sales_only],
     "sales": [i for i in SALES_FIRST if i in ids] + [i for i in ids if i not in MARKETING_ONLY and i not in SALES_FIRST],

@@ -1488,9 +1488,9 @@
     "semantic_hash": ""
   },
   "lib/odoo_marketing.py": {
-    "mtime": 1795355723.8691897,
-    "seen": 1795356183.4344962,
-    "ast_hash": "81b6eda4cab35a0709f3cb2bc0cf66ab",
+    "mtime": 1795412990.5702415,
+    "seen": 1795413204.0459392,
+    "ast_hash": "0f5f9ccd4aa101a2a4b7ffa3099f831f",
     "semantic_hash": ""
   },
   "data/shop_corporate_history.json": {
@@ -1638,21 +1638,21 @@
     "semantic_hash": ""
   },
   "generators/weekly_report.py": {
-    "mtime": 1795393177.6251922,
-    "seen": 1795393372.0310032,
-    "ast_hash": "ddf46b708c37ae0ac01f8e1e76b0956d",
+    "mtime": 1795412980.470336,
+    "seen": 1795413204.045844,
+    "ast_hash": "83565ea6383859f50e158419142b01c0",
     "semantic_hash": ""
   },
   "docs/weekly-report.md": {
-    "mtime": 1795395096.4967155,
-    "seen": 1795395259.9621274,
-    "ast_hash": "8ae4f94461db570ffb1124f2fb7fe8df",
+    "mtime": 1795413182.0225406,
+    "seen": 1795413204.0463943,
+    "ast_hash": "06ac812ff4debd6f6c6e4c0c86444429",
     "semantic_hash": ""
   },
   "html/weekly_report.html": {
-    "mtime": 1795401397.677064,
-    "seen": 1795402079.271744,
-    "ast_hash": "6477e350f9d38cf1b69f3b3920710b52",
+    "mtime": 1795413180.9380991,
+    "seen": 1795413204.0464818,
+    "ast_hash": "80ff7a4f1cd411473df07840327f49b1",
     "semantic_hash": ""
   },
   "lib/weekly_products.py": {

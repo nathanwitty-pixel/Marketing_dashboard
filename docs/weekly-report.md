@@ -684,3 +684,11 @@ lost. Ctrl+P still prints the page with the print styles.
 **Kept out of the dashboard's light-mode recolouring (23 Nov 2026, fix):** the page carries `<html data-v5-off>`, and
 `assets/v5_theme.js` leaves such a page alone. The theme was turning the cover's and title band's cream text dark
 brown (dark on dark) and recolouring chart text, on screen and in the exports. The report has its own light design.
+
+## Keep the last good slide
+
+The dashboard rebuilds this page every hour. If an Odoo query fails during a rebuild (a blip on the read replica), the slides that need it would come out empty ("The graph needs Odoo…", "No headline this week"). To stop a good page being overwritten by a worse one:
+
+- Odoo marketing reads (`lib/odoo_marketing._q`) retry once after 3 seconds.
+- If a slide still has no graph or headline, the generator keeps that slide from the page already on disk, provided that page is for the **same report week** and had the slide with data. The slide gets a `carried` field (the build time it came from) and the run prints a `NOTE`. A slide missing altogether is put back after the slide it followed.
+- A new report week never takes slides from the old week.

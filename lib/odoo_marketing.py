@@ -22,12 +22,15 @@ WA_ALIAS = {"LAPTOP BACKPACK FOR SCHOOL": "CODE 3", "ANKARA LAPTOP BACKPACK": "C
 
 
 def _q(sql, params=None):
-    try:
-        df = db.run_query(sql, params or {})
-    except Exception as ex:                                  # noqa: BLE001
-        print(f"  Odoo marketing data unavailable ({ex})")
-        return None
-    return df
+    for attempt in (1, 2):                                   # one retry: replica read cancels are usually a blip
+        try:
+            return db.run_query(sql, params or {})
+        except Exception as ex:                              # noqa: BLE001
+            if attempt == 2:
+                print(f"  Odoo marketing data unavailable ({ex})")
+                return None
+            import time
+            time.sleep(3)
 
 
 def _title_bag(title, key):
