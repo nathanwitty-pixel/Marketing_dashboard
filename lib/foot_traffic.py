@@ -11,6 +11,8 @@ FOOTFALL_SALES and WA_SHOP_KPIS, views/9_Footfall_Traffic.py (the three KPI rows
 Rules (as on the Foot Traffic page):
   * A count of 0 stands only when no walk-in bought that day; otherwise it is "not counted" (NaN).
   * Conversion and revenue per walk-in use counted days only.
+  * A walk-in order rung under a shop's own number or a shop attendant's is not a purchased
+    walk-in (its money still counts in walk-in revenue).
   * Hilton is left out of Kenya's walk-ins: it counts mall / event traffic (lib/footfall.HILTON), as on the
     Followers vs sales chart.
 """
@@ -43,8 +45,26 @@ WHERE f.date BETWEEN CAST(:start_date AS DATE) AND CAST(:end_date AS DATE)
 GROUP BY 1, 2
 """
 
+# Denri's own numbers (each shop's receipt phones, and the shop attendants under
+# HR → Employees → Sales / Shop Attendants): a walk-in order rung under one of
+# them is not a purchased walk-in (Denri dashboard queries._STAFF_PHONE_KEYS).
+_STAFF_KEYS = """
+    SELECT RIGHT(REGEXP_REPLACE(num, '[^0-9]', '', 'g'), 9) AS key
+    FROM pos_config pc
+    CROSS JOIN LATERAL unnest(string_to_array(pc.receipt_phones, ',')) AS num
+    WHERE pc.active AND COALESCE(TRIM(pc.receipt_phones), '') <> ''
+    UNION
+    SELECT RIGHT(REGEXP_REPLACE(p.phone, '[^0-9]', '', 'g'), 9)
+    FROM hr_employee e
+    JOIN hr_department d ON d.id = e.department_id
+    CROSS JOIN LATERAL (VALUES (e.mobile_phone), (e.work_phone)) AS p(phone)
+    WHERE e.active AND d.complete_name ILIKE 'Sales / Shop Attendants%'
+      AND COALESCE(TRIM(p.phone), '') <> ''"""
+
 SALES_SQL = f"""
-WITH shops AS (
+WITH staff_keys AS ({_STAFF_KEYS}
+),
+shops AS (
     SELECT DISTINCT spt.warehouse_id
     FROM denri_footfall_count f
     JOIN pos_config pc ON pc.id = f.config_id
@@ -56,9 +76,12 @@ orders AS (
            {_SHOP} AS location,
            po.customer_type,
            po.amount_total < 0 AS refund,
+           RIGHT(REGEXP_REPLACE(COALESCE(rp.phone, rp.mobile, ''), '[^0-9]', '', 'g'), 9)
+               IN (SELECT key FROM staff_keys WHERE LENGTH(key) = 9) AS staff_number,
            SUM(pol.price_subtotal_incl / po.currency_rate) AS revenue
     FROM pos_order po
     JOIN pos_order_line pol ON pol.order_id = po.id
+    LEFT JOIN res_partner rp ON rp.id = po.partner_id
     LEFT JOIN pos_session ps ON ps.id = po.session_id
     LEFT JOIN pos_config pconf ON pconf.id = ps.config_id{_TILL_JOINS}
     WHERE po.state NOT IN ('draft', 'cancel')
@@ -66,10 +89,10 @@ orders AS (
       AND po.date_order >= (CAST(:start_date AS TIMESTAMP) AT TIME ZONE 'Africa/Nairobi' AT TIME ZONE 'UTC')
       AND po.date_order <  ((CAST(:end_date AS TIMESTAMP) + INTERVAL '1 day')
                             AT TIME ZONE 'Africa/Nairobi' AT TIME ZONE 'UTC')
-    GROUP BY po.id, 2, 3
+    GROUP BY po.id, 2, 3, 6
 )
 SELECT day AS "Date", location AS "Location",
-       COUNT(*) FILTER (WHERE customer_type = 'walkin' AND NOT refund)                          AS "Walk-in Orders",
+       COUNT(*) FILTER (WHERE customer_type = 'walkin' AND NOT refund AND NOT staff_number)     AS "Walk-in Orders",
        COALESCE(SUM(revenue) FILTER (WHERE customer_type = 'walkin' AND NOT refund), 0)         AS "Walk-in Revenue",
        COUNT(*) FILTER (WHERE customer_type = 'online' AND NOT refund)                          AS "Online Orders",
        COUNT(*) FILTER (WHERE customer_type IN ('activation', 'employee') AND NOT refund)        AS "Other Orders",

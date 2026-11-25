@@ -149,7 +149,7 @@ def _market_slide(mkt, name, kname, w, kes, weeks, rw, extra):
                                  "cols": ["Measure"] + [f"Wk {n}" for n in wk_nums] + ["Month", "KES month", "Week on week"],
                                  "rows": rows, "trend": [1, len(wk_nums)]}}}
     ch = _signed(_pct(combos_l, combos_p)) if prev else None
-    slide["headline"] = (f"{name} sold {_fmt(combos_l)} combos last week" + (f" ({ch} on the week before)" if ch else "")
+    slide["headline"] = (f"{name} sold {_fmt(combos_l)} combos {LW}" + (f" ({ch} on Wk {rw - 1})" if ch else "")
                          + f": {_fmt(last['running'])} running, {_fmt(last['self'])} self-made; "
                          + f"{third.lower()} {_fmt(last['power'])} {third_unit}"
                          + (f" ({_signed(_pct(last['power'], before['power']))})." if prev and before["power"] else "."))
@@ -158,16 +158,16 @@ def _market_slide(mkt, name, kname, w, kes, weeks, rw, extra):
         slide["insight"].append(f"This month {_fmt(tot_c)} combos have sold, <b>{mtd['self'] / tot_c * 100:.0f}%</b> of them self-made; "
                                 f"running combos brought in KES {_fmt(kes['running'] / fx)} and self-made ones KES {_fmt(kes['self'] / fx)}.")
     if extra.get("topRun"):
-        slide["insight"].append("The best running combos last week were " + ", ".join(f"{_t(n)} ({_fmt(u)})" for n, u in extra["topRun"]) + ".")
+        slide["insight"].append(f"The best running combos {LW} were " + ", ".join(f"{_t(n)} ({_fmt(u)})" for n, u in extra["topRun"]) + ".")
     if extra.get("topSelf"):
         slide["insight"].append("Buyers' favourite self-made pairings this month were " + ", ".join(f"{_t(n)} ({_fmt(u)})" for n, u in extra["topSelf"]) + ".")
     if extra.get("topDeal"):
-        slide["insight"].append(f"The top power deal last week was {extra['topDeal'][0]}, with {_fmt(extra['topDeal'][1])} bags sold.")
+        slide["insight"].append(f"The top power deal {LW} was {extra['topDeal'][0]}, with {_fmt(extra['topDeal'][1])} bags sold.")
     # recommendations
     pr = _pct(last["running"], before["running"]) if prev else None
     if pr is not None and pr <= FALL:
         faller = extra.get("runFaller")
-        slide["rec"].append(f"Push the running combos: down {abs(pr):.0f}% last week"
+        slide["rec"].append(f"Push the running combos: down {abs(pr):.0f}% {LW}"
                             + (f", {_t(faller[0])} fell most ({_fmt(faller[1])} → {_fmt(faller[2])})." if faller else "."))
     promo = [(n, u) for n, u in (extra.get("topSelf") or []) if u >= PROMOTE[mkt]]
     if promo:
@@ -175,8 +175,8 @@ def _market_slide(mkt, name, kname, w, kes, weeks, rw, extra):
                             f"pairing this month.")
     pp_ = _pct(last["power"], before["power"]) if prev and before["power"] else None
     if pp_ is not None and pp_ <= FALL:
-        slide["rec"].append(f"Check {third.lower()}' stock and display: down {abs(pp_):.0f}% last week.")
-    slide["rec"] = slide["rec"][:3] or ["Keep the combo list as it is: running combos held up last week."]
+        slide["rec"].append(f"Check {third.lower()}' stock and display: down {abs(pp_):.0f}% {LW}.")
+    slide["rec"] = slide["rec"][:3] or [f"Keep the combo list as it is: running combos held up {LW}."]
     return slide
 
 
@@ -214,12 +214,12 @@ def _offer_mix(boo, weeks, rw):
     on_keys = [k for k in ("POWER", "COMBOS", "DOW", "MID") if k in keys]
     on = sum(mtd_r[k] for k in on_keys) / all_r * 100
     slide["headline"] = (f"Month to date, {on:.0f}% of Denri's revenue came on offer and {off:.0f}% not on offer "
-                         f"(KES {all_r / 1e6:.1f}M in all); last week KES {tot.get(rw, 0) / 1e6:.1f}M"
-                         + (f" ({_signed(_pct(tot.get(rw, 0), tot.get(prev, 0)))} on the week before)." if prev else "."))
+                         f"(KES {all_r / 1e6:.1f}M in all); {LW} KES {tot.get(rw, 0) / 1e6:.1f}M"
+                         + (f" ({_signed(_pct(tot.get(rw, 0), tot.get(prev, 0)))} on Wk {prev})." if prev else "."))
     if prev:
         ch = {k: rev(k, rw) - rev(k, prev) for k in keys}
         up, dn = max(ch, key=ch.get), min(ch, key=ch.get)
-        slide["insight"].append(f"Last week {names[up]} rose the most (+KES {_fmt(ch[up])} on the week before) and {names[dn]} "
+        slide["insight"].append(f"{LW[0].upper() + LW[1:]} {names[up]} {'rose the most' if ch[up] > 0 else 'fell the least'} ({'+' if ch[up] >= 0 else '-'}KES {_fmt(abs(ch[up]))} on Wk {prev}) and {names[dn]} "
                                 f"{'fell the most' if ch[dn] < 0 else 'rose the least'} ({'-' if ch[dn] < 0 else '+'}KES {_fmt(abs(ch[dn]))}).")
         if ch[dn] < 0:
             slide["rec"].append(f"Check {names[dn].lower()}: KES {_fmt(abs(ch[dn]))} less than the week before.")
@@ -231,14 +231,20 @@ def _offer_mix(boo, weeks, rw):
                             f"({mtd_r[top] / all_r * 100:.0f}% of revenue) from {_fmt(mtd_u[top])} bags.")
     if off < 40:
         slide["rec"].append(f"Watch the discount cost: only {off:.0f}% of revenue came at full price (not on offer).")
-    slide["rec"] = slide["rec"][:3] or ["Keep the offer mix: no offer type fell last week."]
+    slide["rec"] = slide["rec"][:3] or [f"Keep the offer mix: no offer type fell {LW}."]
     return slide
 
 
+LW = "last week"   # the latest week of the month in words: "last week" for Last Week, else "in Wk 4" (set by slides)
+
+
 def slides(week_start: dt.date, week_end: dt.date) -> list:
+    global LW
+    from lib import report_period
     m1 = week_end.replace(day=1)
     weeks = _weeks(m1, week_end)
     rw = weeks[-1][0]
+    LW = "last week" if report_period.active().key == "last_week" else f"in Wk {rw}"
     smc, boo = _page("self_made_combos.html", "SMC"), _page("bags_on_offer.html", "BOO")
     out = []
     try:

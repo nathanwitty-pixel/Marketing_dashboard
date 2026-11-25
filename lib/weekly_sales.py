@@ -144,15 +144,15 @@ def _weekly(pg, week_start, week_end):
         if floor:
             short = [w for w in weeks if (w.get("weeklySales") or 0) < floor]
             s["insight"].append(f"To reach the target each week needs {_fmt(floor)} bags (the target split over the month's weeks). "
-                                + (f"{len(short)} of {len(weeks)} weeks fell short; last week was {_fmt(floor - (weeks[-1].get('weeklySales') or 0))} "
+                                + (f"{len(short)} of {len(weeks)} weeks fell short; {weeks[-1]['label']} was {_fmt(floor - (weeks[-1].get('weeklySales') or 0))} "
                                    f"bags under it." if short else "Every week cleared it."))
         if len(weeks) >= 2:
             a, b = weeks[-1], weeks[-2]
-            s["insight"].append(f"Last week Denri sold {_fmt(a.get('weeklySales'))} bags, against {_fmt(b.get('weeklySales'))} the week before "
+            s["insight"].append(f"In {a['label']} Denri sold {_fmt(a.get('weeklySales'))} bags, against {_fmt(b.get('weeklySales'))} in {b['label']} "
                                 f"({_signed(_pct(a.get('weeklySales') or 0, b.get('weeklySales') or 0))}).")
         if fc:
             up = fc["ratio"] >= 0
-            s["insight"].append(f"Next week should reach about <b>{_fmt(fc['bags'])}</b> bags ({'+' if up else ''}{fc['ratio']}% on last week), "
+            s["insight"].append(f"{fc['label'].split(' forecast')[0]} should reach about <b>{_fmt(fc['bags'])}</b> bags ({'+' if up else ''}{fc['ratio']}% on {weeks[-1]['label']}), "
                                 f"because last month the shop tills went from {_fmt(fc['octCur'])} to {_fmt(fc['octNext'])} between {fc['octFrom']} and "
                                 f"{fc['octTo']} (corporate is left out, as one big payment would swing it)"
                                 + (f"; {_fmt(fc['soFar'])} have sold so far." if fc.get("soFar") else "."))
@@ -247,7 +247,7 @@ def _why_moved(pg, week_start, week_end):
         if dn["delta"] < 0:                          # the falling region's own shops that fell most
             fall_shops = [sh for sh, d in shop_moves if d < 0 and shop_region.get(sh) == dn["label"]][:2]
             s["rec"].append(f"Check stock, staff and offers at {' and '.join(fall_shops) if fall_shops else dn['label']}: "
-                            f"{dn['label']} fell most last week.")
+                            f"{dn['label']} fell most {_lw()}.")
         if up["delta"] > 0:
             rise_shops = [sh for sh, d in reversed(shop_moves) if d > 0 and shop_region.get(sh) == up["label"]][:2]
             s["rec"].append(f"Copy what {' and '.join(rise_shops) if rise_shops else up['label']} did: {up['label']} rose most.")
@@ -326,12 +326,12 @@ def _why_shops(pg, week_start, week_end):
         return ", ".join(f"{x['shop']} {'+' if x['wow'] >= 0 else ''}{_fmt(x['wow'])}" for x in xs[:3])
     if up:
         r = up[0]
-        s["headline"] = (f"{r['region']} rose most last week ({'+' if r['wow'] >= 0 else ''}{_fmt(r['wow'])} bags)"
+        s["headline"] = (f"{r['region']} rose most {_lw()} ({'+' if r['wow'] >= 0 else ''}{_fmt(r['wow'])} bags)"
                          + (f", driven by {drivers(r, 1)}" if drivers(r, 1) else "")
                          + (f"; {dn[-1]['region']} fell most ({_fmt(dn[-1]['wow'])})" + (f", led by {drivers(dn[-1], -1)}" if drivers(dn[-1], -1) else "") if dn else "")
                          + ".")
     else:
-        s["headline"] = "No region rose last week."
+        s["headline"] = f"No region rose {_lw()}."
     for r in out:
         if r["shops"] and r["wow"]:
             mixed = [x for x in r["shops"] if x["wow"] and (x["wow"] > 0) != (r["wow"] > 0)]
@@ -346,12 +346,12 @@ def _why_shops(pg, week_start, week_end):
             f"{x['shop']} {'+' if x['mom'] >= 0 else ''}{_fmt(x['mom'])}" for x in mom_up[:2] + mom_up[-2:]) + ".")
     falls = sorted([(x, r["region"]) for r in out for x in r["shops"] if (x["wow"] or 0) < 0], key=lambda t: t[0]["wow"])
     for x, reg in falls[:2]:
-        s["rec"].append(f"{x['shop']} ({reg}) fell {_fmt(-x['wow'])} bags last week ({_fmt(x['weeks'][-2] if len(x['weeks']) > 1 else 0)}"
-                        f" → {_fmt(x['weeks'][-1])}): check its stock, staff and offers this week.")
+        s["rec"].append(f"{x['shop']} ({reg}) fell {_fmt(-x['wow'])} bags {_lw()} ({_fmt(x['weeks'][-2] if len(x['weeks']) > 1 else 0)}"
+                        f" → {_fmt(x['weeks'][-1])}): check its stock, staff and offers now.")
     rises = sorted([(x, r["region"]) for r in out for x in r["shops"] if (x["wow"] or 0) > 0], key=lambda t: -t[0]["wow"])
     if rises:
         x, reg = rises[0]
-        s["rec"].append(f"Share what {x['shop']} ({reg}) did (+{_fmt(x['wow'])} last week) with the other {reg} shops.")
+        s["rec"].append(f"Share what {x['shop']} ({reg}) did (+{_fmt(x['wow'])} {_lw()}) with the other {reg} shops.")
     s["rec"] = s["rec"][:3]
     return s
 
@@ -546,7 +546,19 @@ def _corporate(pg):
     return s
 
 
+_W = None   # the full Sun–Sat week these slides use (report_period.full_week): words and dates
+
+
+def _lw() -> str:
+    return _W.when if _W else "last week"
+
+
 def slides(week_start: dt.date, week_end: dt.date) -> list:
+    """These slides are built from whole Sun–Sat weeks, so any other period uses its last full week (named)."""
+    global _W
+    from lib import report_period
+    _W = report_period.full_week(report_period.active())
+    week_start, week_end = _W.start, _W.end
     pg = _Page()
     out = []
     for fn in (lambda: _weekly(pg, week_start, week_end), lambda: _why_moved(pg, week_start, week_end),

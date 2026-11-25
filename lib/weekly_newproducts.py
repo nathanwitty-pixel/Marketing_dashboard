@@ -84,8 +84,11 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
     if not names:
         return []
     targets = {str(p["name"]).upper(): p for p in NP.get("productTargets") or []}
+    from lib import report_period
+    P = report_period.active()           # the report period and the one it is compared with (docs › Period picker)
+    WHEN, PREV, WK = P.when, P.prev, P.key == "last_week"
     m1 = week_end.replace(day=1)
-    pw_s, pw_e = week_start - dt.timedelta(days=7), week_end - dt.timedelta(days=7)
+    pw_s, pw_e = P.cs, P.ce
     lines = [x for x in _lines(min(m1, pw_s), week_end) if x["bag"] in names]
     weeks = _weeks(m1, week_end)
     days_in_month = ((m1 + dt.timedelta(days=32)).replace(day=1) - m1).days
@@ -132,8 +135,8 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
                               "cols": ["Product"] + [k for k, _, _ in weeks] + ["Month", "Target", "% of target"],
                               "trend": [1, len(weeks)]}}}
     s1["headline"] = (f"New products sold {_fmt(tot_m)} of their {_fmt(tot_t)} target ({tot_m / tot_t * 100:.0f}%) by "
-                      f"{_d(week_end)}, with {gone * 100:.0f}% of the month gone; last week {_fmt(tot_lw)} bags "
-                      f"({_signed(_pct(tot_lw, tot_pw))} on the week before)" + (f" against a weekly target of {_fmt(wtarget)}." if wtarget else "."))
+                      f"{_d(week_end)}, with {gone * 100:.0f}% of the month gone; {WHEN} {_fmt(tot_lw)} bags "
+                      f"({_signed(_pct(tot_lw, tot_pw))} on {PREV})" + (f" against a weekly target of {_fmt(wtarget)}." if wtarget and WK else "."))
     if pct_of:
         best, worst = max(pct_of, key=pct_of.get), min(pct_of, key=pct_of.get)
         s1["insight"].append(f"<b>{_t(best)}</b> is closest to its target at {pct_of[best]:.0f}% ({_fmt(mtd[best])} of "
@@ -142,9 +145,9 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
     ch = {n: lw[n] - pw[n] for n in names}
     up, dn = max(ch, key=ch.get), min(ch, key=ch.get)
     if ch[up] > 0 or ch[dn] < 0:
-        s1["insight"].append("The biggest moves on the week before were " + " and ".join(
+        s1["insight"].append(f"The biggest moves on {PREV} were " + " and ".join(
             f"{_t(n)}, from {_fmt(pw[n])} to {_fmt(lw[n])}" for n in dict.fromkeys([up, dn]) if ch[n]) + ".")
-    h1, h0 = hist.get(week_start.isoformat()) or {}, hist.get(pw_s.isoformat()) or {}
+    h1, h0 = (hist.get(week_start.isoformat()) or {}, hist.get(pw_s.isoformat()) or {}) if P.is_week else ({}, {})
     posted = lambda h: (h.get("kenyaPosts") or 0) + (h.get("outsidePosts") or 0)    # noqa: E731
     if h1 and posted(h1):
         s1["insight"].append(f"Posts last week: {_fmt(h1.get('kenyaPosts'))} in Kenya and {_fmt(h1.get('outsidePosts'))} outside"
@@ -156,7 +159,7 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
     need = max(tot_t - tot_m, 0)
     if left and need:
         s1["rec"].append(f"Sell {_fmt(need / left)} new-product bags a day for the rest of the month to reach "
-                         f"{_fmt(tot_t)} (last week: {_fmt(tot_lw / 7)} a day).")
+                         f"{_fmt(tot_t)} ({P.noun}: {_fmt(tot_lw / P.days)} a day).")
     gap = sorted((n for n in names if (targets.get(n) or {}).get("target")),
                  key=lambda n: -(targets[n]["target"] - mtd[n]))
     with_stock = [n for n in gap if stock[n] > 0]
@@ -216,12 +219,12 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
         top = order[0]
         s2["headline"] = (f"{p_start:%B}'s {len(styles)} new styles in the shops sold {_fmt(tot)} bags this month"
                           + (f", led by {_t(top)} ({_fmt(styles[top]['month'])})" if styles[top]["month"] else "")
-                          + f"; last week {_fmt(tl)} ({_signed(_pct(tl, tp))} on the week before).")
+                          + f"; {WHEN} {_fmt(tl)} ({_signed(_pct(tl, tp))} on {PREV}).")
         s2["insight"].append("Since they were created, the best sellers have been " + ", ".join(
             f"{_t(s)} ({_fmt(styles[s]['life'])})" for s in sorted(styles, key=lambda s: -styles[s]["life"])[:6]) + ".")
         moved = [s for s in order if styles[s]["last"] != styles[s]["prev"]]
         if moved:
-            s2["insight"].append("On the week before, these styles moved: " + ", ".join(
+            s2["insight"].append(f"On {PREV}, these styles moved: " + ", ".join(
                 f"{_t(s)} from {_fmt(styles[s]['prev'])} to {_fmt(styles[s]['last'])}" for s in moved[:5]) + ".")
         # stock check: cleared (sold, none left) vs still in the shops (selling / not selling)
         cleared = [s for s in order if styles[s]["stock"] <= 0]
@@ -257,17 +260,17 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
     sh_l["CORP"] += corp("lastweek")
     shops = [s for s in sorted(set(sh_m) | set(sh_l) | set(sh_p), key=lambda s: -sh_m[s]) if sh_m[s] or sh_l[s] or sh_p[s]]
     s3 = {"id": "np-shops", "kicker": "New products: sales by shop, week to week and month to date", "tone": "neutral",
-          "insight": [], "rec": [], "source": src + " CORP = Corporate app (week before not split by product, left blank).",
+          "insight": [], "rec": [], "source": src + " CORP = Corporate app (the period before is not split by product, left blank).",
           "graph": {"ok": bool(shops), "kind": "npshops", "rows": [
               {"shop": s, "last": round(sh_l[s]), "prev": None if s == "CORP" else round(sh_p[s]), "month": round(sh_m[s])}
-              for s in shops], "curLabel": f"{_d(week_start)} to {_d(week_end)}", "prevLabel": f"{_d(pw_s)} to {_d(pw_e)}",
+              for s in shops], "curLabel": P.dates.rsplit(" ", 1)[0], "prevLabel": P.prev_dates,
               "total": {"label": "All shops", "month": round(sum(sh_m.values())), "last": round(sum(sh_l.values())),
                         "prev": round(sum(sh_p.values()))}}}
     if shops:
         top3 = shops[:3]
         s3["headline"] = (f"{top3[0]} sold the most new products this month ({_fmt(sh_m[top3[0]])})"
                           + (f", then {', '.join(f'{s} {_fmt(sh_m[s])}' for s in top3[1:])}" if len(top3) > 1 else "")
-                          + f"; last week all shops sold {_fmt(sum(sh_l.values()))} ({_signed(_pct(sum(sh_l.values()), sum(sh_p.values())))}).")
+                          + f"; {WHEN} all shops sold {_fmt(sum(sh_l.values()))} ({_signed(_pct(sum(sh_l.values()), sum(sh_p.values())))} on {PREV}).")
         # every shop: dropped, improved or held steady (moved no more than max(1 bag, 10% of the week before))
         d = {s: sh_l[s] - sh_p[s] for s in shops if s != "CORP"}
         steady = lambda s: abs(d[s]) <= max(1, 0.1 * sh_p[s])                         # noqa: E731
@@ -279,15 +282,15 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
                                  "held": [row(s) for s in held]}
         arrow = lambda ss: ", ".join(f"{s} {_fmt(sh_p[s])} → {_fmt(sh_l[s])}" for s in ss[:3])        # noqa: E731
         if dropped:
-            s3["insight"].append(f"{len(dropped)} shop{'s' if len(dropped) != 1 else ''} sold fewer new products than the week before; "
+            s3["insight"].append(f"{len(dropped)} shop{'s' if len(dropped) != 1 else ''} sold fewer new products than {PREV}; "
                                  f"the biggest drops were {arrow(dropped)}.")
         if improved:
             s3["insight"].append(f"{len(improved)} shop{'s' if len(improved) != 1 else ''} sold more; the biggest rises were {arrow(improved)}.")
         if held:
-            s3["insight"].append(f"{len(held)} shops held steady, within 1 bag or 10% of the week before: " + ", ".join(held[:8])
+            s3["insight"].append(f"{len(held)} shops held steady, within 1 bag or 10% of {PREV}: " + ", ".join(held[:8])
                                  + (" and more" if len(held) > 8 else "") + ".")
         if dropped:
-            s3["rec"].append(f"Check new-product stock, staff and display at {', '.join(dropped[:3])}: they dropped most last week.")
+            s3["rec"].append(f"Check new-product stock, staff and display at {', '.join(dropped[:3])}: they dropped most {WHEN}.")
         if improved:
             s3["rec"].append(f"Copy what {', '.join(improved[:2])} did with the new products: they improved most.")
         best_shop = {}
@@ -295,13 +298,13 @@ def slides(week_start: dt.date, week_end: dt.date) -> list:
             if week_start <= x["d"] <= week_end and x["till"] not in SKIP_TILLS:
                 best_shop.setdefault(x["bag"], collections.Counter())[SHOP_CODE.get(x["till"], "OTH")] += x["units"]
         tops = sorted(names, key=lambda n: -lw[n])[:4]
-        s3["insight"].append("Last week each top new product sold best at one shop: " + ", ".join(
+        s3["insight"].append(f"{P.When} each top new product sold best at one shop: " + ", ".join(
             f"{_t(n)} at {best_shop[n].most_common(1)[0][0]}" for n in tops if n in best_shop) + ".")
         zero = [c for c in SHOP_CODE.values() if not sh_l[c]]
         zero = list(dict.fromkeys(zero))
         if zero:
-            s3["insight"].append(", ".join(zero) + (" sold" if len(zero) == 1 else " each sold") + " no new products last week.")
-            s3["rec"].append(f"Check stock and posts for the new products at {', '.join(zero[:6])}: no sale last week.")
+            s3["insight"].append(", ".join(zero) + (" sold" if len(zero) == 1 else " each sold") + f" no new products {WHEN}.")
+            s3["rec"].append(f"Check stock and posts for the new products at {', '.join(zero[:6])}: no sale {WHEN}.")
         s3["rec"].append(f"Copy what {top3[0]} does with the new products (display, staff pitch) in the shops that sold none.")
         s3["rec"] = s3["rec"][:3]
     else:

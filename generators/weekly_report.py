@@ -21,8 +21,12 @@ CHECK_WEEKS = 12      # history needed before the follows answer is trusted
 NOT_KENYA = ("sinza", "dar-es-alam", "uganda")
 
 today = dt.date.today()
-week_end = today - dt.timedelta(days=(today.weekday() + 2) % 7 or 7)     # the last Saturday before today
-week_start = week_end - dt.timedelta(days=6)
+from lib import report_period  # noqa: E402
+report_period.from_argv()
+P = report_period.load(today)          # the Period dropdown's choice (default Last Week); docs › Period picker
+report_period.set_active(P)
+week_start, week_end = P.start, P.end  # the report's days (named week_* from when it was weekly only)
+cmp_start, cmp_end = P.cs, P.ce        # the days they are compared with
 
 
 def n(x):
@@ -146,7 +150,7 @@ SRC_LABEL = {"Existing Direct": "Returning customers", "New Direct": "New custom
 FOLLOWER_PATH = "Social pages (follower path)"
 SRC_REC = {
     "Returning customers": "Re-contact returning customers: {n} fewer bought through direct chats. Send last month's buyers "
-                           "a broadcast with new arrivals and this week's offers.",
+                           "a broadcast with new arrivals and the current offers.",
     "New customers": "Check how first-time chats are answered and followed up: {n} fewer new customers bought.",
     FOLLOWER_PATH: "Answer Instagram and Facebook page DMs faster and point posts to WhatsApp: {n} fewer bought from the pages.",
 }
@@ -203,9 +207,9 @@ def source_weeks(market):
 
 
 def source_change(market):
-    """(rows [[label, chats, bought, bought before, change]], insight line, rec line or None) for last week."""
+    """(rows [[label, chats, bought, bought before, change]], insight line, rec line or None) for the period."""
     cur = wa_sources(market, week_start, week_end)
-    prev = wa_sources(market, week_start - dt.timedelta(days=7), week_end - dt.timedelta(days=7))
+    prev = wa_sources(market, cmp_start, cmp_end)
     labels = sorted(set(cur) | set(prev), key=lambda k: (-cur.get(k, [0, 0])[1], -cur.get(k, [0, 0])[0]))
     rows = [[k, cur.get(k, [0, 0])[0], cur.get(k, [0, 0])[1], prev.get(k, [0, 0])[1],
              cur.get(k, [0, 0])[1] - prev.get(k, [0, 0])[1]] for k in labels if cur.get(k) or prev.get(k)]
@@ -225,8 +229,8 @@ def source_change(market):
     if worst and worst[4] <= -5:
         tmpl = SRC_REC.get(worst[0])
         rec = (tmpl.format(n=fmt(-worst[4])) if tmpl else
-               f"Check the {worst[0]} budget and creatives: {fmt(-worst[4])} fewer buyers came from them last week."
-               if "ads" in worst[0] else f"Check {worst[0].lower()}: {fmt(-worst[4])} fewer buyers last week.")
+               f"Check the {worst[0]} budget and creatives: {fmt(-worst[4])} fewer buyers came from them {P.when} than {P.prev}."
+               if "ads" in worst[0] else f"Check {worst[0].lower()}: {fmt(-worst[4])} fewer buyers {P.when} than {P.prev}.")
     return rows, line, rec
 
 
@@ -279,11 +283,22 @@ if sales is not None and target:
     gone = round(current_day / days_in_month * 100)
     insight1.append(f"Denri has sold <b>{fmt(sales)}</b> bags so far ({fmt(sales_pos)} at the shop tills and {fmt(corp_bags)} corporate), "
                     f"<b>{field('salesPctAchieved')}</b> of the {fmt(target)} target, with {gone}% of the month gone.")
-wk = next((w for w in history if w.get("weekStart") == week_start.isoformat()), None)
+wk = next((w for w in history if w.get("weekStart") == week_start.isoformat()), None) if P.key == "last_week" else None
 if wk:
     add = (wk.get("salesPct") or 0) - (wk.get("prevSalesPct") or 0)
     insight1.append(f"Last week ({day_label(week_start)} to {day_label(week_end)}) Denri sold <b>{fmt(wk.get('weeklySales'))}</b> bags "
                     f"and took the month from {wk.get('prevSalesPct'):.1f}% to {wk.get('salesPct'):.1f}% of target (+{add:.1f} points).")
+elif db_ok:
+    try:                                                     # any other period: the tills for the period vs the one before
+        _pb = daily_bags(min(week_start, cmp_start), week_end) or {}
+        _b1 = sum(v["all"] for d_, v in _pb.items() if week_start <= d_ <= week_end)
+        _b0 = sum(v["all"] for d_, v in _pb.items() if cmp_start <= d_ <= cmp_end)
+        _p = pct(_b1, _b0)
+        insight1.append(f"{P.When} ({P.dates}) the shop tills sold <b>{fmt(_b1)}</b> bags, "
+                        + ("the same as" if not _p else f"{abs(_p):.0f}% {'more' if _p > 0 else 'fewer'} than")
+                        + f" {P.prev} ({P.prev_dates}: {fmt(_b0)}).")
+    except Exception as e:                                   # noqa: BLE001
+        print(f"  WARNING: period sales line skipped: {e}")
 if slide1.get("ok") and slide1.get("samePrev"):
     d = pct(slide1["tillToDate"], slide1["samePrev"])
     same_day = (f"At the tills, {fmt(slide1['tillToDate'])} bags by day {slide1['done']} vs {fmt(slide1['samePrev'])} by the same day of "
@@ -339,7 +354,7 @@ if db_ok:
         nf = piv("newFollows")
         both = nf.dropna()
         first = min(both.index)                              # first day both platforms report new follows
-        s, e = first, week_end
+        s, e = min(first, cmp_start), week_end
         reach, views = piv("reach"), piv("views")
         bags = daily_bags(s, e) or {}
         wa = db.run_query("""
@@ -367,7 +382,7 @@ if db_ok:
         df = pd.DataFrame(rows).set_index("day")
         df.index = pd.to_datetime(df.index)
         df = df.astype(float)
-        ft_daily["KE"] = df[["follows", "chats", "bags"]].copy()
+        ft_daily["KE"] = df[df.index >= pd.Timestamp(first)][["follows", "chats", "bags"]].copy()   # Meta days only
 
         # weekday-adjusted, same day, rank correlation
         adj = df.div(df.groupby(df.index.dayofweek).transform("mean"))
@@ -402,22 +417,26 @@ if db_ok:
                   "from": s.isoformat(), "to": e.isoformat(),
                   "topSame": round(top_same, 1), "topNext": round(top_next, 1)}
 
+        def per_(lo, hi):                                    # the period's (or comparison's) totals, like a week row
+            g = df[(df.index.date >= lo) & (df.index.date <= hi)]
+            sm = lambda c: round(g[c].sum()) if g[c].notna().any() else 0     # noqa: E731
+            return {"bags": sm("bags"), "follows": sm("follows"), "ig": sm("ig"), "fb": sm("fb"), "chats": sm("chats")}
         if len(weeks) >= 2:
-            a, b = weeks[-1], weeks[-2]
-            pf, pb = pct(a["follows"], b["follows"]), pct(a["bags"], b["bags"])
+            a, b = per_(week_start, week_end), per_(cmp_start, cmp_end)
+            pf, pb = pct(a["follows"], b["follows"]) or 0, pct(a["bags"], b["bags"])
             pig, pfb = pct(a["ig"], b["ig"]), pct(a["fb"], b["fb"])
             pc = pct(a["chats"], b["chats"]) if a["chats"] and b["chats"] else None
             up = lambda p: "rose" if p >= 0 else "fell"     # noqa: E731
             sf = scores["follows"]
             words = lambda v: ("no link" if v is None or v < 0.2 else "a weak link" if v < LINK      # noqa: E731
                                else "a clear link" if v < 0.6 else "a strong link")
-            ready = s + dt.timedelta(weeks=CHECK_WEEKS)
+            ready = first + dt.timedelta(weeks=CHECK_WEEKS)          # 12 weeks of follower history
             later = (f" Check again from {day_label(ready)} {ready.year} ({CHECK_WEEKS} weeks of history)."
                      if ready > week_end else "")
-            # the band (Foot Traffic figures) for last week and the week before: one path from a follow to a sale
+            # the band (Foot Traffic figures) for the period and the one before: one path from a follow to a sale
             try:
                 ft1 = foot_traffic.summary(week_start, week_end)["KE"]
-                ft0 = foot_traffic.summary(week_start - dt.timedelta(days=7), week_end - dt.timedelta(days=7))["KE"]
+                ft0 = foot_traffic.summary(cmp_start, cmp_end)["KE"]
             except Exception as fe:                          # noqa: BLE001
                 print(f"  WARNING: foot traffic for the insight skipped: {fe}")
                 ft1 = ft0 = None
@@ -425,21 +444,23 @@ if db_ok:
                 w1, w0, c1, c0 = ft1["walkins"], ft0["walkins"], ft1["whatsapp"], ft0["whatsapp"]
                 d_walk = w1["purchased"] - w0["purchased"]
                 d_wa = c1["purchased"] - c0["purchased"]
+                p1_ = lambda v: "—" if v is None else f"{v:.1f}%"     # noqa: E731 — no chats / walk-ins yet = blank
                 gain = lambda dn, who: f"{who} {'gained' if dn >= 0 else 'lost'} {fmt(abs(dn))}"     # noqa: E731
                 parts = [(abs(d_walk), gain(d_walk, "the shops") + " walk-in buyers"),
                          (abs(d_wa), gain(d_wa, "WhatsApp") + " buyers")]
                 parts.sort(key=lambda t: -t[0])
                 linked = sf is not None and sf >= LINK
-                headline2 = (f"Kenya sold {fmt(a['bags'])} bags last week ({signed(pb)}): {parts[0][1]} while {parts[1][1]}; "
-                             f"new follows {up(pf)} {abs(pf):.0f}% on the week before"
+                headline2 = (f"Kenya sold {fmt(a['bags'])} bags {P.when} ({signed(pb)}): {parts[0][1]} while {parts[1][1]}; "
+                             + (f"new follows {up(pf or 0)} {abs(pf or 0):.0f}% on {P.prev}" if cmp_start >= first else
+                                f"new follows reached {fmt(a['follows'])} (no fair comparison: follower data only starts on {day_label(first)})")
                              + (" and moved with sales." if linked else " and didn't move sales."))
                 insight2.append(
                     f"<b>Online path</b>: {fmt(a['follows'])} new follows ({signed(pf)}) → {fmt(c1['chats'])} WhatsApp chats "
                     f"({signed(pct(c1['chats'], c0['chats']))}), {fmt(c1['ads'])} of them from ads → <b>{fmt(c1['purchased'])}</b> bought "
-                    f"({c1['performance']:.1f}%, was {c0['performance']:.1f}%).")
+                    f"({p1_(c1['performance'])}, was {p1_(c0['performance'])}).")
                 insight2.append(
                     f"<b>Shop path</b>: {fmt(w1['counted'])} walk-ins counted ({signed(pct(w1['counted'], w0['counted']))}) → "
-                    f"<b>{fmt(w1['purchased'])}</b> bought ({w1['conversion']:.1f}%, was {w0['conversion']:.1f}%); "
+                    f"<b>{fmt(w1['purchased'])}</b> bought ({p1_(w1['conversion'])}, was {p1_(w0['conversion'])}); "
                     f"{fmt(w1['didntBuy'])} left without buying.")
                 sale = (w1["revPerWalkin"] or 0) * w1["counted"] / w1["purchased"] if w1["purchased"] else 0
                 extra = round(w1["counted"] * 0.05)
@@ -469,7 +490,7 @@ if db_ok:
                             rows_k.append([k] + [fmt(v) for v in wk_b] + [fmt(ch), f"{bt / ch * 100:.0f}%" if ch else "—",
                                                                           f"{'+' if d_ > 0 else ''}{d_}"])
                         slide2["table"] = {"title": "WhatsApp buyers by source, Kenya, week by week (green = more than the week before, red = fewer)",
-                                           "cols": ["Source"] + [w.split(" (")[0] for w in wl] + ["Chats last wk", "Bought %", "Change"],
+                                           "cols": ["Source"] + [w.split(" (")[0] for w in wl] + [f"Chats {wl[-1].split(' (')[0]}", "Bought %", "Change"],
                                            "rows": rows_k, "mark": FOLLOWER_PATH, "trend": [1, len(wl)]}
                         # the month's story per source: which ones are climbing or sliding week after week
                         story = []
@@ -489,7 +510,7 @@ if db_ok:
                     except Exception as e_:                      # noqa: BLE001
                         print(f"  WARNING: week-by-week source table skipped: {e_}")
                         slide2["table"] = {"title": "WhatsApp buyers by source, Kenya",
-                                           "cols": ["Source", "Chats", "Bought", "Week before", "Change"],
+                                           "cols": ["Source", "Chats", "Bought", "Before", "Change"],
                                            "rows": [[r[0], fmt(r[1]), fmt(r[2]), fmt(r[3]), f"{'+' if r[4] > 0 else ''}{r[4]}"]
                                                     for r in keep], "mark": FOLLOWER_PATH}
                 # the full explanation (user's call, 23 Nov 2026): each path with its cause, then the net, written from
@@ -501,16 +522,19 @@ if db_ok:
                     ret, fba, fp_ = R_.get("Returning customers"), R_.get("Facebook ads"), R_.get(FOLLOWER_PATH)
                     wa_b = sum(r[2] for r in src_rows)
                     def vs_(p_, more="more", less="fewer"):      # "55% fewer than the week before"
-                        return "the same as the week before" if not p_ else f"{abs(p_):.0f}% {more if p_ > 0 else less} than the week before"
+                        return f"the same as {P.prev}" if not p_ else f"{abs(p_):.0f}% {more if p_ > 0 else less} than {P.prev}"
                     def n_(v, unit=""):                        # "148 fewer" / "52 more buyers"
                         return "no change" if not v else f"{fmt(abs(v))} {'more' if v > 0 else 'fewer'}" + (f" {unit}" if unit else "")
                     dc_ = pct(c1['chats'], c0['chats'])
-                    lines = [f"<b>Online path</b>: {fmt(a['follows'])} new follows last week, {vs_(pf)} ({fmt(b['follows'])}): "
+                    lines = [f"<b>Online path</b>: {fmt(a['follows'])} new follows {P.when}"
+                             + (f", {vs_(pf)} ({fmt(b['follows'])}): " if cmp_start >= first else
+                                f" (follower data only starts on {day_label(first)}, so {P.prev} is incomplete: {fmt(b['follows'])}): ")
+                             + f""
                              f"Facebook {fmt(b['fb'])} to {fmt(a['fb'])}, Instagram {fmt(b['ig'])} to {fmt(a['ig'])}. "
                              f"WhatsApp had {fmt(c1['chats'])} chats ({abs(dc_ or 0):.0f}% {'fewer' if (dc_ or 0) < 0 else 'more'}) and "
-                             f"<b>{fmt(c1['purchased'])}</b> bought, {c1['performance']:.1f}% of chats against {c0['performance']:.1f}%: "
+                             f"<b>{fmt(c1['purchased'])}</b> bought, {p1_(c1['performance'])} of chats against {p1_(c0['performance'])}: "
                              f"<b>{n_(d_wa, 'WhatsApp buyers')}</b>."]
-                    why = [f"{fmt(ret[2])} returning customers bought, against {fmt(ret[3])} the week before ({n_(ret[4])})"
+                    why = [f"{fmt(ret[2])} returning customers bought, against {fmt(ret[3])} {P.prev} ({n_(ret[4])})"
                            for _ in [0] if ret]
                     why += [f"Facebook ads brought {fmt(fba[2])} buyers against {fmt(fba[3])} ({n_(fba[4])})" for _ in [0] if fba]
                     if why:
@@ -518,37 +542,41 @@ if db_ok:
                                      + (f"Ads started {pc_(c1['ads'], c1['chats'])} of chats, but only "
                                         f"{pc_(fba[2], fba[1])} of Facebook-ad chatters bought." if fba else ""))
                     lines.append(f"<b>Shop path</b>: {fmt(w1['counted'])} walk-ins, {vs_(pct(w1['counted'], w0['counted']))}; "
-                                 f"<b>{fmt(w1['purchased'])}</b> bought, {w1['conversion']:.1f}% of walk-ins against "
-                                 f"{w0['conversion']:.1f}%: <b>{n_(d_walk, 'shop buyers')}</b>. {fmt(w1['didntBuy'])} left without "
+                                 f"<b>{fmt(w1['purchased'])}</b> bought, {p1_(w1['conversion'])} of walk-ins against "
+                                 f"{p1_(w0['conversion'])}: <b>{n_(d_walk, 'shop buyers')}</b>. {fmt(w1['didntBuy'])} left without "
                                  f"buying.")
                     if fp_:
                         lines.append(f"<b>Follower path</b>: {fmt(fp_[1])} chats came from people who found our pages and "
-                                     f"{fmt(fp_[2])} bought (<b>{pc_(fp_[2], fp_[1])}</b>, the best rate"
+                                     f"{fmt(fp_[2])} bought (<b>{pc_(fp_[2], fp_[1])}</b>"
+                                     + (", the best rate" if fp_[1] and all(fp_[2] / fp_[1] >= r[2] / r[1] for r in src_rows
+                                                                            if r[1] >= 5) and fp_[2] else "")
                                      + (f"; ad chats {pc_(fba[2], fba[1])}" if fba else "")
-                                     + f"), but that is only {pc_(fp_[2], wa_b)} of WhatsApp buyers, {n_(fp_[4])} than the week before.")
+                                     + f"), but that is only {pc_(fp_[2], wa_b)} of WhatsApp buyers, {n_(fp_[4])} than {P.prev}.")
                     falls_ = sorted([r for r in src_rows if r[4] < 0], key=lambda r: r[4])[:2]
                     lines.append(f"<b>Net</b>: WhatsApp had {n_(d_wa, 'buyers')} and the shops {n_(d_walk)}: "
-                                 f"{n_(d_wa + d_walk)} in all than the week before. Bags sold went from {fmt(b['bags'])} to "
+                                 f"{n_(d_wa + d_walk)} in all than {P.prev}. Bags sold went from {fmt(b['bags'])} to "
                                  f"{fmt(a['bags'])} ({abs(pb or 0):.0f}% {'fewer' if (pb or 0) < 0 else 'more'}), as some buy more than one. "
                                  + ("The drop comes from " + " and ".join(f"{(lambda t: t if t.startswith('Facebook') else t.lower())(r[0].split(' (')[0])} ({n_(r[4])})" for r in falls_)
-                                    + f", not follows: chats {'fell' if (dc_ or 0) < 0 else 'rose'} {abs(dc_ or 0):.0f}% while "
-                                      f"follows {'fell' if pf < 0 else 'rose'} {abs(pf):.0f}%." if falls_ and d_wa < 0 else ""))
+                                    + (f", not follows: chats {'fell' if (dc_ or 0) < 0 else 'rose'} {abs(dc_ or 0):.0f}% while "
+                                       f"follows {'fell' if pf < 0 else 'rose'} {abs(pf):.0f}%." if cmp_start >= first else ".")
+                                    if falls_ and d_wa < 0 else ""))
                     insight2[:] = lines
                     slide2["wideSide"] = True
                 if src_rec:
                     rec2.append(src_rec)
                 elif d_wa < 0 and (pct(c1["purchased"], c0["purchased"]) or 0) <= -10:
                     rec2.append(f"Win back WhatsApp buyers: {fmt(c1['purchased'])} of {fmt(c1['chats'])} chats bought "
-                                f"({c1['performance']:.1f}% vs {c0['performance']:.1f}%). Follow up the chats that didn't buy.")
+                                f"({p1_(c1['performance'])} vs {p1_(c0['performance'])}). Follow up the chats that didn't buy.")
                 if w1["didntBuy"]:
                     rec2.append(f"Work on the {fmt(w1['didntBuy'])} walk-ins who left without buying, shop by shop (Footfall and "
-                                f"Marketing ranks them): 5 points of conversion is worth about KES {fmt(extra * sale)} a week.")
+                                f"Marketing ranks them): 5 points of conversion is worth about KES {fmt(extra * sale)} "
+                                f"{'a week' if P.key == 'last_week' else 'over ' + P.noun}.")
                 rec2.append(("Judge posts and ads by the WhatsApp chats and buyers they bring, not follows." if not linked else
                              "Repeat what went out on the top follow days, and track the WhatsApp buyers they bring.") + later)
                 rec2[:] = rec2[:3]
             else:
-                headline2 = (f"New follows {up(pf)} {abs(pf):.0f}% last week while Kenya shop sales {up(pb)} {abs(pb):.0f}%: "
-                             f"follows are building awareness, not this week's sales.")
+                headline2 = (f"New follows {up(pf or 0)} {abs(pf or 0):.0f}% {P.when} while Kenya shop sales {up(pb or 0)} {abs(pb or 0):.0f}%: "
+                             f"follows are building awareness, not this period's sales.")
                 insight2.append(f"Day by day, sales had {words(scores['visitors'])} with shop visitors ({scores['visitors']}), "
                                 f"{words(scores['chats'])} with WhatsApp chats ({scores['chats']}) and {words(sf)} with new follows ({sf}).")
                 rec2.append("Judge posts and ads by WhatsApp chats and cost per chat, not follows." + later)
@@ -576,7 +604,7 @@ if db_ok:
             if both.empty:
                 continue
             s = min(both.index)
-            bags = daily_bags(min(s, week_start - dt.timedelta(days=7)), week_end) or {}   # the week before in full
+            bags = daily_bags(min(s, cmp_start), week_end) or {}   # the comparison period in full
             wa = db.run_query("""
                 SELECT i.date::date AS day, COUNT(*) AS chats
                 FROM denri_monitor_interaction i JOIN denri_monitor_shop sh ON sh.id = i.shop_id
@@ -603,10 +631,11 @@ if db_ok:
 
             def wk(vals, a, b):
                 return sum(v or 0 for d, v in zip(days_, vals) if a <= d <= b)
-            pw_s, pw_e = week_start - dt.timedelta(days=7), week_end - dt.timedelta(days=7)
+            pw_s, pw_e = cmp_start, cmp_end
             full_prev = s <= pw_s
             f1, f0 = wk(follows, week_start, week_end), wk(follows, pw_s, pw_e)
-            b1, b0 = wk(sold, week_start, week_end), sum(bags.get(pw_s + dt.timedelta(days=i), {}).get(key, 0.0) for i in range(7))
+            b1 = wk(sold, week_start, week_end)
+            b0 = sum(bags.get(pw_s + dt.timedelta(days=i), {}).get(key, 0.0) for i in range((pw_e - pw_s).days + 1))
             ig_reach = sum(float(rc.loc[d].get("instagram") or 0) for d in days_ if week_start <= d <= week_end and d in rc.index)
             views = sum(float(vw.loc[d].sum()) for d in days_ if week_start <= d <= week_end and d in vw.index)
             chats = sum(v for d, v in wa.items() if week_start <= d <= week_end)
@@ -617,23 +646,26 @@ if db_ok:
                            "follows": [round(v) if v is not None else None for v in follows], "bags": [round(v) for v in sold],
                            "visitors": [round(v) if v is not None else None for v in visitors]})
             insight2b.append(
-                f"Last week <b>{name}</b> gained <b>{fmt(f1)}</b> new follows"
-                + (f" ({signed(pct(f1, f0))})" if full_prev and f0 else "")
-                + f", sold <b>{fmt(b1)}</b> bags at the till ({signed(pct(b1, b0))} on the week before) and had {fmt(chats)} WhatsApp chats"
-                + (f" and {fmt(sum(wk_vis))} shop visitors ({len(wk_vis)} of 7 days counted)." if wk_vis else "."))
+                f"{P.When} <b>{name}</b> gained <b>{fmt(f1)}</b> new follows"
+                + (f" ({signed(pct(f1, f0))} on {P.prev})" if full_prev and f0 else "")
+                + f", sold <b>{fmt(b1)}</b> bags at the till" + (f" ({signed(pct(b1, b0))} on {P.prev})" if b0 else "")
+                + f" and had {fmt(chats)} WhatsApp chat{'' if round(chats) == 1 else 's'}"
+                + (f" and {fmt(sum(wk_vis))} shop visitors ({len(wk_vis)} of {P.days} day{'' if P.days == 1 else 's'} counted)."
+                   if wk_vis else "."))
             lines_hl.append((name, f1, b1, sc, n_days))
             ft_daily[code] = pd.DataFrame({"follows": follows, "chats": [wa.get(d, 0.0) for d in days_], "bags": sold},
                                           index=pd.to_datetime(days_))
             ready_dates.append((name, s + dt.timedelta(weeks=CHECK_WEEKS)))
         if lines_hl:
             short = min(x[4] for x in lines_hl)
-            parts = " and ".join(f"{n} +{fmt(f)} new follows ({fmt(b)} bags sold)" for n, f, b, _, _ in lines_hl)
+            parts = " and ".join(f"{n} +{fmt(f)} new follows ({fmt(b)} bag{'' if round(b) == 1 else 's'} sold)"
+                                 for n, f, b, _, _ in lines_hl)
             if short < EARLY_DAYS:
-                headline2b = f"Last week {parts}: with only {short} days of follower history, it is too early to link follows to sales."
+                headline2b = f"{P.When} {parts}: with only {short} days of follower history, it is too early to link follows to sales."
             elif all((x[3] or 0) < LINK for x in lines_hl):
-                headline2b = f"Last week {parts}: follows aren't moving with sales yet, so they are building awareness."
+                headline2b = f"{P.When} {parts}: follows aren't moving with sales yet, so they are building awareness."
             else:
-                headline2b = f"Last week {parts}: on some days follows and sales moved together; watch which posts did it."
+                headline2b = f"{P.When} {parts}: on some days follows and sales moved together; watch which posts did it."
             # WhatsApp buyers by source, both markets in one table
             try:
                 srcs = {nm: source_change(cd) for cd, nm in (("TZ", "Sinza"), ("UG", "Uganda"))}
@@ -652,7 +684,7 @@ if db_ok:
                         c_ = sum(r[4] for r in v[0] if r[0] in rest)
                         return f"{fmt(b_)} ({'+' if c_ > 0 else ''}{c_})"
                     rows_t.append(["Other"] + [other(v) for v in srcs.values()])
-                slide2b_table = {"title": "WhatsApp buyers by source last week (change on the week before)",
+                slide2b_table = {"title": f"WhatsApp buyers by source {P.when} (change on {P.prev})",
                                  "cols": ["Source"] + list(srcs), "mark": FOLLOWER_PATH, "rows": rows_t}
                 try:
                     wk2 = {nm: source_weeks(cd) for cd, nm in (("TZ", "Sinza"), ("UG", "Uganda"))}
@@ -688,7 +720,7 @@ if db_ok:
                         if r[4]:
                             big.append(f"{src_words(nm, r[0])} ({'+' if r[4] > 0 else ''}{r[4]})")
                 insight2b.append(f"Buyers who came through the pages (the follower path): {fpb}."
-                                 + (f" The biggest change on the week before was {' and '.join(big)}." if big else ""))
+                                 + (f" The biggest change on {P.prev} was {' and '.join(big)}." if big else ""))
                 for nm, (_, _, rc_) in srcs.items():
                     if rc_:
                         rec2b.append(f"{nm}: {rc_}")
@@ -809,7 +841,7 @@ except Exception:                                            # noqa: BLE001
 WR = {
     "built": dt.datetime.now().strftime("%a %d %b %Y, %H:%M"),
     "weekStart": week_start.isoformat(), "weekEnd": week_end.isoformat(),
-    "weekLabel": f"{day_label(week_start)} to {day_label(week_end)} {week_end.year}",
+    "weekLabel": P.dates, "period": P.to_json(),
     "asOf": day_label(today),
     "owner": {"name": owner.get("name", ""), "title": owner.get("title", "")},
     "slides": [
@@ -821,12 +853,12 @@ WR = {
          "headline": headline2, "tone": "neutral",
          "graph": slide2, "insight": insight2, "rec": rec2, "band": ft_bands.get("KE", []),
          "source": "Odoo Meta sync (Kenya page and account), Kenya shop tills, WhatsApp Monitoring and footfall. "
-                   "Band: last week, the Denri dashboard's Foot Traffic page (Hilton left out: mall traffic)."},
+                   f"Band: {P.noun} ({P.dates}), the Denri dashboard's Foot Traffic page (Hilton left out: mall traffic)."},
         {"id": "followers-tzug", "kicker": "Followers vs sales, Sinza and Uganda",
          "headline": headline2b, "tone": "neutral",
          "graph": slide2b, "insight": insight2b, "rec": rec2b, "band": ft_bands.get("TZUG", []),
          "source": "Odoo Meta sync (Sinza and Uganda pages and accounts, from 10 to 11 Nov 2026), the Sinza and Uganda tills, "
-                   "WhatsApp Monitoring and footfall. Band: last week, the Denri dashboard's Foot Traffic page."},
+                   f"WhatsApp Monitoring and footfall. Band: {P.noun} ({P.dates}), the Denri dashboard's Foot Traffic page."},
         ftest_slide,
     ],
 }
@@ -875,7 +907,7 @@ try:
     _old = json.loads(_m.group(1)) if _m else {}
 except Exception:                                            # noqa: BLE001
     _old = {}
-if _old.get("weekStart") == str(WR.get("weekStart")):
+if _old.get("weekStart") == str(WR.get("weekStart")) and _old.get("weekEnd") == str(WR.get("weekEnd")):
     _good = {sl.get("id"): sl for sl in _old.get("slides") or [] if (sl.get("graph") or {}).get("ok") and sl.get("headline")}
     for _i, _sl in enumerate(WR["slides"]):
         if not ((_sl.get("graph") or {}).get("ok") and _sl.get("headline")) and _sl.get("id") in _good:

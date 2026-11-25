@@ -44,3 +44,5 @@ html/bag_signals.html
 
 # ── DuckDB till snapshot (lib/snapshot.py, regenerated at runtime) ──
 .snapshots/
+# Weekly Report's Period choice (lib/report_period.py): a viewer's choice, not code
+data/wr_period.json

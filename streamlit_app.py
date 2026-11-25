@@ -967,8 +967,25 @@ CUSTOM_RANGE_KEYS = {
     "boo": ("boo_custom_range.json", ["bags_on_offer.py"]),
     "np":  ("np_custom_range.json", ["new_products.py"]),
     "py":  ("py_custom_range.json", ["posting_yields.py"]),
+    # Weekly Report's Period dropdown (lib/report_period.py): crange=wr:<preset>:<from>:<to>, handled below
+    "wr":  ("wr_period.json", ["weekly_report.py"]),
 }
 _qp_cr = st.query_params.get("crange")
+if _qp_cr and str(_qp_cr).startswith("wr:"):
+    del st.query_params["crange"]
+    from lib import report_period as _rp
+    _k, _a, _b = (str(_qp_cr).split(":") + ["", "", ""])[1:4]
+    if _k in _rp.NAMES:
+        try:
+            _da = datetime.date.fromisoformat(_a) if _a else None
+            _db = datetime.date.fromisoformat(_b) if _b else None
+        except ValueError:
+            _da = _db = None
+        if _k != "custom" or (_da and _db):
+            _rp.save(_k, _da, _db)
+            _bg_rebuild(label, ["weekly_report.py"], "range", f"Building the report for {_rp.NAMES[_k]}"
+                        + (f" ({_da:%d %b} – {_db:%d %b})" if _k == "custom" else ""))
+    _qp_cr = None
 if _qp_cr:
     del st.query_params["crange"]                       # one-shot: a reload must not rebuild again
     _parts = str(_qp_cr).split(":")

@@ -27,7 +27,11 @@ SLOWING = 20           # last week this % under the month average a week = slowi
 STUCK_MIN = {"KE": 30, "UG": 10, "TZ": 10}     # shop stock a stuck bag must have
 SMALL_WEEK = 100       # under this many bags in the week = a small market, say so
 WEAK_MIN, WEAK_MAX = 3, 5   # weakest bags listed per category
-WEAK_COVER = 6              # a weak bag's shop stock lasts at least this many weeks at last week's pace
+WEAK_COVER = 6              # a weak bag's shop stock lasts at least this many weeks at the period's pace
+
+# The report period (lib/report_period): set by slides(). K = weeks in the period, so a period's units ÷ K = a week's
+# pace; WHEN / PREV = the words ("last week" / "the week before"); LATEST = the month's last (partial) week.
+K, WHEN, PREV, LATEST = 1.0, "last week", "the week before", "last week"
 
 
 def _fmt(x):
@@ -105,14 +109,14 @@ def _explained_rec(w, mkt, info, best, lw, stock, cat_name):
     offer; already on offer and still slow → price or design."""
     kind, _ = _stuck_rec(w, mkt, info, best)
     sw, st = max(lw.get(w, 0), 0), stock(w)
-    cov = f"{st / sw:.0f} weeks of stock at that pace" if sw else "no sale to clear it"
-    why = f"{_title(w)} sold {_fmt(sw)} last week with {_fmt(st)} in the shops ({cov})"
+    cov = f"{st * K / sw:.0f} weeks of stock at that pace" if sw else "no sale to clear it"
+    why = f"{_title(w)} sold {_fmt(sw)} {WHEN} with {_fmt(st)} in the shops ({cov})"
     i = info.get(w) or {}
     posts = (i.get("postsM") or [0, 0])[POSTS_I[mkt]] or 0
     bsold = lw.get(best, 0) if best else 0
     # a combo only helps when the partner really pulls buyers: the category's best seller, selling at least the
     # market's mover minimum and at least twice the slow bag
-    pulls = bool(best) and best != w and bsold >= max(MOVER_MIN_WEEK.get(mkt, 3), 2 * sw)
+    pulls = bool(best) and best != w and bsold >= max(MOVER_MIN_WEEK.get(mkt, 3) * K, 2 * sw)
     if kind == "post":
         return kind, f"Post {_title(w)} first. {why}, and it wasn't posted this month, so buyers haven't seen it online."
     if kind == "offer" and pulls:
@@ -132,11 +136,13 @@ def _market_slides(mkt, name, lines, info, why, week_start, week_end):
     stock = lambda b: ((info.get(b) or {}).get("stock") or [0, 0, 0])[si] or 0       # noqa: E731
     cat = lambda b: ((info.get(b) or {}).get("cat") or "OTHER").upper()                # noqa: E731
     lw, lr = _units(lines, mkt, week_start, week_end)
-    pw, _ = _units(lines, mkt, week_start - dt.timedelta(days=7), week_end - dt.timedelta(days=7))
+    from lib import report_period
+    P = report_period.active()
+    pw, _ = _units(lines, mkt, P.cs, P.ce)
     lw_total, pw_total = sum(lw.values()), sum(pw.values())
-    small = (f"{name} sold {_fmt(lw_total)} bags last week, so one sale moves a bag's share a lot."
-             if lw_total < SMALL_WEEK else None)
-    cover = lambda b: stock(b) / lw[b] if lw[b] > 0 else None                          # noqa: E731
+    small = (f"{name} sold {_fmt(lw_total)} bags {WHEN}, so one sale moves a bag's share a lot."
+             if lw_total < SMALL_WEEK * K else None)
+    cover = lambda b: stock(b) * K / lw[b] if lw[b] > 0 else None                      # noqa: E731 — weeks of stock
     out = []
 
     # ── A. Bag of the Month ──
@@ -209,14 +215,14 @@ def _market_slides(mkt, name, lines, info, why, week_start, week_end):
                                     + (f" The evidence scores {sc['total']} out of 100, so the verdict is: {sc['verdict'][0].lower() + sc['verdict'][1:]}." if sc.get("verdict") else ""))
         c = cover(top)
         slide["insight"].append(f"{name}'s shops hold {_fmt(stock(top))} {_title(top)} bags now"
-                                + (f", about {c:.1f} weeks of sales at last week's pace." if c is not None else "."))
+                                + (f", about {c:.1f} weeks of sales at the current pace." if c is not None else "."))
         for b in bags:
             c = cover(b)
             if c is not None and c < COVER_WEEKS:
-                slide["rec"].append(f"Restock {_title(b)}: {_fmt(stock(b))} in the shops is about {c:.1f} weeks at last week's pace.")
+                slide["rec"].append(f"Restock {_title(b)}: {_fmt(stock(b))} in the shops is about {c:.1f} weeks at the current pace.")
             last = wk_units[b][-1] * (7 / ((weeks[-1][2] - weeks[-1][1]).days + 1))
             if avg[b] and last < avg[b] * (1 - SLOWING / 100):
-                slide["rec"].append(f"{_title(b)} is slowing ({_fmt(wk_units[b][-1])} last week vs {_fmt(avg[b])} a week "
+                slide["rec"].append(f"{_title(b)} is slowing ({_fmt(wk_units[b][-1])} {LATEST} vs {_fmt(avg[b])} a week "
                                     f"for the month): check its stock by shop and its posts.")
         verdict = ((why.get(mkt) or {}).get(top) or {}).get("score", {}).get("verdict", "")
         vrec = {"Demand": f"Check {_title(top)}'s price and design: it had support and still sold less.",
@@ -243,22 +249,22 @@ def _market_slides(mkt, name, lines, info, why, week_start, week_end):
     stuck.sort(key=lambda b: (-(stock(b) / max(lw[b], 1)), -stock(b)))
     stuck = stuck[:5]
     srows = [{"bag": _title(b), "stock": stock(b), "units": round(max(lw[b], 0)),
-              "cover": round(stock(b) / max(lw[b], 1), 1)} for b in stuck]
+              "cover": round(stock(b) * K / max(lw[b], 1), 1)} for b in stuck]
     t10 = sum(lw[b] for b in top10)
     t10p = sum(pw[b] for b in sorted((b for b in pw if pw[b] > 0), key=lambda b: -pw[b])[:10])
-    slide = {"id": f"top-{mkt}", "kicker": f"Top-selling bags, {kname} (last week, {_d(week_start)} to {_d(week_end)})",
+    slide = {"id": f"top-{mkt}", "kicker": f"Top-selling bags, {kname} ({P.noun}, {P.dates})",
              "tone": "neutral", "insight": [], "rec": [],
-             "source": "Odoo tills last week vs the week before; shop stock now from the Product Performance page.",
+             "source": f"Odoo tills {P.noun} ({P.dates}) vs {P.prev} ({P.prev_dates}); shop stock now from the Product Performance page.",
              "graph": {"ok": bool(rows), "kind": "top10", "top": rows, "stuck": srows}}
     if rows:
         lead = rows[0]
-        slide["headline"] = (f"The top 10 bags carried {t10 / lw_total * 100:.0f}% of {name}'s units last week, led by "
+        slide["headline"] = (f"The top 10 bags carried {t10 / lw_total * 100:.0f}% of {name}'s units {WHEN}, led by "
                              f"{lead['bag']} ({_fmt(lead['units'])}, {lead['share']:.1f}%)"
                              + (f"; {len(srows)} bags hold {_fmt(sum(r['stock'] for r in srows))} in the shops but sold "
                                 f"only {_fmt(sum(r['units'] for r in srows))}." if srows else "."))
-        slide["insight"].append(f"The top 10 bags made up <b>{t10 / lw_total * 100:.0f}%</b> of the {_fmt(lw_total)} bags sold last week, "
-                                f"against {t10p / pw_total * 100:.0f}% of {_fmt(pw_total)} the week before." if pw_total else
-                                f"The top 10 bags made up <b>{t10 / lw_total * 100:.0f}%</b> of the {_fmt(lw_total)} bags sold last week.")
+        slide["insight"].append(f"The top 10 bags made up <b>{t10 / lw_total * 100:.0f}%</b> of the {_fmt(lw_total)} bags sold {WHEN}, "
+                                f"against {t10p / pw_total * 100:.0f}% of {_fmt(pw_total)} {PREV}." if pw_total else
+                                f"The top 10 bags made up <b>{t10 / lw_total * 100:.0f}%</b> of the {_fmt(lw_total)} bags sold {WHEN}.")
         up = max(rows, key=lambda r: r["pp"])
         dn = min(rows, key=lambda r: r["pp"])
         if up["pp"] > 0:
@@ -266,11 +272,11 @@ def _market_slides(mkt, name, lines, info, why, week_start, week_end):
                                     + (f", and {dn['bag']} lost the most ({dn['pp']:.1f} points)." if dn["pp"] < 0 else "."))
         short = [b for b in top10 if cover(b) is not None and cover(b) < COVER_WEEKS]
         if short:
-            slide["insight"].append("These top bags have less than 2 weeks of stock left at last week's pace: "
+            slide["insight"].append("These top bags have less than 2 weeks of stock left at the current pace: "
                                     + ", ".join(f"{_title(b)} ({_fmt(stock(b))} left)" for b in short) + ".")
-            slide["rec"].append("Restock " + ", ".join(_title(b) for b in short[:4]) + ": under 2 weeks of stock at last week's pace.")
+            slide["rec"].append("Restock " + ", ".join(_title(b) for b in short[:4]) + ": under 2 weeks of stock at the current pace.")
         if srows:
-            slide["insight"].append("These bags are stuck: they have stock in the shops but barely sold last week: " + ", ".join(
+            slide["insight"].append(f"These bags are stuck: they have stock in the shops but barely sold {WHEN}: " + ", ".join(
                 f"{r['bag']} ({_fmt(r['stock'])} in the shops, {_fmt(r['units'])} sold)" for r in srows) + ".")
             cat_top = {}
             for b in sorted(lw, key=lambda b: -lw[b]):
@@ -300,14 +306,14 @@ def _market_slides(mkt, name, lines, info, why, week_start, week_end):
     for b, u in pw.items():
         cp[cat(b)] += u
     cats = [c for c, u in cw.most_common() if u > 0][:5]
-    slide = {"id": f"cats-{mkt}", "kicker": f"Top 5 categories, {kname} (last week)", "tone": "neutral",
+    slide = {"id": f"cats-{mkt}", "kicker": f"Top 5 categories, {kname} ({P.noun})", "tone": "neutral",
              "insight": [], "rec": [],
-             "source": "Odoo tills last week vs the week before; category and stock from the Product Performance page.",
+             "source": f"Odoo tills {P.noun} vs {P.prev}; category and stock from the Product Performance page.",
              "graph": {"ok": bool(cats), "kind": "cats", "labels": [c.title() for c in cats],
                        "cur": [round(cw[c]) for c in cats], "prev": [round(cp[c]) for c in cats],
                        "share": [round(cw[c] / lw_total * 100, 1) if lw_total else 0 for c in cats],
                        "curLabel": f"{_d(week_start)} to {_d(week_end)}",
-                       "prevLabel": f"{_d(week_start - dt.timedelta(days=7))} to {_d(week_end - dt.timedelta(days=7))}"}}
+                       "prevLabel": P.prev_dates}}
     weak_all, table = [], []
     for c in cats:
         in_c = sorted((b for b in lw if cat(b) == c and lw[b] >= 1), key=lambda b: -lw[b])
@@ -316,7 +322,7 @@ def _market_slides(mkt, name, lines, info, why, week_start, week_end):
         best = in_c[0]
         # weakest 3 to 5: high stock, not selling (most weeks of cover first); lowest sellers fill it to 3
         stocked = [b for b in info if cat(b) == c and b != best and stock(b) >= STUCK_MIN[mkt]
-                   and stock(b) >= WEAK_COVER * max(lw[b], 1) and not str(b).startswith(("SAMPLE", "GIFT"))]
+                   and stock(b) >= WEAK_COVER * max(lw[b] / K, 1) and not str(b).startswith(("SAMPLE", "GIFT"))]
         stocked.sort(key=lambda b: (-(stock(b) / max(lw[b], 1)), -stock(b)))
         weak = stocked[:WEAK_MAX]
         for b in reversed(in_c[1:]):
@@ -325,8 +331,7 @@ def _market_slides(mkt, name, lines, info, why, week_start, week_end):
             if b not in weak:
                 weak.append(b)
         held, sold = sum(stock(b) for b in weak), sum(max(lw[b], 0) for b in weak)
-        line = (f"<b>{c.title()}</b> made up {cw[c] / lw_total * 100:.0f}% of the bags sold ({_signed(_pct(cw[c], cp[c]))} on the week "
-                f"before); its best bag, {_title(best)}, sold {_fmt(lw[best])}")
+        line = (f"<b>{c.title()}</b> made up {cw[c] / lw_total * 100:.0f}% of the bags sold ({_signed(_pct(cw[c], cp[c]))} on {PREV}); its best bag, {_title(best)}, sold {_fmt(lw[best])}")
         if weak:
             line += f", while its {len(weak)} weakest bags sold {_fmt(sold)} with {_fmt(held)} in the shops"
             weak_all += [(c, w, best) for w in weak]
@@ -336,13 +341,13 @@ def _market_slides(mkt, name, lines, info, why, week_start, week_end):
                       "weak": [{"name": _title(w), "sold": round(max(lw[w], 0)), "stock": stock(w)}
                                for w in sorted(weak, key=lambda b: -stock(b))]})     # most in the shops first
         if stock(best) < lw[best]:
-            slide["rec"].append(f"Restock {_title(best)} ({c.title()}): {_fmt(stock(best))} in the shops, it sold {_fmt(lw[best])} last week.")
+            slide["rec"].append(f"Restock {_title(best)} ({c.title()}): {_fmt(stock(best))} in the shops, it sold {_fmt(lw[best])} {WHEN}.")
     if table:
         slide["graph"]["cards"] = table       # drawn as one box per category (best bag, weakest bags)
     if cats:
         c0 = cats[0]
         weak0 = next((w for c, w, _ in weak_all if c == c0), None)
-        slide["headline"] = (f"{c0.title()} is {name}'s biggest category last week ({cw[c0] / lw_total * 100:.0f}% of units)"
+        slide["headline"] = (f"{c0.title()} is {name}'s biggest category {WHEN} ({cw[c0] / lw_total * 100:.0f}% of units)"
                              + (f"; its weakest bag, {_title(weak0)}, sold {_fmt(max(lw[weak0], 0))} with {_fmt(stock(weak0))} in the shops."
                                 if weak0 else "."))
         weak_all.sort(key=lambda t: -stock(t[1]))
@@ -389,16 +394,16 @@ def _market_slides(mkt, name, lines, info, why, week_start, week_end):
              "graph": {"ok": bool(t1), "kind": "gender", "weeks": wk_side}}
     if t1:
         lead, other = ("Female", "Male") if g1["Female"] >= g1["Male"] else ("Male", "Female")
-        slide["headline"] = (f"{lead} bags outsold {other.lower()} bags in {name} last week: {_fmt(g1[lead])} vs "
+        slide["headline"] = (f"{lead} bags outsold {other.lower()} bags in {name} {WHEN}: {_fmt(g1[lead])} vs "
                              f"{_fmt(g1[other])} ({sh1[lead]:.0f}% vs {sh1[other]:.0f}% of units, the rest unisex).")
         for x in sides:
             tops = sorted((b for b in lw if g_of(b) == x and lw[b] > 0), key=lambda b: -lw[b])[:3]
             d = sh1[x] - sh0[x]
             slide["insight"].append(
-                f"<b>{x}</b> bags sold {_fmt(g1[x])} last week, {sh1[x]:.0f}% of all bags ({'+' if d >= 0 else ''}{d:.1f} points on the week before)"
+                f"<b>{x}</b> bags sold {_fmt(g1[x])} {WHEN}, {sh1[x]:.0f}% of all bags ({'+' if d >= 0 else ''}{d:.1f} points on {PREV})"
                 + (f"; the best sellers were " + ", ".join(f"{_title(b)} ({_fmt(lw[b])})" for b in tops) if tops else "") + ".")
             if x != "Unisex" and t0 and d <= -2 and tops:
-                slide["rec"].append(f"Push the {x.lower()} range: its share fell {abs(d):.1f} points last week; "
+                slide["rec"].append(f"Push the {x.lower()} range: its share fell {abs(d):.1f} points {WHEN}; "
                                     f"feature {_title(tops[0])} in posts and offers.")
             if x != "Unisex" and tops:
                 c = cover(tops[0])
@@ -408,7 +413,7 @@ def _market_slides(mkt, name, lines, info, why, week_start, week_end):
         if tm:
             slide["insight"].append(f"From {_d(m1)} to {_d(week_end)}, male bags made up {gm['Male'] / tm * 100:.0f}% of the bags sold, "
                                     f"female bags {gm['Female'] / tm * 100:.0f}% and unisex bags {gm['Unisex'] / tm * 100:.0f}%.")
-        slide["rec"] = slide["rec"][:3] or ["Keep the mix: neither the male nor the female range lost share last week."]
+        slide["rec"] = slide["rec"][:3] or [f"Keep the mix: neither the male nor the female range lost share {WHEN}."]
     else:
         slide["headline"] = f"No {name} sales last week."
     if small:
@@ -518,7 +523,7 @@ def _buyer_slide(mkt, name, kname, blines, info, week_start, week_end):
         slide["rec"].append(f"Show {_title(b)} to {who} too ({p:.0f}% of its buyers), e.g. as a gift.")
     pts = [p for _, p in wk if p is not None]
     if len(pts) >= 2 and abs(pts[-1] - pts[-2]) >= 3:
-        slide["insight"].append(f"Women's share moved {pts[-2]:.0f}% → {pts[-1]:.0f}% last week.")
+        slide["insight"].append(f"Women's share moved {pts[-2]:.0f}% → {pts[-1]:.0f}% {LATEST}.")
     slide["rec"] = slide["rec"][:3]
     if tf + tm < 100:
         slide["insight"].append(f"Only {_fmt(tf + tm)} bags with a buyer's gender this month: read the shares with care.")
@@ -550,10 +555,11 @@ def _gender_split(slide, mkt, name, blines, info, week_start, week_end):
     if lw_f + lw_m:
         lead_w = lw_f >= lw_m
         bag_part = slide.get("headline", "")
-        m = re.match(r"(\w+) bags outsold (\w+) bags in [^:]+ last week: ([\d,]+) vs ([\d,]+)", bag_part)
+        m = re.match(r"(\w+) bags outsold (\w+) bags in [^:]+ " + re.escape(WHEN) + r": ([\d,]+) vs ([\d,]+)", bag_part)
         slide["headline"] = (f"{'Women' if lead_w else 'Men'} bought {max(lw_f, lw_m) / (lw_f + lw_m) * 100:.0f}% of {name}'s bags "
-                             f"last week, unisex included: {_fmt(lw_f)} by women vs {_fmt(lw_m)} by men"
-                             + (f"; by the bag, {m.group(1).lower()} bags {m.group(3)} vs {m.group(2)} bags {m.group(4)}." if m else "."))
+                             f"{LATEST}, unisex included: {_fmt(lw_f)} by women vs {_fmt(lw_m)} by men"
+                             + (f"; by the bag {WHEN if WHEN != LATEST else ''}, {m.group(1).lower()} bags {m.group(3)} vs {m.group(2)} bags {m.group(4)}."
+                                .replace("bag ,", "bag,") if m else "."))
     # last week = the last week; month = all weeks
     def share(side, rows):
         f = sum(r[side]["f"] for r in rows)
@@ -569,7 +575,7 @@ def _gender_split(slide, mkt, name, blines, info, week_start, week_end):
                      + (f" ({p1:.0f}% women, {pm:.0f}% over the month)" if p1 is not None and pm is not None else ""))
     if lines:
         slide["insight"].insert(len(slide["insight"]) - 1 if slide["insight"] else 0,
-                                "By the buyer's gender in Odoo, last week " + "; ".join(lines) + ".")
+                                f"By the buyer's gender in Odoo, {LATEST} " + "; ".join(lines) + ".")
     _, _, pm_male = share("Male", split)
     _, _, pm_fem = share("Female", split)
     recs = []
@@ -582,9 +588,15 @@ def _gender_split(slide, mkt, name, blines, info, week_start, week_end):
 
 
 def slides(week_start: dt.date, week_end: dt.date) -> list:
+    global K, WHEN, PREV, LATEST
+    from lib import report_period
+    P = report_period.active()
+    K, WHEN, PREV = P.days / 7, P.when, P.prev
+    wl = _weeks(week_end.replace(day=1), week_end)
+    LATEST = "last week" if P.key == "last_week" else (f"in {wl[-1][0]}" if wl else "in the latest week")
     m1 = week_end.replace(day=1)
     p1 = (m1 - dt.timedelta(days=1)).replace(day=1)
-    lines = _load_lines(min(p1, week_start - dt.timedelta(days=7)), week_end)
+    lines = _load_lines(min(p1, P.cs), week_end)
     page = _pp_page()
     info = page.get("info") or {}
     why = (page.get("why") or {}).get("monthly") or {}

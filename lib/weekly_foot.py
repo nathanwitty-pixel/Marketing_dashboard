@@ -51,11 +51,14 @@ def slide(week_start: dt.date, week_end: dt.date) -> dict:
     def ch(a, b):
         return None if a is None or b is None else round(a - b, 1)
 
+    from lib import report_period
+    is_lw = report_period.active().key == "last_week"
     lines, worst = [], None
     for m in markets:
         last, prev, md = m["rows"][-2], (m["rows"][-3] if len(m["rows"]) > 2 else None), m["rows"][-1]
         dc, dp = ch(last["conv"], prev and prev["conv"]), ch(last["perf"], prev and prev["perf"])
-        part = (f"In <b>{m['name']}</b>, {last['conv'] if last['conv'] is not None else '—'}% of walk-ins bought last week"
+        lw_ = "last week" if is_lw else f"in {last['label'].split(' (')[0]}"
+        part = (f"In <b>{m['name']}</b>, {last['conv'] if last['conv'] is not None else '—'}% of walk-ins bought {lw_}"
                 + (f" ({'+' if dc >= 0 else ''}{dc} points)" if dc is not None else "")
                 + f" and {md['conv'] if md['conv'] is not None else '—'}% this month ({_fmt(md['bought'])} of {_fmt(md['counted'])}); "
                 f"on WhatsApp {last['perf'] if last['perf'] is not None else '—'}% of chats bought"
@@ -73,7 +76,7 @@ def slide(week_start: dt.date, week_end: dt.date) -> dict:
     for m in markets:
         last, prev = m["rows"][-2], (m["rows"][-3] if len(m["rows"]) > 2 else None)
         if prev and last["conv"] is not None and prev["conv"] is not None and last["conv"] < prev["conv"] - 5:
-            s["rec"].append(f"{m['name']}: walk-in conversion fell {prev['conv']}% → {last['conv']}% last week; "
+            s["rec"].append(f"{m['name']}: walk-in conversion fell {prev['conv']}% → {last['conv']}% {'last week' if is_lw else 'in ' + last['label'].split(' (')[0]}; "
                             f"check the shop floor (stock on display, staff on the door) with the shop leads.")
         if prev and last["resp"] is not None and prev["resp"] is not None and last["resp"] > prev["resp"] * 1.5 and last["resp"] > 3:
             s["rec"].append(f"{m['name']}: WhatsApp replies slowed to {last['resp']} min (from {prev['resp']}); "

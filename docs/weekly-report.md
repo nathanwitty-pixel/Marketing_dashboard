@@ -696,3 +696,30 @@ The dashboard rebuilds this page every hour. If an Odoo query fails during a reb
 ## Kenya Insight: say what each change is against (23 Nov 2026)
 
 Every change in the five Kenya follower lines (Online path, Why WhatsApp fell, Shop path, Follower path, Net) is written in words against the week before, never as a bare sign: "641 new follows last week, 55% fewer than the week before (1,422)", "148 fewer", "3% fewer". Platforms read "Facebook 899 to 242". The headline says "on the week before" too. The "5 more points of conversion" figure lives in the recommendation only, so the Insight fits.
+
+## Period picker (24 Nov 2026)
+
+The bar above the slides has a **Period** dropdown: Today, Yesterday, This Week, Last Week (the default), Last 7 Days, Last 30 Days, Month to Date and Custom (From and To dates, then Build). Choosing one rebuilds the whole report from Odoo for that period in the background (about 2 minutes) and shows it. The same choice can be made by hand: `python generators/weekly_report.py yesterday`, `… custom 2026-11-08 2026-11-14`, `… clear` (back to Last Week).
+
+**Comparison.** Every period is compared with the period just before it, of the same kind:
+
+| Period | Days | Compared with |
+|---|---|---|
+| Today | today, so far | the whole of yesterday |
+| Yesterday | yesterday | the day before |
+| This Week | Sunday to today | the same days last week |
+| Last Week | the last full Sun–Sat week | the week before |
+| Last 7 Days | the 7 days to yesterday | the 7 days before |
+| Last 30 Days | the 30 days to yesterday | the 30 days before |
+| Month to Date | the 1st to yesterday | the same days of last month |
+| Custom | From to To (up to 92 days) | the same number of days just before (a 7-day range: "the week before") |
+
+**Where it lives.** `lib/report_period.py` works out the days and the words (`when` "last week", `noun`, `prev` "the week before", short table labels). The choice is saved in `data/wr_period.json` (presets are worked out again from today on every build, so Yesterday always means yesterday). The dashboard passes the choice as `?crange=wr:<preset>:<from>:<to>` and, like the other Custom ranges, the hourly auto-rebuild returns the page to Last Week.
+
+**Which slides follow the period.**
+- *Follow it exactly:* Followers vs sales (Kenya, Sinza and Uganda; the band, the Insight paths and the source table's period figures), the Sales slide's period line, Top-selling bags, Top 5 categories, Male vs female bags, New products (week by week headline, runway, by shop). Weeks of stock are worked out at the period's weekly pace (units ÷ days × 7).
+- *Built from whole Sun–Sat weeks, so they use the last full week inside the period and name it:* Weekly Performance, Why Did We Move?, Why shops (`report_period.full_week`).
+- *Weeks of the month (Wk 1 … the week holding the period's last day):* Walk-ins and WhatsApp week by week, combos and offer types, the gender and buyers week rows. Their sentences say "in Wk 4" when the period is not Last Week.
+- *Month to date, whatever the period:* Sales (graph and month figures), Bag of the Month, Who buys, New products vs target, What if, Price, Corporate.
+
+**Titles.** Last Week keeps "Weekly Marketing Report" and "Week of …". Any other period is "Marketing Report" / "Sales Report" with "Yesterday: Mon 23 Nov 2026, compared with Sun 22 Nov" on the cover and infographic, and the period's name in the export file names.
