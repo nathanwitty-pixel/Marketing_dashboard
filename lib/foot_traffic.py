@@ -46,8 +46,13 @@ GROUP BY 1, 2
 """
 
 # Denri's own numbers (each shop's receipt phones, and the shop attendants under
-# HR → Employees → Sales / Shop Attendants): a walk-in order rung under one of
-# them is not a purchased walk-in (Denri dashboard queries._STAFF_PHONE_KEYS).
+# HR → Employees → Sales / Shop Attendants). A walk-in order rung under one of
+# them still counts as a purchased walk-in, as on the Executive Dashboard (its
+# "No Phone" customers) - Denri dashboard queries.FOOTFALL_SALES, keep in step.
+#
+# An order with no goods on it is not a purchase: every line a Delivery Fee
+# (Sinza 20 Nov 2026) or quantity 0 (Starmall/49997, 18 Nov 2026). It is left
+# out of the order counts; any money it holds stays in revenue.
 _STAFF_KEYS = """
     SELECT RIGHT(REGEXP_REPLACE(num, '[^0-9]', '', 'g'), 9) AS key
     FROM pos_config pc
@@ -78,9 +83,12 @@ orders AS (
            po.amount_total < 0 AS refund,
            RIGHT(REGEXP_REPLACE(COALESCE(rp.phone, rp.mobile, ''), '[^0-9]', '', 'g'), 9)
                IN (SELECT key FROM staff_keys WHERE LENGTH(key) = 9) AS staff_number,
+           BOOL_AND(pol.qty = 0 OR COALESCE(pt.name::text, '') ILIKE '%Delivery Fee%') AS no_goods,
            SUM(pol.price_subtotal_incl / po.currency_rate) AS revenue
     FROM pos_order po
     JOIN pos_order_line pol ON pol.order_id = po.id
+    LEFT JOIN product_product pp ON pp.id = pol.product_id
+    LEFT JOIN product_template pt ON pt.id = pp.product_tmpl_id
     LEFT JOIN res_partner rp ON rp.id = po.partner_id
     LEFT JOIN pos_session ps ON ps.id = po.session_id
     LEFT JOIN pos_config pconf ON pconf.id = ps.config_id{_TILL_JOINS}
@@ -92,9 +100,9 @@ orders AS (
     GROUP BY po.id, 2, 3, 6
 )
 SELECT day AS "Date", location AS "Location",
-       COUNT(*) FILTER (WHERE customer_type = 'walkin' AND NOT refund AND NOT staff_number)     AS "Walk-in Orders",
+       COUNT(*) FILTER (WHERE customer_type = 'walkin' AND NOT refund AND NOT no_goods)         AS "Walk-in Orders",
        COALESCE(SUM(revenue) FILTER (WHERE customer_type = 'walkin' AND NOT refund), 0)         AS "Walk-in Revenue",
-       COUNT(*) FILTER (WHERE customer_type = 'online' AND NOT refund)                          AS "Online Orders",
+       COUNT(*) FILTER (WHERE customer_type = 'online' AND NOT refund AND NOT no_goods)         AS "Online Orders",
        COUNT(*) FILTER (WHERE customer_type IN ('activation', 'employee') AND NOT refund)        AS "Other Orders",
        COUNT(*) FILTER (WHERE refund)                                                           AS "Refunds"
 FROM orders GROUP BY 1, 2
