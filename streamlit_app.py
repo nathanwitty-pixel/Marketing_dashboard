@@ -770,8 +770,9 @@ def _bg_rebuild(lbl, script_list, kind="auto", title=""):
                            expected=_rebuild_secs(lbl, k))
                 # One rebuild runs at a time across all pages: pages share generators (self_made_combos.py is
                 # in three pages' lists) and each generator rewrites its own page, so two at once could blank it.
+                job["waiting"] = True
                 with reg.setdefault("run", threading.Lock()):
-                    job.update(pass_started=time.time())
+                    job.update(pass_started=time.time(), waiting=False)
                     job["logs"] = run_scripts(sl, force_fresh=(k == "manual"),
                                               on_step=lambda i: job.update(step=i))
                 if all(rc == 0 for _, rc, _ in job["logs"]):
@@ -937,10 +938,18 @@ with _tt:
 with _ck:
     st.iframe(CLOCK_HTML, height=44)
 with _rc:
-    _do_refresh = st.button("Refresh", icon=":material/refresh:", use_container_width=True,
-                            type="primary", key="refresh_btn")
+    _run_job = _bg_jobs()["jobs"].get(label)
+    _busy = bool(_run_job and _run_job["ended"] is None)
+    _do_refresh = st.button("Refreshing…" if _busy else "Refresh",
+                            icon=":material/progress_activity:" if _busy else ":material/refresh:",
+                            use_container_width=True, type="primary", key="refresh_btn", disabled=_busy)
 if _do_refresh:
-    _bg_rebuild(label, scripts, "manual")          # bypass the Odoo cache, pull fresh + repopulate
+    if _month_end_running(_prev_month_key()):
+        st.warning("Refresh is paused until the month-end archive finishes — the pages rebuild themselves after it.",
+                   icon=":material/inventory:")
+    else:
+        _bg_rebuild(label, scripts, "manual")      # bypass the Odoo cache, pull fresh + repopulate
+        st.rerun()                                 # redraw the button as "Refreshing…" straight away
 
 # Persistent refresh feedback (shown after the rerun re-reads the regenerated page)
 _rm = st.session_state.pop("refresh_msg", None)
@@ -1048,6 +1057,12 @@ def _bg_watch(lbl, job_id):
         st.session_state.pop("bg_watching", None)
         st.session_state.refresh_msg = _bg_done_msg(job)
         st.rerun(scope="app")
+    if job.get("waiting"):                         # another page holds the one-rebuild-at-a-time lock
+        other = next((k for k, j in _bg_jobs()["jobs"].items()
+                      if k != lbl and j["ended"] is None and not j.get("waiting")), "another page")
+        st.progress(0.0, text=f"⟳ Waiting for {other} to finish rebuilding — this page starts right after "
+                              "· showing the last build until it's ready")
+        return
     kind = job.get("kind", "auto")
     what = job.get("title") or {"manual": "Refreshing"}.get(kind, "Updating")
     el = time.time() - job.get("pass_started", job["started"])
