@@ -14,7 +14,15 @@ orders AS (
               WHEN lower(pc.name) = 'uganda'                 THEN p.amount_total / 29
               ELSE p.amount_total END AS kes,
          (SELECT MAX(pl.qty) FROM pos_order_line pl WHERE pl.order_id = p.id) AS max_line,
-         (SELECT SUM(pl.qty) FROM pos_order_line pl WHERE pl.order_id = p.id) AS units
+         (SELECT SUM(pl.qty) FROM pos_order_line pl WHERE pl.order_id = p.id) AS units,
+         -- An order with no goods (only Delivery Fee or qty-0 lines) is not a purchase: it is left out
+         -- of the order count, but its money stays in kes, as in lib/foot_traffic.py and the
+         -- Denri dashboard's queries.FOOTFALL_SALES (keep in step). A NULL qty counts as goods.
+         EXISTS (SELECT 1 FROM pos_order_line pl
+                 LEFT JOIN product_product pp ON pp.id = pl.product_id
+                 LEFT JOIN product_template pt ON pt.id = pp.product_tmpl_id
+                 WHERE pl.order_id = p.id AND COALESCE(pl.qty, 1) <> 0
+                   AND COALESCE(pt.name::text, '') NOT ILIKE '%Delivery Fee%') AS has_goods
   FROM pos_order p
   CROSS JOIN params
   JOIN pos_session ps ON ps.id = p.session_id
@@ -22,18 +30,11 @@ orders AS (
   WHERE p.customer_type = 'walkin'
     AND p.state IN ('done', 'invoiced', 'paid')
     AND p.amount_total > 0
-    -- An order with no goods (only Delivery Fee or qty-0 lines) is not a purchase:
-    -- Denri dashboard queries.FOOTFALL_SALES, keep in step.
-    AND EXISTS (SELECT 1 FROM pos_order_line pl
-                JOIN product_product pp ON pp.id = pl.product_id
-                JOIN product_template pt ON pt.id = pp.product_tmpl_id
-                WHERE pl.order_id = p.id AND pl.qty <> 0
-                  AND COALESCE(pt.name::text, '') NOT ILIKE '%Delivery Fee%')
     AND (p.date_order + interval '3 hours')::date BETWEEN params.s AND params.e
 ),
 sales AS (
   SELECT config_id, day,
-         COUNT(*)                                                    AS orders,
+         COUNT(*) FILTER (WHERE has_goods)                           AS orders,
          SUM(kes)                                                    AS kes,
          SUM(CASE WHEN max_line >= 10 THEN 1 ELSE 0 END)             AS bulk_orders,
          SUM(CASE WHEN max_line >= 10 THEN kes ELSE 0 END)           AS bulk_kes,

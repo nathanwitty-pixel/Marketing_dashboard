@@ -772,9 +772,13 @@ def _bg_rebuild(lbl, script_list, kind="auto", title=""):
                 # in three pages' lists) and each generator rewrites its own page, so two at once could blank it.
                 job["waiting"] = True
                 with reg.setdefault("run", threading.Lock()):
+                    reg["holder"] = lbl                  # the page others' "Waiting for …" banner names
                     job.update(pass_started=time.time(), waiting=False)
-                    job["logs"] = run_scripts(sl, force_fresh=(k == "manual"),
-                                              on_step=lambda i: job.update(step=i))
+                    try:
+                        job["logs"] = run_scripts(sl, force_fresh=(k == "manual"),
+                                                  on_step=lambda i: job.update(step=i))
+                    finally:
+                        reg["holder"] = None
                 if all(rc == 0 for _, rc, _ in job["logs"]):
                     _save_rebuild_secs(lbl, k, time.time() - job["pass_started"])
         finally:
@@ -939,7 +943,10 @@ with _ck:
     st.iframe(CLOCK_HTML, height=44)
 with _rc:
     _run_job = _bg_jobs()["jobs"].get(label)
-    _busy = bool(_run_job and _run_job["ended"] is None)
+    # Disabled only while a manual Refresh is running or already queued. During an auto rebuild a
+    # click still queues a fresh (Odoo-cache-bypassing) pass straight after it (see _bg_rebuild).
+    _busy = bool(_run_job and _run_job["ended"] is None and (
+        _run_job.get("kind") == "manual" or (_run_job.get("next") or (None, None))[1] == "manual"))
     _do_refresh = st.button("Refreshing…" if _busy else "Refresh",
                             icon=":material/progress_activity:" if _busy else ":material/refresh:",
                             use_container_width=True, type="primary", key="refresh_btn", disabled=_busy)
@@ -1058,10 +1065,10 @@ def _bg_watch(lbl, job_id):
         st.session_state.refresh_msg = _bg_done_msg(job)
         st.rerun(scope="app")
     if job.get("waiting"):                         # another page holds the one-rebuild-at-a-time lock
-        other = next((k for k, j in _bg_jobs()["jobs"].items()
-                      if k != lbl and j["ended"] is None and not j.get("waiting")), "another page")
+        other = _bg_jobs().get("holder") or "another page"
+        queued = " Another rebuild of this page is queued." if job.get("next") else ""
         st.progress(0.0, text=f"⟳ Waiting for {other} to finish rebuilding — this page starts right after "
-                              "· showing the last build until it's ready")
+                              f"· showing the last build until it's ready.{queued}")
         return
     kind = job.get("kind", "auto")
     what = job.get("title") or {"manual": "Refreshing"}.get(kind, "Updating")
