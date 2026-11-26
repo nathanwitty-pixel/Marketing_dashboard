@@ -22,6 +22,13 @@ orders AS (
   WHERE p.customer_type = 'walkin'
     AND p.state IN ('done', 'invoiced', 'paid')
     AND p.amount_total > 0
+    -- An order with no goods (only Delivery Fee or qty-0 lines) is not a purchase:
+    -- Denri dashboard queries.FOOTFALL_SALES, keep in step.
+    AND EXISTS (SELECT 1 FROM pos_order_line pl
+                JOIN product_product pp ON pp.id = pl.product_id
+                JOIN product_template pt ON pt.id = pp.product_tmpl_id
+                WHERE pl.order_id = p.id AND pl.qty <> 0
+                  AND COALESCE(pt.name::text, '') NOT ILIKE '%Delivery Fee%')
     AND (p.date_order + interval '3 hours')::date BETWEEN params.s AND params.e
 ),
 sales AS (
